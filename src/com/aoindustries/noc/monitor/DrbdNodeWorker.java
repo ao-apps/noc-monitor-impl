@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The workers for 3ware RAID.
+ * The workers for DRBD.
  *
  * @author  AO Industries, Inc.
  */

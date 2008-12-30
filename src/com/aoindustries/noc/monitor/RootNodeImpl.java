@@ -186,6 +186,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     final AOServConnector conn;
 
     private ServersNode serversNode;
+    private SignupsNode signupsNode;
 
     private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
@@ -205,9 +206,14 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     @Override
     public List<? extends Node> getChildren() {
-        List<NodeImpl> children = new ArrayList<NodeImpl>();
+        List<NodeImpl> children = new ArrayList<NodeImpl>(2);
+
         ServersNode localServersNode = this.serversNode;
         if(localServersNode!=null) children.add(localServersNode);
+
+        SignupsNode localSignupsNode = this.signupsNode;
+        if(localSignupsNode!=null) children.add(localSignupsNode);
+
         return Collections.unmodifiableList(children);
     }
 
@@ -223,6 +229,13 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             AlertLevel serversNodeLevel = localServersNode.getAlertLevel();
             if(serversNodeLevel.compareTo(level)>0) level = serversNodeLevel;
         }
+
+        SignupsNode localSignupsNode = this.signupsNode;
+        if(localSignupsNode!=null) {
+            AlertLevel signupsNodeLevel = localSignupsNode.getAlertLevel();
+            if(signupsNodeLevel.compareTo(level)>0) level = signupsNodeLevel;
+        }
+
         return level;
     }
 
@@ -241,6 +254,12 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             serversNode = new ServersNode(this, port, csf, ssf);
             serversNode.start();
             serversNode.rootNode.nodeAdded();
+        }
+
+        if(signupsNode==null) {
+            signupsNode = new SignupsNode(this, port, csf, ssf);
+            signupsNode.start();
+            signupsNode.rootNode.nodeAdded();
         }
     }
 

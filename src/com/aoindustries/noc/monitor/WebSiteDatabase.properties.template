@@ -1,0 +1,6 @@
+com.aoindustries.website.database.driver=org.postgresql.Driver
+com.aoindustries.website.database.url=<jdbc_url>
+com.aoindustries.website.database.username=<jdbc_username>
+com.aoindustries.website.database.password=<jdbc_password>
+com.aoindustries.website.database.pool.size=8
+com.aoindustries.website.database.max_connection_age=

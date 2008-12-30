@@ -134,7 +134,7 @@ public class ServersNode extends NodeImpl {
             // Add new ones
             for(int c=0;c<servers.size();c++) {
                 Server server = servers.get(c);
-                System.err.println("DEBUG: RootNodeImpl: server="+server);
+                //System.err.println("DEBUG: ServersNode: server="+server);
                 if(c>=serverNodes.size()) {
                     // Just add to the end
                     ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
