@@ -28,7 +28,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-public class ServersNode extends NodeImpl {
+abstract public class ServersNode extends NodeImpl {
 
     final RootNodeImpl rootNode;
 
@@ -40,12 +40,12 @@ public class ServersNode extends NodeImpl {
     }
 
     @Override
-    public Node getParent() {
+    final public Node getParent() {
         return rootNode;
     }
 
     @Override
-    public boolean getAllowsChildren() {
+    final public boolean getAllowsChildren() {
         return true;
     }
 
@@ -53,7 +53,7 @@ public class ServersNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends Node> getChildren() {
+    final public List<? extends Node> getChildren() {
         synchronized(serverNodes) {
             return Collections.unmodifiableList(new ArrayList<ServerNode>(serverNodes));
         }
@@ -63,7 +63,7 @@ public class ServersNode extends NodeImpl {
      * The alert level is equal to the highest alert level of its children.
      */
     @Override
-    public AlertLevel getAlertLevel() {
+    final public AlertLevel getAlertLevel() {
         synchronized(serverNodes) {
             AlertLevel level = AlertLevel.NONE;
             for(NodeImpl serverNode : serverNodes) {
@@ -72,11 +72,6 @@ public class ServersNode extends NodeImpl {
             }
             return level;
         }
-    }
-
-    @Override
-    public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "ServersNode.label");
     }
 
     private TableListener tableListener = new TableListener() {
@@ -92,14 +87,14 @@ public class ServersNode extends NodeImpl {
         }
     };
 
-    void start() throws IOException, SQLException {
+    final void start() throws IOException, SQLException {
         synchronized(serverNodes) {
             rootNode.conn.servers.addTableListener(tableListener, 100);
             verifyServers();
         }
     }
 
-    void stop() {
+    final void stop() {
         synchronized(serverNodes) {
             rootNode.conn.servers.removeTableListener(tableListener);
             for(ServerNode serverNode : serverNodes) {
@@ -117,7 +112,7 @@ public class ServersNode extends NodeImpl {
         List<Server> allServers = rootNode.conn.servers.getRows();
         List<Server> servers = new ArrayList<Server>(allServers.size());
         for(Server server : allServers) {
-            if(server.isMonitoringEnabled()) servers.add(server);
+            if(server.isMonitoringEnabled() && includeServer(server)) servers.add(server);
         }
         synchronized(serverNodes) {
             // Remove old ones
@@ -157,7 +152,7 @@ public class ServersNode extends NodeImpl {
     /**
      * Gets the top-level persistence directory.
      */
-    File getPersistenceDirectory() throws IOException {
+    final File getPersistenceDirectory() throws IOException {
         File dir = new File(rootNode.getPersistenceDirectory(), "servers");
         if(!dir.exists()) {
             if(!dir.mkdir()) {
@@ -172,4 +167,6 @@ public class ServersNode extends NodeImpl {
         }
         return dir;
     }
+    
+    abstract boolean includeServer(Server server) throws SQLException;
 }

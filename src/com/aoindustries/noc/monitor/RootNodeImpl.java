@@ -185,7 +185,9 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     final Locale locale;
     final AOServConnector conn;
 
-    private ServersNode serversNode;
+    private OtherDevicesNode otherDevicesNode;
+    private PhysicalServersNode physicalServersNode;
+    private VirtualServersNode virtualServersNode;
     private SignupsNode signupsNode;
 
     private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -206,10 +208,16 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     @Override
     public List<? extends Node> getChildren() {
-        List<NodeImpl> children = new ArrayList<NodeImpl>(2);
+        List<NodeImpl> children = new ArrayList<NodeImpl>(4);
 
-        ServersNode localServersNode = this.serversNode;
-        if(localServersNode!=null) children.add(localServersNode);
+        OtherDevicesNode localOtherDevicesNode = this.otherDevicesNode;
+        if(localOtherDevicesNode!=null) children.add(localOtherDevicesNode);
+
+        PhysicalServersNode localPhysicalServersNode = this.physicalServersNode;
+        if(localPhysicalServersNode!=null) children.add(localPhysicalServersNode);
+
+        VirtualServersNode localVirtualServersNode = this.virtualServersNode;
+        if(localVirtualServersNode!=null) children.add(localVirtualServersNode);
 
         SignupsNode localSignupsNode = this.signupsNode;
         if(localSignupsNode!=null) children.add(localSignupsNode);
@@ -224,10 +232,22 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     public AlertLevel getAlertLevel() {
         AlertLevel level = AlertLevel.NONE;
 
-        ServersNode localServersNode = this.serversNode;
-        if(localServersNode!=null) {
-            AlertLevel serversNodeLevel = localServersNode.getAlertLevel();
-            if(serversNodeLevel.compareTo(level)>0) level = serversNodeLevel;
+        OtherDevicesNode localOtherDevicesNode = this.otherDevicesNode;
+        if(localOtherDevicesNode!=null) {
+            AlertLevel otherDevicesNodeLevel = localOtherDevicesNode.getAlertLevel();
+            if(otherDevicesNodeLevel.compareTo(level)>0) level = otherDevicesNodeLevel;
+        }
+
+        PhysicalServersNode localPhysicalServersNode = this.physicalServersNode;
+        if(localPhysicalServersNode!=null) {
+            AlertLevel physicalServersNodeLevel = localPhysicalServersNode.getAlertLevel();
+            if(physicalServersNodeLevel.compareTo(level)>0) level = physicalServersNodeLevel;
+        }
+
+        VirtualServersNode localVirtualServersNode = this.virtualServersNode;
+        if(localVirtualServersNode!=null) {
+            AlertLevel virtualServersNodeLevel = localVirtualServersNode.getAlertLevel();
+            if(virtualServersNodeLevel.compareTo(level)>0) level = virtualServersNodeLevel;
         }
 
         SignupsNode localSignupsNode = this.signupsNode;
@@ -250,10 +270,22 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     synchronized private void start() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-        if(serversNode==null) {
-            serversNode = new ServersNode(this, port, csf, ssf);
-            serversNode.start();
-            serversNode.rootNode.nodeAdded();
+        if(otherDevicesNode==null) {
+            otherDevicesNode = new OtherDevicesNode(this, port, csf, ssf);
+            otherDevicesNode.start();
+            otherDevicesNode.rootNode.nodeAdded();
+        }
+
+        if(physicalServersNode==null) {
+            physicalServersNode = new PhysicalServersNode(this, port, csf, ssf);
+            physicalServersNode.start();
+            physicalServersNode.rootNode.nodeAdded();
+        }
+
+        if(virtualServersNode==null) {
+            virtualServersNode = new VirtualServersNode(this, port, csf, ssf);
+            virtualServersNode.start();
+            virtualServersNode.rootNode.nodeAdded();
         }
 
         if(signupsNode==null) {
