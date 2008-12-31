@@ -44,6 +44,7 @@ public class ServerNode extends NodeImpl {
     volatile private FilesystemsNode _filesystemsNode;
     volatile private LoadAverageNode _loadAverageNode;
     volatile private MemoryNode _memoryNode;
+    volatile private TimeNode _timeNode;
 
     ServerNode(ServersNode serversNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
@@ -73,7 +74,7 @@ public class ServerNode extends NodeImpl {
      */
     @Override
     public List<? extends Node> getChildren() {
-        List<NodeImpl> children = new ArrayList<NodeImpl>(7);
+        List<NodeImpl> children = new ArrayList<NodeImpl>(8);
         BackupsNode backupsNode = this._backupsNode;
         if(backupsNode!=null) children.add(backupsNode);
         NetDevicesNode netDevicesNode = this._netDevicesNode;
@@ -88,6 +89,8 @@ public class ServerNode extends NodeImpl {
         if(loadAverageNode!=null) children.add(loadAverageNode);
         MemoryNode memoryNode = this._memoryNode;
         if(memoryNode!=null) children.add(memoryNode);
+        TimeNode timeNode = this._timeNode;
+        if(timeNode!=null) children.add(timeNode);
         return Collections.unmodifiableList(children);
     }
 
@@ -133,6 +136,11 @@ public class ServerNode extends NodeImpl {
             AlertLevel memoryNodeLevel = memoryNode.getAlertLevel();
             if(memoryNodeLevel.compareTo(level)>0) level = memoryNodeLevel;
         }
+        TimeNode timeNode = this._timeNode;
+        if(timeNode!=null) {
+            AlertLevel timeNodeLevel = timeNode.getAlertLevel();
+            if(timeNodeLevel.compareTo(level)>0) level = timeNodeLevel;
+        }
         return level;
     }
 
@@ -149,6 +157,9 @@ public class ServerNode extends NodeImpl {
                 verifyHardDrives();
                 verifyRaid();
                 verifyFilesystems();
+                verifyLoadAverage();
+                verifyMemory();
+                verifyTime();
             } catch(IOException err) {
                 throw new WrappedException(err);
             }
@@ -171,6 +182,9 @@ public class ServerNode extends NodeImpl {
         verifyHardDrives();
         verifyRaid();
         verifyFilesystems();
+        verifyLoadAverage();
+        verifyMemory();
+        verifyTime();
     }
 
     /**
@@ -180,6 +194,12 @@ public class ServerNode extends NodeImpl {
         serversNode.rootNode.conn.aoServers.removeTableListener(tableListener);
         serversNode.rootNode.conn.netDevices.removeTableListener(tableListener);
         serversNode.rootNode.conn.servers.removeTableListener(tableListener);
+        TimeNode timeNode = this._timeNode;
+        if(timeNode!=null) {
+            timeNode.stop();
+            this._timeNode = null;
+            serversNode.rootNode.nodeRemoved();
+        }
         MemoryNode memoryNode = this._memoryNode;
         if(memoryNode!=null) {
             memoryNode.stop();
@@ -303,20 +323,6 @@ public class ServerNode extends NodeImpl {
 
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
-            // No memory monitoring
-            MemoryNode memoryNode = this._memoryNode;
-            if(memoryNode!=null) {
-                memoryNode.stop();
-                this._memoryNode = null;
-                serversNode.rootNode.nodeRemoved();
-            }
-            // No load monitoring
-            LoadAverageNode loadAverageNode = this._loadAverageNode;
-            if(loadAverageNode!=null) {
-                loadAverageNode.stop();
-                this._loadAverageNode = null;
-                serversNode.rootNode.nodeRemoved();
-            }
             // No filesystem monitoring
             FilesystemsNode filesystemsNode = this._filesystemsNode;
             if(filesystemsNode!=null) {
@@ -331,16 +337,74 @@ public class ServerNode extends NodeImpl {
                 _filesystemsNode.start();
                 serversNode.rootNode.nodeAdded();
             }
+        }
+    }
+
+    synchronized private void verifyLoadAverage() throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+        AOServer aoServer = _server.getAOServer();
+        if(aoServer==null) {
+            // No load monitoring
+            LoadAverageNode loadAverageNode = this._loadAverageNode;
+            if(loadAverageNode!=null) {
+                loadAverageNode.stop();
+                this._loadAverageNode = null;
+                serversNode.rootNode.nodeRemoved();
+            }
+        } else {
             // Has load monitoring
             if(_loadAverageNode==null) {
                 _loadAverageNode = new LoadAverageNode(this, aoServer, port, csf, ssf);
                 _loadAverageNode.start();
                 serversNode.rootNode.nodeAdded();
             }
+        }
+    }
+
+    synchronized private void verifyMemory() throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+        AOServer aoServer = _server.getAOServer();
+        if(aoServer==null) {
+            // No memory monitoring
+            MemoryNode memoryNode = this._memoryNode;
+            if(memoryNode!=null) {
+                memoryNode.stop();
+                this._memoryNode = null;
+                serversNode.rootNode.nodeRemoved();
+            }
+        } else {
             // Has memory monitoring
             if(_memoryNode==null) {
                 _memoryNode = new MemoryNode(this, aoServer, port, csf, ssf);
                 _memoryNode.start();
+                serversNode.rootNode.nodeAdded();
+            }
+        }
+    }
+
+    synchronized private void verifyTime() throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+        AOServer aoServer = _server.getAOServer();
+        if(
+            aoServer == null
+            // TODO: Remove this os exclusion once new HttpdManager installed to Mandriva 2006.0
+            && aoServer.getServer().getOperatingSystemVersion().getPkey() != OperatingSystemVersion.MANDRIVA_2006_0_I586
+        ) {
+            // No time monitoring
+            TimeNode timeNode = this._timeNode;
+            if(timeNode!=null) {
+                timeNode.stop();
+                this._timeNode = null;
+                serversNode.rootNode.nodeRemoved();
+            }
+        } else {
+            // Has time monitoring
+            if(_timeNode==null) {
+                _timeNode = new TimeNode(this, aoServer, port, csf, ssf);
+                _timeNode.start();
                 serversNode.rootNode.nodeAdded();
             }
         }

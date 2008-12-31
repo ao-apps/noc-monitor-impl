@@ -185,10 +185,10 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     final Locale locale;
     final AOServConnector conn;
 
-    private OtherDevicesNode otherDevicesNode;
-    private PhysicalServersNode physicalServersNode;
-    private VirtualServersNode virtualServersNode;
-    private SignupsNode signupsNode;
+    volatile private OtherDevicesNode otherDevicesNode;
+    volatile private PhysicalServersNode physicalServersNode;
+    volatile private VirtualServersNode virtualServersNode;
+    volatile private SignupsNode signupsNode;
 
     private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
