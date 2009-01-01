@@ -138,7 +138,7 @@ class BackgroundWriter {
                                             );
                                         }
                                     }
-                                } catch(IOException err) {
+                                } catch(Exception err) {
                                     pad.errorHandler.reportError(err, null);
                                 }
                             }

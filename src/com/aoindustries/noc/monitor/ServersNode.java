@@ -128,23 +128,30 @@ abstract public class ServersNode extends NodeImpl {
             }
             // Add new ones
             for(int c=0;c<servers.size();c++) {
-                Server server = servers.get(c);
-                //System.err.println("DEBUG: ServersNode: server="+server);
-                if(c>=serverNodes.size()) {
-                    // Just add to the end
-                    ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
-                    serverNodes.add(serverNode);
-                    serverNode.start();
-                    rootNode.nodeAdded();
-                } else {
-                    if(!server.equals(serverNodes.get(c).getServer())) {
-                        // Insert into proper index
+                //try {
+                    //System.err.println("DEBUG: ServersNode: c="+c);
+                    //System.err.println("DEBUG: ServersNode: servers.size()="+servers.size());
+                    Server server = servers.get(c);
+                    //System.err.println("DEBUG: ServersNode: server="+server);
+                    if(c>=serverNodes.size()) {
+                        // Just add to the end
                         ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
-                        serverNodes.add(c, serverNode);
+                        serverNodes.add(serverNode);
                         serverNode.start();
                         rootNode.nodeAdded();
+                    } else {
+                        if(!server.equals(serverNodes.get(c).getServer())) {
+                            // Insert into proper index
+                            ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
+                            serverNodes.add(c, serverNode);
+                            serverNode.start();
+                            rootNode.nodeAdded();
+                        }
                     }
-                }
+                //} catch(RuntimeException err) {
+                //    ErrorPrinter.printStackTraces(err);
+                //    throw err;
+                //}
             }
         }
     }

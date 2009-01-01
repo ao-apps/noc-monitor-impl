@@ -165,9 +165,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                             if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
                             try {
                                 newRootNode.start();
-                            } catch(IOException err) {
-                                newRootNode.conn.getErrorHandler().reportError(err, null);
-                            } catch(SQLException err) {
+                            } catch(Exception err) {
                                 newRootNode.conn.getErrorHandler().reportError(err, null);
                             }
                         }

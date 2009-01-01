@@ -30,9 +30,9 @@ import java.util.Locale;
  *                /virtual
  *
  * TODO:
- * watchdog
- * handle failed RMI
- * 3ware, verify last battery test interval
+ * watchdog to detect failure between RMI client and server
+ *     handle failed RMI
+ * 3ware, verify last battery test interval, test at least once a year
  * Monitor all syslog stuff for errors, split to separate logs for error, warning, info.  errors and higher to one file to monitor.
  *     watch for SMART status (May 20 04:42:31 xen907-5 smartd[3454]: Device: /dev/hde, 1 Offline uncorrectable sectors) in /var/log/messages
  *         smartd -q onecheck?
@@ -41,13 +41,14 @@ import java.util.Locale;
  *         Dec  8 19:25:10 www3 sendmail[1795]: mB88rS9R029955: to=\\jl, delay=16:31:40, xdelay=00:00:04, mailer=local, pri=6962581, dsn=4.0.0, stat=Deferred: local mailer (/usr/bin/procmail) exited with EX_TEMPFAIL
  * mrtg auto-check and graphs
  * /proc/version against template
- * Dell RAID
- *      http://support.dell.com/support/downloads/driverslist.aspx?os=RHEL5&osl=EN&catid=-1&impid=-1&servicetag=&SystemID=PWE_PNT_P3C_2850&hidos=WNET&hidlang=en
- *      OpenManage Server Administrator linux
  * Other hardware (temps, fans, ...)
  *    reboot detections using uptime? (or last command)
  * DiskIO
  * port monitoring
+ *     also enable port monitoring on all ports (including 127.0.0.1 via aoserv-daemon)
+ *     update all code and procesures that adds net_binds to start them all as monitored
+ *     maximum alert level based on account level?
+ *     monitor the 0.0.0.0 ports on all IP addresses (including 127.0.0.1), minimize use of wildcard to reduce monitoring rate - or monitor on separate node for 0.0.0.0?
  * AOServ data integrity?
  * AOServ Daemon errors and warnings
  * DNS, forward and reverse (non-AO name servers)
@@ -68,16 +69,14 @@ import java.util.Locale;
  *     credit card scanner from aoserv-daemon
  * distro scans
  * software updates (could we auto-search for them)?
- * snapshot-backups space
- * signups
- * mail folders close to 2 GB - this may not matter with cyrus
+ * snapshot-backups space and timing (adpserver)
  * jilter state
- * RBLs
+ * RBLs that may be listing us
  * netstat
  * aoserv daemon/master/website errors (and anything else that used to get emailed to aoserv@aoindustries.com address)
  * sendmail queues
  *     watch for files older than 7 days to help keep things clean - eventually delete outright?
- * nmap - other tools that Mark Akins uses
+ * nmap - other tools that Mark Akins uses - nessus
  * domain registration expiration :)
  * postgresql, mysql, apache (make sure no empty apache logs after rotate !)
  *
@@ -94,8 +93,8 @@ import java.util.Locale;
  *   snapshot space
  *   vgck
  * 
- * Monitor syslog for ECC errors (at least for i5000 module).  See wiki page for xen917-5.fc.aoindustries.com
- * 
+ * Monitor syslog for ECC errors (at least for i5000 module with most recent 2.6.18-92.1.10+ kernels).  See wiki page for xen917-5.fc.aoindustries.com
+ *
  * Monitor all SSL certificates, ours and customers, could have on a single SSL
  * Certificates node per server, perhaps?  Read from filesystem or connect to port?
  *     HTTPS
@@ -104,8 +103,9 @@ import java.util.Locale;
  *     MySQL
  *     SMTPS/SMTP+TLS
  *     PostgreSQL
- * Monitor accessibility to all NTP_SERVERS (in route scripts) to pool.ntp.org
- *     At least look for secondary effect of clock skew
+ *     Make part of port monitoring
+ *
+ * 3ware/BIOS firmware version monitoring?
  *
  * @author  AO Industries, Inc.
  */

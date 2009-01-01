@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -28,9 +27,6 @@ import java.util.Map;
  *
  *      skew = st - (rt + round(l/2000000))
  *
- * When determining the effective alert level, the skew is averaged over the
- * last <code>NUM_SAMPLES_IN_AVERAGE</code> samples.
- *
  * Alert levels are:
  *          &gt;=1 minute  Critical
  *          &gt;=4 seconds High
@@ -41,8 +37,6 @@ import java.util.Map;
  * @author  AO Industries, Inc.
  */
 class TimeNodeWorker extends TableMultiResultNodeWorker {
-
-    private static final int NUM_SAMPLES_IN_AVERAGE = 10;
 
     /**
      * One unique worker is made per persistence directory (and should match aoServer exactly)
@@ -104,20 +98,8 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
     protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
         final long currentSkew = ((TimeSpan)rowData.get(0)).getTimeSpan();
 
-        // Average the last samples for the alert level calculation
-        long averageSum = currentSkew;
-        int sampleCount = 1;
-        Iterator<TableMultiResult> prevIter = previousResults.iterator();
-        while(sampleCount<NUM_SAMPLES_IN_AVERAGE && prevIter.hasNext()) {
-            TableMultiResult previous = prevIter.next();
-            if(previous.getError()==null) {
-                averageSum += ((TimeSpan)previous.getRowData().get(0)).getTimeSpan();
-                sampleCount++;
-            }
-        }
-        long averageSkew = averageSum / sampleCount;
         return new AlertLevelAndMessage(
-            getAlertLevel(averageSkew),
+            getAlertLevel(currentSkew),
             ApplicationResourcesAccessor.getMessage(
                 locale,
                 "TimeNodeWorker.alertMessage",

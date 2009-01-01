@@ -391,7 +391,7 @@ public class ServerNode extends NodeImpl {
         if(
             aoServer == null
             // TODO: Remove this os exclusion once new HttpdManager installed to Mandriva 2006.0
-            && aoServer.getServer().getOperatingSystemVersion().getPkey() != OperatingSystemVersion.MANDRIVA_2006_0_I586
+            || aoServer.getServer().getOperatingSystemVersion().getPkey() == OperatingSystemVersion.MANDRIVA_2006_0_I586
         ) {
             // No time monitoring
             TimeNode timeNode = this._timeNode;
