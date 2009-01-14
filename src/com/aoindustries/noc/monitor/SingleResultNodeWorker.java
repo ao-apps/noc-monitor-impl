@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -36,6 +36,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     volatile private SingleResult lastResult;
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
+    volatile private String alertMessage = null;
 
     final private List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<SingleResultNodeImpl>();
 
@@ -53,6 +54,10 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     final AlertLevel getAlertLevel() {
         return alertLevel;
+    }
+    
+    final String getAlertMessage() {
+        return alertMessage;
     }
 
     private void start() {
@@ -130,9 +135,9 @@ abstract class SingleResultNodeWorker implements Runnable {
             }
 
             AlertLevel oldAlertLevel = alertLevel;
-            if(newAlertLevel!=alertLevel) {
-                alertLevel = newAlertLevel;
-            }
+            alertLevel = newAlertLevel;
+            alertMessage = alertLevelAndMessage.getAlertMessage();
+
             singleResultUpdated(result);
             if(oldAlertLevel!=newAlertLevel) {
                 synchronized(singleResultNodeImpls) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,7 +19,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node per server.
+ * The node per IPAddress.
  *
  * @author  AO Industries, Inc.
  */
@@ -30,7 +30,8 @@ public class IPAddressNode extends NodeImpl {
     private final String label;
     private final boolean isPingable;
 
-    volatile private PingNode _pingNode;
+    volatile private PingNode pingNode;
+    //volatile private NetBindsNode netBindsNode;
 
     IPAddressNode(IPAddressesNode ipAddressesNode, IPAddress ipAddress, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
@@ -68,8 +69,13 @@ public class IPAddressNode extends NodeImpl {
      */
     public List<? extends Node> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>();
-        PingNode localPingNode = this._pingNode;
+
+        PingNode localPingNode = this.pingNode;
         if(localPingNode!=null) children.add(localPingNode);
+
+        //NetBindsNode localNetBindsNode = this.netBindsNode;
+        //if(localNetBindsNode!=null) children.add(localNetBindsNode);
+
         return Collections.unmodifiableList(children);
     }
 
@@ -79,12 +85,27 @@ public class IPAddressNode extends NodeImpl {
     public AlertLevel getAlertLevel() {
         AlertLevel level = AlertLevel.NONE;
 
-        PingNode localPingNode = this._pingNode;
+        PingNode localPingNode = this.pingNode;
         if(localPingNode!=null) {
             AlertLevel pingNodeLevel = localPingNode.getAlertLevel();
             if(pingNodeLevel.compareTo(level)>0) level = pingNodeLevel;
         }
+
+        /*NetBindsNode localNetBindsNode = this.netBindsNode;
+        if(localNetBindsNode!=null) {
+            AlertLevel netBindsNodeLevel = localNetBindsNode.getAlertLevel();
+            if(netBindsNodeLevel.compareTo(level)>0) level = netBindsNodeLevel;
+        }*/
+
         return level;
+    }
+
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
     }
 
     public String getLabel() {
@@ -92,22 +113,39 @@ public class IPAddressNode extends NodeImpl {
     }
 
     synchronized void start() throws RemoteException, IOException {
+        RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
         if(isPingable) {
-            _pingNode = new PingNode(this, port, csf, ssf);
-            _pingNode.start();
-            ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.nodeAdded();
+            if(pingNode==null) {
+                pingNode = new PingNode(this, port, csf, ssf);
+                pingNode.start();
+                rootNode.nodeAdded();
+            }
         }
+        /*if(netBindsNode==null) {
+            netBindsNode = new NetBindsNode(this, port, csf, ssf);
+            netBindsNode.start();
+            ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.nodeAdded();
+        }*/
     }
 
     synchronized void stop() {
+        RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+
+        /*if(netBindsNode!=null) {
+            netBindsNode.stop();
+            netBindsNode = null;
+            rootNode.nodeRemoved();
+        }*/
+
         if(isPingable) {
-            PingNode pingNode = this._pingNode;
-            pingNode.stop();
-            this._pingNode = null;
-            ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.nodeRemoved();
+            if(pingNode!=null) {
+                pingNode.stop();
+                pingNode = null;
+                rootNode.nodeRemoved();
+            }
         }
     }
-    
+
     File getPersistenceDirectory() throws IOException {
         File dir = new File(ipAddressesNode.getPersistenceDirectory(), ipAddress.getIPAddress());
         if(!dir.exists()) {

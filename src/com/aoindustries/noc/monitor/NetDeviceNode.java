@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -103,53 +103,66 @@ public class NetDeviceNode extends NodeImpl {
         return level;
     }
 
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
+    }
+
     @Override
     public String getLabel() {
         return _label;
     }
 
     synchronized void start() throws IOException {
+        final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
         // bit rate and network bonding monitoring only supported for AOServer
         if(_networkDevicesNode.getServer().getAOServer()!=null) {
             // bit rate for non-loopback devices
             if(!_netDevice.getNetDeviceID().isLoopback()) {
-                _netDeviceBitRateNode = new NetDeviceBitRateNode(this, port, csf, ssf);
-                _netDeviceBitRateNode.start();
-                _networkDevicesNode.serverNode.serversNode.rootNode.nodeAdded();
+                if(_netDeviceBitRateNode==null) {
+                    _netDeviceBitRateNode = new NetDeviceBitRateNode(this, port, csf, ssf);
+                    _netDeviceBitRateNode.start();
+                    rootNode.nodeAdded();
+                }
             }
             // bonding
             if(_label.equals(NetDeviceID.BOND0)) {
-                _netDeviceBondingNode = new NetDeviceBondingNode(this, port, csf, ssf);
-                _netDeviceBondingNode.start();
-                _networkDevicesNode.serverNode.serversNode.rootNode.nodeAdded();
+                if(_netDeviceBondingNode==null) {
+                    _netDeviceBondingNode = new NetDeviceBondingNode(this, port, csf, ssf);
+                    _netDeviceBondingNode.start();
+                    rootNode.nodeAdded();
+                }
             }
         }
 
-        _ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
-        _ipAddressesNode.start();
-        _networkDevicesNode.serverNode.serversNode.rootNode.nodeAdded();
+        if(_ipAddressesNode==null) {
+            _ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
+            _ipAddressesNode.start();
+            rootNode.nodeAdded();
+        }
     }
 
     synchronized void stop() {
-        IPAddressesNode ipAddressesNode = this._ipAddressesNode;
-        if(ipAddressesNode!=null) {
-            ipAddressesNode.stop();
-            this._ipAddressesNode = null;
-            _networkDevicesNode.serverNode.serversNode.rootNode.nodeRemoved();
+        final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
+        if(_ipAddressesNode!=null) {
+            _ipAddressesNode.stop();
+            _ipAddressesNode = null;
+            rootNode.nodeRemoved();
         }
 
-        NetDeviceBondingNode netDeviceBondingNode = this._netDeviceBondingNode;
-        if(netDeviceBondingNode!=null) {
-            netDeviceBondingNode.stop();
-            this._netDeviceBondingNode = null;
-            _networkDevicesNode.serverNode.serversNode.rootNode.nodeRemoved();
+        if(_netDeviceBondingNode!=null) {
+            _netDeviceBondingNode.stop();
+            _netDeviceBondingNode = null;
+            rootNode.nodeRemoved();
         }
 
-        NetDeviceBitRateNode netDeviceBitRateNode = this._netDeviceBitRateNode;
-        if(netDeviceBitRateNode!=null) {
-            netDeviceBitRateNode.stop();
-            this._netDeviceBitRateNode = null;
-            _networkDevicesNode.serverNode.serversNode.rootNode.nodeRemoved();
+        if(_netDeviceBitRateNode!=null) {
+            _netDeviceBitRateNode.stop();
+            _netDeviceBitRateNode = null;
+            rootNode.nodeRemoved();
         }
     }
 

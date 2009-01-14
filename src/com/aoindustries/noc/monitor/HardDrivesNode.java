@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -75,15 +75,25 @@ public class HardDrivesNode extends NodeImpl {
         return level;
     }
 
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
+    }
+
     @Override
     public String getLabel() {
         return ApplicationResourcesAccessor.getMessage(serverNode.serversNode.rootNode.locale, "HardDrivesNode.label");
     }
     
     synchronized void start() throws IOException {
-        _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
-        _hardDriveTemperatureNode.start();
-        serverNode.serversNode.rootNode.nodeAdded();
+        if(_hardDriveTemperatureNode==null) {
+            _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
+            _hardDriveTemperatureNode.start();
+            serverNode.serversNode.rootNode.nodeAdded();
+        }
     }
 
     synchronized void stop() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -72,6 +72,14 @@ abstract public class ServersNode extends NodeImpl {
             }
             return level;
         }
+    }
+
+    /**
+     * No alert messages.
+     */
+    @Override
+    final public String getAlertMessage() {
+        return null;
     }
 
     private TableListener tableListener = new TableListener() {

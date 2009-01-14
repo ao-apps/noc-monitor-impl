@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -90,6 +90,14 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             }
             return level;
         }
+    }
+
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
     }
 
     @Override

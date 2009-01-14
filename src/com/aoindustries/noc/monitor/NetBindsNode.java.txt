@@ -1,0 +1,257 @@
+/*
+ * Copyright 2008-2009 by AO Industries, Inc.,
+ * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
+ * All rights reserved.
+ */
+package com.aoindustries.noc.monitor;
+
+import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.IPAddress;
+import com.aoindustries.aoserv.client.NetBind;
+import com.aoindustries.aoserv.client.NetDevice;
+import com.aoindustries.aoserv.client.OperatingSystemVersion;
+import com.aoindustries.noc.common.AlertLevel;
+import com.aoindustries.noc.common.Node;
+import com.aoindustries.table.Table;
+import com.aoindustries.table.TableListener;
+import java.io.File;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.SwingUtilities;
+
+/**
+ * The node per NetBind.
+ *
+ * @author  AO Industries, Inc.
+ */
+public class NetBindsNode extends NodeImpl {
+
+    final IPAddressNode ipAddressNode;
+    private final List<NetBindNode> netBindNodes = new ArrayList<NetBindNode>();
+
+    NetBindsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
+
+        this.ipAddressNode = ipAddressNode;
+    }
+
+    public Node getParent() {
+        return ipAddressNode;
+    }
+    
+    public boolean getAllowsChildren() {
+        return true;
+    }
+
+    /**
+     * For thread safety and encapsulation, returns an unmodifiable copy of the array.
+     */
+    public List<? extends Node> getChildren() {
+        synchronized(netBindNodes) {
+            return Collections.unmodifiableList(new ArrayList<NetBindNode>(netBindNodes));
+        }
+    }
+
+    /**
+     * The alert level is equal to the highest alert level of its children.
+     */
+    public AlertLevel getAlertLevel() {
+        AlertLevel level = AlertLevel.NONE;
+        synchronized(netBindNodes) {
+            for(NodeImpl netBindNode : netBindNodes) {
+                AlertLevel netBindNodeLevel = netBindNode.getAlertLevel();
+                if(netBindNodeLevel.compareTo(level)>0) level = netBindNodeLevel;
+            }
+        }
+        return level;
+    }
+
+    public String getLabel() {
+        return ApplicationResourcesAccessor.getMessage(ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale, "NetBindsNode.label");
+    }
+
+    private TableListener tableListener = new TableListener() {
+        public void tableUpdated(Table table) {
+            try {
+                verifyNetBinds();
+            } catch(IOException err) {
+                throw new WrappedException(err);
+            }
+        }
+    };
+
+    void start() throws IOException {
+        AOServConnector conn = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn;
+        synchronized(netBindNodes) {
+            conn.ipAddresses.addTableListener(tableListener, 100);
+            conn.netBinds.addTableListener(tableListener, 100);
+            conn.netDevices.addTableListener(tableListener, 100);
+            verifyNetBinds();
+        }
+    }
+
+    void stop() {
+        RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+        AOServConnector conn = rootNode.conn;
+        synchronized(netBindNodes) {
+            conn.ipAddresses.removeTableListener(tableListener);
+            conn.netBinds.removeTableListener(tableListener);
+            conn.netDevices.removeTableListener(tableListener);
+            for(NetBindNode netBindNode : netBindNodes) {
+                netBindNode.stop();
+                rootNode.nodeRemoved();
+            }
+            netBindNodes.clear();
+        }
+    }
+
+    static class NetMonitorSetting implements Comparable<NetMonitorSetting> {
+
+        final String ipAddress;
+        final int port;
+        final String netProtocol;
+        final String appProtocol;
+
+        public NetMonitorSetting(String ipAddress, int port, String netProtocol, String appProtocol) {
+            this.ipAddress = ipAddress;
+            this.port = port;
+            this.netProtocol = netProtocol;
+            this.appProtocol = appProtocol;
+        }
+
+        public int compareTo(NetMonitorSetting o) {
+            // IP first
+            int diff = IPAddress.getIntForIPAddress(ipAddress) - IPAddress.getIntForIPAddress(o.ipAddress);
+            if(diff!=0) return diff;
+            // port first
+            if(port<o.port) return -1;
+            if(port>o.port) return 1;
+            // net protocol next
+            diff = netProtocol.compareTo(o.netProtocol);
+            if(diff!=0) return diff;
+            // app protocol last
+            return appProtocol.compareTo(o.appProtocol);
+        }
+    }
+
+    private void verifyNetBinds() throws RemoteException, IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+        final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+
+        // The list of net binds is:
+        //     for any loopback IP (127.0.0.1), just the binds directly on this IP
+        //     for any other IP, the binds directly on this IP plus the wildcard
+        IPAddress ipAddress = ipAddressNode.getIPAddress();
+        NetDevice netDevice = ipAddress.getNetDevice();
+        List<NetBind> directNetBinds;
+        List<NetBind> wildcardNetBinds;
+        if(netDevice.getNetDeviceID().isLoopback()) {
+            // Remove this restriction once Mandriva all upgraded
+            OperatingSystemVersion osv = netDevice.getServer().getOperatingSystemVersion();
+            if(osv==null || osv.getPkey()!=OperatingSystemVersion.MANDRIVA_2006_0_I586) directNetBinds = ipAddress.getNetBinds();
+            else directNetBinds = null;
+            // No wildcard-derived monitoring applied to loopback to save on bandwidth/aoserv-daemon queries
+            // because loopback is always available to itself.
+            wildcardNetBinds = null;
+        } else {
+            directNetBinds = ipAddress.getNetBinds();
+            // Find the wildcard IP address, if available
+            IPAddress wildcard = null;
+            for(IPAddress ia : netDevice.getServer().getIPAddresses()) {
+                if(ia.isWildcard()) {
+                    wildcard = ia;
+                    break;
+                }
+            }
+            if(wildcard==null) wildcardNetBinds = null;
+            else wildcardNetBinds = wildcard.getNetBinds();
+        }
+        List<NetMonitorSetting> netMonitorSettings = new ArrayList<NetMonitorSetting>(
+            (directNetBinds==null ? 0 : directNetBinds.size())
+            + (wildcardNetBinds==null ? 0 : wildcardNetBinds.size())
+        );
+        if(directNetBinds!=null) {
+            for(NetBind netBind : directNetBinds) {
+                netMonitorSettings.add(
+                    new NetMonitorSetting(
+                        netBind.getIPAddress().getIPAddress(),
+                        netBind.getPort().getPort(),
+                        netBind.getNetProtocol().getProtocol(),
+                        netBind.getAppProtocol().getProtocol()
+                    )
+                );
+            }
+        }
+        if(wildcardNetBinds!=null) {
+            String ipAddressString = ipAddress.getIPAddress();
+            for(NetBind netBind : wildcardNetBinds) {
+                netMonitorSettings.add(
+                    new NetMonitorSetting(
+                        ipAddressString,
+                        netBind.getPort().getPort(),
+                        netBind.getNetProtocol().getProtocol(),
+                        netBind.getAppProtocol().getProtocol()
+                    )
+                );
+            }
+        }
+
+        throw new RuntimeException("TODO: Finish method");
+        /*
+        synchronized(netBindNodes) {
+            // Remove old ones
+            Iterator<NetBindNode> netBindNodeIter = netBindNodes.iterator();
+            while(netBindNodeIter.hasNext()) {
+                NetBindNode netBindNode = netBindNodeIter.next();
+                NetBind ipAddress = ipAddressNode.getIPAddress();
+                if(!ipAddresses.contains(ipAddress)) {
+                    ipAddressNode.stop();
+                    ipAddressNodeIter.remove();
+                    rootNode.nodeRemoved();
+                }
+            }
+            // Add new ones
+            for(int c=0;c<ipAddresses.size();c++) {
+                IPAddress ipAddress = ipAddresses.get(c);
+                if(c>=ipAddressNodes.size()) {
+                    // Just add to the end
+                    IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
+                    ipAddressNodes.add(ipAddressNode);
+                    ipAddressNode.start();
+                    rootNode.nodeAdded();
+                } else {
+                    if(!ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
+                        // Insert into proper index
+                        IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
+                        ipAddressNodes.add(c, ipAddressNode);
+                        ipAddressNode.start();
+                        rootNode.nodeAdded();
+                    }
+                }
+            }
+        }*/
+    }
+
+    File getPersistenceDirectory() throws IOException {
+        File dir = new File(ipAddressNode.getPersistenceDirectory(), "net_binds");
+        if(!dir.exists()) {
+            if(!dir.mkdir()) {
+                throw new IOException(
+                    ApplicationResourcesAccessor.getMessage(
+                        ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
+                        "error.mkdirFailed",
+                        dir.getCanonicalPath()
+                    )
+                );
+            }
+        }
+        return dir;
+    }
+}

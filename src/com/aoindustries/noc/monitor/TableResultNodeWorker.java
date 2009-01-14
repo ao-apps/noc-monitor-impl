@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -35,6 +35,7 @@ abstract class TableResultNodeWorker implements Runnable {
 
     volatile private TableResult lastResult;
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
+    volatile private String alertMessage = null;
 
     final private List<TableResultNodeImpl> tableResultNodeImpls = new ArrayList<TableResultNodeImpl>();
 
@@ -52,6 +53,10 @@ abstract class TableResultNodeWorker implements Runnable {
 
     final AlertLevel getAlertLevel() {
         return alertLevel;
+    }
+
+    final String getAlertMessage() {
+        return alertMessage;
     }
 
     private static int lastStartupDelay;
@@ -164,9 +169,8 @@ abstract class TableResultNodeWorker implements Runnable {
             }
 
             AlertLevel oldAlertLevel = alertLevel;
-            if(newAlertLevel!=alertLevel) {
-                alertLevel = newAlertLevel;
-            }
+            alertLevel = newAlertLevel;
+            alertMessage = alertLevelAndMessage.getAlertMessage();
             tableResultUpdated(result);
             if(oldAlertLevel!=newAlertLevel) {
                 synchronized(tableResultNodeImpls) {

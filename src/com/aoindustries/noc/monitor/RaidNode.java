@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -92,6 +92,14 @@ public class RaidNode extends NodeImpl {
         return level;
     }
 
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
+    }
+
     @Override
     public String getLabel() {
         return ApplicationResourcesAccessor.getMessage(serverNode.serversNode.rootNode.locale, "RaidNode.label");
@@ -104,22 +112,28 @@ public class RaidNode extends NodeImpl {
             osv==OperatingSystemVersion.CENTOS_5DOM0_I686
             || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
         ) {
-            _threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
-            _threeWareRaidNode.start();
-            serverNode.serversNode.rootNode.nodeAdded();
+            if(_threeWareRaidNode==null) {
+                _threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
+                _threeWareRaidNode.start();
+                serverNode.serversNode.rootNode.nodeAdded();
+            }
         }
         // Any machine may have MD RAID (at least until all services run in Xen outers)
-        _mdRaidNode = new MdRaidNode(this, port, csf, ssf);
-        _mdRaidNode.start();
-        serverNode.serversNode.rootNode.nodeAdded();
+        if(_mdRaidNode==null) {
+            _mdRaidNode = new MdRaidNode(this, port, csf, ssf);
+            _mdRaidNode.start();
+            serverNode.serversNode.rootNode.nodeAdded();
+        }
         // We only run DRBD in xen outers
         if(
             osv==OperatingSystemVersion.CENTOS_5DOM0_I686
             || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
         ) {
-            _drbdNode = new DrbdNode(this, port, csf, ssf);
-            _drbdNode.start();
-            serverNode.serversNode.rootNode.nodeAdded();
+            if(_drbdNode==null) {
+                _drbdNode = new DrbdNode(this, port, csf, ssf);
+                _drbdNode.start();
+                serverNode.serversNode.rootNode.nodeAdded();
+            }
         }
     }
 

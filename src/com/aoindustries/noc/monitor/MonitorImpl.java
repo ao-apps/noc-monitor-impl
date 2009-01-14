@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -30,6 +30,7 @@ import java.util.Locale;
  *                /virtual
  *
  * TODO:
+ * watch route scripts on gw1/gw2 pairs making sure consistent with each other
  * watchdog to detect failure between RMI client and server
  *     handle failed RMI
  * 3ware, verify last battery test interval, test at least once a year
@@ -84,6 +85,8 @@ import java.util.Locale;
  *
  * TODO: Log history and persist over time?  Simple files to disk?  Locking to prevent multiple JVM's corrupting?
  *       server_reports-style logging?
+ *
+ * Need to monitor log rotation success states (big log files built-up on keepandshare and awstats broken as a result)
  *
  * CPU
  *      configurable limits per alert level

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -39,6 +39,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     final private LinkedList<TableMultiResult> results = new LinkedList<TableMultiResult>();
 
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
+    volatile private String alertMessage = null;
 
     final private List<TableMultiResultNodeImpl> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl>();
 
@@ -65,6 +66,10 @@ abstract class TableMultiResultNodeWorker implements Runnable {
 
     final AlertLevel getAlertLevel() {
         return alertLevel;
+    }
+    
+    final String getAlertMessage() {
+        return alertMessage;
     }
 
     @SuppressWarnings("unchecked")
@@ -189,9 +194,9 @@ abstract class TableMultiResultNodeWorker implements Runnable {
             }
 
             AlertLevel oldAlertLevel = alertLevel;
-            if(newAlertLevel!=alertLevel) {
-                alertLevel = newAlertLevel;
-            }
+            alertLevel = newAlertLevel;
+            alertMessage = alertLevelAndMessage.getAlertMessage();
+
             if(oldAlertLevel!=newAlertLevel) {
                 synchronized(tableMultiResultNodeImpls) {
                     for(TableMultiResultNodeImpl tableMultiResultNodeImpl : tableMultiResultNodeImpls) {

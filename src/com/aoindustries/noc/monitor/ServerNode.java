@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -144,6 +144,14 @@ public class ServerNode extends NodeImpl {
         return level;
     }
 
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
+    }
+
     @Override
     public String getLabel() {
         return _label;
@@ -194,52 +202,44 @@ public class ServerNode extends NodeImpl {
         serversNode.rootNode.conn.aoServers.removeTableListener(tableListener);
         serversNode.rootNode.conn.netDevices.removeTableListener(tableListener);
         serversNode.rootNode.conn.servers.removeTableListener(tableListener);
-        TimeNode timeNode = this._timeNode;
-        if(timeNode!=null) {
-            timeNode.stop();
-            this._timeNode = null;
+        if(_timeNode!=null) {
+            _timeNode.stop();
+            _timeNode = null;
             serversNode.rootNode.nodeRemoved();
         }
-        MemoryNode memoryNode = this._memoryNode;
-        if(memoryNode!=null) {
-            memoryNode.stop();
-            this._memoryNode = null;
+        if(_memoryNode!=null) {
+            _memoryNode.stop();
+            _memoryNode = null;
             serversNode.rootNode.nodeRemoved();
         }
-        LoadAverageNode loadAverageNode = this._loadAverageNode;
-        if(loadAverageNode!=null) {
-            loadAverageNode.stop();
-            this._loadAverageNode = null;
+        if(_loadAverageNode!=null) {
+            _loadAverageNode.stop();
+            _loadAverageNode = null;
             serversNode.rootNode.nodeRemoved();
         }
-        FilesystemsNode filesystemsNode = this._filesystemsNode;
-        if(filesystemsNode!=null) {
-            filesystemsNode.stop();
-            this._filesystemsNode = null;
+        if(_filesystemsNode!=null) {
+            _filesystemsNode.stop();
+            _filesystemsNode = null;
             serversNode.rootNode.nodeRemoved();
         }
-        RaidNode raidNode = this._raidNode;
-        if(raidNode!=null) {
-            raidNode.stop();
-            this._raidNode = null;
+        if(_raidNode!=null) {
+            _raidNode.stop();
+            _raidNode = null;
             serversNode.rootNode.nodeRemoved();
         }
-        HardDrivesNode hardDrivesNode = this._hardDrivesNode;
-        if(hardDrivesNode!=null) {
-            hardDrivesNode.stop();
-            this._hardDrivesNode = null;
+        if(_hardDrivesNode!=null) {
+            _hardDrivesNode.stop();
+            _hardDrivesNode = null;
             serversNode.rootNode.nodeRemoved();
         }
-        NetDevicesNode netDevicesNode = this._netDevicesNode;
-        if(netDevicesNode!=null) {
-            netDevicesNode.stop();
-            this._netDevicesNode = null;
+        if(_netDevicesNode!=null) {
+            _netDevicesNode.stop();
+            _netDevicesNode = null;
             serversNode.rootNode.nodeRemoved();
         }
-        BackupsNode backupsNode = this._backupsNode;
-        if(backupsNode!=null) {
-            backupsNode.stop();
-            this._backupsNode = null;
+        if(_backupsNode!=null) {
+            _backupsNode.stop();
+            _backupsNode = null;
             serversNode.rootNode.nodeRemoved();
         }
     }
@@ -247,23 +247,11 @@ public class ServerNode extends NodeImpl {
     synchronized private void verifyNetDevices() throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-        //AOServer aoServer = server.getAOServer();
-        /*if(aoServer==null) {
-            // No net devices
-            NetDevicesNode localNetDevicesNode = this.netDevicesNode;
-            if(localNetDevicesNode!=null) {
-                localNetDevicesNode.stop();
-                this.netDevicesNode = null;
-                serversNode.rootNode.nodeRemoved();
-            }
-        } else {*/
-            // Has net devices
-            if(_netDevicesNode==null) {
-                _netDevicesNode = new NetDevicesNode(this, _server, port, csf, ssf);
-                _netDevicesNode.start();
-                serversNode.rootNode.nodeAdded();
-            }
-        //}
+        if(_netDevicesNode==null) {
+            _netDevicesNode = new NetDevicesNode(this, _server, port, csf, ssf);
+            _netDevicesNode.start();
+            serversNode.rootNode.nodeAdded();
+        }
     }
 
     synchronized private void verifyHardDrives() throws IOException {
@@ -287,10 +275,9 @@ public class ServerNode extends NodeImpl {
             }
         } else {
             // No hddtemp monitoring
-            HardDrivesNode hardDrivesNode = this._hardDrivesNode;
-            if(hardDrivesNode!=null) {
-                hardDrivesNode.stop();
-                this._hardDrivesNode = null;
+            if(_hardDrivesNode!=null) {
+                _hardDrivesNode.stop();
+                _hardDrivesNode = null;
                 serversNode.rootNode.nodeRemoved();
             }
         }
@@ -302,10 +289,9 @@ public class ServerNode extends NodeImpl {
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
             // No raid monitoring
-            RaidNode localRaidNode = this._raidNode;
-            if(localRaidNode!=null) {
-                localRaidNode.stop();
-                this._raidNode = null;
+            if(_raidNode!=null) {
+                _raidNode.stop();
+                _raidNode = null;
                 serversNode.rootNode.nodeRemoved();
             }
         } else {
@@ -324,10 +310,9 @@ public class ServerNode extends NodeImpl {
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
             // No filesystem monitoring
-            FilesystemsNode filesystemsNode = this._filesystemsNode;
-            if(filesystemsNode!=null) {
-                filesystemsNode.stop();
-                this._filesystemsNode = null;
+            if(_filesystemsNode!=null) {
+                _filesystemsNode.stop();
+                _filesystemsNode = null;
                 serversNode.rootNode.nodeRemoved();
             }
         } else {
@@ -346,10 +331,9 @@ public class ServerNode extends NodeImpl {
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
             // No load monitoring
-            LoadAverageNode loadAverageNode = this._loadAverageNode;
-            if(loadAverageNode!=null) {
-                loadAverageNode.stop();
-                this._loadAverageNode = null;
+            if(_loadAverageNode!=null) {
+                _loadAverageNode.stop();
+                _loadAverageNode = null;
                 serversNode.rootNode.nodeRemoved();
             }
         } else {
@@ -368,10 +352,9 @@ public class ServerNode extends NodeImpl {
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
             // No memory monitoring
-            MemoryNode memoryNode = this._memoryNode;
-            if(memoryNode!=null) {
-                memoryNode.stop();
-                this._memoryNode = null;
+            if(_memoryNode!=null) {
+                _memoryNode.stop();
+                _memoryNode = null;
                 serversNode.rootNode.nodeRemoved();
             }
         } else {
@@ -394,10 +377,9 @@ public class ServerNode extends NodeImpl {
             || aoServer.getServer().getOperatingSystemVersion().getPkey() == OperatingSystemVersion.MANDRIVA_2006_0_I586
         ) {
             // No time monitoring
-            TimeNode timeNode = this._timeNode;
-            if(timeNode!=null) {
-                timeNode.stop();
-                this._timeNode = null;
+            if(_timeNode!=null) {
+                _timeNode.stop();
+                _timeNode = null;
                 serversNode.rootNode.nodeRemoved();
             }
         } else {

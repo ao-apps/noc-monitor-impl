@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -57,6 +57,11 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
     @Override
     final public AlertLevel getAlertLevel() {
         return worker.getAlertLevel();
+    }
+
+    @Override
+    final public String getAlertMessage() {
+        return worker.getAlertMessage();
     }
 
     final void start() {

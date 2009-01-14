@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -23,7 +23,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node per server.
+ * The node of all IPAddresses per NetDevice.
  *
  * @author  AO Industries, Inc.
  */
@@ -59,14 +59,22 @@ public class IPAddressesNode extends NodeImpl {
      * The alert level is equal to the highest alert level of its children.
      */
     public AlertLevel getAlertLevel() {
+        AlertLevel level = AlertLevel.NONE;
         synchronized(ipAddressNodes) {
-            AlertLevel level = AlertLevel.NONE;
             for(NodeImpl ipAddressNode : ipAddressNodes) {
                 AlertLevel ipAddressNodeLevel = ipAddressNode.getAlertLevel();
                 if(ipAddressNodeLevel.compareTo(level)>0) level = ipAddressNodeLevel;
             }
-            return level;
         }
+        return level;
+    }
+
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
     }
 
     public String getLabel() {
@@ -92,10 +100,11 @@ public class IPAddressesNode extends NodeImpl {
     
     void stop() {
         synchronized(ipAddressNodes) {
-            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.ipAddresses.removeTableListener(tableListener);
+            RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+            rootNode.conn.ipAddresses.removeTableListener(tableListener);
             for(IPAddressNode ipAddressNode : ipAddressNodes) {
                 ipAddressNode.stop();
-                netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.nodeRemoved();
+                rootNode.nodeRemoved();
             }
             ipAddressNodes.clear();
         }
@@ -103,6 +112,8 @@ public class IPAddressesNode extends NodeImpl {
 
     private void verifyIPAddresses() throws RemoteException, IOException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+        final RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
 
         List<IPAddress> ipAddresses = netDeviceNode.getNetDevice().getIPAddresses();
         synchronized(ipAddressNodes) {
@@ -114,7 +125,7 @@ public class IPAddressesNode extends NodeImpl {
                 if(!ipAddresses.contains(ipAddress)) {
                     ipAddressNode.stop();
                     ipAddressNodeIter.remove();
-                    netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.nodeRemoved();
+                    rootNode.nodeRemoved();
                 }
             }
             // Add new ones
@@ -125,14 +136,14 @@ public class IPAddressesNode extends NodeImpl {
                     IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
                     ipAddressNodes.add(ipAddressNode);
                     ipAddressNode.start();
-                    netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.nodeAdded();
+                    rootNode.nodeAdded();
                 } else {
                     if(!ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
                         // Insert into proper index
                         IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
                         ipAddressNodes.add(c, ipAddressNode);
                         ipAddressNode.start();
-                        netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.nodeAdded();
+                        rootNode.nodeAdded();
                     }
                 }
             }

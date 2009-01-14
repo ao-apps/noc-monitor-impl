@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -33,6 +33,8 @@ import javax.swing.SwingUtilities;
 
 /**
  * The top-level node has one child for each of the servers.
+ * 
+ * TODO: There is no stop here?
  *
  * @author  AO Industries, Inc.
  */
@@ -256,6 +258,14 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
         return level;
     }
+    
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
+    }
 
     @Override
     public String getLabel() {
@@ -271,25 +281,25 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
         if(otherDevicesNode==null) {
             otherDevicesNode = new OtherDevicesNode(this, port, csf, ssf);
             otherDevicesNode.start();
-            otherDevicesNode.rootNode.nodeAdded();
+            nodeAdded();
         }
 
         if(physicalServersNode==null) {
             physicalServersNode = new PhysicalServersNode(this, port, csf, ssf);
             physicalServersNode.start();
-            physicalServersNode.rootNode.nodeAdded();
+            nodeAdded();
         }
 
         if(virtualServersNode==null) {
             virtualServersNode = new VirtualServersNode(this, port, csf, ssf);
             virtualServersNode.start();
-            virtualServersNode.rootNode.nodeAdded();
+            nodeAdded();
         }
 
         if(signupsNode==null) {
             signupsNode = new SignupsNode(this, port, csf, ssf);
             signupsNode.start();
-            signupsNode.rootNode.nodeAdded();
+            nodeAdded();
         }
     }
 
