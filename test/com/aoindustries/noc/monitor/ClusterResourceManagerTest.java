@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
  */
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
+import com.aoindustries.aoserv.cluster.analyze.AlertLevel;
 import com.aoindustries.aoserv.cluster.analyze.AnalyzedClusterConfiguration;
 import com.aoindustries.aoserv.cluster.analyze.AnalyzedClusterConfigurationPrinter;
 import com.aoindustries.aoserv.cluster.optimize.ExponentialDeviationHeuristicFunction;
@@ -68,7 +69,7 @@ public class ClusterResourceManagerTest extends TestCase {
         for(ClusterConfiguration clusterConfiguration : clusterConfigurations) analyzedClusterConfigurations.add(new AnalyzedClusterConfiguration(clusterConfiguration));
         PrintWriter out = new PrintWriter(System.out);
         try {
-            AnalyzedClusterConfigurationPrinter.print(analyzedClusterConfigurations, out);
+            AnalyzedClusterConfigurationPrinter.print(analyzedClusterConfigurations, out, AlertLevel.NONE);
         } finally {
             out.flush();
         }
@@ -122,23 +123,19 @@ public class ClusterResourceManagerTest extends TestCase {
             System.out.println(clusterConfiguration);
             for(final HeuristicFunction heuristicFunction : heuristicFunctions) {
                 System.out.println("    "+heuristicFunction.getClass().getName());
-                ClusterOptimizer optimized = new ClusterOptimizer(clusterConfiguration, heuristicFunction, false);
+                ClusterOptimizer optimized = new ClusterOptimizer(clusterConfiguration, heuristicFunction, false, true);
                 ListElement shortestPath = optimized.getOptimizedClusterConfiguration(
                     new OptimizedClusterConfigurationHandler() {
-                        private ListElement shortestPath = null;
                         public boolean handleOptimizedClusterConfiguration(ListElement path, long loopCount) {
-                            if(shortestPath==null || path.getPathLen()<shortestPath.getPathLen()) {
-                                shortestPath = path;
-                                // TODO: Emphasize anything with a critical alert level when showing transitions
-                                System.out.println("        Goal found using "+path.getPathLen()+(path.getPathLen()==1 ? " transition" : " transitions")+" in "+loopCount+(loopCount==1?" iteration" : " iterations"));
-                                printTransitions(shortestPath);
-                            }
+                            // TODO: Emphasize anything with a critical alert level when showing transitions
+                            System.out.println("        Goal found using "+path.getPathLen()+(path.getPathLen()==1 ? " transition" : " transitions")+" in "+loopCount+(loopCount==1?" iteration" : " iterations"));
+                            printTransitions(path);
                             return true;
                         }
                     }
                 );
                 if(shortestPath==null) System.out.println("        Goal not found");
-                else System.out.println("Yeah! Shortest path to optimal configuration found!!!");
+                else if(shortestPath.getPathLen()>0) System.out.println("        Yeah! Shortest path to optimal configuration found!!!");
             }
         }
     }
