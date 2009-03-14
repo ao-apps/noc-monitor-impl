@@ -34,7 +34,7 @@ import junit.framework.TestSuite;
  * Tests ClusterResourceManager.
  * 
  * Helpful SQL queries for tuning system:
- *   select vs.server, se.name, vs.primary_ram, vs.secondary_ram from servers se inner join virtual_servers vs on se.pkey=vs.server order by se.name;
+ *   select vs.server, se.name, vs.primary_ram, vs.secondary_ram from servers se inner join virtual_servers vs on se.pkey=vs.server where vs.secondary_ram isnull or vs.primary_ram!=vs.secondary_ram order by se.name;
  *
  * @author  AO Industries, Inc.
  */
