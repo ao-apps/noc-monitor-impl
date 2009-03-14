@@ -34,14 +34,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
- * Managed cluster resources.
+ * Builds the cluster configuration from the AOServ system.
  *
  * @author  AO Industries, Inc.
  */
-public class ClusterResourceManager {
+public class AOServClusterBuilder {
 
     /** Make no instances */
-    private ClusterResourceManager() {}
+    private AOServClusterBuilder() {}
 
     /**
      * Loads an unmodifiable set of the current cluster states from the AOServ system.
@@ -241,7 +241,7 @@ public class ClusterResourceManager {
                     throw new ParseException(
                         com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                             locale,
-                            "ClusterResourceManager.ParseException.badColumnCount",
+                            "AOServClusterBuilder.ParseException.badColumnCount",
                             line
                         ),
                         lineNum
@@ -253,7 +253,7 @@ public class ClusterResourceManager {
                 if(dashPos==-1) throw new ParseException(
                     com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "ClusterResourceManager.ParseException.noDash",
+                        "AOServClusterBuilder.ParseException.noDash",
                         resource
                     ),
                     lineNum
@@ -264,7 +264,7 @@ public class ClusterResourceManager {
                 if(domUServer==null) throw new ParseException(
                     com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "ClusterResourceManager.ParseException.serverNotFound",
+                        "AOServClusterBuilder.ParseException.serverNotFound",
                         domUHostname
                     ),
                     lineNum
@@ -273,7 +273,7 @@ public class ClusterResourceManager {
                 if(domUVirtualServer==null) throw new ParseException(
                     com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "ClusterResourceManager.ParseException.notVirtualServer",
+                        "AOServClusterBuilder.ParseException.notVirtualServer",
                         domUHostname
                     ),
                     lineNum
@@ -289,7 +289,7 @@ public class ClusterResourceManager {
                 ) throw new ParseException(
                     com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "ClusterResourceManager.ParseException.unexpectedResourceEnding",
+                        "AOServClusterBuilder.ParseException.unexpectedResourceEnding",
                         ending
                     ),
                     lineNum
@@ -300,7 +300,7 @@ public class ClusterResourceManager {
                 if(slashPos==-1) throw new ParseException(
                     com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "ClusterResourceManager.ParseException.noSlashInState",
+                        "AOServClusterBuilder.ParseException.noSlashInState",
                         state
                     ),
                     lineNum
@@ -312,7 +312,7 @@ public class ClusterResourceManager {
                     if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
                         com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                             locale,
-                            "ClusterResourceManager.ParseException.multiPrimary",
+                            "AOServClusterBuilder.ParseException.multiPrimary",
                             domUHostname,
                             previousValue,
                             dom0Hostname
@@ -325,7 +325,7 @@ public class ClusterResourceManager {
                     if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
                         com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                             locale,
-                            "ClusterResourceManager.ParseException.multiSecondary",
+                            "AOServClusterBuilder.ParseException.multiSecondary",
                             domUHostname,
                             previousValue,
                             dom0Hostname
@@ -336,7 +336,7 @@ public class ClusterResourceManager {
                     throw new ParseException(
                         com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                             locale,
-                            "ClusterResourceManager.ParseException.unexpectedState",
+                            "AOServClusterBuilder.ParseException.unexpectedState",
                             state
                         ),
                         lineNum
@@ -353,7 +353,7 @@ public class ClusterResourceManager {
             if(primaryDom0Hostname==null) throw new ParseException(
                 com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                     locale,
-                    "ClusterResourceManager.ParseException.primaryNotFound",
+                    "AOServClusterBuilder.ParseException.primaryNotFound",
                     domUHostname
                 ),
                 0
@@ -362,7 +362,7 @@ public class ClusterResourceManager {
             if(secondaryDom0Hostname==null) throw new ParseException(
                 com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
                     locale,
-                    "ClusterResourceManager.ParseException.secondaryNotFound",
+                    "AOServClusterBuilder.ParseException.secondaryNotFound",
                     domUHostname
                 ),
                 0

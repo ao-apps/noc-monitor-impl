@@ -50,7 +50,7 @@ public class ClusterResourceManagerTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         conn = AOServConnector.getConnector(new StandardErrorHandler());
-        clusterConfigurations = ClusterResourceManager.getClusterConfigurations(Locale.getDefault(), conn);
+        clusterConfigurations = AOServClusterBuilder.getClusterConfigurations(Locale.getDefault(), conn);
     }
 
     @Override
