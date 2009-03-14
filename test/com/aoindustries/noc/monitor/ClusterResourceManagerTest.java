@@ -15,6 +15,7 @@ import com.aoindustries.aoserv.cluster.optimize.HeuristicFunction;
 import com.aoindustries.aoserv.cluster.optimize.LeastInformedHeuristicFunction;
 import com.aoindustries.aoserv.cluster.optimize.LinearHeuristicFunction;
 import com.aoindustries.aoserv.cluster.optimize.ClusterOptimizer;
+import com.aoindustries.aoserv.cluster.optimize.ListElement;
 import com.aoindustries.aoserv.cluster.optimize.OptimizedClusterConfigurationHandler;
 import com.aoindustries.aoserv.cluster.optimize.SimpleHeuristicFunction;
 import com.aoindustries.aoserv.cluster.optimize.Transition;
@@ -98,6 +99,17 @@ public class ClusterResourceManagerTest extends TestCase {
         }
     }*/
 
+    private static void printTransitions(ListElement path) {
+        ListElement previous = path.getPrevious();
+        if(previous!=null) printTransitions(previous);
+        Transition transition = path.getTransition();
+        if(transition==null) {
+            System.out.println("            Initial State ("+path.getHeuristic()+")");
+        } else {
+            System.out.println("            "+transition+" ("+path.getHeuristic()+")");
+        }
+    }
+
     public void testOptimizedCluster() throws Exception {
         List<HeuristicFunction> heuristicFunctions = new ArrayList<HeuristicFunction>();
         //heuristicFunctions.add(new LeastInformedHeuristicFunction());
@@ -111,25 +123,21 @@ public class ClusterResourceManagerTest extends TestCase {
             for(final HeuristicFunction heuristicFunction : heuristicFunctions) {
                 System.out.println("    "+heuristicFunction.getClass().getName());
                 ClusterOptimizer optimized = new ClusterOptimizer(clusterConfiguration, heuristicFunction, false);
-                List<Transition> transitions = optimized.getOptimizedClusterConfiguration(
+                ListElement shortestPath = optimized.getOptimizedClusterConfiguration(
                     new OptimizedClusterConfigurationHandler() {
-                        private List<Transition> shortestPath = null;
-                        public boolean handleOptimizedClusterConfiguration(List<Transition> path, long loopCount) {
-                            if(shortestPath==null || path.size()<shortestPath.size()) {
+                        private ListElement shortestPath = null;
+                        public boolean handleOptimizedClusterConfiguration(ListElement path, long loopCount) {
+                            if(shortestPath==null || path.getPathLen()<shortestPath.getPathLen()) {
                                 shortestPath = path;
                                 // TODO: Emphasize anything with a critical alert level when showing transitions
-                                System.out.println("        Goal found using "+path.size()+(path.size()==1 ? " transition" : " transitions")+" in "+loopCount+(loopCount==1?" iteration" : " iterations"));
-                                System.out.println("            Initial State ("+heuristicFunction.getHeuristic(clusterConfiguration, 0)+")");
-                                for(int move=0, size=path.size(); move<size; move++) {
-                                    Transition transition = path.get(move);
-                                    System.out.println("            "+transition+" ("+heuristicFunction.getHeuristic(transition.getAfterClusterConfiguration(), move)+")");
-                                }
+                                System.out.println("        Goal found using "+path.getPathLen()+(path.getPathLen()==1 ? " transition" : " transitions")+" in "+loopCount+(loopCount==1?" iteration" : " iterations"));
+                                printTransitions(shortestPath);
                             }
                             return true;
                         }
                     }
                 );
-                if(transitions==null) System.out.println("        Goal not found");
+                if(shortestPath==null) System.out.println("        Goal not found");
                 else System.out.println("Yeah! Shortest path to optimal configuration found!!!");
             }
         }
