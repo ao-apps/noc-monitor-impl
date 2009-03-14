@@ -67,11 +67,11 @@ class DrbdNodeWorker extends TableResultNodeWorker {
             highestAlertMessage = tableData.get(0).toString();
         } else {
             List<AlertLevel> alertLevels = result.getAlertLevels();
-            for(int index=0,len=tableData.size();index<len;index+=4) {
-                AlertLevel alertLevel = alertLevels.get(index/4);
+            for(int index=0,len=tableData.size();index<len;index+=5) {
+                AlertLevel alertLevel = alertLevels.get(index/5);
                 if(alertLevel.compareTo(highestAlertLevel)>0) {
                     highestAlertLevel = alertLevel;
-                    highestAlertMessage = tableData.get(index)+" "+tableData.get(index+1)+" "+tableData.get(index+2)+" "+tableData.get(index+3);
+                    highestAlertMessage = tableData.get(index)+" "+tableData.get(index+1)+" "+tableData.get(index+2)+" "+tableData.get(index+3)+" "+tableData.get(index+4);
                 }
             }
         }
@@ -80,15 +80,16 @@ class DrbdNodeWorker extends TableResultNodeWorker {
 
     @Override
     protected int getColumns() {
-        return 4;
+        return 5;
     }
 
     @Override
     protected List<?> getColumnHeaders(Locale locale) {
-        List<String> columnHeaders = new ArrayList<String>(4);
+        List<String> columnHeaders = new ArrayList<String>(5);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.device"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"));
+        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.ds"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.st"));
         return columnHeaders;
     }
@@ -97,12 +98,12 @@ class DrbdNodeWorker extends TableResultNodeWorker {
     protected List<?> getTableData(Locale locale) throws Exception {
         String report = aoServer.getDrbdReport();
         List<String> lines = StringUtility.splitLines(report);
-        List<String> tableData = new ArrayList<String>(lines.size()*4);
+        List<String> tableData = new ArrayList<String>(lines.size()*5);
         int lineNum = 0;
         for(String line : lines) {
             lineNum++;
             String[] values = StringUtility.splitString(line, '\t');
-            if(values.length!=4) {
+            if(values.length!=5) {
                 throw new ParseException(
                     ApplicationResourcesAccessor.getMessage(
                         locale,
@@ -121,12 +122,16 @@ class DrbdNodeWorker extends TableResultNodeWorker {
 
     @Override
     protected List<AlertLevel> getAlertLevels(List<?> tableData) {
-        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/4);
-        for(int index=0,len=tableData.size();index<len;index+=4) {
+        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/5);
+        for(int index=0,len=tableData.size();index<len;index+=5) {
             AlertLevel alertLevel;
             if(
                 !"Connected".equals(tableData.get(index+2))
                 || !"UpToDate/UpToDate".equals(tableData.get(index+3))
+                || !(
+                    "Primary/Secondary".equals(tableData.get(index+4))
+                    || "Secondary/Primary".equals(tableData.get(index+4))
+                )
             ) {
                 alertLevel = AlertLevel.HIGH;
             } else {
