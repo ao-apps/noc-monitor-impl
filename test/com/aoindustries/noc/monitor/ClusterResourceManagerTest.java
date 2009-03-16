@@ -123,7 +123,7 @@ public class ClusterResourceManagerTest extends TestCase {
             System.out.println(clusterConfiguration);
             for(final HeuristicFunction heuristicFunction : heuristicFunctions) {
                 System.out.println("    "+heuristicFunction.getClass().getName());
-                ClusterOptimizer optimized = new ClusterOptimizer(clusterConfiguration, heuristicFunction, false, true);
+                ClusterOptimizer optimized = new ClusterOptimizer(clusterConfiguration, heuristicFunction, false, false); // TODO: true for randomize?
                 ListElement shortestPath = optimized.getOptimizedClusterConfiguration(
                     new OptimizedClusterConfigurationHandler() {
                         public boolean handleOptimizedClusterConfiguration(ListElement path, long loopCount) {
