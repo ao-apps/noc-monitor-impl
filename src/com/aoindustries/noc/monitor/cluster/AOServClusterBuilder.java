@@ -3,7 +3,7 @@
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
-package com.aoindustries.noc.monitor;
+package com.aoindustries.noc.monitor.cluster;
 
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.AOServer;
@@ -11,14 +11,16 @@ import com.aoindustries.aoserv.client.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.aoserv.client.ServerFarm;
+import com.aoindustries.aoserv.client.VirtualDisk;
 import com.aoindustries.aoserv.client.VirtualServer;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
 import com.aoindustries.aoserv.cluster.Dom0;
 import com.aoindustries.aoserv.cluster.DomU;
+import com.aoindustries.aoserv.cluster.DomUDisk;
 import com.aoindustries.aoserv.cluster.ProcessorArchitecture;
 import com.aoindustries.aoserv.cluster.ProcessorType;
-import com.aoindustries.util.StringUtility;
+import com.aoindustries.noc.monitor.RootNodeImpl;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -75,7 +77,7 @@ public class AOServClusterBuilder {
                 futures.add(
                     RootNodeImpl.executorService.submit(
                         new Callable<Cluster>() {
-                            public Cluster call() throws SQLException, InterruptedException, ExecutionException {
+                            public Cluster call() throws SQLException, InterruptedException, ExecutionException, ParseException {
                                 return getCluster(conn, serverFarm);
                             }
                         }
@@ -95,14 +97,13 @@ public class AOServClusterBuilder {
     /**
      * Loads a cluster for a single server farm.
      */
-    public static Cluster getCluster(AOServConnector conn, ServerFarm serverFarm) throws SQLException, InterruptedException, ExecutionException {
-        List<AOServer> aoServers = conn.aoServers.getRows();
+    public static Cluster getCluster(AOServConnector conn, ServerFarm serverFarm) throws SQLException, InterruptedException, ExecutionException, ParseException {
+        final String rootAccounting = conn.businesses.getRootAccounting();
 
         Cluster cluster = new Cluster(serverFarm.getName());
-        Map<PhysicalServer,Dom0> dom0s = new HashMap<PhysicalServer,Dom0>();
 
         // Get the Dom0s
-        for(AOServer aoServer : aoServers) {
+        for(AOServer aoServer : conn.aoServers.getRows()) {
             Server server = aoServer.getServer();
             if(server.isMonitoringEnabled() && server.getServerFarm().equals(serverFarm)) {
                 OperatingSystemVersion osvObj = server.getOperatingSystemVersion();
@@ -125,15 +126,10 @@ public class AOServClusterBuilder {
                             physicalServer.getProcessorCores(),
                             physicalServer.getSupportsHvm()
                         );
-                        Dom0 dom0 = cluster.getDom0(hostname);
-                        assert dom0!=null : "dom0 is null";
-                        dom0s.put(physicalServer, dom0);
                     }
                 }
             }
         }
-
-        String rootAccounting = conn.businesses.getRootAccounting();
 
         // Get the DomUs
         for(Server server : conn.servers.getRows()) {
@@ -147,8 +143,9 @@ public class AOServClusterBuilder {
                     // Must always be in the package with the same name as the root business
                     String packageName = server.getPackage().getName();
                     if(!packageName.equals(rootAccounting)) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
+                    String hostname = server.getName();
                     cluster = cluster.addDomU(
-                        server.getName(),
+                        hostname,
                         virtualServer.getPrimaryRam(),
                         virtualServer.getSecondaryRam(),
                         virtualServer.getMinimumProcessorType()==null ? null : ProcessorType.valueOf(virtualServer.getMinimumProcessorType().getType()),
@@ -160,10 +157,32 @@ public class AOServClusterBuilder {
                         virtualServer.isPrimaryPhysicalServerLocked(),
                         virtualServer.isSecondaryPhysicalServerLocked()
                     );
+                    DomU domU = cluster.getDomU(hostname);
+                    if(domU==null) throw new AssertionError("domU is null");
+                    for(VirtualDisk virtualDisk : virtualServer.getVirtualDisks()) {
+                        cluster = cluster.addDomUDisk(
+                            hostname,
+                            virtualDisk.getDevice(),
+                            virtualDisk.getMinimumDiskSpeed(),
+                            virtualDisk.getExtents(),
+                            virtualDisk.getWeight(),
+                            virtualDisk.getPrimaryPhysicalVolumesLocked(),
+                            virtualDisk.getSecondaryPhysicalVolumesLocked()
+                        );
+                    }
                 }
             }
         }
 
+        // Concurrently get the results of pvdisplay and 
+        /*for(Map.Entry<String,List<PvDisplay>> entry : PvDisplay.getPvDisplays(cluster.getDom0s().values(), conn, Locale.getDefault()).entrySet()) {
+            String dom0Hostname = entry.getKey();
+            List<PvDisplay> reports = entry.getValue();
+            Dom0 dom0 = cluster.getDom0(dom0Hostname);
+            if(dom0==null) throw new AssertionError("dom0 is null");
+            //cluster.addDomUDisk(
+         * TODO
+        }*/
         return cluster;
     }
 
@@ -198,71 +217,151 @@ public class AOServClusterBuilder {
     }
 
     /**
-     * Loads the configuration for the provided cluster.
+     * Concurrently gets all of the DRBD reports for the entire cluster.  This doesn't perform
+     * any sanity checks on the data, it merely parses it and ensures correct values.
      */
-    public static ClusterConfiguration getClusterConfiguration(Locale locale, AOServConnector conn, Cluster cluster) throws InterruptedException, ExecutionException, ParseException {
-        ClusterConfiguration clusterConfiguration = new ClusterConfiguration(cluster);
+    public static Map<String,List<AOServer.DrbdReport>> getDrbdReports(
+        Cluster cluster,
+        AOServConnector conn,
+        final Locale locale
+    ) throws InterruptedException, ExecutionException, ParseException {
         Map<String,Dom0> dom0s = cluster.getDom0s();
+        int mapSize = dom0s.size()*4/3+1;
+
         // Query concurrently for each of the drbdcstate's to get a good snapshot and determine primary/secondary locations
-        Map<String,Future<String>> futures = new HashMap<String,Future<String>>(dom0s.size()*4/3+1);
+        Map<String,Future<List<AOServer.DrbdReport>>> futures = new HashMap<String,Future<List<AOServer.DrbdReport>>>(mapSize);
         for(String hostname : dom0s.keySet()) {
             final AOServer aoServer = conn.aoServers.get(hostname);
-            assert aoServer!=null : "aoServer is null";
+            if(aoServer==null) throw new AssertionError("aoServer is null");
             futures.put(
                 hostname,
                 RootNodeImpl.executorService.submit(
-                    new Callable<String>() {
-                        public String call() {
-                            return aoServer.getDrbdReport();
+                    new Callable<List<AOServer.DrbdReport>>() {
+                        public List<AOServer.DrbdReport> call() throws ParseException {
+                            return aoServer.getDrbdReport(locale);
                         }
                     }
                 )
             );
         }
-        
-        // For each DomU, we keep track of its primaryDom0 - it is an error if more than one primaryDom0 is found
-        Map<String,String> primaryDom0s = new HashMap<String,String>();
+        Map<String,List<AOServer.DrbdReport>> drbdReports = new HashMap<String,List<AOServer.DrbdReport>>(mapSize);
 
-        // For each DomU, we keep track of its secondaryDom0 - it is an error if more than one secondaryDom0 is found
-        Map<String,String> secondaryDom0s = new HashMap<String,String>();
-
-        String rootAccounting = conn.businesses.getRootAccounting();
-        
         // Get and parse the results, also perform sanity checks
-        for(Map.Entry<String,Future<String>> entry : futures.entrySet()) {
-            String dom0Hostname = entry.getKey();
-            String report = entry.getValue().get();
-            List<String> lines = StringUtility.splitLines(report);
-            int lineNum = 0;
-            for(String line : lines) {
-                lineNum++;
-                String[] values = StringUtility.splitString(line, '\t');
-                if(values.length!=5) {
-                    throw new ParseException(
-                        com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
-                            locale,
-                            "AOServClusterBuilder.ParseException.badColumnCount",
-                            line
-                        ),
-                        lineNum
-                    );
+        for(Map.Entry<String,Future<List<AOServer.DrbdReport>>> entry : futures.entrySet()) {
+            drbdReports.put(
+                entry.getKey(),
+                entry.getValue().get()
+            );
+        }
+        return drbdReports;
+    }
+
+    /**
+     * Loads the configuration for the provided cluster.
+     */
+    public static ClusterConfiguration getClusterConfiguration(Locale locale, AOServConnector conn, Cluster cluster) throws InterruptedException, ExecutionException, ParseException {
+        final String rootAccounting = conn.businesses.getRootAccounting();
+
+        ClusterConfiguration clusterConfiguration = new ClusterConfiguration(cluster);
+        
+        Map<String,List<AOServer.DrbdReport>> drbdReports = getDrbdReports(cluster, conn, locale);
+
+        Map<String,String> drbdPrimaryDom0s = new HashMap<String,String>();
+        Map<String,String> drbdSecondaryDom0s = new HashMap<String,String>();
+        processDrbdReports(conn, locale, drbdReports, drbdPrimaryDom0s, drbdSecondaryDom0s);
+
+        // Now, each and every enabled virtual server must have both a primary and a secondary
+        for(Map.Entry<String,DomU> entry : cluster.getDomUs().entrySet()) {
+            String domUHostname = entry.getKey();
+            DomU domU = entry.getValue();
+            String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
+            if(primaryDom0Hostname==null) throw new ParseException(
+                ApplicationResourcesAccessor.getMessage(
+                    locale,
+                    "AOServClusterBuilder.ParseException.primaryNotFound",
+                    domUHostname
+                ),
+                0
+            );
+            String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
+            if(secondaryDom0Hostname==null) throw new ParseException(
+                ApplicationResourcesAccessor.getMessage(
+                    locale,
+                    "AOServClusterBuilder.ParseException.secondaryNotFound",
+                    domUHostname
+                ),
+                0
+            );
+            clusterConfiguration = clusterConfiguration.addDomUConfiguration(
+                domU,
+                cluster.getDom0(primaryDom0Hostname),
+                cluster.getDom0(secondaryDom0Hostname)
+            );
+            
+            // Add each DomUDisk
+            for(DomUDisk domUDisk : domU.getDomUDisks().values()) {
+                // Must have been found once, and only once, on the primary server DRBD report
+                int foundCount = 0;
+                for(AOServer.DrbdReport report : drbdReports.get(primaryDom0Hostname)) {
+                    if(report.getDomUHostname().equals(domUHostname) && report.getDomUDevice().equals(domUDisk.getDevice())) foundCount++;
                 }
-                String resource = values[1];
-                // Should have a - near the end
-                int dashPos = resource.lastIndexOf('-');
-                if(dashPos==-1) throw new ParseException(
-                    com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
+                if(foundCount!=1) throw new ParseException(
+                    ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "AOServClusterBuilder.ParseException.noDash",
-                        resource
+                        "AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
+                        domUDisk.getDevice(),
+                        primaryDom0Hostname
                     ),
-                    lineNum
+                    0
                 );
-                String domUHostname = resource.substring(0, dashPos);
+
+                // Must have been found once, and only once, on the secondary server DRBD report
+                foundCount = 0;
+                for(AOServer.DrbdReport report : drbdReports.get(secondaryDom0Hostname)) {
+                    if(report.getDomUHostname().equals(domUHostname) && report.getDomUDevice().equals(domUDisk.getDevice())) foundCount++;
+                }
+                if(foundCount!=1) throw new ParseException(
+                    ApplicationResourcesAccessor.getMessage(
+                        locale,
+                        "AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
+                        domUDisk.getDevice(),
+                        secondaryDom0Hostname
+                    ),
+                    0
+                );
+                
+                // TODO
+            }
+        }
+
+        return clusterConfiguration;
+    }
+
+    /**
+     * Makes sure that everything in the DRBD reports is for valid virtual servers
+     * and virtual disks and has sane values.
+     */
+    private static void processDrbdReports(
+        AOServConnector conn,
+        Locale locale,
+        Map<String,List<AOServer.DrbdReport>> drbdReports,
+        Map<String,String> drbdPrimaryDom0s,
+        Map<String,String> drbdSecondaryDom0s
+    ) throws ParseException {
+        final String rootAccounting = conn.businesses.getRootAccounting();
+
+        // Get and primary and secondary Dom0s from the DRBD report.
+        // Also performs sanity checks on all the DRBD information.
+        for(Map.Entry<String,List<AOServer.DrbdReport>> entry : drbdReports.entrySet()) {
+            String dom0Hostname = entry.getKey();
+            int lineNum = 0;
+            for(AOServer.DrbdReport report : entry.getValue()) {
+                lineNum++;
                 // Must be a virtual server
+                String domUHostname = report.getDomUHostname();
                 Server domUServer = conn.servers.get(rootAccounting+"/"+domUHostname);
                 if(domUServer==null) throw new ParseException(
-                    com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
+                    ApplicationResourcesAccessor.getMessage(
                         locale,
                         "AOServClusterBuilder.ParseException.serverNotFound",
                         domUHostname
@@ -271,46 +370,35 @@ public class AOServClusterBuilder {
                 );
                 VirtualServer domUVirtualServer = domUServer.getVirtualServer();
                 if(domUVirtualServer==null) throw new ParseException(
-                    com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
+                    ApplicationResourcesAccessor.getMessage(
                         locale,
                         "AOServClusterBuilder.ParseException.notVirtualServer",
                         domUHostname
                     ),
                     lineNum
                 );
-                String ending = resource.substring(dashPos+1);
+                String domUDevice = report.getDomUDevice();
                 if(
-                    ending.length()!=4
-                    || ending.charAt(0)!='x'
-                    || ending.charAt(1)!='v'
-                    || ending.charAt(2)!='d'
-                    || ending.charAt(3)<'a'
-                    || ending.charAt(3)>'z'
+                    domUDevice.length()!=4
+                    || domUDevice.charAt(0)!='x'
+                    || domUDevice.charAt(1)!='v'
+                    || domUDevice.charAt(2)!='d'
+                    || domUDevice.charAt(3)<'a'
+                    || domUDevice.charAt(3)>'z'
                 ) throw new ParseException(
-                    com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
+                    ApplicationResourcesAccessor.getMessage(
                         locale,
                         "AOServClusterBuilder.ParseException.unexpectedResourceEnding",
-                        ending
+                        domUDevice
                     ),
                     lineNum
                 );
-
-                String state = values[4];
-                int slashPos = state.indexOf('/');
-                if(slashPos==-1) throw new ParseException(
-                    com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
-                        locale,
-                        "AOServClusterBuilder.ParseException.noSlashInState",
-                        state
-                    ),
-                    lineNum
-                );
-                state = state.substring(0, slashPos);
-                if("Primary".equals(state)) {
+                AOServer.DrbdReport.Role localRole = report.getLocalRole();
+                if(localRole==AOServer.DrbdReport.Role.Primary) {
                     // Is Primary
-                    String previousValue = primaryDom0s.put(domUHostname, dom0Hostname);
+                    String previousValue = drbdPrimaryDom0s.put(domUHostname, dom0Hostname);
                     if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
-                        com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
+                        ApplicationResourcesAccessor.getMessage(
                             locale,
                             "AOServClusterBuilder.ParseException.multiPrimary",
                             domUHostname,
@@ -319,11 +407,11 @@ public class AOServClusterBuilder {
                         ),
                         lineNum
                     );
-                } else if("Secondary".equals(state)) {
+                } else if(localRole==AOServer.DrbdReport.Role.Secondary) {
                     // Is Secondary
-                    String previousValue = secondaryDom0s.put(domUHostname, dom0Hostname);
+                    String previousValue = drbdSecondaryDom0s.put(domUHostname, dom0Hostname);
                     if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
-                        com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
+                        ApplicationResourcesAccessor.getMessage(
                             locale,
                             "AOServClusterBuilder.ParseException.multiSecondary",
                             domUHostname,
@@ -334,50 +422,34 @@ public class AOServClusterBuilder {
                     );
                 } else {
                     throw new ParseException(
-                        com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
+                        ApplicationResourcesAccessor.getMessage(
                             locale,
                             "AOServClusterBuilder.ParseException.unexpectedState",
-                            state
+                            localRole
+                        ),
+                        lineNum
+                    );
+                }
+                
+                // Find the corresponding VirtualDisk
+                VirtualDisk virtualDisk = domUVirtualServer.getVirtualDisk(domUDevice);
+                if(virtualDisk==null) {
+                    //System.err.println("-- "+domUHostname);
+                    //System.err.println("INSERT INTO virtual_disks VALUES(DEFAULT, "+domUVirtualServer.getPkey()+", '"+device+"', NULL, extents, 1, false, false);");
+                    throw new ParseException(
+                        ApplicationResourcesAccessor.getMessage(
+                            locale,
+                            "AOServClusterBuilder.ParseException.virtualDiskNotFound",
+                            domUHostname,
+                            domUDevice
                         ),
                         lineNum
                     );
                 }
             }
         }
-        
-        // Now, each and every enabled virtual server must have both a primary and a secondary
-        for(Map.Entry<String,DomU> entry : cluster.getDomUs().entrySet()) {
-            String domUHostname = entry.getKey();
-            DomU domU = entry.getValue();
-            String primaryDom0Hostname = primaryDom0s.get(domUHostname);
-            if(primaryDom0Hostname==null) throw new ParseException(
-                com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
-                    locale,
-                    "AOServClusterBuilder.ParseException.primaryNotFound",
-                    domUHostname
-                ),
-                0
-            );
-            String secondaryDom0Hostname = secondaryDom0s.get(domUHostname);
-            if(secondaryDom0Hostname==null) throw new ParseException(
-                com.aoindustries.noc.monitor.ApplicationResourcesAccessor.getMessage(
-                    locale,
-                    "AOServClusterBuilder.ParseException.secondaryNotFound",
-                    domUHostname
-                ),
-                0
-            );
-            clusterConfiguration = clusterConfiguration.addDomUConfiguration(
-                domU,
-                dom0s.get(primaryDom0Hostname),
-                dom0s.get(secondaryDom0Hostname)
-            );
-        }
-
-        // TODO: add resources appropriately
-        return clusterConfiguration;
     }
-    
+
     /**
      * Adds a single Dom0 to cluster.
      */

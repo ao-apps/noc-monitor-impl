@@ -1,10 +1,11 @@
-package com.aoindustries.noc.monitor;
+package com.aoindustries.noc.monitor.cluster;
 
 /*
  * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
+import com.aoindustries.noc.monitor.*;
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
 import com.aoindustries.aoserv.cluster.analyze.AlertLevel;
@@ -39,6 +40,8 @@ import junit.framework.TestSuite;
  * @author  AO Industries, Inc.
  */
 public class ClusterResourceManagerTest extends TestCase {
+
+    private static final boolean FIND_SHORTEST_PATH = false;
 
     private AOServConnector conn;
     private SortedSet<ClusterConfiguration> clusterConfigurations;
@@ -130,12 +133,13 @@ public class ClusterResourceManagerTest extends TestCase {
                             // TODO: Emphasize anything with a critical alert level when showing transitions
                             System.out.println("        Goal found using "+path.getPathLen()+(path.getPathLen()==1 ? " transition" : " transitions")+" in "+loopCount+(loopCount==1?" iteration" : " iterations"));
                             printTransitions(path);
-                            return true;
+                            // Stop at the first one found
+                            return FIND_SHORTEST_PATH;
                         }
                     }
                 );
                 if(shortestPath==null) System.out.println("        Goal not found");
-                else if(shortestPath.getPathLen()>0) System.out.println("        Yeah! Shortest path to optimal configuration found!!!");
+                else if(FIND_SHORTEST_PATH && shortestPath.getPathLen()>0) System.out.println("        Yeah! Shortest path to optimal configuration found!!!");
             }
         }
     }

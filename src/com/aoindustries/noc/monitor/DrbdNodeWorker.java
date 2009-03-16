@@ -9,10 +9,8 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
 import com.aoindustries.util.ErrorHandler;
-import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,26 +94,16 @@ class DrbdNodeWorker extends TableResultNodeWorker {
 
     @Override
     protected List<?> getTableData(Locale locale) throws Exception {
-        String report = aoServer.getDrbdReport();
-        List<String> lines = StringUtility.splitLines(report);
-        List<String> tableData = new ArrayList<String>(lines.size()*5);
+        List<AOServer.DrbdReport> reports = aoServer.getDrbdReport(locale);
+        List<String> tableData = new ArrayList<String>(reports.size()*5);
         int lineNum = 0;
-        for(String line : lines) {
+        for(AOServer.DrbdReport report : reports) {
             lineNum++;
-            String[] values = StringUtility.splitString(line, '\t');
-            if(values.length!=5) {
-                throw new ParseException(
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
-                        "DrbdNode.alertMessage.badColumnCount",
-                        line
-                    ),
-                    lineNum
-                );
-            }
-            for(int c=0,len=values.length; c<len; c++) {
-                tableData.add(values[c]);
-            }
+            tableData.add(report.getDevice());
+            tableData.add(report.getDomUHostname()+'-'+report.getDomUDevice());
+            tableData.add(report.getConnectionState().toString());
+            tableData.add(report.getLocalDiskState()+"/"+report.getRemoteDiskState());
+            tableData.add(report.getLocalRole()+"/"+report.getRemoteRole());
         }
         return tableData;
     }
