@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,7 +106,7 @@ public class RaidNode extends NodeImpl {
         return ApplicationResourcesAccessor.getMessage(serverNode.serversNode.rootNode.locale, "RaidNode.label");
     }
     
-    synchronized void start() throws IOException {
+    synchronized void start() throws IOException, SQLException {
         // We only have 3ware cards in xen outers
         int osv = aoServer.getServer().getOperatingSystemVersion().getPkey();
         if(

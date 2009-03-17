@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -29,7 +30,7 @@ public class PhysicalServersNode extends ServersNode {
         return ApplicationResourcesAccessor.getMessage(rootNode.locale, "PhysicalServersNode.label");
     }
 
-    boolean includeServer(Server server) throws SQLException {
+    boolean includeServer(Server server) throws SQLException, IOException {
         PhysicalServer physicalServer = server.getPhysicalServer();
         AOServer aoServer = server.getAOServer();
         return

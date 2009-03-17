@@ -46,7 +46,7 @@ public class ServerNode extends NodeImpl {
     volatile private MemoryNode _memoryNode;
     volatile private TimeNode _timeNode;
 
-    ServerNode(ServersNode serversNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    ServerNode(ServersNode serversNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
         super(port, csf, ssf);
         this.serversNode = serversNode;
         this._server = server;
@@ -170,6 +170,8 @@ public class ServerNode extends NodeImpl {
                 verifyTime();
             } catch(IOException err) {
                 throw new WrappedException(err);
+            } catch(SQLException err) {
+                throw new WrappedException(err);
             }
         }
     };
@@ -244,7 +246,7 @@ public class ServerNode extends NodeImpl {
         }
     }
 
-    synchronized private void verifyNetDevices() throws IOException {
+    synchronized private void verifyNetDevices() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         if(_netDevicesNode==null) {
@@ -254,7 +256,7 @@ public class ServerNode extends NodeImpl {
         }
     }
 
-    synchronized private void verifyHardDrives() throws IOException {
+    synchronized private void verifyHardDrives() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         AOServer aoServer = _server.getAOServer();
@@ -283,7 +285,7 @@ public class ServerNode extends NodeImpl {
         }
     }
 
-    synchronized private void verifyRaid() throws IOException {
+    synchronized private void verifyRaid() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         AOServer aoServer = _server.getAOServer();
@@ -304,7 +306,7 @@ public class ServerNode extends NodeImpl {
         }
     }
 
-    synchronized private void verifyFilesystems() throws IOException {
+    synchronized private void verifyFilesystems() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         AOServer aoServer = _server.getAOServer();
@@ -325,7 +327,7 @@ public class ServerNode extends NodeImpl {
         }
     }
 
-    synchronized private void verifyLoadAverage() throws IOException {
+    synchronized private void verifyLoadAverage() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         AOServer aoServer = _server.getAOServer();
@@ -346,7 +348,7 @@ public class ServerNode extends NodeImpl {
         }
     }
 
-    synchronized private void verifyMemory() throws IOException {
+    synchronized private void verifyMemory() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         AOServer aoServer = _server.getAOServer();
@@ -367,7 +369,7 @@ public class ServerNode extends NodeImpl {
         }
     }
 
-    synchronized private void verifyTime() throws IOException {
+    synchronized private void verifyTime() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         AOServer aoServer = _server.getAOServer();

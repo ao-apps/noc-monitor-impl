@@ -100,7 +100,7 @@ class DrbdNodeWorker extends TableResultNodeWorker {
         for(AOServer.DrbdReport report : reports) {
             lineNum++;
             tableData.add(report.getDevice());
-            tableData.add(report.getDomUHostname()+'-'+report.getDomUDevice());
+            tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
             tableData.add(report.getConnectionState().toString());
             tableData.add(report.getLocalDiskState()+"/"+report.getRemoteDiskState());
             tableData.add(report.getLocalRole()+"/"+report.getRemoteRole());

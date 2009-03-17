@@ -14,6 +14,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.SQLException;
 import java.util.Locale;
 
 /**
@@ -128,7 +129,7 @@ public class MonitorImpl extends UnicastRemoteObject implements Monitor {
     }
 
     @Override
-    public RootNode login(Locale locale, String username, String password) throws IOException {
+    public RootNode login(Locale locale, String username, String password) throws IOException, SQLException {
         AOServConnector connector=AOServConnector.getConnector(username, password, errorHandler);
         connector.testConnect();
         return RootNodeImpl.getRootNode(locale, connector, port, csf, ssf);

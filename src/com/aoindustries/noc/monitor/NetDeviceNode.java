@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +35,7 @@ public class NetDeviceNode extends NodeImpl {
     volatile private NetDeviceBondingNode _netDeviceBondingNode;
     volatile private IPAddressesNode _ipAddressesNode;
 
-    NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice netDevice, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice netDevice, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException {
         super(port, csf, ssf);
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -116,7 +117,7 @@ public class NetDeviceNode extends NodeImpl {
         return _label;
     }
 
-    synchronized void start() throws IOException {
+    synchronized void start() throws IOException, SQLException {
         final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
         // bit rate and network bonding monitoring only supported for AOServer
         if(_networkDevicesNode.getServer().getAOServer()!=null) {

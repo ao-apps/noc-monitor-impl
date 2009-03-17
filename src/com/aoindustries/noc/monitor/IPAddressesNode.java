@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -87,11 +88,13 @@ public class IPAddressesNode extends NodeImpl {
                 verifyIPAddresses();
             } catch(IOException err) {
                 throw new WrappedException(err);
+            } catch(SQLException err) {
+                throw new WrappedException(err);
             }
         }
     };
 
-    void start() throws IOException {
+    void start() throws IOException, SQLException {
         synchronized(ipAddressNodes) {
             netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.ipAddresses.addTableListener(tableListener, 100);
             verifyIPAddresses();
@@ -110,7 +113,7 @@ public class IPAddressesNode extends NodeImpl {
         }
     }
 
-    private void verifyIPAddresses() throws RemoteException, IOException {
+    private void verifyIPAddresses() throws RemoteException, IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         final RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;

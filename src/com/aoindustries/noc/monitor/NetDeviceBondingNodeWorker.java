@@ -12,8 +12,10 @@ import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.SingleResult;
 import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
+import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -53,7 +55,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
     }
 
     @Override
-    protected String getReport() {
+    protected String getReport() throws IOException, SQLException {
         return netDevice.getBondingReport();
     }
 
@@ -62,52 +64,58 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
      */
     @Override
     protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, SingleResult result) {
-        if(result.getError()!=null) {
-            return new AlertLevelAndMessage(
-                AlertLevel.CRITICAL,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
-                    "NetDeviceBondingNode.alertMessage.error",
-                    result.getError()
-                )
+        try {
+            if(result.getError()!=null) {
+                return new AlertLevelAndMessage(
+                    AlertLevel.CRITICAL,
+                    ApplicationResourcesAccessor.getMessage(
+                        locale,
+                        "NetDeviceBondingNode.alertMessage.error",
+                        result.getError()
+                    )
+                );
+            }
+            String report = result.getReport();
+            List<String> lines = StringUtility.splitLines(report);
+            int upCount = 0;
+            int downCount = 0;
+            boolean skippedFirst = false;
+            for(String line : lines) {
+                if(line.startsWith("MII Status: ")) {
+                    if(!skippedFirst) skippedFirst = true;
+                    else {
+                        if(line.equals("MII Status: up")) upCount++;
+                        else downCount++;
+                    }
+                }
+            }
+            AlertLevel alertLevel;
+            if(upCount==0) alertLevel = AlertLevel.CRITICAL;
+            else if(downCount!=0) alertLevel = AlertLevel.HIGH;
+            else alertLevel = AlertLevel.NONE;
+            String alertMessage = ApplicationResourcesAccessor.getMessage(
+                locale,
+                "NetDeviceBondingNode.alertMessage.counts",
+                upCount,
+                downCount
             );
-        }
-        String report = result.getReport();
-        List<String> lines = StringUtility.splitLines(report);
-        int upCount = 0;
-        int downCount = 0;
-        boolean skippedFirst = false;
-        for(String line : lines) {
-            if(line.startsWith("MII Status: ")) {
-                if(!skippedFirst) skippedFirst = true;
-                else {
-                    if(line.equals("MII Status: up")) upCount++;
-                    else downCount++;
-                }
-            }
-        }
-        AlertLevel alertLevel;
-        if(upCount==0) alertLevel = AlertLevel.CRITICAL;
-        else if(downCount!=0) alertLevel = AlertLevel.HIGH;
-        else alertLevel = AlertLevel.NONE;
-        String alertMessage = ApplicationResourcesAccessor.getMessage(
-            locale,
-            "NetDeviceBondingNode.alertMessage.counts",
-            upCount,
-            downCount
-        );
 
-        // Change HIGH to NONE for xen2.securemedical.com:bond0
-        if(alertLevel==AlertLevel.HIGH) {
-            AOServer aoServer = netDevice.getServer().getAOServer();
-            if(aoServer!=null) {
-                String hostname = aoServer.getHostname();
-                if(hostname.equals("xen2.securemedical.com") && netDevice.getNetDeviceID().getName().equals(NetDeviceID.BOND0)) {
-                    alertLevel = AlertLevel.NONE;
+            // Change HIGH to NONE for xen2.securemedical.com:bond0
+            if(alertLevel==AlertLevel.HIGH) {
+                AOServer aoServer = netDevice.getServer().getAOServer();
+                if(aoServer!=null) {
+                    String hostname = aoServer.getHostname();
+                    if(hostname.equals("xen2.securemedical.com") && netDevice.getNetDeviceID().getName().equals(NetDeviceID.BOND0)) {
+                        alertLevel = AlertLevel.NONE;
+                    }
                 }
             }
+
+            return new AlertLevelAndMessage(alertLevel, alertMessage);
+        } catch(IOException err) {
+            throw new WrappedException(err);
+        } catch(SQLException err) {
+            throw new WrappedException(err);
         }
-        
-        return new AlertLevelAndMessage(alertLevel, alertMessage);
     }
 }

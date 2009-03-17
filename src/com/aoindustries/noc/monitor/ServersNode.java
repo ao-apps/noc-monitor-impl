@@ -183,5 +183,5 @@ abstract public class ServersNode extends NodeImpl {
         return dir;
     }
     
-    abstract boolean includeServer(Server server) throws SQLException;
+    abstract boolean includeServer(Server server) throws SQLException, IOException;
 }

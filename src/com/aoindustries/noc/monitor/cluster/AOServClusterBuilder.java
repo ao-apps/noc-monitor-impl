@@ -15,12 +15,12 @@ import com.aoindustries.aoserv.client.VirtualDisk;
 import com.aoindustries.aoserv.client.VirtualServer;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
-import com.aoindustries.aoserv.cluster.Dom0;
 import com.aoindustries.aoserv.cluster.DomU;
 import com.aoindustries.aoserv.cluster.DomUDisk;
 import com.aoindustries.aoserv.cluster.ProcessorArchitecture;
 import com.aoindustries.aoserv.cluster.ProcessorType;
 import com.aoindustries.noc.monitor.RootNodeImpl;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -46,13 +46,41 @@ public class AOServClusterBuilder {
     private AOServClusterBuilder() {}
 
     /**
+     * Determines if the provide AOServer is an enabled Dom0.
+     */
+    private static boolean isEnabledDom0(AOServer aoServer) throws SQLException, IOException {
+        Server server = aoServer.getServer();
+        if(!server.isMonitoringEnabled()) return false;
+        OperatingSystemVersion osvObj = server.getOperatingSystemVersion();
+        if(osvObj==null) return false;
+        int osv = osvObj.getPkey();
+        if(
+            osv!=OperatingSystemVersion.CENTOS_5DOM0_I686
+            && osv!=OperatingSystemVersion.CENTOS_5DOM0_X86_64
+        ) return false;
+        // This should be a physical server and not a virtual server
+        PhysicalServer physicalServer = server.getPhysicalServer();
+        if(physicalServer==null) throw new SQLException("Dom0 server is not a physical server: "+aoServer);
+        VirtualServer virtualServer = server.getVirtualServer();
+        if(virtualServer!=null) throw new SQLException("Dom0 server is a virtual server: "+aoServer);
+        return true;
+    }
+
+    /**
      * Loads an unmodifiable set of the current cluster states from the AOServ system.
      * Only ServerFarms that have at least one enabled Dom0 are included.
      * 
      * @see Cluster
      */
-    public static SortedSet<Cluster> getClusters(final AOServConnector conn) throws InterruptedException, ExecutionException {
-        List<AOServer> aoServers = conn.aoServers.getRows();
+    //public static SortedSet<Cluster> getClusters(final AOServConnector conn) throws InterruptedException, ExecutionException {
+    //}
+    private static SortedSet<Cluster> getClusters(
+        final AOServConnector conn,
+        final List<AOServer> aoServers,
+        final Map<String,Map<String,String>> hddModelReports,
+        final Map<String,List<AOServer.DrbdReport>> drbdReports,
+        final Map<String,AOServer.LvmReport> lvmReports
+    ) throws SQLException, InterruptedException, ExecutionException, IOException {
         List<ServerFarm> serverFarms = conn.serverFarms.getRows();
 
         // Start concurrently
@@ -61,15 +89,10 @@ public class AOServClusterBuilder {
             // Only create the cluster if there is at least one dom0 machine
             boolean foundDom0 = false;
             for(AOServer aoServer : aoServers) {
-                Server server = aoServer.getServer();
-                if(server.isMonitoringEnabled() && server.getServerFarm().equals(serverFarm)) {
-                    OperatingSystemVersion osvObj = server.getOperatingSystemVersion();
-                    if(osvObj!=null) {
-                        int osv = osvObj.getPkey();
-                        if(osv==OperatingSystemVersion.CENTOS_5DOM0_I686 || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64) {
-                            foundDom0 = true;
-                            break;
-                        }
+                if(isEnabledDom0(aoServer)) {
+                    if(aoServer.getServer().getServerFarm().equals(serverFarm)) {
+                        foundDom0 = true;
+                        break;
                     }
                 }
             }
@@ -77,8 +100,8 @@ public class AOServClusterBuilder {
                 futures.add(
                     RootNodeImpl.executorService.submit(
                         new Callable<Cluster>() {
-                            public Cluster call() throws SQLException, InterruptedException, ExecutionException, ParseException {
-                                return getCluster(conn, serverFarm);
+                            public Cluster call() throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
+                                return getCluster(conn, serverFarm, aoServers, hddModelReports, drbdReports, lvmReports);
                             }
                         }
                     )
@@ -97,36 +120,39 @@ public class AOServClusterBuilder {
     /**
      * Loads a cluster for a single server farm.
      */
-    public static Cluster getCluster(AOServConnector conn, ServerFarm serverFarm) throws SQLException, InterruptedException, ExecutionException, ParseException {
+    //public static Cluster getCluster(AOServConnector conn, ServerFarm serverFarm) throws SQLException, InterruptedException, ExecutionException, ParseException {
+    //    return getCluster(conn, serverFarm, getLvmReports(conn));
+    //}
+    private static Cluster getCluster(
+        AOServConnector conn,
+        ServerFarm serverFarm,
+        List<AOServer> aoServers,
+        Map<String,Map<String,String>> hddModelReports,
+        Map<String,List<AOServer.DrbdReport>> drbdReports,
+        Map<String,AOServer.LvmReport> lvmReports
+    ) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
         final String rootAccounting = conn.businesses.getRootAccounting();
 
         Cluster cluster = new Cluster(serverFarm.getName());
 
         // Get the Dom0s
-        for(AOServer aoServer : conn.aoServers.getRows()) {
-            Server server = aoServer.getServer();
-            if(server.isMonitoringEnabled() && server.getServerFarm().equals(serverFarm)) {
-                OperatingSystemVersion osvObj = server.getOperatingSystemVersion();
-                if(osvObj!=null) {
-                    int osv = osvObj.getPkey();
-                    if(osv==OperatingSystemVersion.CENTOS_5DOM0_I686 || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64) {
-                        // This should be a physical server and not a virtual server
-                        PhysicalServer physicalServer = server.getPhysicalServer();
-                        if(physicalServer==null) throw new SQLException("Dom0 server is not a physical server: "+aoServer);
-                        VirtualServer virtualServer = server.getVirtualServer();
-                        if(virtualServer!=null) throw new SQLException("Dom0 server is a virtual server: "+aoServer);
-                        String hostname = aoServer.getHostname();
-                        cluster = cluster.addDom0(
-                            hostname,
-                            /*rack,*/
-                            physicalServer.getRam(),
-                            ProcessorType.valueOf(physicalServer.getProcessorType().getType()),
-                            ProcessorArchitecture.valueOf(osvObj.getArchitecture(conn).getName().toUpperCase(Locale.ENGLISH)),
-                            physicalServer.getProcessorSpeed(),
-                            physicalServer.getProcessorCores(),
-                            physicalServer.getSupportsHvm()
-                        );
-                    }
+        for(AOServer aoServer : aoServers) {
+            if(isEnabledDom0(aoServer)) {
+                Server server = aoServer.getServer();
+                if(server.getServerFarm().equals(serverFarm)) {
+                    PhysicalServer physicalServer = server.getPhysicalServer();
+                    String hostname = aoServer.getHostname();
+                    cluster = cluster.addDom0(
+                        hostname,
+                        /*rack,*/
+                        physicalServer.getRam(),
+                        ProcessorType.valueOf(physicalServer.getProcessorType().getType()),
+                        ProcessorArchitecture.valueOf(server.getOperatingSystemVersion().getArchitecture(conn).getName().toUpperCase(Locale.ENGLISH)),
+                        physicalServer.getProcessorSpeed(),
+                        physicalServer.getProcessorCores(),
+                        physicalServer.getSupportsHvm()
+                    );
+                    // TODO: Add Dom0s
                 }
             }
         }
@@ -174,15 +200,6 @@ public class AOServClusterBuilder {
             }
         }
 
-        // Concurrently get the results of pvdisplay and 
-        /*for(Map.Entry<String,List<PvDisplay>> entry : PvDisplay.getPvDisplays(cluster.getDom0s().values(), conn, Locale.getDefault()).entrySet()) {
-            String dom0Hostname = entry.getKey();
-            List<PvDisplay> reports = entry.getValue();
-            Dom0 dom0 = cluster.getDom0(dom0Hostname);
-            if(dom0==null) throw new AssertionError("dom0 is null");
-            //cluster.addDomUDisk(
-         * TODO
-        }*/
         return cluster;
     }
 
@@ -192,16 +209,24 @@ public class AOServClusterBuilder {
      * @see  #getClusters
      * @see  #getClusterConfiguration
      */
-    public static SortedSet<ClusterConfiguration> getClusterConfigurations(final Locale locale, final AOServConnector conn) throws InterruptedException, ExecutionException {
-        SortedSet<Cluster> clusters = getClusters(conn);
+    public static SortedSet<ClusterConfiguration> getClusterConfigurations(
+        final Locale locale,
+        final AOServConnector conn
+    ) throws SQLException, ParseException, InterruptedException, ExecutionException, IOException {
+        final List<AOServer> aoServers = conn.aoServers.getRows();
+        final Map<String,Map<String,String>> hddModelReports = getHddModelReports(aoServers, locale);
+        final Map<String,List<AOServer.DrbdReport>> drbdReports = getDrbdReports(aoServers, locale);
+        final Map<String,AOServer.LvmReport> lvmReports = getLvmReports(aoServers, locale);
+
         // Start concurrently
+        SortedSet<Cluster> clusters = getClusters(conn, aoServers, hddModelReports, drbdReports, lvmReports);
         List<Future<ClusterConfiguration>> futures = new ArrayList<Future<ClusterConfiguration>>(clusters.size());
         for(final Cluster cluster : clusters) {
             futures.add(
                 RootNodeImpl.executorService.submit(
                     new Callable<ClusterConfiguration>() {
-                        public ClusterConfiguration call() throws InterruptedException, ExecutionException, ParseException {
-                            return getClusterConfiguration(locale, conn, cluster);
+                        public ClusterConfiguration call() throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
+                            return getClusterConfiguration(locale, conn, cluster, hddModelReports, drbdReports, lvmReports);
                         }
                     }
                 )
@@ -221,30 +246,26 @@ public class AOServClusterBuilder {
      * any sanity checks on the data, it merely parses it and ensures correct values.
      */
     public static Map<String,List<AOServer.DrbdReport>> getDrbdReports(
-        Cluster cluster,
-        AOServConnector conn,
+        final List<AOServer> aoServers,
         final Locale locale
-    ) throws InterruptedException, ExecutionException, ParseException {
-        Map<String,Dom0> dom0s = cluster.getDom0s();
-        int mapSize = dom0s.size()*4/3+1;
-
+    ) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
         // Query concurrently for each of the drbdcstate's to get a good snapshot and determine primary/secondary locations
-        Map<String,Future<List<AOServer.DrbdReport>>> futures = new HashMap<String,Future<List<AOServer.DrbdReport>>>(mapSize);
-        for(String hostname : dom0s.keySet()) {
-            final AOServer aoServer = conn.aoServers.get(hostname);
-            if(aoServer==null) throw new AssertionError("aoServer is null");
-            futures.put(
-                hostname,
-                RootNodeImpl.executorService.submit(
-                    new Callable<List<AOServer.DrbdReport>>() {
-                        public List<AOServer.DrbdReport> call() throws ParseException {
-                            return aoServer.getDrbdReport(locale);
+        Map<String,Future<List<AOServer.DrbdReport>>> futures = new HashMap<String,Future<List<AOServer.DrbdReport>>>(aoServers.size()*4/3+1);
+        for(final AOServer aoServer : aoServers) {
+            if(isEnabledDom0(aoServer)) {
+                futures.put(
+                    aoServer.getHostname(),
+                    RootNodeImpl.executorService.submit(
+                        new Callable<List<AOServer.DrbdReport>>() {
+                            public List<AOServer.DrbdReport> call() throws ParseException, IOException, SQLException {
+                                return aoServer.getDrbdReport(locale);
+                            }
                         }
-                    }
-                )
-            );
+                    )
+                );
+            }
         }
-        Map<String,List<AOServer.DrbdReport>> drbdReports = new HashMap<String,List<AOServer.DrbdReport>>(mapSize);
+        Map<String,List<AOServer.DrbdReport>> drbdReports = new HashMap<String,List<AOServer.DrbdReport>>(futures.size()*4/3+1);
 
         // Get and parse the results, also perform sanity checks
         for(Map.Entry<String,Future<List<AOServer.DrbdReport>>> entry : futures.entrySet()) {
@@ -253,18 +274,93 @@ public class AOServClusterBuilder {
                 entry.getValue().get()
             );
         }
-        return drbdReports;
+        return Collections.unmodifiableMap(drbdReports);
+    }
+
+    /**
+     * Concurrently gets all of the LVM reports for the all clusters.  This doesn't perform
+     * any sanity checks on the data, it merely parses it and ensures correct values.
+     */
+    public static Map<String,AOServer.LvmReport> getLvmReports(
+        final List<AOServer> aoServers,
+        final Locale locale
+    ) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
+        Map<String,Future<AOServer.LvmReport>> futures = new HashMap<String,Future<AOServer.LvmReport>>(aoServers.size()*4/3+1);
+        for(final AOServer aoServer : aoServers) {
+            if(isEnabledDom0(aoServer)) {
+                futures.put(
+                    aoServer.getHostname(),
+                    RootNodeImpl.executorService.submit(
+                        new Callable<AOServer.LvmReport>() {
+                            public AOServer.LvmReport call() throws IOException, SQLException, ParseException {
+                                return aoServer.getLvmReport(locale);
+                            }
+                        }
+                    )
+                );
+            }
+        }
+        Map<String,AOServer.LvmReport> lvmReports = new HashMap<String,AOServer.LvmReport>(futures.size()*4/3+1);
+
+        // Get and parse the results, also perform sanity checks
+        for(Map.Entry<String,Future<AOServer.LvmReport>> entry : futures.entrySet()) {
+            lvmReports.put(
+                entry.getKey(),
+                entry.getValue().get()
+            );
+        }
+        return Collections.unmodifiableMap(lvmReports);
+    }
+
+    /**
+     * Concurrently gets all of the hard drive model reports for the all clusters.  This doesn't perform
+     * any sanity checks on the data, it merely parses it and ensures correct values.
+     */
+    public static Map<String,Map<String,String>> getHddModelReports(
+        final List<AOServer> aoServers,
+        final Locale locale
+    ) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
+        Map<String,Future<Map<String,String>>> futures = new HashMap<String,Future<Map<String,String>>>(aoServers.size()*4/3+1);
+        for(final AOServer aoServer : aoServers) {
+            if(isEnabledDom0(aoServer)) {
+                futures.put(
+                    aoServer.getHostname(),
+                    RootNodeImpl.executorService.submit(
+                        new Callable<Map<String,String>>() {
+                            public Map<String,String> call() throws ParseException, IOException, SQLException {
+                                return aoServer.getHddModelReport(locale);
+                            }
+                        }
+                    )
+                );
+            }
+        }
+        Map<String,Map<String,String>> reports = new HashMap<String,Map<String,String>>(futures.size()*4/3+1);
+
+        // Get and parse the results, also perform sanity checks
+        for(Map.Entry<String,Future<Map<String,String>>> entry : futures.entrySet()) {
+            reports.put(
+                entry.getKey(),
+                entry.getValue().get()
+            );
+        }
+        return Collections.unmodifiableMap(reports);
     }
 
     /**
      * Loads the configuration for the provided cluster.
      */
-    public static ClusterConfiguration getClusterConfiguration(Locale locale, AOServConnector conn, Cluster cluster) throws InterruptedException, ExecutionException, ParseException {
+    public static ClusterConfiguration getClusterConfiguration(
+        Locale locale,
+        AOServConnector conn,
+        Cluster cluster,
+        Map<String,Map<String,String>> hddModelReports,
+        Map<String,List<AOServer.DrbdReport>> drbdReports,
+        Map<String,AOServer.LvmReport> lvmReports
+    ) throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
         final String rootAccounting = conn.businesses.getRootAccounting();
 
         ClusterConfiguration clusterConfiguration = new ClusterConfiguration(cluster);
-        
-        Map<String,List<AOServer.DrbdReport>> drbdReports = getDrbdReports(cluster, conn, locale);
 
         Map<String,String> drbdPrimaryDom0s = new HashMap<String,String>();
         Map<String,String> drbdSecondaryDom0s = new HashMap<String,String>();
@@ -303,7 +399,7 @@ public class AOServClusterBuilder {
                 // Must have been found once, and only once, on the primary server DRBD report
                 int foundCount = 0;
                 for(AOServer.DrbdReport report : drbdReports.get(primaryDom0Hostname)) {
-                    if(report.getDomUHostname().equals(domUHostname) && report.getDomUDevice().equals(domUDisk.getDevice())) foundCount++;
+                    if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
                 }
                 if(foundCount!=1) throw new ParseException(
                     ApplicationResourcesAccessor.getMessage(
@@ -318,7 +414,7 @@ public class AOServClusterBuilder {
                 // Must have been found once, and only once, on the secondary server DRBD report
                 foundCount = 0;
                 for(AOServer.DrbdReport report : drbdReports.get(secondaryDom0Hostname)) {
-                    if(report.getDomUHostname().equals(domUHostname) && report.getDomUDevice().equals(domUDisk.getDevice())) foundCount++;
+                    if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
                 }
                 if(foundCount!=1) throw new ParseException(
                     ApplicationResourcesAccessor.getMessage(
@@ -330,7 +426,7 @@ public class AOServClusterBuilder {
                     0
                 );
                 
-                // TODO
+                // TODO: add with physical volume mappings from LVM data
             }
         }
 
@@ -347,7 +443,7 @@ public class AOServClusterBuilder {
         Map<String,List<AOServer.DrbdReport>> drbdReports,
         Map<String,String> drbdPrimaryDom0s,
         Map<String,String> drbdSecondaryDom0s
-    ) throws ParseException {
+    ) throws ParseException, IOException, SQLException {
         final String rootAccounting = conn.businesses.getRootAccounting();
 
         // Get and primary and secondary Dom0s from the DRBD report.
@@ -358,7 +454,7 @@ public class AOServClusterBuilder {
             for(AOServer.DrbdReport report : entry.getValue()) {
                 lineNum++;
                 // Must be a virtual server
-                String domUHostname = report.getDomUHostname();
+                String domUHostname = report.getResourceHostname();
                 Server domUServer = conn.servers.get(rootAccounting+"/"+domUHostname);
                 if(domUServer==null) throw new ParseException(
                     ApplicationResourcesAccessor.getMessage(
@@ -377,7 +473,7 @@ public class AOServClusterBuilder {
                     ),
                     lineNum
                 );
-                String domUDevice = report.getDomUDevice();
+                String domUDevice = report.getResourceDevice();
                 if(
                     domUDevice.length()!=4
                     || domUDevice.charAt(0)!='x'
@@ -449,55 +545,4 @@ public class AOServClusterBuilder {
             }
         }
     }
-
-    /**
-     * Adds a single Dom0 to cluster.
-     */
-    /*private static Dom0 addDom0(Cluster cluster, AOServer aoServer) {
-        // Load info
-        String hostname = aoServer.getHostname();
-        
-        // These could be done concurrently if needed
-        String nodeinfo = aoServer.getNodeInfoReport();
-        String cpuinfo = aoServer.getCpuInfoReport();
-        String pvdisplay = aoServer.getPvDisplayReport();
-        String lvdisplay = aoServer.getLvDisplayReport();
-        //String drbdconf; // Needs to include primary/secondary
-        String xmlist; // To determine current primary state
-        String xenconfig; // To determine RAM allocations, CPU cores, and CPU weights for any machine running on this Dom0
-
-        int ram = 2048; // TODO: get from nodeInfo
-        ProcessorType processorType = ProcessorType.P4; // TODO: get from cpuInfo
-        ProcessorArchitecture processorArchitecture = ProcessorArchitecture.I686; // TODO: get from osv and confirm with nodeInfo
-        int processorSpeed = 2800; // TODO: get from cpuInfo "model name"
-        int processorCores = 2; // TODO: get from nodeInfo "CPU(s):"
-
-        synchronized(cluster) {
-            Dom0 dom0 = cluster.addDom0(hostname, /*rack,/ ram, processorType, processorArchitecture, processorSpeed, processorCores);
-
-            // Add Dom0Disks
-            // TODO: Add PhysicalVolumes
-            //      device from pvdisplay
-            //      raidtype assume single for now
-            //      DiskType:
-            //          /dev/hd? - IDE
-            //          /dev/sd? - check /sys/block/sda/device/model, hard-code as needed
-            //      DiskSpeed:
-            //          /dev/hd? - 7200 RPM
-            //          /dev/sd? - check /sys/block/sda/device/model, hard-code as needed
-            /*Dom0Disk gw1Hda = gw1.addDom0Disk("/dev/hda", RaidType.SINGLE, DiskType.IDE, 7200);
-             * 
-             * partition - get from pvdisplay
-             * extents - get from pvdisplay
-                PhysicalVolume gw1Hda5 = gw1Hda.addPhysicalVolume(5, 896);
-                PhysicalVolume gw1Hda6 = gw1Hda.addPhysicalVolume(6, 896);
-                PhysicalVolume gw1Hda7 = gw1Hda.addPhysicalVolume(7, 253);
-             
-             * skip any pv with vg of "backup"
-             * 
-             * Make sure 
-             *
-            return dom0;
-        }
-    }*/
 }

@@ -12,6 +12,7 @@ import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -51,7 +52,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
     }
 
     @Override
-    protected String getReport() {
+    protected String getReport() throws IOException, SQLException {
         return aoServer.getMdRaidReport();
     }
 
