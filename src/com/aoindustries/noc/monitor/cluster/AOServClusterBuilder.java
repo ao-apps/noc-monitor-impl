@@ -15,6 +15,7 @@ import com.aoindustries.aoserv.client.VirtualDisk;
 import com.aoindustries.aoserv.client.VirtualServer;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
+import com.aoindustries.aoserv.cluster.Dom0;
 import com.aoindustries.aoserv.cluster.DomU;
 import com.aoindustries.aoserv.cluster.DomUDisk;
 import com.aoindustries.aoserv.cluster.ProcessorArchitecture;
@@ -26,9 +27,11 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -41,6 +44,50 @@ import java.util.concurrent.Future;
  * @author  AO Industries, Inc.
  */
 public class AOServClusterBuilder {
+
+    private static boolean is7200rpm(String model) {
+        return
+            // 3Ware, have not yet found way to accurately know which port equates to which /dev/sd[a-z] entry
+            // just assuming all are 7200 RPM drives.
+               model.equals("9650SE-12M DISK")      // ?? GB
+            || model.equals("9650SE-16M DISK")      // ?? GB
+            // IBM
+            || model.equals("IC35L120AVV207-0")     // 120 GB
+            // Maxtor
+            || model.equals("Maxtor 5T040H4")       // 40 GB
+            || model.equals("MAXTOR 6L060J3")       // 60 GB
+            || model.equals("Maxtor 6Y080L0")       // 80 GB
+            || model.equals("Maxtor 6L250R0")       // 250 GB
+            // Seagate
+            || model.equals("ST380811AS")           // 80 GB
+            || model.equals("ST3500320NS")          // 500 GB
+            || model.equals("ST3750330NS")          // 750 GB
+            // Western Digital
+            || model.startsWith("WDC WD800BB-")     // 80 GB
+            || model.startsWith("WDC WD800JB-")     // 80 GB
+            || model.startsWith("WDC WD1200JB-")    // 120 GB
+            || model.startsWith("WDC WD1200JD-")    // 120 GB
+            || model.startsWith("WDC WD1200JS-")    // 120 GB
+            || model.startsWith("WDC WD2000JB-")    // 200 GB
+            || model.startsWith("WDC WD2500JB-")    // 250 GB
+            || model.startsWith("WDC WD2500YD-")    // 250 GB
+            || model.startsWith("WDC WD3200YS-")    // 320 GB
+        ;
+    }
+    private static boolean is10000rpm(String model) {
+        return
+            // Fujitsu
+               model.equals("MAW3073NP")            // 73 GB
+            // Western Digital
+            || model.startsWith("WDC WD740GD-")     // 74 GB
+        ;
+    }
+    private static boolean is15000rpm(String model) {
+        return
+            // Seagate
+            model.equals("ST3146855LC")             // 146 GB
+        ;
+    }
 
     /** Make no instances */
     private AOServClusterBuilder() {}
@@ -152,7 +199,54 @@ public class AOServClusterBuilder {
                         physicalServer.getProcessorCores(),
                         physicalServer.getSupportsHvm()
                     );
-                    // TODO: Add Dom0s
+                    Dom0 dom0 = cluster.getDom0(hostname);
+                    if(dom0==null) throw new AssertionError("dom0 is null");
+
+                    // Add Dom0Disks when first needed for a physical volume
+                    Map<String,String> hddModelReport = hddModelReports.get(hostname);
+                    if(hddModelReport==null) throw new AssertionError("hddmodel report not found for "+hostname);
+                    Set<String> addedDisks = new HashSet<String>(hddModelReport.size()*4/3+1);
+                    // Add physical volumes
+                    AOServer.LvmReport lvmReport = lvmReports.get(hostname);
+                    if(lvmReport==null) throw new AssertionError("LvmReport not found for "+hostname);
+                    for(Map.Entry<String,AOServer.LvmReport.PhysicalVolume> entry : lvmReport.getPhysicalVolumes().entrySet()) {
+                        String partition = entry.getKey();
+                        AOServer.LvmReport.PhysicalVolume lvmPhysicalVolume = entry.getValue();
+                        // Count the number of digits on the right of partition
+                        int digitCount = 0;
+                        for(int c=partition.length()-1; c>=0; c--) {
+                            char ch=partition.charAt(c);
+                            if(ch>='0' && ch<='9') digitCount++;
+                            else break;
+                        }
+                        if(digitCount==0) throw new AssertionError("No partition number found on physical volume: "+partition);
+                        String device = partition.substring(0, partition.length()-digitCount);
+                        short partitionNum = Short.parseShort(partition.substring(partition.length()-digitCount));
+                        if(!addedDisks.contains(device)) {
+                            // Add the Dom0Disk
+                            String model = hddModelReport.get(device);
+                            if(model==null) throw new AssertionError("device not found in hddmodel report: "+device+" on "+hostname);
+                            int speed;
+                            if(is7200rpm(model)) speed = 7200;
+                            else if(is10000rpm(model)) speed = 10000;
+                            else if(is15000rpm(model)) speed = 15000;
+                            else throw new AssertionError("Unknown hard drive model: "+model);
+                            cluster = cluster.addDom0Disk(hostname, device, speed);
+                            addedDisks.add(device);
+                        }
+                        // Add the physical volume
+                        long extents = lvmPhysicalVolume.getPvPeCount();
+                        if(extents==0) {
+                            // Not allocated, need to calculate ourselves using the default extents size
+                            extents = lvmPhysicalVolume.getPvSize()/DomUDisk.EXTENTS_SIZE;
+                        }
+                        cluster = cluster.addPhysicalVolume(
+                            hostname,
+                            device,
+                            partitionNum,
+                            extents
+                        );
+                    }
                 }
             }
         }
@@ -426,7 +520,7 @@ public class AOServClusterBuilder {
                     0
                 );
                 
-                // TODO: add with physical volume mappings from LVM data
+                // TODO: add with physical volume mappings from LVM data for DomUDisks
             }
         }
 
