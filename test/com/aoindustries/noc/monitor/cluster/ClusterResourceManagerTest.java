@@ -20,6 +20,7 @@ import com.aoindustries.aoserv.cluster.optimize.ListElement;
 import com.aoindustries.aoserv.cluster.optimize.OptimizedClusterConfigurationHandler;
 import com.aoindustries.aoserv.cluster.optimize.SimpleHeuristicFunction;
 import com.aoindustries.aoserv.cluster.optimize.Transition;
+import com.aoindustries.util.ErrorPrinter;
 import com.aoindustries.util.StandardErrorHandler;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -52,7 +53,12 @@ public class ClusterResourceManagerTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         conn = AOServConnector.getConnector(new StandardErrorHandler());
-        clusterConfigurations = AOServClusterBuilder.getClusterConfigurations(Locale.getDefault(), conn);
+        try {
+            clusterConfigurations = AOServClusterBuilder.getClusterConfigurations(Locale.getDefault(), conn);
+        } catch(Exception err) {
+            ErrorPrinter.printStackTraces(err);
+            throw err;
+        }
     }
 
     @Override

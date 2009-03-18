@@ -44,6 +44,9 @@ import java.util.concurrent.Future;
 /**
  * Builds the cluster configuration from the AOServ system.
  *
+ * TODO: Add check to make sure that virtual server to physical server mappings are always within the same cluster?
+ *       - or - Could this be an underlying database constraint?
+ *
  * @author  AO Industries, Inc.
  */
 public class AOServClusterBuilder {
