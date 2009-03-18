@@ -125,9 +125,7 @@ public class AOServClusterBuilder {
      * 
      * @see Cluster
      */
-    //public static SortedSet<Cluster> getClusters(final AOServConnector conn) throws InterruptedException, ExecutionException {
-    //}
-    private static SortedSet<Cluster> getClusters(
+    public static SortedSet<Cluster> getClusters(
         final AOServConnector conn,
         final List<AOServer> aoServers,
         final Map<String,Map<String,String>> hddModelReports,
@@ -172,10 +170,7 @@ public class AOServClusterBuilder {
     /**
      * Loads a cluster for a single server farm.
      */
-    //public static Cluster getCluster(AOServConnector conn, ServerFarm serverFarm) throws SQLException, InterruptedException, ExecutionException, ParseException {
-    //    return getCluster(conn, serverFarm, getLvmReports(conn));
-    //}
-    private static Cluster getCluster(
+    public static Cluster getCluster(
         AOServConnector conn,
         ServerFarm serverFarm,
         List<AOServer> aoServers,
@@ -289,9 +284,7 @@ public class AOServClusterBuilder {
                             virtualDisk.getDevice(),
                             virtualDisk.getMinimumDiskSpeed(),
                             virtualDisk.getExtents(),
-                            virtualDisk.getWeight(),
-                            virtualDisk.getPrimaryPhysicalVolumesLocked(),
-                            virtualDisk.getSecondaryPhysicalVolumesLocked()
+                            virtualDisk.getWeight()
                         );
                     }
                 }
@@ -309,15 +302,18 @@ public class AOServClusterBuilder {
      */
     public static SortedSet<ClusterConfiguration> getClusterConfigurations(
         final Locale locale,
-        final AOServConnector conn
+        final AOServConnector conn,
+        final SortedSet<Cluster> clusters,
+        final Map<String,List<AOServer.DrbdReport>> drbdReports,
+        final Map<String,AOServer.LvmReport> lvmReports
     ) throws SQLException, ParseException, InterruptedException, ExecutionException, IOException {
-        final List<AOServer> aoServers = conn.aoServers.getRows();
-        final Map<String,Map<String,String>> hddModelReports = getHddModelReports(aoServers, locale);
-        final Map<String,List<AOServer.DrbdReport>> drbdReports = getDrbdReports(aoServers, locale);
-        final Map<String,AOServer.LvmReport> lvmReports = getLvmReports(aoServers, locale);
+        //final List<AOServer> aoServers = conn.aoServers.getRows();
+        //final Map<String,Map<String,String>> hddModelReports = getHddModelReports(aoServers, locale);
+        //final Map<String,List<AOServer.DrbdReport>> drbdReports = getDrbdReports(aoServers, locale);
+        //final Map<String,AOServer.LvmReport> lvmReports = getLvmReports(aoServers, locale);
 
         // Start concurrently
-        SortedSet<Cluster> clusters = getClusters(conn, aoServers, hddModelReports, lvmReports);
+        //SortedSet<Cluster> clusters = getClusters(conn, aoServers, hddModelReports, lvmReports);
         List<Future<ClusterConfiguration>> futures = new ArrayList<Future<ClusterConfiguration>>(clusters.size());
         for(final Cluster cluster : clusters) {
             futures.add(
