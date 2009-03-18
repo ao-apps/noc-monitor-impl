@@ -42,7 +42,7 @@ import junit.framework.TestSuite;
  */
 public class ClusterResourceManagerTest extends TestCase {
 
-    private static final boolean FIND_SHORTEST_PATH = false;
+    private static final boolean FIND_SHORTEST_PATH = true;
 
     private AOServConnector conn;
     private SortedSet<ClusterConfiguration> clusterConfigurations;
