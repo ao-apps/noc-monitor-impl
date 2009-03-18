@@ -16,8 +16,11 @@ import com.aoindustries.aoserv.client.VirtualServer;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
 import com.aoindustries.aoserv.cluster.Dom0;
+import com.aoindustries.aoserv.cluster.Dom0Disk;
 import com.aoindustries.aoserv.cluster.DomU;
 import com.aoindustries.aoserv.cluster.DomUDisk;
+import com.aoindustries.aoserv.cluster.PhysicalVolume;
+import com.aoindustries.aoserv.cluster.PhysicalVolumeConfiguration;
 import com.aoindustries.aoserv.cluster.ProcessorArchitecture;
 import com.aoindustries.aoserv.cluster.ProcessorType;
 import com.aoindustries.noc.monitor.RootNodeImpl;
@@ -125,7 +128,6 @@ public class AOServClusterBuilder {
         final AOServConnector conn,
         final List<AOServer> aoServers,
         final Map<String,Map<String,String>> hddModelReports,
-        final Map<String,List<AOServer.DrbdReport>> drbdReports,
         final Map<String,AOServer.LvmReport> lvmReports
     ) throws SQLException, InterruptedException, ExecutionException, IOException {
         List<ServerFarm> serverFarms = conn.serverFarms.getRows();
@@ -148,7 +150,7 @@ public class AOServClusterBuilder {
                     RootNodeImpl.executorService.submit(
                         new Callable<Cluster>() {
                             public Cluster call() throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-                                return getCluster(conn, serverFarm, aoServers, hddModelReports, drbdReports, lvmReports);
+                                return getCluster(conn, serverFarm, aoServers, hddModelReports, lvmReports);
                             }
                         }
                     )
@@ -175,7 +177,6 @@ public class AOServClusterBuilder {
         ServerFarm serverFarm,
         List<AOServer> aoServers,
         Map<String,Map<String,String>> hddModelReports,
-        Map<String,List<AOServer.DrbdReport>> drbdReports,
         Map<String,AOServer.LvmReport> lvmReports
     ) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
         final String rootAccounting = conn.businesses.getRootAccounting();
@@ -313,14 +314,14 @@ public class AOServClusterBuilder {
         final Map<String,AOServer.LvmReport> lvmReports = getLvmReports(aoServers, locale);
 
         // Start concurrently
-        SortedSet<Cluster> clusters = getClusters(conn, aoServers, hddModelReports, drbdReports, lvmReports);
+        SortedSet<Cluster> clusters = getClusters(conn, aoServers, hddModelReports, lvmReports);
         List<Future<ClusterConfiguration>> futures = new ArrayList<Future<ClusterConfiguration>>(clusters.size());
         for(final Cluster cluster : clusters) {
             futures.add(
                 RootNodeImpl.executorService.submit(
                     new Callable<ClusterConfiguration>() {
                         public ClusterConfiguration call() throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
-                            return getClusterConfiguration(locale, conn, cluster, hddModelReports, drbdReports, lvmReports);
+                            return getClusterConfiguration(locale, conn, cluster, drbdReports, lvmReports);
                         }
                     }
                 )
@@ -448,7 +449,6 @@ public class AOServClusterBuilder {
         Locale locale,
         AOServConnector conn,
         Cluster cluster,
-        Map<String,Map<String,String>> hddModelReports,
         Map<String,List<AOServer.DrbdReport>> drbdReports,
         Map<String,AOServer.LvmReport> lvmReports
     ) throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
@@ -458,87 +458,6 @@ public class AOServClusterBuilder {
 
         Map<String,String> drbdPrimaryDom0s = new HashMap<String,String>();
         Map<String,String> drbdSecondaryDom0s = new HashMap<String,String>();
-        processDrbdReports(conn, locale, drbdReports, drbdPrimaryDom0s, drbdSecondaryDom0s);
-
-        // Now, each and every enabled virtual server must have both a primary and a secondary
-        for(Map.Entry<String,DomU> entry : cluster.getDomUs().entrySet()) {
-            String domUHostname = entry.getKey();
-            DomU domU = entry.getValue();
-            String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
-            if(primaryDom0Hostname==null) throw new ParseException(
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
-                    "AOServClusterBuilder.ParseException.primaryNotFound",
-                    domUHostname
-                ),
-                0
-            );
-            String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
-            if(secondaryDom0Hostname==null) throw new ParseException(
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
-                    "AOServClusterBuilder.ParseException.secondaryNotFound",
-                    domUHostname
-                ),
-                0
-            );
-            clusterConfiguration = clusterConfiguration.addDomUConfiguration(
-                domU,
-                cluster.getDom0(primaryDom0Hostname),
-                cluster.getDom0(secondaryDom0Hostname)
-            );
-            
-            // Add each DomUDisk
-            for(DomUDisk domUDisk : domU.getDomUDisks().values()) {
-                // Must have been found once, and only once, on the primary server DRBD report
-                int foundCount = 0;
-                for(AOServer.DrbdReport report : drbdReports.get(primaryDom0Hostname)) {
-                    if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
-                }
-                if(foundCount!=1) throw new ParseException(
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
-                        "AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
-                        domUDisk.getDevice(),
-                        primaryDom0Hostname
-                    ),
-                    0
-                );
-
-                // Must have been found once, and only once, on the secondary server DRBD report
-                foundCount = 0;
-                for(AOServer.DrbdReport report : drbdReports.get(secondaryDom0Hostname)) {
-                    if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
-                }
-                if(foundCount!=1) throw new ParseException(
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
-                        "AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
-                        domUDisk.getDevice(),
-                        secondaryDom0Hostname
-                    ),
-                    0
-                );
-                
-                // TODO: add with physical volume mappings from LVM data for DomUDisks
-            }
-        }
-
-        return clusterConfiguration;
-    }
-
-    /**
-     * Makes sure that everything in the DRBD reports is for valid virtual servers
-     * and virtual disks and has sane values.
-     */
-    private static void processDrbdReports(
-        AOServConnector conn,
-        Locale locale,
-        Map<String,List<AOServer.DrbdReport>> drbdReports,
-        Map<String,String> drbdPrimaryDom0s,
-        Map<String,String> drbdSecondaryDom0s
-    ) throws ParseException, IOException, SQLException {
-        final String rootAccounting = conn.businesses.getRootAccounting();
 
         // Get and primary and secondary Dom0s from the DRBD report.
         // Also performs sanity checks on all the DRBD information.
@@ -638,5 +557,192 @@ public class AOServClusterBuilder {
                 }
             }
         }
+
+        // Now, each and every enabled virtual server must have both a primary and a secondary
+        for(Map.Entry<String,DomU> entry : cluster.getDomUs().entrySet()) {
+            String domUHostname = entry.getKey();
+            DomU domU = entry.getValue();
+            Server domUServer = conn.servers.get(rootAccounting+"/"+domUHostname);
+            VirtualServer domUVirtualServer = domUServer.getVirtualServer();
+
+            String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
+            if(primaryDom0Hostname==null) throw new ParseException(
+                ApplicationResourcesAccessor.getMessage(
+                    locale,
+                    "AOServClusterBuilder.ParseException.primaryNotFound",
+                    domUHostname
+                ),
+                0
+            );
+
+            String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
+            if(secondaryDom0Hostname==null) throw new ParseException(
+                ApplicationResourcesAccessor.getMessage(
+                    locale,
+                    "AOServClusterBuilder.ParseException.secondaryNotFound",
+                    domUHostname
+                ),
+                0
+            );
+            clusterConfiguration = clusterConfiguration.addDomUConfiguration(
+                domU,
+                cluster.getDom0(primaryDom0Hostname),
+                cluster.getDom0(secondaryDom0Hostname)
+            );
+            //DomUConfiguration domUConfiguration = clusterConfiguration.getDomUConfiguration(domU);
+            //assert domUConfiguration!=null : "domUConfiguration is null";
+
+            // Add each DomUDisk
+            for(DomUDisk domUDisk : domU.getDomUDisks().values()) {
+                // Must have been found once, and only once, on the primary server DRBD report
+                int foundCount = 0;
+                for(AOServer.DrbdReport report : drbdReports.get(primaryDom0Hostname)) {
+                    if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
+                }
+                if(foundCount!=1) throw new ParseException(
+                    ApplicationResourcesAccessor.getMessage(
+                        locale,
+                        "AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
+                        domUDisk.getDevice(),
+                        primaryDom0Hostname
+                    ),
+                    0
+                );
+
+                // Must have been found once, and only once, on the secondary server DRBD report
+                foundCount = 0;
+                for(AOServer.DrbdReport report : drbdReports.get(secondaryDom0Hostname)) {
+                    if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
+                }
+                if(foundCount!=1) throw new ParseException(
+                    ApplicationResourcesAccessor.getMessage(
+                        locale,
+                        "AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
+                        domUDisk.getDevice(),
+                        secondaryDom0Hostname
+                    ),
+                    0
+                );
+                
+                // Add to the configuration
+                clusterConfiguration = clusterConfiguration.addDomUDiskConfiguration(
+                    domU,
+                    domUDisk,
+                    getPhysicalVolumeConfigurations(cluster, domUDisk, lvmReports, primaryDom0Hostname),
+                    getPhysicalVolumeConfigurations(cluster, domUDisk, lvmReports, secondaryDom0Hostname)
+                );
+            }
+        }
+        
+        // Look for any extra resources in LVM
+        {
+            // Make sure every volume group found in LVM equals a domUHostname that is either primary or secondary on that machine
+            for(Map.Entry<String,AOServer.LvmReport> entry : lvmReports.entrySet()) {
+                String dom0Hostname = entry.getKey();
+                // Verify within this cluster only
+                if(cluster.getDom0s().containsKey(dom0Hostname)) {
+                    AOServer.LvmReport lvmReport = entry.getValue();
+                    for(Map.Entry<String,AOServer.LvmReport.VolumeGroup> vgEntry : lvmReport.getVolumeGroups().entrySet()) {
+                        String vgName = vgEntry.getKey();
+                        AOServer.LvmReport.VolumeGroup volumeGroup = vgEntry.getValue();
+                        // This should still validate the logical volumes in the off chance a virtual server is named "backup"
+                        DomU domU = cluster.getDomU(vgName);
+                        if(domU==null) {
+                            if(!vgName.equals("backup")) throw new AssertionError("Volume group found but there is no virtual server of the same name: "+dom0Hostname+":/dev/"+vgName);
+                        } else {
+                            // Make sure primary or secondary on this Dom0
+                            String domUHostname = domU.getHostname();
+                            String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
+                            String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
+                            if(
+                                !primaryDom0Hostname.equals(dom0Hostname)
+                                && !secondaryDom0Hostname.equals(dom0Hostname)
+                            ) throw new AssertionError("Volume group found but the virtual server is neither primary nor secondary on this physical server: "+dom0Hostname+":/dev/"+vgName);
+
+                            // Make sure every logical volume found in LVM equals a domUDisk
+                            for(String lvName : volumeGroup.getLogicalVolumes().keySet()) {
+                                if(!lvName.endsWith("-drbd")) throw new AssertionError("lvName does not end with -drbd: "+lvName);
+                                DomUDisk domUDisk = domU.getDomUDisk(lvName.substring(0, lvName.length()-5));
+                                if(domUDisk==null) throw new AssertionError("Logical volume found but the virtual server does not have a corresponding virtual disk: "+dom0Hostname+":/dev/"+vgName+"/"+lvName);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return clusterConfiguration;
+    }
+    
+    /**
+     * Gets the physical volume configuration for the provided disk on the provided Dom0.
+     */
+    private static List<PhysicalVolumeConfiguration> getPhysicalVolumeConfigurations(
+        Cluster cluster,
+        DomUDisk domUDisk,
+        Map<String,AOServer.LvmReport> lvmReports,
+        String dom0Hostname
+    ) {
+        AOServer.LvmReport lvmReport = lvmReports.get(dom0Hostname);
+        if(lvmReport==null) throw new AssertionError("No lvm report found for "+dom0Hostname);
+        // Find the Dom0
+        Dom0 dom0 = cluster.getDom0(dom0Hostname);
+        if(dom0==null) throw new AssertionError("Dom0 not found: "+dom0Hostname);
+        // Should have a volume group equal to its hostname
+        String domUHostname = domUDisk.getDomUHostname();
+        AOServer.LvmReport.VolumeGroup volumeGroup = lvmReport.getVolumeGroup(domUHostname);
+        if(volumeGroup==null) throw new AssertionError("No volume group named "+domUHostname+" found on "+dom0Hostname);
+        // Should have a logical volume named {device}-drbd
+        String logicalVolumeName = domUDisk.getDevice()+"-drbd";
+        AOServer.LvmReport.LogicalVolume logicalVolume = volumeGroup.getLogicalVolume(logicalVolumeName);
+        if(logicalVolume==null) throw new AssertionError("No logical volume named "+logicalVolumeName+" found on "+dom0Hostname+":"+domUHostname);
+        // Each logical volume may have any number of segments
+        List<PhysicalVolumeConfiguration> configs = new ArrayList<PhysicalVolumeConfiguration>();
+        for(AOServer.LvmReport.Segment segment : logicalVolume.getSegments()) {
+            AOServer.LvmReport.SegmentType segmentType = segment.getSegtype();
+            if(segmentType!=AOServer.LvmReport.SegmentType.linear && segmentType!=AOServer.LvmReport.SegmentType.striped) {
+                throw new AssertionError("Only linear and striped segments currently supported");
+            }
+            // This is somewhat of an over-simplication as it treats any striped segment as if each stripe is linearly appended.
+            // This should be close enough for the optimization purposes.
+            long firstLogicalExtent = segment.getSegStartPe();
+            // Each segment may have multiple stripes
+            for(AOServer.LvmReport.Stripe stripe : segment.getStripes()) {
+                assert stripe.getPhysicalVolume().getVolumeGroup().getVgName().equals(domUHostname) : "stripe.physicalVolume.volumeGroup.vgName!=domUHostname";
+                String partition = stripe.getPhysicalVolume().getPvName();
+                // Count the number of digits on the right of partition
+                int digitCount = 0;
+                for(int c=partition.length()-1; c>=0; c--) {
+                    char ch=partition.charAt(c);
+                    if(ch>='0' && ch<='9') digitCount++;
+                    else break;
+                }
+                if(digitCount==0) throw new AssertionError("No partition number found on physical volume: "+partition);
+                String device = partition.substring(0, partition.length()-digitCount);
+                short partitionNum = Short.parseShort(partition.substring(partition.length()-digitCount));
+
+                // Find the Dom0Disk
+                Dom0Disk dom0Disk = dom0.getDom0Disk(device);
+                if(dom0Disk==null) throw new AssertionError("Unable to find Dom0Disk: "+dom0Hostname+":"+device);
+
+                // Find the Dom0 physical volume
+                PhysicalVolume physicalVolume = dom0Disk.getPhysicalVolume(partitionNum);
+                if(physicalVolume==null) throw new AssertionError("Unable to find PhysicalVolume: "+dom0Hostname+":"+device+partitionNum);
+
+                // Add the new physical volume config
+                long firstPhysicalExtent = stripe.getFirstPe();
+                long extents = stripe.getLastPe() - firstPhysicalExtent + 1;
+                configs.add(
+                    PhysicalVolumeConfiguration.newInstance(
+                        physicalVolume,
+                        firstLogicalExtent,
+                        firstPhysicalExtent,
+                        extents
+                    )
+                );
+                firstLogicalExtent += extents;
+            }
+        }
+        return configs;
     }
 }
