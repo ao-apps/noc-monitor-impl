@@ -129,7 +129,8 @@ public class AOServClusterBuilder {
         final AOServConnector conn,
         final List<AOServer> aoServers,
         final Map<String,Map<String,String>> hddModelReports,
-        final Map<String,AOServer.LvmReport> lvmReports
+        final Map<String,AOServer.LvmReport> lvmReports,
+        final boolean useTarget
     ) throws SQLException, InterruptedException, ExecutionException, IOException {
         List<ServerFarm> serverFarms = conn.serverFarms.getRows();
 
@@ -151,7 +152,7 @@ public class AOServClusterBuilder {
                     RootNodeImpl.executorService.submit(
                         new Callable<Cluster>() {
                             public Cluster call() throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-                                return getCluster(conn, serverFarm, aoServers, hddModelReports, lvmReports);
+                                return getCluster(conn, serverFarm, aoServers, hddModelReports, lvmReports, useTarget);
                             }
                         }
                     )
@@ -169,13 +170,16 @@ public class AOServClusterBuilder {
 
     /**
      * Loads a cluster for a single server farm.
+     * 
+     * @param  useTarget  if true will use the target values, otherwise will use the live values
      */
     public static Cluster getCluster(
         AOServConnector conn,
         ServerFarm serverFarm,
         List<AOServer> aoServers,
         Map<String,Map<String,String>> hddModelReports,
-        Map<String,AOServer.LvmReport> lvmReports
+        Map<String,AOServer.LvmReport> lvmReports,
+        boolean useTarget
     ) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
         final String rootAccounting = conn.businesses.getRootAccounting();
 
@@ -265,13 +269,13 @@ public class AOServClusterBuilder {
                     String hostname = server.getName();
                     cluster = cluster.addDomU(
                         hostname,
-                        virtualServer.getPrimaryRam(),
-                        virtualServer.getSecondaryRam(),
+                        useTarget ? virtualServer.getPrimaryRamTarget() : virtualServer.getPrimaryRam(),
+                        useTarget ? virtualServer.getSecondaryRamTarget() : virtualServer.getSecondaryRam(),
                         virtualServer.getMinimumProcessorType()==null ? null : ProcessorType.valueOf(virtualServer.getMinimumProcessorType().getType()),
                         ProcessorArchitecture.valueOf(virtualServer.getMinimumProcessorArchitecture().getName().toUpperCase(Locale.ENGLISH)),
-                        virtualServer.getMinimumProcessorSpeed(),
-                        virtualServer.getProcessorCores(),
-                        virtualServer.getProcessorWeight(),
+                        useTarget ? virtualServer.getMinimumProcessorSpeedTarget() : virtualServer.getMinimumProcessorSpeed(),
+                        useTarget ? virtualServer.getProcessorCoresTarget() : virtualServer.getProcessorCores(),
+                        useTarget ? virtualServer.getProcessorWeightTarget() : virtualServer.getProcessorWeight(),
                         virtualServer.getRequiresHvm(),
                         virtualServer.isPrimaryPhysicalServerLocked(),
                         virtualServer.isSecondaryPhysicalServerLocked()
@@ -282,9 +286,9 @@ public class AOServClusterBuilder {
                         cluster = cluster.addDomUDisk(
                             hostname,
                             virtualDisk.getDevice(),
-                            virtualDisk.getMinimumDiskSpeed(),
+                            useTarget ? virtualDisk.getMinimumDiskSpeedTarget() : virtualDisk.getMinimumDiskSpeed(),
                             virtualDisk.getExtents(),
-                            virtualDisk.getWeight()
+                            useTarget ? virtualDisk.getWeightTarget() : virtualDisk.getWeight()
                         );
                     }
                 }
@@ -438,7 +442,7 @@ public class AOServClusterBuilder {
                 entry.getValue().get()
             );
         }
-        return Collections.unmodifiableMap(reports);
+        return reports;
     }
 
     /**
