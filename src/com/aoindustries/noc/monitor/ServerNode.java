@@ -180,9 +180,9 @@ public class ServerNode extends NodeImpl {
      * Starts this node after it is added to the parent.
      */
     synchronized void start() throws IOException, SQLException {
-        serversNode.rootNode.conn.aoServers.addTableListener(tableListener, 100);
-        serversNode.rootNode.conn.netDevices.addTableListener(tableListener, 100);
-        serversNode.rootNode.conn.servers.addTableListener(tableListener, 100);
+        serversNode.rootNode.conn.getAoServers().addTableListener(tableListener, 100);
+        serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
+        serversNode.rootNode.conn.getServers().addTableListener(tableListener, 100);
         if(_backupsNode==null) {
             _backupsNode = new BackupsNode(this, port, csf, ssf);
             _backupsNode.start();
@@ -201,9 +201,9 @@ public class ServerNode extends NodeImpl {
      * Stops this node before it is removed from the parent.
      */
     synchronized void stop() {
-        serversNode.rootNode.conn.aoServers.removeTableListener(tableListener);
-        serversNode.rootNode.conn.netDevices.removeTableListener(tableListener);
-        serversNode.rootNode.conn.servers.removeTableListener(tableListener);
+        serversNode.rootNode.conn.getAoServers().removeTableListener(tableListener);
+        serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
+        serversNode.rootNode.conn.getServers().removeTableListener(tableListener);
         if(_timeNode!=null) {
             _timeNode.stop();
             _timeNode = null;

@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.SingleResult;
-import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
@@ -29,12 +28,12 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
     private static final Map<String, MdRaidNodeWorker> workerCache = new HashMap<String,MdRaidNodeWorker>();
-    static MdRaidNodeWorker getWorker(ErrorHandler errorHandler, File persistenceFile, AOServer aoServer) throws IOException {
+    static MdRaidNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             MdRaidNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MdRaidNodeWorker(errorHandler, persistenceFile, aoServer);
+                worker = new MdRaidNodeWorker(persistenceFile, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
@@ -46,8 +45,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private AOServer aoServer;
 
-    MdRaidNodeWorker(ErrorHandler errorHandler, File persistenceFile, AOServer aoServer) {
-        super(errorHandler, persistenceFile);
+    MdRaidNodeWorker(File persistenceFile, AOServer aoServer) {
+        super(persistenceFile);
         this.aoServer = aoServer;
     }
 

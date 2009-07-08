@@ -26,7 +26,6 @@ public class PingNode extends TableMultiResultNodeImpl {
             ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
             ipAddressNode,
             PingNodeWorker.getWorker(
-                ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 ipAddressNode.getPersistenceDirectory(),
                 ipAddressNode.getIPAddress()
             ),

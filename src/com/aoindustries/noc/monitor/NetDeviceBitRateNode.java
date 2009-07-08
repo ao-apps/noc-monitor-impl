@@ -23,7 +23,6 @@ public class NetDeviceBitRateNode extends TableMultiResultNodeImpl {
             netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
             netDeviceNode,
             NetDeviceBitRateNodeWorker.getWorker(
-                netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 netDeviceNode.getPersistenceDirectory(),
                 netDeviceNode.getNetDevice()
             ),

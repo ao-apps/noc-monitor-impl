@@ -7,10 +7,10 @@ package com.aoindustries.noc.monitor;
  */
 import com.aoindustries.io.AOPool;
 import com.aoindustries.sql.Database;
-import com.aoindustries.util.ErrorHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Java interface to the master AO Industries database.
@@ -18,6 +18,8 @@ import java.util.Properties;
  * @author  AO Industries, Inc.
  */
 public class WebSiteDatabase extends Database {
+
+    private static final Logger logger = Logger.getLogger(WebSiteDatabase.class.getName());
 
     /**
      * Only one database accessor is made.
@@ -68,7 +70,7 @@ public class WebSiteDatabase extends Database {
     /**
      * Make no instances.
      */
-    private WebSiteDatabase(ErrorHandler errorHandler) throws IOException {
+    private WebSiteDatabase() throws IOException {
         super(
             getDatabaseDriver(),
             getDatabaseURL(),
@@ -76,13 +78,13 @@ public class WebSiteDatabase extends Database {
             getDatabasePassword(),
             getDatabasePoolSize(),
             getDatabaseMaxConnectionAge(),
-            errorHandler
+            logger
         );
     }
 
-    public static WebSiteDatabase getDatabase(ErrorHandler errorHandler) throws IOException {
+    public static WebSiteDatabase getDatabase() throws IOException {
         synchronized(WebSiteDatabase.class) {
-            if(websiteDatabase==null) websiteDatabase=new WebSiteDatabase(errorHandler);
+            if(websiteDatabase==null) websiteDatabase=new WebSiteDatabase();
             return websiteDatabase;
         }
     }

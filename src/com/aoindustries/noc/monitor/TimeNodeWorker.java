@@ -9,7 +9,6 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
 import com.aoindustries.noc.common.TimeSpan;
-import com.aoindustries.util.ErrorHandler;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -42,12 +41,12 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
      * One unique worker is made per persistence directory (and should match aoServer exactly)
      */
     private static final Map<String, TimeNodeWorker> workerCache = new HashMap<String,TimeNodeWorker>();
-    static TimeNodeWorker getWorker(ErrorHandler errorHandler, File persistenceDirectory, AOServer aoServer) throws IOException {
+    static TimeNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             TimeNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new TimeNodeWorker(errorHandler, persistenceDirectory, aoServer);
+                worker = new TimeNodeWorker(persistenceDirectory, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
@@ -59,8 +58,8 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private TimeNodeWorker(ErrorHandler errorHandler, File persistenceDirectory, AOServer aoServer) {
-        super(errorHandler, new File(persistenceDirectory, "time"), new File(persistenceDirectory, "time.new"), false);
+    private TimeNodeWorker(File persistenceDirectory, AOServer aoServer) {
+        super(new File(persistenceDirectory, "time"), new File(persistenceDirectory, "time.new"), false);
         this._aoServer = aoServer;
     }
 

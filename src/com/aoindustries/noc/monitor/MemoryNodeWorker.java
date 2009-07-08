@@ -9,7 +9,6 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.ApproximateDisplayExactSize;
 import com.aoindustries.noc.common.TableMultiResult;
-import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
@@ -40,12 +39,12 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
      * One unique worker is made per persistence directory (and should match aoServer exactly)
      */
     private static final Map<String, MemoryNodeWorker> workerCache = new HashMap<String,MemoryNodeWorker>();
-    static MemoryNodeWorker getWorker(ErrorHandler errorHandler, File persistenceDirectory, AOServer aoServer) throws IOException {
+    static MemoryNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             MemoryNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MemoryNodeWorker(errorHandler, persistenceDirectory, aoServer);
+                worker = new MemoryNodeWorker(persistenceDirectory, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
@@ -57,8 +56,8 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private MemoryNodeWorker(ErrorHandler errorHandler, File persistenceDirectory, AOServer aoServer) {
-        super(errorHandler, new File(persistenceDirectory, "meminfo"), new File(persistenceDirectory, "meminfo.new"), false);
+    private MemoryNodeWorker(File persistenceDirectory, AOServer aoServer) {
+        super(new File(persistenceDirectory, "meminfo"), new File(persistenceDirectory, "meminfo.new"), false);
         this._aoServer = aoServer;
     }
 

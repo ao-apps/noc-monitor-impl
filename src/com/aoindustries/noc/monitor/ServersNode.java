@@ -97,14 +97,14 @@ abstract public class ServersNode extends NodeImpl {
 
     final void start() throws IOException, SQLException {
         synchronized(serverNodes) {
-            rootNode.conn.servers.addTableListener(tableListener, 100);
+            rootNode.conn.getServers().addTableListener(tableListener, 100);
             verifyServers();
         }
     }
 
     final void stop() {
         synchronized(serverNodes) {
-            rootNode.conn.servers.removeTableListener(tableListener);
+            rootNode.conn.getServers().removeTableListener(tableListener);
             for(ServerNode serverNode : serverNodes) {
                 serverNode.stop();
                 rootNode.nodeRemoved();
@@ -117,7 +117,7 @@ abstract public class ServersNode extends NodeImpl {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         // Get all the servers that have monitoring enabled
-        List<Server> allServers = rootNode.conn.servers.getRows();
+        List<Server> allServers = rootNode.conn.getServers().getRows();
         List<Server> servers = new ArrayList<Server>(allServers.size());
         for(Server server : allServers) {
             if(server.isMonitoringEnabled() && includeServer(server)) servers.add(server);
@@ -157,7 +157,7 @@ abstract public class ServersNode extends NodeImpl {
                         }
                     }
                 //} catch(RuntimeException err) {
-                //    ErrorPrinter.printStackTraces(err);
+                //    logger...err;
                 //    throw err;
                 //}
             }

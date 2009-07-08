@@ -10,7 +10,6 @@ import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.NetDeviceID;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.SingleResult;
-import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
@@ -32,12 +31,12 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
      * One unique worker is made per persistence file (and should match the net device exactly)
      */
     private static final Map<String, NetDeviceBondingNodeWorker> workerCache = new HashMap<String,NetDeviceBondingNodeWorker>();
-    static NetDeviceBondingNodeWorker getWorker(ErrorHandler errorHandler, File persistenceFile, NetDevice netDevice) throws IOException {
+    static NetDeviceBondingNodeWorker getWorker(File persistenceFile, NetDevice netDevice) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             NetDeviceBondingNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new NetDeviceBondingNodeWorker(errorHandler, persistenceFile, netDevice);
+                worker = new NetDeviceBondingNodeWorker(persistenceFile, netDevice);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.netDevice.equals(netDevice)) throw new AssertionError("worker.netDevice!=netDevice: "+worker.netDevice+"!="+netDevice);
@@ -49,8 +48,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private NetDevice netDevice;
 
-    private NetDeviceBondingNodeWorker(ErrorHandler errorHandler, File persistenceFile, NetDevice netDevice) {
-        super(errorHandler, persistenceFile);
+    private NetDeviceBondingNodeWorker(File persistenceFile, NetDevice netDevice) {
+        super(persistenceFile);
         this.netDevice = netDevice;
     }
 

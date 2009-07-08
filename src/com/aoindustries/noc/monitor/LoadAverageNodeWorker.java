@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
-import com.aoindustries.util.ErrorHandler;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -29,12 +28,12 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
      * One unique worker is made per persistence directory (and should match aoServer exactly)
      */
     private static final Map<String, LoadAverageNodeWorker> workerCache = new HashMap<String,LoadAverageNodeWorker>();
-    static LoadAverageNodeWorker getWorker(ErrorHandler errorHandler, File persistenceDirectory, AOServer aoServer) throws IOException {
+    static LoadAverageNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             LoadAverageNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new LoadAverageNodeWorker(errorHandler, persistenceDirectory, aoServer);
+                worker = new LoadAverageNodeWorker(persistenceDirectory, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
@@ -46,8 +45,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private LoadAverageNodeWorker(ErrorHandler errorHandler, File persistenceDirectory, AOServer aoServer) {
-        super(errorHandler, new File(persistenceDirectory, "loadavg"), new File(persistenceDirectory, "loadavg.new"), false);
+    private LoadAverageNodeWorker(File persistenceDirectory, AOServer aoServer) {
+        super(new File(persistenceDirectory, "loadavg"), new File(persistenceDirectory, "loadavg.new"), false);
         this._aoServer = aoServer;
     }
 

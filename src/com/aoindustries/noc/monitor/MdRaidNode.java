@@ -22,7 +22,6 @@ public class MdRaidNode extends SingleResultNodeImpl {
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
             MdRaidNodeWorker.getWorker(
-                raidNode.serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 new File(raidNode.getPersistenceDirectory(), "mdstat"),
                 raidNode.getAOServer()
             ),

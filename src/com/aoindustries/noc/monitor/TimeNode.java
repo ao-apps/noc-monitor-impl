@@ -26,7 +26,6 @@ public class TimeNode extends TableMultiResultNodeImpl {
             serverNode.serversNode.rootNode,
             serverNode,
             TimeNodeWorker.getWorker(
-                serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 serverNode.getPersistenceDirectory(),
                 aoServer
             ),

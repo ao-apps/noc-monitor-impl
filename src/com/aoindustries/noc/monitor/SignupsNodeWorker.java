@@ -12,7 +12,6 @@ import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
 import com.aoindustries.noc.common.TimeWithTimeZone;
 import com.aoindustries.sql.ResultSetHandler;
-import com.aoindustries.util.ErrorHandler;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -35,12 +34,12 @@ class SignupsNodeWorker extends TableResultNodeWorker {
      * One unique worker is made per persistence file.
      */
     private static final Map<String, SignupsNodeWorker> workerCache = new HashMap<String,SignupsNodeWorker>();
-    static SignupsNodeWorker getWorker(ErrorHandler errorHandler, File persistenceFile, AOServConnector conn) throws IOException {
+    static SignupsNodeWorker getWorker(File persistenceFile, AOServConnector conn) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             SignupsNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new SignupsNodeWorker(errorHandler, persistenceFile, conn);
+                worker = new SignupsNodeWorker(persistenceFile, conn);
                 workerCache.put(path, worker);
             }
             return worker;
@@ -49,8 +48,8 @@ class SignupsNodeWorker extends TableResultNodeWorker {
 
     private final AOServConnector conn;
 
-    SignupsNodeWorker(ErrorHandler errorHandler, File persistenceFile, AOServConnector conn) {
-        super(errorHandler, persistenceFile);
+    SignupsNodeWorker(File persistenceFile, AOServConnector conn) {
+        super(persistenceFile);
         this.conn = conn;
     }
 
@@ -103,9 +102,10 @@ class SignupsNodeWorker extends TableResultNodeWorker {
     protected List<?> getTableData(Locale locale) throws Exception {
         final List<Object> tableData = new ArrayList<Object>();
         // Add the old signup forms
-        WebSiteDatabase database = WebSiteDatabase.getDatabase(errorHandler);
+        WebSiteDatabase database = WebSiteDatabase.getDatabase();
         database.executeQuery(
             new ResultSetHandler() {
+                @Override
                 public void handleResultSet(ResultSet result) throws SQLException {
                     tableData.add("aoweb");
                     tableData.add(result.getInt("pkey"));
@@ -120,7 +120,7 @@ class SignupsNodeWorker extends TableResultNodeWorker {
         );
 
         // Add the aoserv signups
-        for(SignupRequest request : conn.signupRequests) {
+        for(SignupRequest request : conn.getSignupRequests()) {
             tableData.add(request.getPackageDefinition().getBusiness().getAccounting());
             tableData.add(request.getPkey());
             tableData.add(new TimeWithTimeZone(request.getTime()));

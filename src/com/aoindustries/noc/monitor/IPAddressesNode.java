@@ -96,7 +96,7 @@ public class IPAddressesNode extends NodeImpl {
 
     void start() throws IOException, SQLException {
         synchronized(ipAddressNodes) {
-            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.ipAddresses.addTableListener(tableListener, 100);
+            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
             verifyIPAddresses();
         }
     }
@@ -104,7 +104,7 @@ public class IPAddressesNode extends NodeImpl {
     void stop() {
         synchronized(ipAddressNodes) {
             RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
-            rootNode.conn.ipAddresses.removeTableListener(tableListener);
+            rootNode.conn.getIpAddresses().removeTableListener(tableListener);
             for(IPAddressNode ipAddressNode : ipAddressNodes) {
                 ipAddressNode.stop();
                 rootNode.nodeRemoved();

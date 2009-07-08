@@ -22,7 +22,6 @@ public class HardDrivesTemperatureNode extends TableResultNodeImpl {
             hardDrivesNode.serverNode.serversNode.rootNode,
             hardDrivesNode,
             HardDrivesTemperatureNodeWorker.getWorker(
-                hardDrivesNode.serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
                 hardDrivesNode.getAOServer()
             ),

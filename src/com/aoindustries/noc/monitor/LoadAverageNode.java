@@ -30,7 +30,6 @@ public class LoadAverageNode extends TableMultiResultNodeImpl {
             serverNode.serversNode.rootNode,
             serverNode,
             LoadAverageNodeWorker.getWorker(
-                serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 serverNode.getPersistenceDirectory(),
                 aoServer
             ),

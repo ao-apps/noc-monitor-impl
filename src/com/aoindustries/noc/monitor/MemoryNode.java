@@ -26,7 +26,6 @@ public class MemoryNode extends TableMultiResultNodeImpl {
             serverNode.serversNode.rootNode,
             serverNode,
             MemoryNodeWorker.getWorker(
-                serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 serverNode.getPersistenceDirectory(),
                 aoServer
             ),

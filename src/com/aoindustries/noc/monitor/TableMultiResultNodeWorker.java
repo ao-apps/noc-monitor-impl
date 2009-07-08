@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
-import com.aoindustries.util.ErrorHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
@@ -20,6 +19,8 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.swing.SwingUtilities;
 
@@ -29,6 +30,8 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 abstract class TableMultiResultNodeWorker implements Runnable {
+
+    private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
     /**
      * The most recent timer task
@@ -43,13 +46,11 @@ abstract class TableMultiResultNodeWorker implements Runnable {
 
     final private List<TableMultiResultNodeImpl> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl>();
 
-    final protected ErrorHandler errorHandler;
     final protected File newPersistenceFile;
     final protected File persistenceFile;
     final protected boolean gzipPersistenceFile;
 
-    TableMultiResultNodeWorker(ErrorHandler errorHandler, File persistenceFile, File newPersistenceFile, boolean gzipPersistenceFile) {
-        this.errorHandler = errorHandler;
+    TableMultiResultNodeWorker(File persistenceFile, File newPersistenceFile, boolean gzipPersistenceFile) {
         this.persistenceFile = persistenceFile;
         this.newPersistenceFile = newPersistenceFile;
         this.gzipPersistenceFile = gzipPersistenceFile;
@@ -86,7 +87,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
                     results.addAll(saved);
                 }
             } catch(Exception err) {
-                errorHandler.reportError(err, null);
+                logger.log(Level.SEVERE, null, err);
             }
         }
         synchronized(timerTaskLock) {
@@ -171,7 +172,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
             synchronized(results) {
                 results.addFirst(added);
                 if(results.size()>getHistorySize()) removed = results.removeLast();
-                BackgroundWriter.enqueueObject(persistenceFile, newPersistenceFile, errorHandler, results, gzipPersistenceFile);
+                BackgroundWriter.enqueueObject(persistenceFile, newPersistenceFile, results, gzipPersistenceFile);
             }
 
             tableMultiResultAdded(added);
@@ -209,7 +210,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
                 }
             }
         } catch(Exception err) {
-            errorHandler.reportError(err, null);
+            logger.log(Level.SEVERE, null, err);
             lastSuccessful = false;
         } finally {
             // Reschedule next timer task if still running

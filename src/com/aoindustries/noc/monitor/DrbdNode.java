@@ -22,7 +22,6 @@ public class DrbdNode extends TableResultNodeImpl {
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
             DrbdNodeWorker.getWorker(
-                raidNode.serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
                 raidNode.getAOServer()
             ),

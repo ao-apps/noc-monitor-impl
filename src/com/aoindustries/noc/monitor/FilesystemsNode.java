@@ -25,7 +25,6 @@ public class FilesystemsNode extends TableResultNodeImpl {
             serverNode.serversNode.rootNode,
             serverNode,
             FilesystemsNodeWorker.getWorker(
-                serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 new File(serverNode.getPersistenceDirectory(), "filesystems"),
                 aoServer
             ),

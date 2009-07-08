@@ -25,8 +25,6 @@ import com.aoindustries.aoserv.cluster.optimize.ListElement;
 import com.aoindustries.aoserv.cluster.optimize.OptimizedClusterConfigurationHandler;
 import com.aoindustries.aoserv.cluster.optimize.SimpleHeuristicFunction;
 import com.aoindustries.aoserv.cluster.optimize.Transition;
-import com.aoindustries.util.ErrorPrinter;
-import com.aoindustries.util.StandardErrorHandler;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +33,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -81,6 +81,8 @@ order by reverse_hostname(se.name), vd.device;
  * @author  AO Industries, Inc.
  */
 public class ClusterResourceManagerTest extends TestCase {
+
+    private static final Logger logger = Logger.getLogger(ClusterResourceManagerTest.class.getName());
 
     private static final boolean FIND_SHORTEST_PATH = true;
     
@@ -365,9 +367,9 @@ public class ClusterResourceManagerTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        conn = AOServConnector.getConnector(new StandardErrorHandler());
+        conn = AOServConnector.getConnector(logger);
         try {
-            List<AOServer> aoServers = conn.aoServers.getRows();
+            List<AOServer> aoServers = conn.getAoServers().getRows();
             Locale locale = Locale.getDefault();
             Map<String,Map<String,String>> hddModelReports = AOServClusterBuilder.getHddModelReports(aoServers, locale);
             Map<String,AOServer.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(aoServers, locale);
@@ -389,7 +391,7 @@ public class ClusterResourceManagerTest extends TestCase {
             // TODO: Allocate and check disks matched by weight.
             clusterConfigurations = AOServClusterBuilder.getClusterConfigurations(Locale.getDefault(), conn, clusters, drbdReports, lvmReports);
         } catch(Exception err) {
-            ErrorPrinter.printStackTraces(err);
+            logger.log(Level.SEVERE, null, err);
             throw err;
         }
     }

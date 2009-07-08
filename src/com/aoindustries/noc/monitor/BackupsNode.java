@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -38,6 +40,8 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 public class BackupsNode extends NodeImpl implements TableResultNode, TableResultListener {
+
+    private static final Logger logger = Logger.getLogger(BackupsNode.class.getName());
 
     /**
      * All AO-boxes should be backed-up to this server farm (AO admin HQ).
@@ -120,16 +124,16 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
     void start() throws IOException, SQLException {
         synchronized(backupNodes) {
-            serverNode.serversNode.rootNode.conn.failoverFileReplications.addTableListener(tableListener, 100);
-            serverNode.serversNode.rootNode.conn.failoverFileSchedules.addTableListener(tableListener, 100);
+            serverNode.serversNode.rootNode.conn.getFailoverFileReplications().addTableListener(tableListener, 100);
+            serverNode.serversNode.rootNode.conn.getFailoverFileSchedules().addTableListener(tableListener, 100);
             verifyBackups();
         }
     }
     
     void stop() {
         synchronized(backupNodes) {
-            serverNode.serversNode.rootNode.conn.failoverFileSchedules.removeTableListener(tableListener);
-            serverNode.serversNode.rootNode.conn.failoverFileReplications.removeTableListener(tableListener);
+            serverNode.serversNode.rootNode.conn.getFailoverFileSchedules().removeTableListener(tableListener);
+            serverNode.serversNode.rootNode.conn.getFailoverFileReplications().removeTableListener(tableListener);
             for(BackupNode backupNode : backupNodes) {
                 backupNode.removeTableResultListener(this);
                 backupNode.stop();
@@ -147,9 +151,9 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
         try {
             verifyBackups();
         } catch(IOException err) {
-            serverNode.serversNode.rootNode.conn.getErrorHandler().reportError(err, null);
+            logger.log(Level.SEVERE, null, err);
         } catch(SQLException err) {
-            serverNode.serversNode.rootNode.conn.getErrorHandler().reportError(err, null);
+            logger.log(Level.SEVERE, null, err);
         }
     }
 
@@ -377,7 +381,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 }
             }
         }
-        if(foundCount!=1) serverNode.serversNode.rootNode.conn.getErrorHandler().reportWarning(new AssertionError("Expected foundCount==1, got foundCount="+foundCount), null);
+        if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
     }
 
     /**
@@ -394,7 +398,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                     tableResultListener.tableResultUpdated(tableResult);
                 } catch(RemoteException err) {
                     I.remove();
-                    serverNode.serversNode.rootNode.conn.getErrorHandler().reportError(err, null);
+                    logger.log(Level.SEVERE, null, err);
                 }
             }
         }

@@ -29,6 +29,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -39,6 +41,8 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 public class RootNodeImpl extends NodeImpl implements RootNode {
+
+    private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
     private static final boolean DEBUG = true;
 
@@ -168,7 +172,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                             try {
                                 newRootNode.start();
                             } catch(Exception err) {
-                                newRootNode.conn.getErrorHandler().reportError(err, null);
+                                logger.log(Level.SEVERE, null, err);
                             }
                         }
                     }
@@ -327,7 +331,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                 }
             }
         }
-        if(foundCount!=1) conn.getErrorHandler().reportWarning(new AssertionError("Expected foundCount==1, got foundCount="+foundCount), null);
+        if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
     }
 
     private class NodeAddedSignaler implements Runnable {
@@ -368,12 +372,12 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                     try {
                         Thread.sleep(250);
                     } catch(InterruptedException err) {
-                        conn.getErrorHandler().reportWarning(err, null);
+                        logger.log(Level.WARNING, null, err);
                     }
                 }
             } catch(RemoteException err) {
                 removeTreeListener(treeListener);
-                conn.getErrorHandler().reportError(err, null);
+                logger.log(Level.SEVERE, null, err);
             } finally {
                 synchronized(treeListeners) {
                     if(!removed) nodeAddedSignalers.remove(treeListener);
@@ -420,12 +424,12 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                     try {
                         Thread.sleep(250);
                     } catch(InterruptedException err) {
-                        conn.getErrorHandler().reportWarning(err, null);
+                        logger.log(Level.WARNING, null, err);
                     }
                 }
             } catch(RemoteException err) {
                 removeTreeListener(treeListener);
-                conn.getErrorHandler().reportError(err, null);
+                logger.log(Level.SEVERE, null, err);
             } finally {
                 synchronized(treeListeners) {
                     if(!removed) nodeRemovedSignalers.remove(treeListener);
@@ -470,12 +474,12 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                     try {
                         Thread.sleep(250);
                     } catch(InterruptedException err) {
-                        conn.getErrorHandler().reportWarning(err, null);
+                        logger.log(Level.WARNING, null, err);
                     }
                 }
             } catch(RemoteException err) {
                 removeTreeListener(treeListener);
-                conn.getErrorHandler().reportError(err, null);
+                logger.log(Level.SEVERE, null, err);
             } finally {
                 synchronized(treeListeners) {
                     if(!removed) nodeAlertLevelChangedSignalers.remove(treeListener);

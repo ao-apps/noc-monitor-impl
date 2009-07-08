@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
-import com.aoindustries.util.ErrorHandler;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -39,7 +38,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
      * One unique worker is made per persistence directory (and should match the IP address exactly)
      */
     private static final Map<String, PingNodeWorker> workerCache = new HashMap<String,PingNodeWorker>();
-    static PingNodeWorker getWorker(ErrorHandler errorHandler, File persistenceDirectory, IPAddress ipAddress) throws IOException {
+    static PingNodeWorker getWorker(File persistenceDirectory, IPAddress ipAddress) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         String ip = ipAddress.getIPAddress();
         String externalIp = ipAddress.getExternalIpAddress();
@@ -47,7 +46,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
         synchronized(workerCache) {
             PingNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new PingNodeWorker(errorHandler, persistenceDirectory, pingAddress);
+                worker = new PingNodeWorker(persistenceDirectory, pingAddress);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.ipAddress.equals(pingAddress)) throw new AssertionError("worker.ipAddress!=pingAddress: "+worker.ipAddress+"!="+pingAddress);
@@ -61,8 +60,8 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
      */
     final private String ipAddress;
 
-    private PingNodeWorker(ErrorHandler errorHandler, File persistenceDirectory, String ipAddress) {
-        super(errorHandler, new File(persistenceDirectory, "pings"), new File(persistenceDirectory, "pings.new"), false);
+    private PingNodeWorker(File persistenceDirectory, String ipAddress) {
+        super(new File(persistenceDirectory, "pings"), new File(persistenceDirectory, "pings.new"), false);
         this.ipAddress = ipAddress;
     }
 

@@ -10,7 +10,6 @@ import com.Ostermiller.util.CSVParser;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
-import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
 import java.io.CharArrayReader;
 import java.io.File;
@@ -20,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The workers for filesystem monitoring.
@@ -28,16 +29,18 @@ import java.util.Map;
  */
 class FilesystemsNodeWorker extends TableResultNodeWorker {
 
+    private static final Logger logger = Logger.getLogger(FilesystemsNodeWorker.class.getName());
+
     /**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
     private static final Map<String, FilesystemsNodeWorker> workerCache = new HashMap<String,FilesystemsNodeWorker>();
-    static FilesystemsNodeWorker getWorker(ErrorHandler errorHandler, File persistenceFile, AOServer aoServer) throws IOException {
+    static FilesystemsNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             FilesystemsNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new FilesystemsNodeWorker(errorHandler, persistenceFile, aoServer);
+                worker = new FilesystemsNodeWorker(persistenceFile, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
@@ -49,8 +52,8 @@ class FilesystemsNodeWorker extends TableResultNodeWorker {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private AOServer aoServer;
 
-    FilesystemsNodeWorker(ErrorHandler errorHandler, File persistenceFile, AOServer aoServer) {
-        super(errorHandler, persistenceFile);
+    FilesystemsNodeWorker(File persistenceFile, AOServer aoServer) {
+        super(persistenceFile);
         this.aoServer = aoServer;
     }
 
@@ -71,7 +74,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker {
                 try {
                     alam = getAlertLevelAndMessage(locale, tableData, index);
                 } catch(Exception err) {
-                    errorHandler.reportError(err, null);
+                    logger.log(Level.SEVERE, null, err);
                     alam = new AlertLevelAndMessage(AlertLevel.CRITICAL, err.toString());
                 }
                 AlertLevel alertLevel = alam.getAlertLevel();
@@ -173,7 +176,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker {
                 AlertLevelAndMessage alam = getAlertLevelAndMessage(locale, tableData, index);
                 alertLevels.add(alam.getAlertLevel());
             } catch(Exception err) {
-                errorHandler.reportError(err, null);
+                logger.log(Level.SEVERE, null, err);
                 alertLevels.add(AlertLevel.CRITICAL);
             }
         }

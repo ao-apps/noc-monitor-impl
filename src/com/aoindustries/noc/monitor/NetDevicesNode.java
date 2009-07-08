@@ -41,6 +41,7 @@ public class NetDevicesNode extends NodeImpl {
         this.server = server;
     }
 
+    @Override
     public Node getParent() {
         return serverNode;
     }
@@ -49,6 +50,7 @@ public class NetDevicesNode extends NodeImpl {
         return server;
     }
 
+    @Override
     public boolean getAllowsChildren() {
         return true;
     }
@@ -56,6 +58,7 @@ public class NetDevicesNode extends NodeImpl {
     /**
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
+    @Override
     public List<? extends Node> getChildren() {
         synchronized(netDeviceNodes) {
             return Collections.unmodifiableList(new ArrayList<NetDeviceNode>(netDeviceNodes));
@@ -65,6 +68,7 @@ public class NetDevicesNode extends NodeImpl {
     /**
      * The alert level is equal to the highest alert level of its children.
      */
+    @Override
     public AlertLevel getAlertLevel() {
         synchronized(netDeviceNodes) {
             AlertLevel level = AlertLevel.NONE;
@@ -84,11 +88,13 @@ public class NetDevicesNode extends NodeImpl {
         return null;
     }
 
+    @Override
     public String getLabel() {
         return ApplicationResourcesAccessor.getMessage(serverNode.serversNode.rootNode.locale, "NetDevicesNode.label");
     }
     
     private TableListener tableListener = new TableListener() {
+        @Override
         public void tableUpdated(Table table) {
             try {
                 verifyNetDevices();
@@ -102,14 +108,14 @@ public class NetDevicesNode extends NodeImpl {
 
     void start() throws IOException, SQLException {
         synchronized(netDeviceNodes) {
-            serverNode.serversNode.rootNode.conn.netDevices.addTableListener(tableListener, 100);
+            serverNode.serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
             verifyNetDevices();
         }
     }
     
     void stop() {
         synchronized(netDeviceNodes) {
-            serverNode.serversNode.rootNode.conn.netDevices.removeTableListener(tableListener);
+            serverNode.serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
             for(NetDeviceNode netDeviceNode : netDeviceNodes) {
                 netDeviceNode.stop();
                 serverNode.serversNode.rootNode.nodeRemoved();

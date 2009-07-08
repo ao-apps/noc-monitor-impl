@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -25,6 +27,8 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 abstract public class SingleResultNodeImpl extends NodeImpl implements SingleResultNode {
+
+    private static final Logger logger = Logger.getLogger(SingleResultNodeImpl.class.getName());
 
     protected final RootNodeImpl rootNode;
     protected final Node parent;
@@ -110,7 +114,7 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
                 }
             }
         }
-        if(foundCount!=1) rootNode.conn.getErrorHandler().reportWarning(new AssertionError("Expected foundCount==1, got foundCount="+foundCount), null);
+        if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
     }
 
     /**
@@ -127,7 +131,7 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
                     singleResultListener.singleResultUpdated(singleResult);
                 } catch(RemoteException err) {
                     I.remove();
-                    rootNode.conn.getErrorHandler().reportError(err, null);
+                    logger.log(Level.SEVERE, null, err);
                 }
             }
         }

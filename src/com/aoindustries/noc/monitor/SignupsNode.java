@@ -22,7 +22,6 @@ public class SignupsNode extends TableResultNodeImpl {
             rootNode,
             rootNode,
             SignupsNodeWorker.getWorker(
-                rootNode.conn.getErrorHandler(),
                 new File(rootNode.getPersistenceDirectory(), "signups"),
                 rootNode.conn
             ),

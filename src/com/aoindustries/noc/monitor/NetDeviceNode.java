@@ -35,7 +35,7 @@ public class NetDeviceNode extends NodeImpl {
     volatile private NetDeviceBondingNode _netDeviceBondingNode;
     volatile private IPAddressesNode _ipAddressesNode;
 
-    NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice netDevice, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException {
+    NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice netDevice, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
         super(port, csf, ssf);
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 

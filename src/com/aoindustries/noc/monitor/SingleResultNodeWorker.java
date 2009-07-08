@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.SingleResult;
-import com.aoindustries.util.ErrorHandler;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +14,8 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -25,6 +26,8 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 abstract class SingleResultNodeWorker implements Runnable {
+
+    private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
 
     private static final int SLEEP_DELAY = 60000;
 
@@ -40,11 +43,9 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     final private List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<SingleResultNodeImpl>();
 
-    final protected ErrorHandler errorHandler;
     final protected File persistenceFile;
 
-    SingleResultNodeWorker(ErrorHandler errorHandler, File persistenceFile) {
-        this.errorHandler = errorHandler;
+    SingleResultNodeWorker(File persistenceFile) {
         this.persistenceFile = persistenceFile;
     }
 
@@ -151,7 +152,7 @@ abstract class SingleResultNodeWorker implements Runnable {
                 }
             }
         } catch(Exception err) {
-            errorHandler.reportError(err, null);
+            logger.log(Level.SEVERE, null, err);
         } finally {
             // Reschedule next timer task if still running
             synchronized(timerTaskLock) {

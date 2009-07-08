@@ -22,7 +22,6 @@ public class NetDeviceBondingNode extends SingleResultNodeImpl {
             netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
             netDeviceNode,
             NetDeviceBondingNodeWorker.getWorker(
-                netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
                 netDeviceNode.getNetDevice()
             ),

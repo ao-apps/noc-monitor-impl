@@ -5,7 +5,6 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.util.ErrorHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,6 +14,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -39,19 +40,19 @@ import java.util.zip.GZIPOutputStream;
  */
 class BackgroundWriter {
 
+    private static final Logger logger = Logger.getLogger(BackgroundWriter.class.getName());
+
     private static boolean DEBUG = false;
 
     private static class PathAndData {
 
         final private File persistenceFile;
         private File newPersistenceFile;
-        private ErrorHandler errorHandler;
         private byte[] data;
 
-        private PathAndData(File persistenceFile, File newPersistenceFile, ErrorHandler errorHandler, byte[] data) {
+        private PathAndData(File persistenceFile, File newPersistenceFile, byte[] data) {
             this.persistenceFile = persistenceFile;
             this.newPersistenceFile = newPersistenceFile;
-            this.errorHandler = errorHandler;
             this.data = data;
         }
     }
@@ -63,18 +64,18 @@ class BackgroundWriter {
     /**
      * Will serialize and queue the object for write.
      */
-    static void enqueueObject(File persistenceFile, File newPersistenceFile, ErrorHandler errorHandler, Serializable serializable, boolean gzip) throws IOException {
+    static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         ObjectOutputStream oout = new ObjectOutputStream(gzip ? new GZIPOutputStream(bout) : bout);
         oout.writeObject(serializable);
         oout.close();
-        enqueueFile(persistenceFile, newPersistenceFile, errorHandler, bout.toByteArray());
+        enqueueFile(persistenceFile, newPersistenceFile, bout.toByteArray());
     }
 
     /**
      * Queues the file for write.  The data is not copied to a temporary array - do not change after giving to this method.
      */
-    static void enqueueFile(File persistenceFile, File newPersistenceFile, ErrorHandler errorHandler, byte[] data) {
+    static void enqueueFile(File persistenceFile, File newPersistenceFile, byte[] data) {
         synchronized(queue) {
             // Scan the queue for the same persistenceFile
             boolean found = false;
@@ -82,13 +83,12 @@ class BackgroundWriter {
                 if(pad.persistenceFile.equals(persistenceFile)) {
                     if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Updating existing in queue");
                     pad.newPersistenceFile = newPersistenceFile;
-                    pad.errorHandler = errorHandler;
                     pad.data = data;
                     found = true;
                 }
             }
             if(!found) {
-                queue.addLast(new PathAndData(persistenceFile, newPersistenceFile, errorHandler, data));
+                queue.addLast(new PathAndData(persistenceFile, newPersistenceFile, data));
             }
             if(!running) {
                 RootNodeImpl.executorService.submit(
@@ -139,7 +139,7 @@ class BackgroundWriter {
                                         }
                                     }
                                 } catch(Exception err) {
-                                    pad.errorHandler.reportError(err, null);
+                                    logger.log(Level.SEVERE, null, err);
                                 }
                             }
                         }

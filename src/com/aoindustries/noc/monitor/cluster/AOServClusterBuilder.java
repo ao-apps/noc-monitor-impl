@@ -132,7 +132,7 @@ public class AOServClusterBuilder {
         final Map<String,AOServer.LvmReport> lvmReports,
         final boolean useTarget
     ) throws SQLException, InterruptedException, ExecutionException, IOException {
-        List<ServerFarm> serverFarms = conn.serverFarms.getRows();
+        List<ServerFarm> serverFarms = conn.getServerFarms().getRows();
 
         // Start concurrently
         List<Future<Cluster>> futures = new ArrayList<Future<Cluster>>(serverFarms.size());
@@ -151,6 +151,7 @@ public class AOServClusterBuilder {
                 futures.add(
                     RootNodeImpl.executorService.submit(
                         new Callable<Cluster>() {
+                            @Override
                             public Cluster call() throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
                                 return getCluster(conn, serverFarm, aoServers, hddModelReports, lvmReports, useTarget);
                             }
@@ -181,7 +182,7 @@ public class AOServClusterBuilder {
         Map<String,AOServer.LvmReport> lvmReports,
         boolean useTarget
     ) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-        final String rootAccounting = conn.businesses.getRootAccounting();
+        final String rootAccounting = conn.getBusinesses().getRootAccounting();
 
         Cluster cluster = new Cluster(serverFarm.getName());
 
@@ -255,7 +256,7 @@ public class AOServClusterBuilder {
         }
 
         // Get the DomUs
-        for(Server server : conn.servers.getRows()) {
+        for(Server server : conn.getServers().getRows()) {
             if(server.isMonitoringEnabled() && server.getServerFarm().equals(serverFarm)) {
                 // Should be either physical or virtual server
                 PhysicalServer physicalServer = server.getPhysicalServer();
@@ -323,6 +324,7 @@ public class AOServClusterBuilder {
             futures.add(
                 RootNodeImpl.executorService.submit(
                     new Callable<ClusterConfiguration>() {
+                        @Override
                         public ClusterConfiguration call() throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
                             return getClusterConfiguration(locale, conn, cluster, drbdReports, lvmReports);
                         }
@@ -355,6 +357,7 @@ public class AOServClusterBuilder {
                     aoServer.getHostname(),
                     RootNodeImpl.executorService.submit(
                         new Callable<List<AOServer.DrbdReport>>() {
+                            @Override
                             public List<AOServer.DrbdReport> call() throws ParseException, IOException, SQLException {
                                 return aoServer.getDrbdReport(locale);
                             }
@@ -390,6 +393,7 @@ public class AOServClusterBuilder {
                     aoServer.getHostname(),
                     RootNodeImpl.executorService.submit(
                         new Callable<AOServer.LvmReport>() {
+                            @Override
                             public AOServer.LvmReport call() throws IOException, SQLException, ParseException {
                                 return aoServer.getLvmReport(locale);
                             }
@@ -425,6 +429,7 @@ public class AOServClusterBuilder {
                     aoServer.getHostname(),
                     RootNodeImpl.executorService.submit(
                         new Callable<Map<String,String>>() {
+                            @Override
                             public Map<String,String> call() throws ParseException, IOException, SQLException {
                                 return aoServer.getHddModelReport(locale);
                             }
@@ -455,7 +460,7 @@ public class AOServClusterBuilder {
         Map<String,List<AOServer.DrbdReport>> drbdReports,
         Map<String,AOServer.LvmReport> lvmReports
     ) throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
-        final String rootAccounting = conn.businesses.getRootAccounting();
+        final String rootAccounting = conn.getBusinesses().getRootAccounting();
 
         ClusterConfiguration clusterConfiguration = new ClusterConfiguration(cluster);
 
@@ -471,7 +476,7 @@ public class AOServClusterBuilder {
                 lineNum++;
                 // Must be a virtual server
                 String domUHostname = report.getResourceHostname();
-                Server domUServer = conn.servers.get(rootAccounting+"/"+domUHostname);
+                Server domUServer = conn.getServers().get(rootAccounting+"/"+domUHostname);
                 if(domUServer==null) throw new ParseException(
                     ApplicationResourcesAccessor.getMessage(
                         locale,
@@ -565,8 +570,8 @@ public class AOServClusterBuilder {
         for(Map.Entry<String,DomU> entry : cluster.getDomUs().entrySet()) {
             String domUHostname = entry.getKey();
             DomU domU = entry.getValue();
-            Server domUServer = conn.servers.get(rootAccounting+"/"+domUHostname);
-            VirtualServer domUVirtualServer = domUServer.getVirtualServer();
+            Server domUServer = conn.getServers().get(rootAccounting+"/"+domUHostname);
+            //VirtualServer domUVirtualServer = domUServer.getVirtualServer();
 
             String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
             if(primaryDom0Hostname==null) throw new ParseException(

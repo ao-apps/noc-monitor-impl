@@ -30,7 +30,6 @@ public class BackupNode extends TableResultNodeImpl {
             backupsNode.serverNode.serversNode.rootNode,
             backupsNode,
             BackupNodeWorker.getWorker(
-                backupsNode.serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
                 failoverFileReplication
             ),

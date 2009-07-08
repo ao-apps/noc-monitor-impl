@@ -12,7 +12,6 @@ import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
 import com.aoindustries.noc.common.TimeWithTimeZone;
-import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
@@ -37,12 +36,12 @@ class BackupNodeWorker extends TableResultNodeWorker {
      * One unique worker is made per persistence file (and should match the failoverFileReplication exactly)
      */
     private static final Map<String, BackupNodeWorker> workerCache = new HashMap<String,BackupNodeWorker>();
-    static BackupNodeWorker getWorker(ErrorHandler errorHandler, File persistenceFile, FailoverFileReplication failoverFileReplication) throws IOException {
+    static BackupNodeWorker getWorker(File persistenceFile, FailoverFileReplication failoverFileReplication) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             BackupNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new BackupNodeWorker(errorHandler, persistenceFile, failoverFileReplication);
+                worker = new BackupNodeWorker(persistenceFile, failoverFileReplication);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.failoverFileReplication.equals(failoverFileReplication)) throw new AssertionError("worker.failoverFileReplication!=failoverFileReplication: "+worker.failoverFileReplication+"!="+failoverFileReplication);
@@ -54,8 +53,8 @@ class BackupNodeWorker extends TableResultNodeWorker {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private FailoverFileReplication failoverFileReplication;
 
-    BackupNodeWorker(ErrorHandler errorHandler, File persistenceFile, FailoverFileReplication failoverFileReplication) {
-        super(errorHandler, persistenceFile);
+    BackupNodeWorker(File persistenceFile, FailoverFileReplication failoverFileReplication) {
+        super(persistenceFile);
         this.failoverFileReplication = failoverFileReplication;
     }
 

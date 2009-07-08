@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
-import com.aoindustries.util.ErrorHandler;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +15,8 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -26,6 +27,8 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 abstract class TableResultNodeWorker implements Runnable {
+
+    private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
 
     /**
      * The most recent timer task
@@ -39,11 +42,9 @@ abstract class TableResultNodeWorker implements Runnable {
 
     final private List<TableResultNodeImpl> tableResultNodeImpls = new ArrayList<TableResultNodeImpl>();
 
-    final protected ErrorHandler errorHandler;
     final protected File persistenceFile;
 
-    TableResultNodeWorker(ErrorHandler errorHandler, File persistenceFile) {
-        this.errorHandler = errorHandler;
+    TableResultNodeWorker(File persistenceFile) {
         this.persistenceFile = persistenceFile;
     }
 
@@ -184,7 +185,7 @@ abstract class TableResultNodeWorker implements Runnable {
                 }
             }
         } catch(Exception err) {
-            errorHandler.reportError(err, null);
+            logger.log(Level.SEVERE, null, err);
             lastSuccessful = false;
         } finally {
             // Reschedule next timer task if still running

@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.SingleResult;
-import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
@@ -29,12 +28,12 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
     private static final Map<String, ThreeWareRaidNodeWorker> workerCache = new HashMap<String,ThreeWareRaidNodeWorker>();
-    static ThreeWareRaidNodeWorker getWorker(ErrorHandler errorHandler, File persistenceFile, AOServer aoServer) throws IOException {
+    static ThreeWareRaidNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             ThreeWareRaidNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new ThreeWareRaidNodeWorker(errorHandler, persistenceFile, aoServer);
+                worker = new ThreeWareRaidNodeWorker(persistenceFile, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
@@ -46,8 +45,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private AOServer aoServer;
 
-    ThreeWareRaidNodeWorker(ErrorHandler errorHandler, File persistenceFile, AOServer aoServer) {
-        super(errorHandler, persistenceFile);
+    ThreeWareRaidNodeWorker(File persistenceFile, AOServer aoServer) {
+        super(persistenceFile);
         this.aoServer = aoServer;
     }
 

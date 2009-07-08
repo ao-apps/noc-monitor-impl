@@ -9,7 +9,6 @@ import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.ApproximateDisplayExactBitRate;
 import com.aoindustries.noc.common.TableMultiResult;
-import com.aoindustries.util.ErrorHandler;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
@@ -35,12 +34,12 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
      * One unique worker is made per persistence directory (and should match the net device exactly)
      */
     private static final Map<String, NetDeviceBitRateNodeWorker> workerCache = new HashMap<String,NetDeviceBitRateNodeWorker>();
-    static NetDeviceBitRateNodeWorker getWorker(ErrorHandler errorHandler, File persistenceDirectory, NetDevice netDevice) throws IOException {
+    static NetDeviceBitRateNodeWorker getWorker(File persistenceDirectory, NetDevice netDevice) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             NetDeviceBitRateNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new NetDeviceBitRateNodeWorker(errorHandler, persistenceDirectory, netDevice);
+                worker = new NetDeviceBitRateNodeWorker(persistenceDirectory, netDevice);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._netDevice.equals(netDevice)) throw new AssertionError("worker.netDevice!=netDevice: "+worker._netDevice+"!="+netDevice);
@@ -53,8 +52,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
     final private NetDevice _netDevice;
     private NetDevice _currentNetDevice;
 
-    private NetDeviceBitRateNodeWorker(ErrorHandler errorHandler, File persistenceDirectory, NetDevice netDevice) {
-        super(errorHandler, new File(persistenceDirectory, "bit_rate"), new File(persistenceDirectory, "bit_rate.new"), false);
+    private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice netDevice) {
+        super(new File(persistenceDirectory, "bit_rate"), new File(persistenceDirectory, "bit_rate.new"), false);
         this._netDevice = netDevice;
     }
 

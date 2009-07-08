@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.noc.common.Monitor;
 import com.aoindustries.noc.common.RootNode;
-import com.aoindustries.util.ErrorHandler;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -16,6 +15,7 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * The main starting point for the monitor.
@@ -115,14 +115,14 @@ import java.util.Locale;
  */
 public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 
-    final private ErrorHandler errorHandler;
+    private static final Logger logger = Logger.getLogger(MonitorImpl.class.getName());
+
     final private int port;
     final private RMIClientSocketFactory csf;
     final private RMIServerSocketFactory ssf;
 
-    public MonitorImpl(ErrorHandler errorHandler, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    public MonitorImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
-        this.errorHandler = errorHandler;
         this.port = port;
         this.csf = csf;
         this.ssf = ssf;
@@ -130,7 +130,7 @@ public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 
     @Override
     public RootNode login(Locale locale, String username, String password) throws IOException, SQLException {
-        AOServConnector connector=AOServConnector.getConnector(username, password, errorHandler);
+        AOServConnector connector=AOServConnector.getConnector(username, password, logger);
         connector.testConnect();
         return RootNodeImpl.getRootNode(locale, connector, port, csf, ssf);
     }

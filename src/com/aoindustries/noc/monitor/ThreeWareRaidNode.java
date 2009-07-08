@@ -22,7 +22,6 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
             ThreeWareRaidNodeWorker.getWorker(
-                raidNode.serverNode.serversNode.rootNode.conn.getErrorHandler(),
                 new File(raidNode.getPersistenceDirectory(), "3ware"),
                 raidNode.getAOServer()
             ),

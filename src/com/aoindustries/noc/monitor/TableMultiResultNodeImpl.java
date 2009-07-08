@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -25,6 +27,8 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 abstract public class TableMultiResultNodeImpl extends NodeImpl implements TableMultiResultNode {
+
+    private static final Logger logger = Logger.getLogger(TableMultiResultNodeImpl.class.getName());
 
     final RootNodeImpl rootNode;
     final Node parent;
@@ -110,7 +114,7 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
                 }
             }
         }
-        if(foundCount!=1) rootNode.conn.getErrorHandler().reportWarning(new AssertionError("Expected foundCount==1, got foundCount="+foundCount), null);
+        if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
     }
 
     /**
@@ -127,7 +131,7 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
                     tableMultiResultListener.tableMultiResultAdded(tableMultiResult);
                 } catch(RemoteException err) {
                     I.remove();
-                    rootNode.conn.getErrorHandler().reportError(err, null);
+                    logger.log(Level.SEVERE, null, err);
                 }
             }
         }
@@ -147,7 +151,7 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
                     tableMultiResultListener.tableMultiResultRemoved(tableMultiResult);
                 } catch(RemoteException err) {
                     I.remove();
-                    rootNode.conn.getErrorHandler().reportError(err, null);
+                    logger.log(Level.SEVERE, null, err);
                 }
             }
         }
