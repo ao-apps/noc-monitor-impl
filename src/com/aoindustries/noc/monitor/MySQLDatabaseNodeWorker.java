@@ -47,7 +47,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
 
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private MySQLDatabase mysqlDatabase;
-    final private boolean isSlowServer;
+    final boolean isSlowServer;
     final private Object lastTableStatusesLock = new Object();
     private List<MySQLDatabase.TableStatus> lastTableStatuses;
 

@@ -41,6 +41,8 @@ import javax.swing.SwingUtilities;
  */
 public class BackupsNode extends NodeImpl implements TableResultNode, TableResultListener {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Logger logger = Logger.getLogger(BackupsNode.class.getName());
 
     /**

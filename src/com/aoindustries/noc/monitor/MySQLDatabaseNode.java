@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The node for all MySQLDatabases on one MySQLServer.
+ * The node for one MySQLDatabase.
  *
  * @author  AO Industries, Inc.
  */
@@ -25,10 +25,11 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
+    final MySQLDatabaseNodeWorker databaseWorker;
     final MySQLDatabasesNode mysqlDatabasesNode;
     private final MySQLDatabase mysqlDatabase;
     private final String _label;
-    // TODO: private final List<MySQLTableNode> mysqlTableNodes = new ArrayList<MySQLTableNode>();
+    volatile private MySQLCheckTablesNode mysqlCheckTablesNode;
 
     MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, MySQLDatabase mysqlDatabase, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
         super(
@@ -42,6 +43,7 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
             csf,
             ssf
         );
+        this.databaseWorker = (MySQLDatabaseNodeWorker)worker;
         this.mysqlDatabasesNode = mysqlDatabasesNode;
         this.mysqlDatabase = mysqlDatabase;
         this._label = mysqlDatabase.getName();
@@ -61,9 +63,10 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
      */
     @Override
     public List<? extends Node> getChildren() {
-        /* TODO: synchronized(mysqlTableNodes) {
-            return Collections.unmodifiableList(new ArrayList<MySQLTableNode>(mysqlTableNodes));
-        }*/
+        MySQLCheckTablesNode myMysqlCheckTablesNode = this.mysqlCheckTablesNode;
+        if(myMysqlCheckTablesNode!=null) {
+            return Collections.singletonList(myMysqlCheckTablesNode);
+        }
         return Collections.emptyList();
     }
 
@@ -73,14 +76,11 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
     @Override
     public AlertLevel getAlertLevel() {
         AlertLevel level = super.getAlertLevel();
-        /* TODO
-        synchronized(mysqlTableNodes) {
-            for(NodeImpl mysqlTableNode : mysqlTableNodes) {
-                AlertLevel mysqlTableNodeLevel = mysqlTableNode.getAlertLevel();
-                if(mysqlTableNodeLevel.compareTo(level)>0) level = mysqlTableNodeLevel;
-            }
-            return level;
-        }*/
+        MySQLCheckTablesNode myMysqlCheckTablesNode = this.mysqlCheckTablesNode;
+        if(myMysqlCheckTablesNode!=null) {
+            AlertLevel mysqlCheckTablesNodeLevel = myMysqlCheckTablesNode.getAlertLevel();
+            if(mysqlCheckTablesNodeLevel.compareTo(level)>0) level = mysqlCheckTablesNodeLevel;
+        }
         return level;
     }
 
@@ -103,5 +103,25 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
             }
         }
         return dir;
+    }
+
+    @Override
+    synchronized void start() throws IOException {
+        if(mysqlCheckTablesNode==null) {
+            mysqlCheckTablesNode = new MySQLCheckTablesNode(this, port, csf, ssf);
+            mysqlCheckTablesNode.start();
+            mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+        }
+        super.start();
+    }
+
+    @Override
+    synchronized void stop() {
+        super.stop();
+        if(mysqlCheckTablesNode!=null) {
+            mysqlCheckTablesNode.stop();
+            mysqlCheckTablesNode = null;
+            mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+        }
     }
 }

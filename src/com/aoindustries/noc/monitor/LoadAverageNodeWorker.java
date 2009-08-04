@@ -151,6 +151,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
             ApplicationResourcesAccessor.getMessage(
                 locale,
                 "LoadAverageNodeWorker.alertMessage.none",
+                loadLow,
                 fiveMinuteAverage
             )
         );

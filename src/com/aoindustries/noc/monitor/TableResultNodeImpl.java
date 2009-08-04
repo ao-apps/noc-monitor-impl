@@ -10,6 +10,7 @@ import com.aoindustries.noc.common.Node;
 import com.aoindustries.noc.common.TableResult;
 import com.aoindustries.noc.common.TableResultListener;
 import com.aoindustries.noc.common.TableResultNode;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -68,11 +69,11 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
         return worker.getAlertMessage();
     }
 
-    final void start() {
+    void start() throws IOException {
         worker.addTableResultNodeImpl(this);
     }
 
-    final void stop() {
+    void stop() {
         worker.removeTableResultNodeImpl(this);
     }
 

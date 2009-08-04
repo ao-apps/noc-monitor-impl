@@ -17,6 +17,8 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class DrbdNode extends TableResultNodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
         super(
             raidNode.serverNode.serversNode.rootNode,

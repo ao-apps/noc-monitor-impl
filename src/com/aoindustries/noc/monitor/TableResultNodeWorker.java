@@ -64,7 +64,7 @@ abstract class TableResultNodeWorker implements Runnable {
     private static final Object lastStartupDelayLock = new Object();
     static int getNextStartupDelay() {
         synchronized(lastStartupDelayLock) {
-            lastStartupDelay = (lastStartupDelay+5000)%60037;
+            lastStartupDelay = (lastStartupDelay+5037)%(5*60*1000);
             return lastStartupDelay;
         }
     }
@@ -117,7 +117,7 @@ abstract class TableResultNodeWorker implements Runnable {
                         }
                     }
                 );
-                tableData = future.get(5, TimeUnit.MINUTES);
+                tableData = future.get(getTimeout(), getTimeoutUnit());
                 columns = getColumns();
                 rows = tableData.size()/columns;
                 columnHeaders = getColumnHeaders(locale);
@@ -198,6 +198,20 @@ abstract class TableResultNodeWorker implements Runnable {
                 }
             }
         }
+    }
+
+    /**
+     * Gets the timeout value.  Defaults to <code>5</code>.
+     */
+    protected long getTimeout() {
+        return 5;
+    }
+
+    /**
+     * Gets the timeout time unit.  Defaults to <code>TimeUnit.MINUTES</code>.
+     */
+    protected TimeUnit getTimeoutUnit() {
+        return TimeUnit.MINUTES;
     }
 
     final void addTableResultNodeImpl(TableResultNodeImpl tableResultNodeImpl) {

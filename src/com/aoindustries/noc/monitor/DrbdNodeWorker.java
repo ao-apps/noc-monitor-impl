@@ -95,9 +95,7 @@ class DrbdNodeWorker extends TableResultNodeWorker {
     protected List<?> getTableData(Locale locale) throws Exception {
         List<AOServer.DrbdReport> reports = aoServer.getDrbdReport(locale);
         List<String> tableData = new ArrayList<String>(reports.size()*5);
-        int lineNum = 0;
         for(AOServer.DrbdReport report : reports) {
-            lineNum++;
             tableData.add(report.getDevice());
             tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
             tableData.add(report.getConnectionState().toString());

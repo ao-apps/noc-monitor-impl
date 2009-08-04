@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
+import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.aoserv.client.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.common.AlertLevel;
@@ -31,6 +32,8 @@ import javax.swing.SwingUtilities;
  */
 public class ServerNode extends NodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     final ServersNode serversNode;
     private final Server _server;
     private final String _pack;
@@ -39,6 +42,7 @@ public class ServerNode extends NodeImpl {
 
     volatile private BackupsNode _backupsNode;
     volatile private NetDevicesNode _netDevicesNode;
+    volatile private MySQLServersNode _mysqlServersNode;
     volatile private HardDrivesNode _hardDrivesNode;
     volatile private RaidNode _raidNode;
     volatile private FilesystemsNode _filesystemsNode;
@@ -74,11 +78,13 @@ public class ServerNode extends NodeImpl {
      */
     @Override
     public List<? extends Node> getChildren() {
-        List<NodeImpl> children = new ArrayList<NodeImpl>(8);
+        List<NodeImpl> children = new ArrayList<NodeImpl>(9);
         BackupsNode backupsNode = this._backupsNode;
         if(backupsNode!=null) children.add(backupsNode);
         NetDevicesNode netDevicesNode = this._netDevicesNode;
         if(netDevicesNode!=null) children.add(netDevicesNode);
+        MySQLServersNode mysqlServersNode = this._mysqlServersNode;
+        if(mysqlServersNode!=null) children.add(mysqlServersNode);
         HardDrivesNode hardDrivesNode = this._hardDrivesNode;
         if(hardDrivesNode!=null) children.add(hardDrivesNode);
         RaidNode raidNode = this._raidNode;
@@ -110,6 +116,11 @@ public class ServerNode extends NodeImpl {
         if(netDevicesNode!=null) {
             AlertLevel netDevicesNodeLevel = netDevicesNode.getAlertLevel();
             if(netDevicesNodeLevel.compareTo(level)>0) level = netDevicesNodeLevel;
+        }
+        MySQLServersNode mysqlServersNode = this._mysqlServersNode;
+        if(mysqlServersNode!=null) {
+            AlertLevel mysqlServersNodeLevel = mysqlServersNode.getAlertLevel();
+            if(mysqlServersNodeLevel.compareTo(level)>0) level = mysqlServersNodeLevel;
         }
         HardDrivesNode hardDrivesNode = this._hardDrivesNode;
         if(hardDrivesNode!=null) {
@@ -162,6 +173,7 @@ public class ServerNode extends NodeImpl {
         public void tableUpdated(Table table) {
             try {
                 verifyNetDevices();
+                verifyMySQLServers();
                 verifyHardDrives();
                 verifyRaid();
                 verifyFilesystems();
@@ -182,6 +194,7 @@ public class ServerNode extends NodeImpl {
     synchronized void start() throws IOException, SQLException {
         serversNode.rootNode.conn.getAoServers().addTableListener(tableListener, 100);
         serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
+        serversNode.rootNode.conn.getMysqlServers().addTableListener(tableListener, 100);
         serversNode.rootNode.conn.getServers().addTableListener(tableListener, 100);
         if(_backupsNode==null) {
             _backupsNode = new BackupsNode(this, port, csf, ssf);
@@ -189,6 +202,7 @@ public class ServerNode extends NodeImpl {
             serversNode.rootNode.nodeAdded();
         }
         verifyNetDevices();
+        verifyMySQLServers();
         verifyHardDrives();
         verifyRaid();
         verifyFilesystems();
@@ -203,6 +217,7 @@ public class ServerNode extends NodeImpl {
     synchronized void stop() {
         serversNode.rootNode.conn.getAoServers().removeTableListener(tableListener);
         serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
+        serversNode.rootNode.conn.getMysqlServers().removeTableListener(tableListener);
         serversNode.rootNode.conn.getServers().removeTableListener(tableListener);
         if(_timeNode!=null) {
             _timeNode.stop();
@@ -234,6 +249,11 @@ public class ServerNode extends NodeImpl {
             _hardDrivesNode = null;
             serversNode.rootNode.nodeRemoved();
         }
+        if(_mysqlServersNode!=null) {
+            _mysqlServersNode.stop();
+            _mysqlServersNode = null;
+            serversNode.rootNode.nodeRemoved();
+        }
         if(_netDevicesNode!=null) {
             _netDevicesNode.stop();
             _netDevicesNode = null;
@@ -253,6 +273,28 @@ public class ServerNode extends NodeImpl {
             _netDevicesNode = new NetDevicesNode(this, _server, port, csf, ssf);
             _netDevicesNode.start();
             serversNode.rootNode.nodeAdded();
+        }
+    }
+
+    synchronized private void verifyMySQLServers() throws IOException, SQLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+        AOServer aoServer = _server.getAOServer();
+        List<MySQLServer> mysqlServers = aoServer==null ? null : aoServer.getMySQLServers();
+        if(mysqlServers!=null && !mysqlServers.isEmpty()) {
+            // Has MySQL server
+            if(_mysqlServersNode==null) {
+                _mysqlServersNode = new MySQLServersNode(this, aoServer, port, csf, ssf);
+                _mysqlServersNode.start();
+                serversNode.rootNode.nodeAdded();
+            }
+        } else {
+            // No MySQL server
+            if(_mysqlServersNode!=null) {
+                _mysqlServersNode.stop();
+                _mysqlServersNode = null;
+                serversNode.rootNode.nodeRemoved();
+            }
         }
     }
 
@@ -373,11 +415,7 @@ public class ServerNode extends NodeImpl {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         AOServer aoServer = _server.getAOServer();
-        if(
-            aoServer == null
-            // TODO: Remove this os exclusion once new HttpdManager installed to Mandriva 2006.0
-            || aoServer.getServer().getOperatingSystemVersion().getPkey() == OperatingSystemVersion.MANDRIVA_2006_0_I586
-        ) {
+        if(aoServer == null) {
             // No time monitoring
             if(_timeNode!=null) {
                 _timeNode.stop();
