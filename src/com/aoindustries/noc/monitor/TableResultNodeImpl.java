@@ -49,17 +49,17 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
     }
 
     @Override
-    final public boolean getAllowsChildren() {
+    public boolean getAllowsChildren() {
         return false;
     }
 
     @Override
-    final public List<? extends Node> getChildren() {
+    public List<? extends Node> getChildren() {
         return Collections.emptyList();
     }
 
     @Override
-    final public AlertLevel getAlertLevel() {
+    public AlertLevel getAlertLevel() {
         return worker.getAlertLevel();
     }
     
