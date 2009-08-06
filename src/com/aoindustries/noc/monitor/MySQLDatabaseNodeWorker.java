@@ -54,7 +54,11 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
     MySQLDatabaseNodeWorker(File persistenceFile, MySQLDatabase mysqlDatabase) throws IOException, SQLException {
         super(persistenceFile);
         this.mysqlDatabase = mysqlDatabase;
-        this.isSlowServer = mysqlDatabase.getMySQLServer().getAOServer().getHostname().equals("www.swimconnection.com");
+        String hostname = mysqlDatabase.getMySQLServer().getAOServer().getHostname();
+        this.isSlowServer =
+            hostname.equals("www.swimconnection.com")
+            // || hostname.equals("www1.leagle.com")
+        ;
     }
 
     @Override

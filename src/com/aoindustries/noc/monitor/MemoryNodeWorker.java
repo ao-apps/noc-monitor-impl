@@ -58,7 +58,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
 
     private MemoryNodeWorker(File persistenceDirectory, AOServer aoServer) {
         super(new File(persistenceDirectory, "meminfo"), new File(persistenceDirectory, "meminfo.new"), false);
-        this._aoServer = aoServer;
+        this._aoServer = currentAOServer = aoServer;
     }
 
     @Override

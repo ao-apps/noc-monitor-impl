@@ -60,7 +60,7 @@ public class MySQLReplicationNode extends TableMultiResultNodeImpl {
 
     @Override
     public List<?> getColumnHeaders(Locale locale) {
-        List<String> headers = new ArrayList<String>(10);
+        List<String> headers = new ArrayList<String>(11);
         headers.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNode.columnHeader.secondsBehindMaster"));
         headers.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNode.columnHeader.masterLogFile"));
         headers.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNode.columnHeader.masterLogPosition"));
@@ -71,6 +71,7 @@ public class MySQLReplicationNode extends TableMultiResultNodeImpl {
         headers.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNode.columnHeader.slaveSQLRunning"));
         headers.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNode.columnHeader.lastErrorNumber"));
         headers.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNode.columnHeader.lastErrorDetails"));
+        headers.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNode.columnHeader.alertThresholds"));
         return Collections.unmodifiableList(headers);
     }
 }

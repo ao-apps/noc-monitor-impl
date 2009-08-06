@@ -60,7 +60,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
 
     private TimeNodeWorker(File persistenceDirectory, AOServer aoServer) {
         super(new File(persistenceDirectory, "time"), new File(persistenceDirectory, "time.new"), false);
-        this._aoServer = aoServer;
+        this._aoServer = currentAOServer = aoServer;
     }
 
     @Override

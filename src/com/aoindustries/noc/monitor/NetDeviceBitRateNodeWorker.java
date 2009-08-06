@@ -54,7 +54,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
 
     private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice netDevice) {
         super(new File(persistenceDirectory, "bit_rate"), new File(persistenceDirectory, "bit_rate.new"), false);
-        this._netDevice = netDevice;
+        this._netDevice = _currentNetDevice = netDevice;
     }
 
     @Override

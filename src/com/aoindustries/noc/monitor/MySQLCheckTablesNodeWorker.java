@@ -87,7 +87,9 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
             if(
                 engine!=MySQLDatabase.Engine.CSV
                 && engine!=MySQLDatabase.Engine.HEAP
+                && engine!=MySQLDatabase.Engine.InnoDB
                 && engine!=MySQLDatabase.Engine.MEMORY
+                && !(engine==null && "VIEW".equals(lastTableStatus.getComment()))
             ) {
                 String name = lastTableStatus.getName();
                 tableNames.add(name);

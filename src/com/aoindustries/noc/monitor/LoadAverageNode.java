@@ -23,6 +23,8 @@ import java.util.Locale;
  */
 public class LoadAverageNode extends TableMultiResultNodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     private final AOServer _aoServer;
 
     LoadAverageNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {

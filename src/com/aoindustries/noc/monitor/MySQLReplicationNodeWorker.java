@@ -26,16 +26,6 @@ import java.util.Map;
 class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
 
     /**
-     * The seconds behind that will trigger each alert level.
-     */
-    private static final int
-        SECONDS_BEHIND_CRITICAL = 60,
-        SECONDS_BEHIND_HIGH = 30,
-        SECONDS_BEHIND_MEDIUM = 15,
-        SECONDS_BEHIND_LOW = 5
-    ;
-
-    /**
      * One unique worker is made per persistence directory (and should match mysqlReplication exactly)
      */
     private static final Map<String, MySQLReplicationNodeWorker> workerCache = new HashMap<String,MySQLReplicationNodeWorker>();
@@ -58,7 +48,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
 
     private MySQLReplicationNodeWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) {
         super(new File(persistenceDirectory, Integer.toString(mysqlReplication.getPkey())), new File(persistenceDirectory, Integer.toString(mysqlReplication.getPkey())+".new"), false);
-        this._mysqlReplication = mysqlReplication;
+        this._mysqlReplication = currentFailoverMySQLReplication = mysqlReplication;
     }
 
     @Override
@@ -74,8 +64,22 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
         if(slaveStatus==null) throw new SQLException(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNodeWorker.slaveNotRunning"));
         MySQLServer.MasterStatus masterStatus = _mysqlReplication.getMySQLServer().getMasterStatus();
         if(masterStatus==null) throw new SQLException(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNodeWorker.masterNotRunning"));
+        // Display the alert thresholds
+        int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();
+        int secondsBehindMedium = currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium();
+        int secondsBehindHigh = currentFailoverMySQLReplication.getMonitoringSecondsBehindHigh();
+        int secondsBehindCritical = currentFailoverMySQLReplication.getMonitoringSecondsBehindCritical();
+        String alertThresholds =
+            (secondsBehindLow==-1 ? "-" : Integer.toString(secondsBehindLow))
+            + " / "
+            + (secondsBehindMedium==-1 ? "-" : Integer.toString(secondsBehindMedium))
+            + " / "
+            + (secondsBehindHigh==-1 ? "-" : Integer.toString(secondsBehindHigh))
+            + " / "
+            + (secondsBehindCritical==-1 ? "-" : Integer.toString(secondsBehindCritical))
+        ;
 
-        List<Object> rowData = new ArrayList<Object>(10);
+        List<Object> rowData = new ArrayList<Object>(11);
         rowData.add(slaveStatus.getSecondsBehindMaster());
         rowData.add(masterStatus.getFile());
         rowData.add(masterStatus.getPosition());
@@ -86,6 +90,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
         rowData.add(slaveStatus.getSlaveSQLRunning());
         rowData.add(slaveStatus.getLastErrno());
         rowData.add(slaveStatus.getLastError());
+        rowData.add(alertThresholds);
         return Collections.unmodifiableList(rowData);
     }
 
@@ -103,59 +108,74 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
         }
         try {
             int secondsBehind = Integer.parseInt(secondsBehindMaster);
-            if(secondsBehind>=SECONDS_BEHIND_CRITICAL) {
+            int secondsBehindCritical = currentFailoverMySQLReplication.getMonitoringSecondsBehindCritical();
+            if(secondsBehindCritical!=-1 && secondsBehind>=secondsBehindCritical) {
                 return new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
                         "MySQLReplicationNodeWorker.alertMessage.critical",
-                        SECONDS_BEHIND_CRITICAL,
+                        secondsBehindCritical,
                         secondsBehind
                     )
                 );
             }
-            if(secondsBehind>=SECONDS_BEHIND_HIGH) {
+            int secondsBehindHigh = currentFailoverMySQLReplication.getMonitoringSecondsBehindHigh();
+            if(secondsBehindHigh!=-1 && secondsBehind>=secondsBehindHigh) {
                 return new AlertLevelAndMessage(
                     AlertLevel.HIGH,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
                         "MySQLReplicationNodeWorker.alertMessage.high",
-                        SECONDS_BEHIND_HIGH,
+                        secondsBehindHigh,
                         secondsBehind
                     )
                 );
             }
-            if(secondsBehind>=SECONDS_BEHIND_MEDIUM) {
+            int secondsBehindMedium = currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium();
+            if(secondsBehindMedium!=-1 && secondsBehind>=secondsBehindMedium) {
                 return new AlertLevelAndMessage(
                     AlertLevel.MEDIUM,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
                         "MySQLReplicationNodeWorker.alertMessage.medium",
-                        SECONDS_BEHIND_MEDIUM,
+                        secondsBehindMedium,
                         secondsBehind
                     )
                 );
             }
-            if(secondsBehind>=SECONDS_BEHIND_LOW) {
+            int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();
+            if(secondsBehindLow!=-1 && secondsBehind>=secondsBehindLow) {
                 return new AlertLevelAndMessage(
                     AlertLevel.LOW,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
                         "MySQLReplicationNodeWorker.alertMessage.low",
-                        SECONDS_BEHIND_LOW,
+                        secondsBehindLow,
                         secondsBehind
                     )
                 );
             }
-            return new AlertLevelAndMessage(
-                AlertLevel.NONE,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
-                    "MySQLReplicationNodeWorker.alertMessage.none",
-                    SECONDS_BEHIND_LOW,
-                    secondsBehind
-                )
-            );
+            if(secondsBehindLow==-1) {
+                return new AlertLevelAndMessage(
+                    AlertLevel.NONE,
+                    ApplicationResourcesAccessor.getMessage(
+                        locale,
+                        "MySQLReplicationNodeWorker.alertMessage.notAny",
+                        secondsBehind
+                    )
+                );
+            } else {
+                return new AlertLevelAndMessage(
+                    AlertLevel.NONE,
+                    ApplicationResourcesAccessor.getMessage(
+                        locale,
+                        "MySQLReplicationNodeWorker.alertMessage.none",
+                        secondsBehindLow,
+                        secondsBehind
+                    )
+                );
+            }
         } catch(NumberFormatException err) {
             return new AlertLevelAndMessage(
                 AlertLevel.CRITICAL,

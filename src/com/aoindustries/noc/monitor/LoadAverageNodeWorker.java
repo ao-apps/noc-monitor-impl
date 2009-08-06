@@ -47,7 +47,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
 
     private LoadAverageNodeWorker(File persistenceDirectory, AOServer aoServer) {
         super(new File(persistenceDirectory, "loadavg"), new File(persistenceDirectory, "loadavg.new"), false);
-        this._aoServer = aoServer;
+        this._aoServer = currentAOServer = aoServer;
     }
 
     @Override
@@ -146,14 +146,25 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
                 )
             );
         }
-        return new AlertLevelAndMessage(
-            AlertLevel.NONE,
-            ApplicationResourcesAccessor.getMessage(
-                locale,
-                "LoadAverageNodeWorker.alertMessage.none",
-                loadLow,
-                fiveMinuteAverage
-            )
-        );
+        if(Float.isNaN(loadLow)) {
+            return new AlertLevelAndMessage(
+                AlertLevel.NONE,
+                ApplicationResourcesAccessor.getMessage(
+                    locale,
+                    "LoadAverageNodeWorker.alertMessage.notAny",
+                    fiveMinuteAverage
+                )
+            );
+        } else {
+            return new AlertLevelAndMessage(
+                AlertLevel.NONE,
+                ApplicationResourcesAccessor.getMessage(
+                    locale,
+                    "LoadAverageNodeWorker.alertMessage.none",
+                    loadLow,
+                    fiveMinuteAverage
+                )
+            );
+        }
     }
 }
