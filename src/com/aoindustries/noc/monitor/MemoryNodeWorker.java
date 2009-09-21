@@ -24,12 +24,12 @@ import java.util.Map;
 /**
  * Memory + Swap space - checked every minute.
  *      memory just informational
- *      swap controls alert
+ *      percent of memory+swap used controls alert, buffers and cache do not count towards used
  *          &gt;=95% Critical
  *          &gt;=90% High
- *          &gt;=80% Medium
- *          &gt;=70% Low
- *          &lt;70%  None
+ *          &gt;=85% Medium
+ *          &gt;=80% Low
+ *          &lt;80%  None
  *
  * @author  AO Industries, Inc.
  */
@@ -107,26 +107,30 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
         return Collections.unmodifiableList(rowData);
     }
 
-    private static AlertLevel getAlertLevel(long swapUsedPercent) {
-        if(swapUsedPercent<0) return AlertLevel.UNKNOWN;
-        if(swapUsedPercent>=95) return AlertLevel.CRITICAL;
-        if(swapUsedPercent>=90) return AlertLevel.HIGH;
-        if(swapUsedPercent>=80) return AlertLevel.MEDIUM;
-        if(swapUsedPercent>=70) return AlertLevel.LOW;
+    private static AlertLevel getAlertLevel(long memoryPercent) {
+        if(memoryPercent<0) return AlertLevel.UNKNOWN;
+        if(memoryPercent>=95) return AlertLevel.CRITICAL;
+        if(memoryPercent>=90) return AlertLevel.HIGH;
+        if(memoryPercent>=85) return AlertLevel.MEDIUM;
+        if(memoryPercent>=80) return AlertLevel.LOW;
         return AlertLevel.NONE;
     }
 
     @Override
     protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
+        long memTotal = ((ApproximateDisplayExactSize)rowData.get(0)).getSize();
+        long memFree = ((ApproximateDisplayExactSize)rowData.get(1)).getSize();
+        long buffers = ((ApproximateDisplayExactSize)rowData.get(2)).getSize();
+        long cached = ((ApproximateDisplayExactSize)rowData.get(3)).getSize();
         long swapTotal = ((ApproximateDisplayExactSize)rowData.get(4)).getSize();
         long swapFree = ((ApproximateDisplayExactSize)rowData.get(5)).getSize();
-        long swapUsedPercent = (swapTotal - swapFree) * 100 / swapTotal;
+        long memoryPercent = ((memTotal - (memFree + buffers + cached)) + (swapTotal - swapFree)) * 100 / (memTotal + swapTotal);
         return new AlertLevelAndMessage(
-            getAlertLevel(swapUsedPercent),
+            getAlertLevel(memoryPercent),
             ApplicationResourcesAccessor.getMessage(
                 locale,
                 "MemoryNodeWorker.alertMessage",
-                swapUsedPercent
+                memoryPercent
             )
         );
     }

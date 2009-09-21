@@ -70,8 +70,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
 
     @Override
     protected long getSleepDelay(boolean lastSuccessful) {
-        if(lastSuccessful) return 5L * 60L * 1000L;
-        return 60L * 1000L;
+        return 5L * 60000L;
     }
 
     @Override

@@ -145,20 +145,12 @@ public class MySQLServersNode extends NodeImpl {
             // Add new ones
             for(int c=0;c<mysqlServers.size();c++) {
                 MySQLServer mysqlServer = mysqlServers.get(c);
-                if(c>=mysqlServerNodes.size()) {
-                    // Just add to the end
+                if(c>=mysqlServerNodes.size() || !mysqlServer.equals(mysqlServerNodes.get(c).getMySQLServer())) {
+                    // Insert into proper index
                     MySQLServerNode mysqlServerNode = new MySQLServerNode(this, mysqlServer, port, csf, ssf);
-                    mysqlServerNodes.add(mysqlServerNode);
+                    mysqlServerNodes.add(c, mysqlServerNode);
                     mysqlServerNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();
-                } else {
-                    if(!mysqlServer.equals(mysqlServerNodes.get(c).getMySQLServer())) {
-                        // Insert into proper index
-                        MySQLServerNode mysqlServerNode = new MySQLServerNode(this, mysqlServer, port, csf, ssf);
-                        mysqlServerNodes.add(c, mysqlServerNode);
-                        mysqlServerNode.start();
-                        serverNode.serversNode.rootNode.nodeAdded();
-                    }
                 }
             }
         }

@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -137,7 +138,15 @@ abstract class TableMultiResultNodeWorker implements Runnable {
                             }
                         }
                     );
-                    rowData = future.get(5, TimeUnit.MINUTES);
+                    try {
+                        rowData = future.get(5, TimeUnit.MINUTES);
+                    } catch(InterruptedException err) {
+                        cancel();
+                        throw err;
+                    } catch(TimeoutException err) {
+                        cancel();
+                        throw err;
+                    }
                 } else {
                     rowData = getRowData(locale);
                 }
@@ -276,10 +285,10 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     }
 
     /**
-     * The default sleep delay is one minute.
+     * The default sleep delay is five minutes.
      */
     protected long getSleepDelay(boolean lastSuccessful) {
-        return 60000;
+        return 5*60000;
     }
 
     /**
@@ -292,6 +301,14 @@ abstract class TableMultiResultNodeWorker implements Runnable {
      * This is the main monitor routine.
      */
     protected abstract List<?> getRowData(Locale locale) throws Exception;
+
+    /**
+     * Cancles the current getRowData call on a best-effort basis.
+     * Implementations of this method <b>must not block</b>.
+     * This default implementation does nothing.
+     */
+    protected void cancel() {
+    }
 
     /**
      * Determines the alert level and message for the provided result and locale.

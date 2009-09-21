@@ -144,10 +144,10 @@ class SignupsNodeWorker extends TableResultNodeWorker {
     }
 
     /**
-     * Checks once every 5 minutes or after a minute when there was an error.
+     * Checks once every 5 minutes.
      */
     @Override
     protected long getSleepDelay(boolean lastSuccessful) {
-        return lastSuccessful ? 300000 : 60000;
+        return 5*60000;
     }
 }

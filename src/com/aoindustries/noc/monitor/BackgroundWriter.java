@@ -19,26 +19,35 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 /**
+ * <p>
  * Writes files in the background.  The files are written in the order received.
  * If a new version of the file is provided while the old version has not yet been
  * written, the new version will take its place in the queue, keeping the position of the older item in the queue.
  * The expected result is that different files will get written in a round-robin style
- * while keeping the most up-to-date copies during times of heave disk I/O.
- *
+ * while keeping the most up-to-date copies during times of heavy disk I/O.
+ * </p>
+ * <p>
  * This is being used to get around an issue where the monitoring would cause extremely
  * high load when running on a very busy disk subsystem.  The resulting load would
  * causing things to get progressively worse.
- *
+ * </p>
+ * <p>
  * TODO: Should we perform any sort of batching?  Write all built-up in a minute at once?  Save HDD disk I/O?
  *       Or more extreme?  Only once per very long time period on the laptop?  Or, when it finds the disk already spun-up
  *       for some other reason?  Been using /dev/shm to avoid night-time disk I/O to keep it quiet while sleeping, but
  *       this loses all info on a reboot.  Is a pen drive a better solution?
- *
- * TODO: We could also add a map for finding the existing queue entry, to avoid the sequential scan.  This would use less CPU when the disks are being extremely slow.
+ * </p>
+ * <p>
+ * TODO: We could also add a map for finding the existing queue entry, to avoid the sequential scan.  This would use
+ * less CPU when the disks are being extremely slow and the queue builds.  But, it could use a little more CPU in
+ * the average case.
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
 class BackgroundWriter {
+
+    private BackgroundWriter() {}
 
     private static final Logger logger = Logger.getLogger(BackgroundWriter.class.getName());
 
@@ -62,7 +71,7 @@ class BackgroundWriter {
     private static boolean running = false;
 
     /**
-     * Will serialize and queue the object for write.
+     * Serializes and queues the object for write.
      */
     static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -73,7 +82,7 @@ class BackgroundWriter {
     }
 
     /**
-     * Queues the file for write.  The data is not copied to a temporary array - do not change after giving to this method.
+     * Queues the file for write.  No defensive copy of the data is made - do not change after giving to this method.
      */
     static void enqueueFile(File persistenceFile, File newPersistenceFile, byte[] data) {
         synchronized(queue) {
@@ -85,11 +94,10 @@ class BackgroundWriter {
                     pad.newPersistenceFile = newPersistenceFile;
                     pad.data = data;
                     found = true;
+                    break;
                 }
             }
-            if(!found) {
-                queue.addLast(new PathAndData(persistenceFile, newPersistenceFile, data));
-            }
+            if(!found) queue.addLast(new PathAndData(persistenceFile, newPersistenceFile, data));
             if(!running) {
                 RootNodeImpl.executorService.submit(
                     new Runnable() {

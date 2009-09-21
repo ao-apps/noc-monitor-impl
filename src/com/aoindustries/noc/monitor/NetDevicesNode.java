@@ -31,6 +31,8 @@ import javax.swing.SwingUtilities;
  */
 public class NetDevicesNode extends NodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     final ServerNode serverNode;
     private final Server server;
     private final List<NetDeviceNode> netDeviceNodes = new ArrayList<NetDeviceNode>();
@@ -143,20 +145,12 @@ public class NetDevicesNode extends NodeImpl {
             // Add new ones
             for(int c=0;c<netDevices.size();c++) {
                 NetDevice netDevice = netDevices.get(c);
-                if(c>=netDeviceNodes.size()) {
-                    // Just add to the end
+                if(c>=netDeviceNodes.size() || !netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
+                    // Insert into proper index
                     NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice, port, csf, ssf);
-                    netDeviceNodes.add(netDeviceNode);
+                    netDeviceNodes.add(c, netDeviceNode);
                     netDeviceNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();
-                } else {
-                    if(!netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
-                        // Insert into proper index
-                        NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice, port, csf, ssf);
-                        netDeviceNodes.add(c, netDeviceNode);
-                        netDeviceNode.start();
-                        serverNode.serversNode.rootNode.nodeAdded();
-                    }
                 }
             }
         }

@@ -29,7 +29,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
 
-    private static final int SLEEP_DELAY = 60000;
+    private static final int SLEEP_DELAY = 5*60000;
 
     /**
      * The most recent timer task

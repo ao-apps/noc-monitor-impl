@@ -26,13 +26,15 @@ import javax.swing.SwingUtilities;
  */
 public class IPAddressNode extends NodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     final IPAddressesNode ipAddressesNode;
     private final IPAddress ipAddress;
     private final String label;
     private final boolean isPingable;
 
     volatile private PingNode pingNode;
-    //volatile private NetBindsNode netBindsNode;
+    volatile private NetBindsNode netBindsNode;
 
     IPAddressNode(IPAddressesNode ipAddressesNode, IPAddress ipAddress, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
         super(port, csf, ssf);
@@ -53,6 +55,7 @@ public class IPAddressNode extends NodeImpl {
         ;
     }
 
+    @Override
     public Node getParent() {
         return ipAddressesNode;
     }
@@ -61,6 +64,7 @@ public class IPAddressNode extends NodeImpl {
         return ipAddress;
     }
 
+    @Override
     public boolean getAllowsChildren() {
         return true;
     }
@@ -68,14 +72,15 @@ public class IPAddressNode extends NodeImpl {
     /**
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
+    @Override
     public List<? extends Node> getChildren() {
-        List<NodeImpl> children = new ArrayList<NodeImpl>();
+        List<NodeImpl> children = new ArrayList<NodeImpl>(2);
 
         PingNode localPingNode = this.pingNode;
         if(localPingNode!=null) children.add(localPingNode);
 
-        //NetBindsNode localNetBindsNode = this.netBindsNode;
-        //if(localNetBindsNode!=null) children.add(localNetBindsNode);
+        NetBindsNode localNetBindsNode = this.netBindsNode;
+        if(localNetBindsNode!=null) children.add(localNetBindsNode);
 
         return Collections.unmodifiableList(children);
     }
@@ -83,6 +88,7 @@ public class IPAddressNode extends NodeImpl {
     /**
      * The alert level is equal to the highest alert level of its children.
      */
+    @Override
     public AlertLevel getAlertLevel() {
         AlertLevel level = AlertLevel.NONE;
 
@@ -92,11 +98,11 @@ public class IPAddressNode extends NodeImpl {
             if(pingNodeLevel.compareTo(level)>0) level = pingNodeLevel;
         }
 
-        /*NetBindsNode localNetBindsNode = this.netBindsNode;
+        NetBindsNode localNetBindsNode = this.netBindsNode;
         if(localNetBindsNode!=null) {
             AlertLevel netBindsNodeLevel = localNetBindsNode.getAlertLevel();
             if(netBindsNodeLevel.compareTo(level)>0) level = netBindsNodeLevel;
-        }*/
+        }
 
         return level;
     }
@@ -109,11 +115,12 @@ public class IPAddressNode extends NodeImpl {
         return null;
     }
 
+    @Override
     public String getLabel() {
         return label;
     }
 
-    synchronized void start() throws RemoteException, IOException {
+    synchronized void start() throws RemoteException, IOException, SQLException {
         RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
         if(isPingable) {
             if(pingNode==null) {
@@ -122,28 +129,26 @@ public class IPAddressNode extends NodeImpl {
                 rootNode.nodeAdded();
             }
         }
-        /*if(netBindsNode==null) {
+        if(netBindsNode==null) {
             netBindsNode = new NetBindsNode(this, port, csf, ssf);
             netBindsNode.start();
-            ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.nodeAdded();
-        }*/
+            rootNode.nodeAdded();
+        }
     }
 
     synchronized void stop() {
         RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
 
-        /*if(netBindsNode!=null) {
+        if(netBindsNode!=null) {
             netBindsNode.stop();
             netBindsNode = null;
             rootNode.nodeRemoved();
-        }*/
+        }
 
-        if(isPingable) {
-            if(pingNode!=null) {
-                pingNode.stop();
-                pingNode = null;
-                rootNode.nodeRemoved();
-            }
+        if(pingNode!=null) {
+            pingNode.stop();
+            pingNode = null;
+            rootNode.nodeRemoved();
         }
     }
 

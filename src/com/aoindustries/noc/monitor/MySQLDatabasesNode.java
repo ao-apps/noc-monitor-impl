@@ -138,20 +138,12 @@ public class MySQLDatabasesNode extends NodeImpl {
             // Add new ones
             for(int c=0;c<mysqlDatabases.size();c++) {
                 MySQLDatabase mysqlDatabase = mysqlDatabases.get(c);
-                if(c>=mysqlDatabaseNodes.size()) {
-                    // Just add to the end
+                if(c>=mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
+                    // Insert into proper index
                     MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, port, csf, ssf);
-                    mysqlDatabaseNodes.add(mysqlDatabaseNode);
+                    mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
                     mysqlDatabaseNode.start();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
-                } else {
-                    if(!mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
-                        // Insert into proper index
-                        MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, port, csf, ssf);
-                        mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
-                        mysqlDatabaseNode.start();
-                        mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
-                    }
                 }
             }
         }

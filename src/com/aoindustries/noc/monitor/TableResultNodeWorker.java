@@ -64,7 +64,7 @@ abstract class TableResultNodeWorker implements Runnable {
     private static final Object lastStartupDelayLock = new Object();
     static int getNextStartupDelay() {
         synchronized(lastStartupDelayLock) {
-            lastStartupDelay = (lastStartupDelay+5037)%(5*60*1000);
+            lastStartupDelay = (lastStartupDelay+5037)%(5*60000);
             return lastStartupDelay;
         }
     }
@@ -252,10 +252,10 @@ abstract class TableResultNodeWorker implements Runnable {
     }
 
     /**
-     * The default sleep delay is one minute.
+     * The default sleep delay is five minutes.
      */
     protected long getSleepDelay(boolean lastSuccessful) {
-        return 60000;
+        return 5*60000;
     }
 
     /**

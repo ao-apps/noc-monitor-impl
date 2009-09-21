@@ -12,6 +12,7 @@ import com.aoindustries.noc.common.Node;
 import com.aoindustries.noc.common.NodeSnapshot;
 import com.aoindustries.noc.common.RootNode;
 import com.aoindustries.noc.common.TreeListener;
+import com.aoindustries.util.ErrorPrinter;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -36,11 +37,14 @@ import javax.swing.SwingUtilities;
 /**
  * The top-level node has one child for each of the servers.
  * 
- * TODO: There is no stop here?
+ * There is no stop here because root nodes keep running forever in the background to be reconnected to.
+ * The overhead of this is reduced by using workers and only creating one rootNode per user.
  *
  * @author  AO Industries, Inc.
  */
 public class RootNodeImpl extends NodeImpl implements RootNode {
+
+    private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
@@ -171,7 +175,10 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                             if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
                             try {
                                 newRootNode.start();
-                            } catch(Exception err) {
+                            } catch(ThreadDeath TD) {
+                                throw TD;
+                            } catch(Throwable err) {
+                                ErrorPrinter.printStackTraces(err);
                                 logger.log(Level.SEVERE, null, err);
                             }
                         }

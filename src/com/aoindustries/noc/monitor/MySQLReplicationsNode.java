@@ -138,20 +138,12 @@ public class MySQLReplicationsNode extends NodeImpl {
             // Add new ones
             for(int c=0;c<mysqlReplications.size();c++) {
                 FailoverMySQLReplication mysqlReplication = mysqlReplications.get(c);
-                if(c>=mysqlReplicationNodes.size()) {
-                    // Just add to the end
+                if(c>=mysqlReplicationNodes.size() || !mysqlReplication.equals(mysqlReplicationNodes.get(c).getFailoverMySQLReplication())) {
+                    // Insert into proper index
                     MySQLReplicationNode mysqlReplicationNode = new MySQLReplicationNode(this, mysqlReplication, port, csf, ssf);
-                    mysqlReplicationNodes.add(mysqlReplicationNode);
+                    mysqlReplicationNodes.add(c, mysqlReplicationNode);
                     mysqlReplicationNode.start();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
-                } else {
-                    if(!mysqlReplication.equals(mysqlReplicationNodes.get(c).getFailoverMySQLReplication())) {
-                        // Insert into proper index
-                        MySQLReplicationNode mysqlReplicationNode = new MySQLReplicationNode(this, mysqlReplication, port, csf, ssf);
-                        mysqlReplicationNodes.add(c, mysqlReplicationNode);
-                        mysqlReplicationNode.start();
-                        mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
-                    }
                 }
             }
         }

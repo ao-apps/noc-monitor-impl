@@ -33,21 +33,28 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
         this.ssf = ssf;
     }
 
+    @Override
     abstract public Node getParent();
 
+    @Override
     abstract public List<? extends Node> getChildren();
 
+    @Override
     abstract public AlertLevel getAlertLevel();
     
+    @Override
     abstract public String getAlertMessage();
     
+    @Override
     abstract public String getLabel();
     
+    @Override
     abstract public boolean getAllowsChildren();
     
     /**
      * The default toString is the label.
      */
+    @Override
     public String toString() {
         return getLabel();
     }

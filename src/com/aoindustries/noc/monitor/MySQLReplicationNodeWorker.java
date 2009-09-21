@@ -98,8 +98,16 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
     protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
         String secondsBehindMaster = (String)rowData.get(0);
         if(secondsBehindMaster==null) {
+            // Use the highest alert level that may be returned for this replication
+            AlertLevel alertLevel;
+            if(currentFailoverMySQLReplication.getMonitoringSecondsBehindCritical()!=-1) alertLevel = AlertLevel.CRITICAL;
+            else if(currentFailoverMySQLReplication.getMonitoringSecondsBehindHigh()!=-1) alertLevel = AlertLevel.HIGH;
+            else if(currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium()!=-1) alertLevel = AlertLevel.MEDIUM;
+            else if(currentFailoverMySQLReplication.getMonitoringSecondsBehindLow()!=-1) alertLevel = AlertLevel.LOW;
+            else alertLevel = AlertLevel.NONE;
+
             return new AlertLevelAndMessage(
-                AlertLevel.CRITICAL,
+                alertLevel,
                 ApplicationResourcesAccessor.getMessage(
                     locale,
                     "MySQLReplicationNodeWorker.alertMessage.secondsBehindMaster.null"

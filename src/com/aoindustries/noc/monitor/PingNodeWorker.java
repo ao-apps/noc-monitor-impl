@@ -133,4 +133,11 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     protected boolean useFutureTimeout() {
         return false;
     }
+
+    /**
+     * Sleeps one minute between checks.
+     */
+    protected long getSleepDelay(boolean lastSuccessful) {
+        return 60000;
+    }
 }

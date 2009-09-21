@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.IPAddress;
+import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
 import com.aoindustries.table.Table;
@@ -30,6 +31,8 @@ import javax.swing.SwingUtilities;
  */
 public class IPAddressesNode extends NodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     final NetDeviceNode netDeviceNode;
     private final List<IPAddressNode> ipAddressNodes = new ArrayList<IPAddressNode>();
 
@@ -39,10 +42,12 @@ public class IPAddressesNode extends NodeImpl {
         this.netDeviceNode = netDeviceNode;
     }
 
+    @Override
     public Node getParent() {
         return netDeviceNode;
     }
     
+    @Override
     public boolean getAllowsChildren() {
         return true;
     }
@@ -50,6 +55,7 @@ public class IPAddressesNode extends NodeImpl {
     /**
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
+    @Override
     public List<? extends Node> getChildren() {
         synchronized(ipAddressNodes) {
             return Collections.unmodifiableList(new ArrayList<IPAddressNode>(ipAddressNodes));
@@ -59,6 +65,7 @@ public class IPAddressesNode extends NodeImpl {
     /**
      * The alert level is equal to the highest alert level of its children.
      */
+    @Override
     public AlertLevel getAlertLevel() {
         AlertLevel level = AlertLevel.NONE;
         synchronized(ipAddressNodes) {
@@ -78,11 +85,13 @@ public class IPAddressesNode extends NodeImpl {
         return null;
     }
 
+    @Override
     public String getLabel() {
         return ApplicationResourcesAccessor.getMessage(netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale, "IPAddressesNode.label");
     }
     
     private TableListener tableListener = new TableListener() {
+        @Override
         public void tableUpdated(Table table) {
             try {
                 verifyIPAddresses();
@@ -118,7 +127,8 @@ public class IPAddressesNode extends NodeImpl {
 
         final RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
 
-        List<IPAddress> ipAddresses = netDeviceNode.getNetDevice().getIPAddresses();
+        NetDevice netDevice = netDeviceNode.getNetDevice();
+        List<IPAddress> ipAddresses = netDevice.getIPAddresses();
         synchronized(ipAddressNodes) {
             // Remove old ones
             Iterator<IPAddressNode> ipAddressNodeIter = ipAddressNodes.iterator();
@@ -134,20 +144,13 @@ public class IPAddressesNode extends NodeImpl {
             // Add new ones
             for(int c=0;c<ipAddresses.size();c++) {
                 IPAddress ipAddress = ipAddresses.get(c);
-                if(c>=ipAddressNodes.size()) {
-                    // Just add to the end
+                assert !ipAddress.isWildcard() : "Wildcard IP address on NetDevice: "+netDevice;
+                if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
+                    // Insert into proper index
                     IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
-                    ipAddressNodes.add(ipAddressNode);
+                    ipAddressNodes.add(c, ipAddressNode);
                     ipAddressNode.start();
                     rootNode.nodeAdded();
-                } else {
-                    if(!ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
-                        // Insert into proper index
-                        IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
-                        ipAddressNodes.add(c, ipAddressNode);
-                        ipAddressNode.start();
-                        rootNode.nodeAdded();
-                    }
                 }
             }
         }

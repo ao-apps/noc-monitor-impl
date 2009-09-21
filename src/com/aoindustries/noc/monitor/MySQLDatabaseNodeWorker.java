@@ -145,13 +145,12 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
 
     /**
      * If is a slowServer (many tables), only updates once every 12 hours.
-     * Only update once every five minutes when successful, retry
-     * in one minute when unsuccessful.
+     * Only update once every five minutes.
      */
     @Override
     protected long getSleepDelay(boolean lastSuccessful) {
-        if(isSlowServer) return 12L*60*60*1000; // Only update once every 12 hours
-        return lastSuccessful ? 300000 : 60000;
+        if(isSlowServer) return 12L*60*60000; // Only update once every 12 hours
+        return 5*60000;
     }
 
     @Override

@@ -239,22 +239,13 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             // Add new ones
             for(int c=0;c<failoverFileReplications.size();c++) {
                 FailoverFileReplication failoverFileReplication = failoverFileReplications.get(c);
-                if(c>=backupNodes.size()) {
-                    // Just add to the end
+                if(c>=backupNodes.size() || !failoverFileReplication.equals(backupNodes.get(c).getFailoverFileReplication())) {
+                    // Insert into proper index
                     BackupNode backupNode = new BackupNode(this, failoverFileReplication, port, csf, ssf);
-                    backupNodes.add(backupNode);
+                    backupNodes.add(c, backupNode);
                     backupNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();
                     backupNode.addTableResultListener(this);
-                } else {
-                    if(!failoverFileReplication.equals(backupNodes.get(c).getFailoverFileReplication())) {
-                        // Insert into proper index
-                        BackupNode backupNode = new BackupNode(this, failoverFileReplication, port, csf, ssf);
-                        backupNodes.add(c, backupNode);
-                        backupNode.start();
-                        serverNode.serversNode.rootNode.nodeAdded();
-                        backupNode.addTableResultListener(this);
-                    }
                 }
             }
 

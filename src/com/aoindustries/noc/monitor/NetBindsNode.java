@@ -9,16 +9,18 @@ import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.NetDevice;
-import com.aoindustries.aoserv.client.OperatingSystemVersion;
+import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
+import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -28,9 +30,13 @@ import javax.swing.SwingUtilities;
 /**
  * The node per NetBind.
  *
+ * TODO: Add output of netstat -ln here to detect extra ports.
+ *
  * @author  AO Industries, Inc.
  */
 public class NetBindsNode extends NodeImpl {
+
+    private static final long serialVersionUID = 1L;
 
     final IPAddressNode ipAddressNode;
     private final List<NetBindNode> netBindNodes = new ArrayList<NetBindNode>();
@@ -41,10 +47,12 @@ public class NetBindsNode extends NodeImpl {
         this.ipAddressNode = ipAddressNode;
     }
 
+    @Override
     public Node getParent() {
         return ipAddressNode;
     }
     
+    @Override
     public boolean getAllowsChildren() {
         return true;
     }
@@ -52,6 +60,7 @@ public class NetBindsNode extends NodeImpl {
     /**
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
+    @Override
     public List<? extends Node> getChildren() {
         synchronized(netBindNodes) {
             return Collections.unmodifiableList(new ArrayList<NetBindNode>(netBindNodes));
@@ -61,6 +70,7 @@ public class NetBindsNode extends NodeImpl {
     /**
      * The alert level is equal to the highest alert level of its children.
      */
+    @Override
     public AlertLevel getAlertLevel() {
         AlertLevel level = AlertLevel.NONE;
         synchronized(netBindNodes) {
@@ -72,26 +82,38 @@ public class NetBindsNode extends NodeImpl {
         return level;
     }
 
+    /**
+     * No alert messages.
+     */
+    @Override
+    public String getAlertMessage() {
+        return null;
+    }
+
+    @Override
     public String getLabel() {
         return ApplicationResourcesAccessor.getMessage(ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale, "NetBindsNode.label");
     }
 
     private TableListener tableListener = new TableListener() {
+        @Override
         public void tableUpdated(Table table) {
             try {
                 verifyNetBinds();
             } catch(IOException err) {
                 throw new WrappedException(err);
+            } catch(SQLException err) {
+                throw new WrappedException(err);
             }
         }
     };
 
-    void start() throws IOException {
+    void start() throws IOException, SQLException {
         AOServConnector conn = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn;
         synchronized(netBindNodes) {
-            conn.ipAddresses.addTableListener(tableListener, 100);
-            conn.netBinds.addTableListener(tableListener, 100);
-            conn.netDevices.addTableListener(tableListener, 100);
+            conn.getIpAddresses().addTableListener(tableListener, 100);
+            conn.getNetBinds().addTableListener(tableListener, 100);
+            conn.getNetDevices().addTableListener(tableListener, 100);
             verifyNetBinds();
         }
     }
@@ -100,9 +122,9 @@ public class NetBindsNode extends NodeImpl {
         RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
         AOServConnector conn = rootNode.conn;
         synchronized(netBindNodes) {
-            conn.ipAddresses.removeTableListener(tableListener);
-            conn.netBinds.removeTableListener(tableListener);
-            conn.netDevices.removeTableListener(tableListener);
+            conn.getIpAddresses().removeTableListener(tableListener);
+            conn.getNetBinds().removeTableListener(tableListener);
+            conn.getNetDevices().removeTableListener(tableListener);
             for(NetBindNode netBindNode : netBindNodes) {
                 netBindNode.stop();
                 rootNode.nodeRemoved();
@@ -113,130 +135,171 @@ public class NetBindsNode extends NodeImpl {
 
     static class NetMonitorSetting implements Comparable<NetMonitorSetting> {
 
-        final String ipAddress;
-        final int port;
-        final String netProtocol;
-        final String appProtocol;
+        private final Server server;
+        private final NetBind netBind;
+        private final String ipAddress;
+        private final int port;
+        private final String netProtocol;
 
-        public NetMonitorSetting(String ipAddress, int port, String netProtocol, String appProtocol) {
+        private NetMonitorSetting(Server server, NetBind netBind, String ipAddress, int port, String netProtocol) {
+            this.server = server;
+            this.netBind = netBind;
             this.ipAddress = ipAddress;
             this.port = port;
             this.netProtocol = netProtocol;
-            this.appProtocol = appProtocol;
         }
 
+        @Override
         public int compareTo(NetMonitorSetting o) {
-            // IP first
-            int diff = IPAddress.getIntForIPAddress(ipAddress) - IPAddress.getIntForIPAddress(o.ipAddress);
+            // Server
+            int diff = server.compareTo(o.server);
             if(diff!=0) return diff;
-            // port first
+            // IP
+            diff = IPAddress.getIntForIPAddress(ipAddress) - IPAddress.getIntForIPAddress(o.ipAddress);
+            if(diff!=0) return diff;
+            // port
             if(port<o.port) return -1;
             if(port>o.port) return 1;
-            // net protocol next
-            diff = netProtocol.compareTo(o.netProtocol);
-            if(diff!=0) return diff;
-            // app protocol last
-            return appProtocol.compareTo(o.appProtocol);
+            // net protocol
+            return netProtocol.compareTo(o.netProtocol);
+        }
+
+        @Override
+        public boolean equals(Object O) {
+            if(O==null) return false;
+            if(!(O instanceof NetMonitorSetting)) return false;
+            NetMonitorSetting other = (NetMonitorSetting)O;
+            return
+                port==other.port
+                && server.equals(other.server)
+                && netBind.equals(other.netBind)
+                && ipAddress.equals(other.ipAddress)
+                && netProtocol.equals(other.netProtocol)
+            ;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 11 * hash + server.hashCode();
+            hash = 11 * hash + netBind.hashCode();
+            hash = 11 * hash + ipAddress.hashCode();
+            hash = 11 * hash + port;
+            hash = 11 * hash + netProtocol.hashCode();
+            return hash;
+        }
+
+        /**
+         * Gets the Server for this port.
+         */
+        Server getServer() {
+            return server;
+        }
+
+        NetBind getNetBind() {
+            return netBind;
+        }
+
+        /**
+         * @return the ipAddress
+         */
+        String getIpAddress() {
+            return ipAddress;
+        }
+
+        /**
+         * @return the port
+         */
+        int getPort() {
+            return port;
+        }
+
+        /**
+         * @return the netProtocol
+         */
+        String getNetProtocol() {
+            return netProtocol;
         }
     }
 
-    private void verifyNetBinds() throws RemoteException, IOException {
+    private void verifyNetBinds() throws RemoteException, IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
 
         // The list of net binds is:
-        //     for any loopback IP (127.0.0.1), just the binds directly on this IP
-        //     for any other IP, the binds directly on this IP plus the wildcard
+        //     The binds directly on the IP address plus the wildcard binds
         IPAddress ipAddress = ipAddressNode.getIPAddress();
         NetDevice netDevice = ipAddress.getNetDevice();
-        List<NetBind> directNetBinds;
+        List<NetBind> directNetBinds = ipAddress.getNetBinds();
+
+        // Find the wildcard IP address, if available
+        Server server = netDevice.getServer();
+        IPAddress wildcard = null;
+        for(IPAddress ia : server.getIPAddresses()) {
+            if(ia.isWildcard()) {
+                wildcard = ia;
+                break;
+            }
+        }
         List<NetBind> wildcardNetBinds;
-        if(netDevice.getNetDeviceID().isLoopback()) {
-            // Remove this restriction once Mandriva all upgraded
-            OperatingSystemVersion osv = netDevice.getServer().getOperatingSystemVersion();
-            if(osv==null || osv.getPkey()!=OperatingSystemVersion.MANDRIVA_2006_0_I586) directNetBinds = ipAddress.getNetBinds();
-            else directNetBinds = null;
-            // No wildcard-derived monitoring applied to loopback to save on bandwidth/aoserv-daemon queries
-            // because loopback is always available to itself.
-            wildcardNetBinds = null;
-        } else {
-            directNetBinds = ipAddress.getNetBinds();
-            // Find the wildcard IP address, if available
-            IPAddress wildcard = null;
-            for(IPAddress ia : netDevice.getServer().getIPAddresses()) {
-                if(ia.isWildcard()) {
-                    wildcard = ia;
-                    break;
-                }
-            }
-            if(wildcard==null) wildcardNetBinds = null;
-            else wildcardNetBinds = wildcard.getNetBinds();
-        }
-        List<NetMonitorSetting> netMonitorSettings = new ArrayList<NetMonitorSetting>(
-            (directNetBinds==null ? 0 : directNetBinds.size())
-            + (wildcardNetBinds==null ? 0 : wildcardNetBinds.size())
-        );
-        if(directNetBinds!=null) {
-            for(NetBind netBind : directNetBinds) {
+        if(wildcard==null) wildcardNetBinds = Collections.emptyList();
+        else wildcardNetBinds = server.getNetBinds(wildcard);
+
+        String ipAddressString = ipAddress.getIPAddress();
+        List<NetMonitorSetting> netMonitorSettings = new ArrayList<NetMonitorSetting>(directNetBinds.size() + wildcardNetBinds.size());
+        for(NetBind netBind : directNetBinds) {
+            if(netBind.isMonitoringEnabled()) {
                 netMonitorSettings.add(
                     new NetMonitorSetting(
-                        netBind.getIPAddress().getIPAddress(),
-                        netBind.getPort().getPort(),
-                        netBind.getNetProtocol().getProtocol(),
-                        netBind.getAppProtocol().getProtocol()
-                    )
-                );
-            }
-        }
-        if(wildcardNetBinds!=null) {
-            String ipAddressString = ipAddress.getIPAddress();
-            for(NetBind netBind : wildcardNetBinds) {
-                netMonitorSettings.add(
-                    new NetMonitorSetting(
+                        server,
+                        netBind,
                         ipAddressString,
                         netBind.getPort().getPort(),
-                        netBind.getNetProtocol().getProtocol(),
-                        netBind.getAppProtocol().getProtocol()
+                        netBind.getNetProtocol().getProtocol()
                     )
                 );
             }
         }
+        for(NetBind netBind : wildcardNetBinds) {
+            if(netBind.isMonitoringEnabled()) {
+                netMonitorSettings.add(
+                    new NetMonitorSetting(
+                        server,
+                        netBind,
+                        ipAddressString,
+                        netBind.getPort().getPort(),
+                        netBind.getNetProtocol().getProtocol()
+                    )
+                );
+            }
+        }
+        Collections.sort(netMonitorSettings);
 
-        throw new RuntimeException("TODO: Finish method");
-        /*
         synchronized(netBindNodes) {
             // Remove old ones
             Iterator<NetBindNode> netBindNodeIter = netBindNodes.iterator();
             while(netBindNodeIter.hasNext()) {
                 NetBindNode netBindNode = netBindNodeIter.next();
-                NetBind ipAddress = ipAddressNode.getIPAddress();
-                if(!ipAddresses.contains(ipAddress)) {
-                    ipAddressNode.stop();
-                    ipAddressNodeIter.remove();
+                NetMonitorSetting netMonitorSetting = netBindNode.getNetMonitorSetting();
+                if(!netMonitorSettings.contains(netMonitorSetting)) {
+                    netBindNode.stop();
+                    netBindNodeIter.remove();
                     rootNode.nodeRemoved();
                 }
             }
             // Add new ones
-            for(int c=0;c<ipAddresses.size();c++) {
-                IPAddress ipAddress = ipAddresses.get(c);
-                if(c>=ipAddressNodes.size()) {
-                    // Just add to the end
-                    IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
-                    ipAddressNodes.add(ipAddressNode);
-                    ipAddressNode.start();
+            for(int c=0;c<netMonitorSettings.size();c++) {
+                NetMonitorSetting netMonitorSetting = netMonitorSettings.get(c);
+                if(c>=netBindNodes.size() || !netMonitorSetting.equals(netBindNodes.get(c).getNetMonitorSetting())) {
+                    // Insert into proper index
+                    NetBindNode netBindNode = new NetBindNode(this, netMonitorSetting, port, csf, ssf);
+                    netBindNodes.add(c, netBindNode);
+                    netBindNode.start();
                     rootNode.nodeAdded();
-                } else {
-                    if(!ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
-                        // Insert into proper index
-                        IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
-                        ipAddressNodes.add(c, ipAddressNode);
-                        ipAddressNode.start();
-                        rootNode.nodeAdded();
-                    }
                 }
             }
-        }*/
+        }
     }
 
     File getPersistenceDirectory() throws IOException {
