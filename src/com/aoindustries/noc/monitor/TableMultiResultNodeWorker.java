@@ -141,10 +141,10 @@ abstract class TableMultiResultNodeWorker implements Runnable {
                     try {
                         rowData = future.get(5, TimeUnit.MINUTES);
                     } catch(InterruptedException err) {
-                        cancel();
+                        cancel(future);
                         throw err;
                     } catch(TimeoutException err) {
-                        cancel();
+                        cancel(future);
                         throw err;
                     }
                 } else {
@@ -227,7 +227,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
                 if(timerTask!=null) {
                     timerTask = RootNodeImpl.schedule(
                         this,
-                        getSleepDelay(lastSuccessful)
+                        getSleepDelay(lastSuccessful, alertLevel)
                     );
                 }
             }
@@ -285,10 +285,11 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     }
 
     /**
-     * The default sleep delay is five minutes.
+     * The default sleep delay is five minutes when successful
+     * or one minute when unsuccessful.
      */
-    protected long getSleepDelay(boolean lastSuccessful) {
-        return 5*60000;
+    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+        return lastSuccessful && alertLevel==AlertLevel.NONE ? 5*60000 : 60000;
     }
 
     /**
@@ -305,9 +306,10 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     /**
      * Cancles the current getRowData call on a best-effort basis.
      * Implementations of this method <b>must not block</b>.
-     * This default implementation does nothing.
+     * This default implementation calls <code>future.cancel(true)</code>.
      */
-    protected void cancel() {
+    protected void cancel(Future<List<?>> future) {
+        future.cancel(true);
     }
 
     /**

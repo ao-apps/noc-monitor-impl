@@ -59,15 +59,6 @@ class BackupNodeWorker extends TableResultNodeWorker {
     }
 
     /**
-     * Updates once every 15 minutes.
-     */
-    @Override
-    protected long getSleepDelay(boolean lastSuccessful) {
-        if(lastSuccessful) return (long)15*60*1000;
-        else return super.getSleepDelay(lastSuccessful);
-    }
-
-    /**
      * Determines the alert message for the provided result.
      * 
      * If there is not any data (no backups logged, make high level)

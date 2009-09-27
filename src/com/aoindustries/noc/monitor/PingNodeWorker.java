@@ -137,7 +137,8 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     /**
      * Sleeps one minute between checks.
      */
-    protected long getSleepDelay(boolean lastSuccessful) {
+    @Override
+    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
         return 60000;
     }
 }

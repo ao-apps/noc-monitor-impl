@@ -68,15 +68,6 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker {
     }
 
     /**
-     * Only check once every 5 minutes.
-     */
-    @Override
-    protected long getSleepDelay(boolean lastSuccessful) {
-        if(lastSuccessful) return 300000;
-        else return super.getSleepDelay(lastSuccessful);
-    }
-
-    /**
      * Determines the alert message for the provided result.
      */
     @Override

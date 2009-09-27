@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * @see NetBindNode
@@ -100,7 +101,8 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected void cancel() {
+    protected void cancel(Future<List<?>> future) {
+        super.cancel(future);
         PortMonitor myPortMonitor = portMonitor;
         if(myPortMonitor!=null) myPortMonitor.cancel();
     }

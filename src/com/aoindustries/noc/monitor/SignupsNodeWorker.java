@@ -142,12 +142,4 @@ class SignupsNodeWorker extends TableResultNodeWorker {
         }
         return alertLevels;
     }
-
-    /**
-     * Checks once every 5 minutes.
-     */
-    @Override
-    protected long getSleepDelay(boolean lastSuccessful) {
-        return 5*60000;
-    }
 }

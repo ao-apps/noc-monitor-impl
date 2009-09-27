@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -28,8 +29,6 @@ import javax.swing.SwingUtilities;
 abstract class SingleResultNodeWorker implements Runnable {
 
     private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
-
-    private static final int SLEEP_DELAY = 5*60000;
 
     /**
      * The most recent timer task
@@ -85,10 +84,14 @@ abstract class SingleResultNodeWorker implements Runnable {
     final public void run() {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+        boolean lastSuccessful = false;
         synchronized(timerTaskLock) {if(timerTask==null) return;}
         try {
             long startMillis = System.currentTimeMillis();
             long startNanos = System.nanoTime();
+
+            lastSuccessful = false;
+
             String error;
             String report;
             try {
@@ -101,12 +104,22 @@ abstract class SingleResultNodeWorker implements Runnable {
                         }
                     }
                 );
-                report = future.get(5, TimeUnit.MINUTES);
+                try {
+                    report = future.get(5, TimeUnit.MINUTES);
+                } catch(InterruptedException err) {
+                    cancel(future);
+                    throw err;
+                } catch(TimeoutException err) {
+                    cancel(future);
+                    throw err;
+                }
                 if(report==null) throw new NullPointerException("report is null");
+                lastSuccessful = true;
             } catch(Exception err) {
                 error = err.getLocalizedMessage();
                 if(error==null) error = err.toString();
                 report = null;
+                lastSuccessful = false;
             }
             long pingNanos = System.nanoTime() - startNanos;
 
@@ -153,13 +166,14 @@ abstract class SingleResultNodeWorker implements Runnable {
             }
         } catch(Exception err) {
             logger.log(Level.SEVERE, null, err);
+            lastSuccessful = false;
         } finally {
             // Reschedule next timer task if still running
             synchronized(timerTaskLock) {
                 if(timerTask!=null) {
                     timerTask = RootNodeImpl.schedule(
                         this,
-                        SLEEP_DELAY
+                        getSleepDelay(lastSuccessful, alertLevel)
                     );
                 }
             }
@@ -204,6 +218,14 @@ abstract class SingleResultNodeWorker implements Runnable {
     }
 
     /**
+     * The default sleep delay is five minutes when successful
+     * or one minute when unsuccessful.
+     */
+    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+        return lastSuccessful && alertLevel==AlertLevel.NONE ? 5*60000 : 60000;
+    }
+
+    /**
      * Determines the alert level and message for the provided result and locale.
      */
     protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, SingleResult result);
@@ -212,4 +234,13 @@ abstract class SingleResultNodeWorker implements Runnable {
      * Gets the report for this worker.
      */
     protected abstract String getReport() throws Exception;
+
+    /**
+     * Cancles the current getReport call on a best-effort basis.
+     * Implementations of this method <b>must not block</b>.
+     * This default implementation calls <code>future.cancel(true)</code>.
+     */
+    protected void cancel(Future<String> future) {
+        future.cancel(true);
+    }
 }

@@ -10,8 +10,6 @@ import java.util.Locale;
 /**
  * Provides a simplified interface for obtaining localized values from the ApplicationResources.properties files.
  *
- * @version  1.0
- *
  * @author  AO Industries, Inc.
  */
 final class ApplicationResourcesAccessor {

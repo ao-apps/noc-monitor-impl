@@ -106,4 +106,12 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
             )
         );
     }
+
+    /**
+     * Always sleeps five minutes between checks.
+     */
+    //@Override
+    //protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+    //    return 5*60000L;
+    //}
 }

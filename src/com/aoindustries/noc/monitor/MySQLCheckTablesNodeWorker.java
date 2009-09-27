@@ -112,10 +112,10 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
 
     /**
      * If is a slowServer (many tables), only checks once every 12 hours.
-     * Check once every five minutes.
+     * Otherwise checks once every five minutes.
      */
     @Override
-    protected long getSleepDelay(boolean lastSuccessful) {
+    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
         if(databaseNode.databaseWorker.isSlowServer) return 12L*60*60000; // Only check tables once every 12 hours
         return 5*60000;
     }

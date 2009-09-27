@@ -69,7 +69,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
     private long lastRxPackets = -1;
 
     @Override
-    protected long getSleepDelay(boolean lastSuccessful) {
+    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
         return 5L * 60000L;
     }
 

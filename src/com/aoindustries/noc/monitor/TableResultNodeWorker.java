@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -112,12 +113,21 @@ abstract class TableResultNodeWorker implements Runnable {
             try {
                 Future<List<?>> future = RootNodeImpl.executorService.submit(
                     new Callable<List<?>>() {
+                        @Override
                         public List<?> call() throws Exception {
                             return getTableData(locale);
                         }
                     }
                 );
-                tableData = future.get(getTimeout(), getTimeoutUnit());
+                try {
+                    tableData = future.get(getTimeout(), getTimeoutUnit());
+                } catch(InterruptedException err) {
+                    cancel(future);
+                    throw err;
+                } catch(TimeoutException err) {
+                    cancel(future);
+                    throw err;
+                }
                 columns = getColumns();
                 rows = tableData.size()/columns;
                 columnHeaders = getColumnHeaders(locale);
@@ -193,7 +203,7 @@ abstract class TableResultNodeWorker implements Runnable {
                 if(timerTask!=null) {
                     timerTask = RootNodeImpl.schedule(
                         this,
-                        getSleepDelay(lastSuccessful)
+                        getSleepDelay(lastSuccessful, alertLevel)
                     );
                 }
             }
@@ -252,10 +262,11 @@ abstract class TableResultNodeWorker implements Runnable {
     }
 
     /**
-     * The default sleep delay is five minutes.
+     * The default sleep delay is five minutes when successful or
+     * one minute when unsuccessful.
      */
-    protected long getSleepDelay(boolean lastSuccessful) {
-        return 5*60000;
+    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+        return lastSuccessful && alertLevel==AlertLevel.NONE ? 5*60000 : 60000;
     }
 
     /**
@@ -279,6 +290,15 @@ abstract class TableResultNodeWorker implements Runnable {
      */
     protected abstract List<?> getTableData(Locale locale) throws Exception;
     
+    /**
+     * Cancles the current getTableData call on a best-effort basis.
+     * Implementations of this method <b>must not block</b>.
+     * This default implementation calls <code>future.cancel(true)</code>.
+     */
+    protected void cancel(Future<List<?>> future) {
+        future.cancel(true);
+    }
+
     /**
      * Gets the alert levels for the provided data.
      */
