@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,8 +13,11 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
@@ -37,11 +41,6 @@ import java.util.zip.GZIPOutputStream;
  *       for some other reason?  Been using /dev/shm to avoid night-time disk I/O to keep it quiet while sleeping, but
  *       this loses all info on a reboot.  Is a pen drive a better solution?
  * </p>
- * <p>
- * TODO: We could also add a map for finding the existing queue entry, to avoid the sequential scan.  This would use
- * less CPU when the disks are being extremely slow and the queue builds.  But, it could use a little more CPU in
- * the average case.
- * </p>
  *
  * @author  AO Industries, Inc.
  */
@@ -53,51 +52,32 @@ class BackgroundWriter {
 
     private static boolean DEBUG = false;
 
-    private static class PathAndData {
+    private static class QueueEntry {
 
-        final private File persistenceFile;
-        private File newPersistenceFile;
-        private byte[] data;
+        private final File newPersistenceFile;
+        private final Serializable object;
+        private final boolean gzip;
 
-        private PathAndData(File persistenceFile, File newPersistenceFile, byte[] data) {
-            this.persistenceFile = persistenceFile;
+        private QueueEntry(File newPersistenceFile, Serializable object, boolean gzip) {
             this.newPersistenceFile = newPersistenceFile;
-            this.data = data;
+            this.object = object;
+            this.gzip = gzip;
         }
     }
 
     // These are both synchronized on queue
-    private static final LinkedList<PathAndData> queue = new LinkedList<PathAndData>();
+    private static final LinkedHashMap<File,QueueEntry> queue = new LinkedHashMap<File,QueueEntry>();
     private static boolean running = false;
 
     /**
-     * Serializes and queues the object for write.
+     * Queues the object for write.  No defensive copy of the object is made - do not change after giving to this method.
      */
     static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) throws IOException {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        ObjectOutputStream oout = new ObjectOutputStream(gzip ? new GZIPOutputStream(bout) : bout);
-        oout.writeObject(serializable);
-        oout.close();
-        enqueueFile(persistenceFile, newPersistenceFile, bout.toByteArray());
-    }
-
-    /**
-     * Queues the file for write.  No defensive copy of the data is made - do not change after giving to this method.
-     */
-    static void enqueueFile(File persistenceFile, File newPersistenceFile, byte[] data) {
+        QueueEntry queueEntry = new QueueEntry(newPersistenceFile, serializable, gzip);
         synchronized(queue) {
-            // Scan the queue for the same persistenceFile
-            boolean found = false;
-            for(PathAndData pad : queue) {
-                if(pad.persistenceFile.equals(persistenceFile)) {
-                    if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Updating existing in queue");
-                    pad.newPersistenceFile = newPersistenceFile;
-                    pad.data = data;
-                    found = true;
-                    break;
-                }
+            if(queue.put(persistenceFile, queueEntry)!=null) {
+                if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Updating existing in queue");
             }
-            if(!found) queue.addLast(new PathAndData(persistenceFile, newPersistenceFile, data));
             if(!running) {
                 RootNodeImpl.executorService.submit(
                     new Runnable() {
@@ -106,42 +86,49 @@ class BackgroundWriter {
                             int counter = 0;
                             while(true) {
                                 // Get the next file from the queue until done
-                                PathAndData pad;
+                                File persistenceFile;
+                                QueueEntry queueEntry;
                                 synchronized(queue) {
-                                    if(queue.isEmpty()) {
+                                    Iterator<Map.Entry<File,QueueEntry>> iter = queue.entrySet().iterator();
+                                    if(!iter.hasNext()) {
                                         running = false;
                                         if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
                                         return;
                                     }
-                                    pad = queue.removeFirst();
+                                    Map.Entry<File,QueueEntry> first = iter.next();
+                                    persistenceFile = first.getKey();
+                                    queueEntry = first.getValue();
+                                    iter.remove();
                                     counter++;
                                 }
                                 try {
-                                    OutputStream out = new FileOutputStream(pad.newPersistenceFile);
+                                    OutputStream out = new BufferedOutputStream(new FileOutputStream(queueEntry.newPersistenceFile));
+                                    if(queueEntry.gzip) out = new GZIPOutputStream(out);
+                                    ObjectOutputStream oout = new ObjectOutputStream(out);
                                     try {
-                                        out.write(pad.data);
+                                        oout.writeObject(queueEntry.object);
                                     } finally {
-                                        out.close();
+                                        oout.close();
                                     }
                                     // Try move over first (Linux)
-                                    if(!pad.newPersistenceFile.renameTo(pad.persistenceFile)) {
+                                    if(!queueEntry.newPersistenceFile.renameTo(persistenceFile)) {
                                         // Delete and rename (Windows)
-                                        if(!pad.persistenceFile.delete()) {
+                                        if(!persistenceFile.delete()) {
                                             throw new IOException(
                                                 ApplicationResourcesAccessor.getMessage(
                                                     Locale.getDefault(),
                                                     "BackgroundWriter.error.unableToDelete",
-                                                    pad.persistenceFile.getCanonicalPath()
+                                                    persistenceFile.getCanonicalPath()
                                                 )
                                             );
                                         }
-                                        if(!pad.newPersistenceFile.renameTo(pad.persistenceFile)) {
+                                        if(!queueEntry.newPersistenceFile.renameTo(persistenceFile)) {
                                             throw new IOException(
                                                 ApplicationResourcesAccessor.getMessage(
                                                     Locale.getDefault(),
                                                     "BackgroundWriter.error.unableToRename",
-                                                    pad.newPersistenceFile.getCanonicalPath(),
-                                                    pad.persistenceFile.getCanonicalPath()
+                                                    queueEntry.newPersistenceFile.getCanonicalPath(),
+                                                    persistenceFile.getCanonicalPath()
                                                 )
                                             );
                                         }

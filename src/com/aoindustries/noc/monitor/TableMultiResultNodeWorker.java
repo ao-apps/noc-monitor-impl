@@ -176,13 +176,16 @@ abstract class TableMultiResultNodeWorker implements Runnable {
                 alertLevelAndMessage.getAlertLevel()
             );
 
-            // Update the results storage
+            // Update the results
             TableMultiResult removed = null;
+            ArrayList<TableMultiResult> resultsCopy;
             synchronized(results) {
                 results.addFirst(added);
                 if(results.size()>getHistorySize()) removed = results.removeLast();
-                BackgroundWriter.enqueueObject(persistenceFile, newPersistenceFile, results, gzipPersistenceFile);
+                resultsCopy = new ArrayList<TableMultiResult>(results);
             }
+            // Update the results storage
+            BackgroundWriter.enqueueObject(persistenceFile, newPersistenceFile, resultsCopy, gzipPersistenceFile);
 
             tableMultiResultAdded(added);
             if(removed!=null) tableMultiResultRemoved(removed);
