@@ -6,18 +6,15 @@
 package com.aoindustries.noc.monitor;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
@@ -102,9 +99,11 @@ class BackgroundWriter {
                                     counter++;
                                 }
                                 try {
-                                    OutputStream out = new BufferedOutputStream(new FileOutputStream(queueEntry.newPersistenceFile));
-                                    if(queueEntry.gzip) out = new GZIPOutputStream(out);
-                                    ObjectOutputStream oout = new ObjectOutputStream(out);
+                                    ObjectOutputStream oout = new ObjectOutputStream(
+                                        queueEntry.gzip
+                                        ? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(queueEntry.newPersistenceFile)))
+                                        : new BufferedOutputStream(new FileOutputStream(queueEntry.newPersistenceFile))
+                                    );
                                     try {
                                         oout.writeObject(queueEntry.object);
                                     } finally {

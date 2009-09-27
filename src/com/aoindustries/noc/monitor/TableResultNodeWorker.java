@@ -90,6 +90,26 @@ abstract class TableResultNodeWorker implements Runnable {
         }
     }
 
+    private List<?> getTableDataWithTimeout(final Locale locale) throws Exception {
+        Future<List<?>> future = RootNodeImpl.executorService.submit(
+            new Callable<List<?>>() {
+                @Override
+                public List<?> call() throws Exception {
+                    return getTableData(locale);
+                }
+            }
+        );
+        try {
+            return future.get(getTimeout(), getTimeoutUnit());
+        } catch(InterruptedException err) {
+            cancel(future);
+            throw err;
+        } catch(TimeoutException err) {
+            cancel(future);
+            throw err;
+        }
+    }
+
     @Override
     final public void run() {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
@@ -111,23 +131,7 @@ abstract class TableResultNodeWorker implements Runnable {
             List<AlertLevel> alertLevels;
             boolean isError;
             try {
-                Future<List<?>> future = RootNodeImpl.executorService.submit(
-                    new Callable<List<?>>() {
-                        @Override
-                        public List<?> call() throws Exception {
-                            return getTableData(locale);
-                        }
-                    }
-                );
-                try {
-                    tableData = future.get(getTimeout(), getTimeoutUnit());
-                } catch(InterruptedException err) {
-                    cancel(future);
-                    throw err;
-                } catch(TimeoutException err) {
-                    cancel(future);
-                    throw err;
-                }
+                tableData = getTableDataWithTimeout(locale);
                 columns = getColumns();
                 rows = tableData.size()/columns;
                 columnHeaders = getColumnHeaders(locale);

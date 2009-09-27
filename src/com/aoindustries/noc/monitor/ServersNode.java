@@ -33,6 +33,7 @@ abstract public class ServersNode extends NodeImpl {
     final RootNodeImpl rootNode;
 
     private final List<ServerNode> serverNodes = new ArrayList<ServerNode>();
+    private boolean stopped = false;
 
     ServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
@@ -97,14 +98,16 @@ abstract public class ServersNode extends NodeImpl {
 
     final void start() throws IOException, SQLException {
         synchronized(serverNodes) {
-            rootNode.conn.getServers().addTableListener(tableListener, 100);
-            verifyServers();
+            stopped = false;
         }
+        rootNode.conn.getServers().addTableListener(tableListener, 100);
+        verifyServers();
     }
 
     final void stop() {
+        rootNode.conn.getServers().removeTableListener(tableListener);
         synchronized(serverNodes) {
-            rootNode.conn.getServers().removeTableListener(tableListener);
+            stopped = true;
             for(ServerNode serverNode : serverNodes) {
                 serverNode.stop();
                 rootNode.nodeRemoved();
@@ -123,26 +126,28 @@ abstract public class ServersNode extends NodeImpl {
             if(server.isMonitoringEnabled() && includeServer(server)) servers.add(server);
         }
         synchronized(serverNodes) {
-            // Remove old ones
-            Iterator<ServerNode> serverNodeIter = serverNodes.iterator();
-            while(serverNodeIter.hasNext()) {
-                ServerNode serverNode = serverNodeIter.next();
-                Server server = serverNode.getServer();
-                if(!servers.contains(server)) {
-                    serverNode.stop();
-                    serverNodeIter.remove();
-                    rootNode.nodeRemoved();
+            if(!stopped) {
+                // Remove old ones
+                Iterator<ServerNode> serverNodeIter = serverNodes.iterator();
+                while(serverNodeIter.hasNext()) {
+                    ServerNode serverNode = serverNodeIter.next();
+                    Server server = serverNode.getServer();
+                    if(!servers.contains(server)) {
+                        serverNode.stop();
+                        serverNodeIter.remove();
+                        rootNode.nodeRemoved();
+                    }
                 }
-            }
-            // Add new ones
-            for(int c=0;c<servers.size();c++) {
-                Server server = servers.get(c);
-                if(c>=serverNodes.size() || !server.equals(serverNodes.get(c).getServer())) {
-                    // Insert into proper index
-                    ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
-                    serverNodes.add(c, serverNode);
-                    serverNode.start();
-                    rootNode.nodeAdded();
+                // Add new ones
+                for(int c=0;c<servers.size();c++) {
+                    Server server = servers.get(c);
+                    if(c>=serverNodes.size() || !server.equals(serverNodes.get(c).getServer())) {
+                        // Insert into proper index
+                        ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
+                        serverNodes.add(c, serverNode);
+                        serverNode.start();
+                        rootNode.nodeAdded();
+                    }
                 }
             }
         }

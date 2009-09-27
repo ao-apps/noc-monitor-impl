@@ -80,6 +80,26 @@ abstract class SingleResultNodeWorker implements Runnable {
         }
     }
 
+    private String getReportWithTimeout() throws Exception {
+        Future<String> future = RootNodeImpl.executorService.submit(
+            new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return getReport();
+                }
+            }
+        );
+        try {
+            return future.get(5, TimeUnit.MINUTES);
+        } catch(InterruptedException err) {
+            cancel(future);
+            throw err;
+        } catch(TimeoutException err) {
+            cancel(future);
+            throw err;
+        }
+    }
+
     @Override
     final public void run() {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
@@ -96,23 +116,7 @@ abstract class SingleResultNodeWorker implements Runnable {
             String report;
             try {
                 error = null;
-                Future<String> future = RootNodeImpl.executorService.submit(
-                    new Callable<String>() {
-                        @Override
-                        public String call() throws Exception {
-                            return getReport();
-                        }
-                    }
-                );
-                try {
-                    report = future.get(5, TimeUnit.MINUTES);
-                } catch(InterruptedException err) {
-                    cancel(future);
-                    throw err;
-                } catch(TimeoutException err) {
-                    cancel(future);
-                    throw err;
-                }
+                report = getReportWithTimeout();
                 if(report==null) throw new NullPointerException("report is null");
                 lastSuccessful = true;
             } catch(Exception err) {

@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
@@ -82,7 +83,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
                 File localPersistenceFile = this.persistenceFile;
                 if(!localPersistenceFile.exists()) localPersistenceFile = this.newPersistenceFile;
                 if(localPersistenceFile.exists()) {
-                    ObjectInputStream in = new ObjectInputStream(gzipPersistenceFile ? new GZIPInputStream(new FileInputStream(localPersistenceFile)) : new FileInputStream(localPersistenceFile));
+                    ObjectInputStream in = new ObjectInputStream(gzipPersistenceFile ? new GZIPInputStream(new BufferedInputStream(new FileInputStream(localPersistenceFile))) : new BufferedInputStream(new FileInputStream(localPersistenceFile)));
                     Collection<TableMultiResult> saved = (Collection)in.readObject();
                     in.close();
                     results.addAll(saved);
@@ -110,6 +111,26 @@ abstract class TableMultiResultNodeWorker implements Runnable {
         }
     }
 
+    private List<?> getRowDataWithTimeout(final Locale locale) throws Exception {
+        Future<List<?>> future = RootNodeImpl.executorService.submit(
+            new Callable<List<?>>() {
+                @Override
+                public List<?> call() throws Exception {
+                    return getRowData(locale);
+                }
+            }
+        );
+        try {
+            return future.get(5, TimeUnit.MINUTES);
+        } catch(InterruptedException err) {
+            cancel(future);
+            throw err;
+        } catch(TimeoutException err) {
+            cancel(future);
+            throw err;
+        }
+    }
+
     @Override
     final public void run() {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
@@ -130,23 +151,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
             try {
                 error = null;
                 if(useFutureTimeout()) {
-                    Future<List<?>> future = RootNodeImpl.executorService.submit(
-                        new Callable<List<?>>() {
-                            @Override
-                            public List<?> call() throws Exception {
-                                return getRowData(locale);
-                            }
-                        }
-                    );
-                    try {
-                        rowData = future.get(5, TimeUnit.MINUTES);
-                    } catch(InterruptedException err) {
-                        cancel(future);
-                        throw err;
-                    } catch(TimeoutException err) {
-                        cancel(future);
-                        throw err;
-                    }
+                    rowData = getRowDataWithTimeout(locale);
                 } else {
                     rowData = getRowData(locale);
                 }
