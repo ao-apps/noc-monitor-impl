@@ -16,7 +16,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,8 +55,8 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private MemoryNodeWorker(File persistenceDirectory, AOServer aoServer) {
-        super(new File(persistenceDirectory, "meminfo"), new File(persistenceDirectory, "meminfo.new"), false);
+    private MemoryNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+        super(new File(persistenceDirectory, "meminfo"), false);
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -117,7 +116,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
         long memTotal = ((ApproximateDisplayExactSize)rowData.get(0)).getSize();
         long memFree = ((ApproximateDisplayExactSize)rowData.get(1)).getSize();
         long buffers = ((ApproximateDisplayExactSize)rowData.get(2)).getSize();

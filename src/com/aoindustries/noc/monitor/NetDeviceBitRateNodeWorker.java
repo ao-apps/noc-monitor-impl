@@ -16,7 +16,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -52,8 +51,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
     final private NetDevice _netDevice;
     private NetDevice _currentNetDevice;
 
-    private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice netDevice) {
-        super(new File(persistenceDirectory, "bit_rate"), new File(persistenceDirectory, "bit_rate.new"), false);
+    private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice netDevice) throws IOException {
+        super(new File(persistenceDirectory, "bit_rate"), false);
         this._netDevice = _currentNetDevice = netDevice;
     }
 
@@ -151,7 +150,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
         ApproximateDisplayExactBitRate txBitsPerSecondA = (ApproximateDisplayExactBitRate)rowData.get(0);
         ApproximateDisplayExactBitRate rxBitsPerSecondA = (ApproximateDisplayExactBitRate)rowData.get(1);
         if(txBitsPerSecondA==null || rxBitsPerSecondA==null) {

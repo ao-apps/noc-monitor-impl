@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -58,8 +57,8 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private TimeNodeWorker(File persistenceDirectory, AOServer aoServer) {
-        super(new File(persistenceDirectory, "time"), new File(persistenceDirectory, "time.new"), false);
+    private TimeNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+        super(new File(persistenceDirectory, "time"), false);
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -94,7 +93,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
         final long currentSkew = ((TimeSpan)rowData.get(0)).getTimeSpan();
 
         return new AlertLevelAndMessage(

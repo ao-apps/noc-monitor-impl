@@ -5,16 +5,13 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.io.LinkedFileList;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -23,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
 import javax.swing.SwingUtilities;
 
 /**
@@ -41,21 +37,15 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     private final Object timerTaskLock = new Object();
     private RootNodeImpl.RunnableTimerTask timerTask;
 
-    final private LinkedList<TableMultiResult> results = new LinkedList<TableMultiResult>();
+    final private LinkedFileList<TableMultiResult> results;
 
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
     volatile private String alertMessage = null;
 
     final private List<TableMultiResultNodeImpl> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl>();
 
-    final protected File newPersistenceFile;
-    final protected File persistenceFile;
-    final protected boolean gzipPersistenceFile;
-
-    TableMultiResultNodeWorker(File persistenceFile, File newPersistenceFile, boolean gzipPersistenceFile) {
-        this.persistenceFile = persistenceFile;
-        this.newPersistenceFile = newPersistenceFile;
-        this.gzipPersistenceFile = gzipPersistenceFile;
+    TableMultiResultNodeWorker(File persistenceFile, boolean gzipPersistenceFile) throws IOException {
+        this.results = new LinkedFileList<TableMultiResult>(persistenceFile, gzipPersistenceFile, true);
     }
 
     /**
@@ -77,7 +67,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
 
     @SuppressWarnings("unchecked")
     private void start() {
-        synchronized(results) {
+        /*synchronized(results) {
             results.clear();
             try {
                 File localPersistenceFile = this.persistenceFile;
@@ -91,7 +81,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
             } catch(Exception err) {
                 logger.log(Level.SEVERE, null, err);
             }
-        }
+        }*/
         synchronized(timerTaskLock) {
             assert timerTask==null : "thread already started";
             timerTask = RootNodeImpl.schedule(this, TableResultNodeWorker.getNextStartupDelay());
@@ -183,14 +173,14 @@ abstract class TableMultiResultNodeWorker implements Runnable {
 
             // Update the results
             TableMultiResult removed = null;
-            ArrayList<TableMultiResult> resultsCopy;
+            //ArrayList<TableMultiResult> resultsCopy;
             synchronized(results) {
                 results.addFirst(added);
                 if(results.size()>getHistorySize()) removed = results.removeLast();
-                resultsCopy = new ArrayList<TableMultiResult>(results);
+                //resultsCopy = new ArrayList<TableMultiResult>(results);
             }
             // Update the results storage
-            BackgroundWriter.enqueueObject(persistenceFile, newPersistenceFile, resultsCopy, gzipPersistenceFile);
+            //BackgroundWriter.enqueueObject(persistenceFile, newPersistenceFile, resultsCopy, gzipPersistenceFile);
 
             tableMultiResultAdded(added);
             if(removed!=null) tableMultiResultRemoved(removed);
@@ -325,7 +315,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
      * If unable to parse, may throw an exception to report the error.  This
      * should not block or delay for any reason.
      */
-    protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception;
+    protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception;
     
     /**
      * By default, the call to <code>getRowData</code> uses a <code>Future</code>

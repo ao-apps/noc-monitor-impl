@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,8 +59,8 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
      */
     final private String ipAddress;
 
-    private PingNodeWorker(File persistenceDirectory, String ipAddress) {
-        super(new File(persistenceDirectory, "pings"), new File(persistenceDirectory, "pings.new"), false);
+    private PingNodeWorker(File persistenceDirectory, String ipAddress) throws IOException {
+        super(new File(persistenceDirectory, "pings"), false);
         this.ipAddress = ipAddress;
     }
 
@@ -99,7 +98,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     /**
      * Gets the packet loss percent.
      */
-    private static int getPacketLossPercent(List<TableMultiResult> previousResults) {
+    private static int getPacketLossPercent(Iterable<TableMultiResult> previousResults) {
         int timeouts = 0;
         // The current value is never a timeout to get this far
         int checked = 1;
@@ -113,7 +112,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
         int packetLossPercent = getPacketLossPercent(previousResults);
         return new AlertLevelAndMessage(
             getAlertLevel(packetLossPercent),

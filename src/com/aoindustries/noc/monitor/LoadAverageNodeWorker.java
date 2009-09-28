@@ -14,7 +14,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,8 +44,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private LoadAverageNodeWorker(File persistenceDirectory, AOServer aoServer) {
-        super(new File(persistenceDirectory, "loadavg"), new File(persistenceDirectory, "loadavg.new"), false);
+    private LoadAverageNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+        super(new File(persistenceDirectory, "loadavg"), false);
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -96,7 +95,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
         float fiveMinuteAverage = (Float)rowData.get(1);
         float loadCritical = currentAOServer.getMonitoringLoadCritical();
         if(!Float.isNaN(loadCritical) && fiveMinuteAverage>=loadCritical) {

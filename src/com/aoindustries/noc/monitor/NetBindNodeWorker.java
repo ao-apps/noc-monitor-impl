@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,7 +39,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker {
             synchronized(workerCache) {
                 NetBindNodeWorker worker = workerCache.get(path);
                 if(worker==null) {
-                    worker = new NetBindNodeWorker(persistenceFile, new File(path+".new"), netMonitorSetting);
+                    worker = new NetBindNodeWorker(persistenceFile, netMonitorSetting);
                     workerCache.put(path, worker);
                 } else {
                     if(!worker.netMonitorSetting.equals(netMonitorSetting)) throw new AssertionError("worker.netMonitorSetting!=netMonitorSetting: "+worker.netMonitorSetting+"!="+netMonitorSetting);
@@ -59,8 +58,8 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker {
     final private NetBindsNode.NetMonitorSetting netMonitorSetting;
     private volatile PortMonitor portMonitor;
 
-    private NetBindNodeWorker(File persistenceFile, File newPersistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) {
-        super(persistenceFile, newPersistenceFile, false);
+    private NetBindNodeWorker(File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+        super(persistenceFile, false);
         this.netMonitorSetting = netMonitorSetting;
     }
 
@@ -108,7 +107,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
         return new AlertLevelAndMessage(
             AlertLevel.NONE,
             (String)rowData.get(0)

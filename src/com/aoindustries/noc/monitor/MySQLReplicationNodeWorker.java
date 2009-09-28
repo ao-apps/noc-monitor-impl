@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,8 +45,8 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
     final private FailoverMySQLReplication _mysqlReplication;
     private FailoverMySQLReplication currentFailoverMySQLReplication;
 
-    private MySQLReplicationNodeWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) {
-        super(new File(persistenceDirectory, Integer.toString(mysqlReplication.getPkey())), new File(persistenceDirectory, Integer.toString(mysqlReplication.getPkey())+".new"), false);
+    private MySQLReplicationNodeWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) throws IOException {
+        super(new File(persistenceDirectory, Integer.toString(mysqlReplication.getPkey())), false);
         this._mysqlReplication = currentFailoverMySQLReplication = mysqlReplication;
     }
 
@@ -95,7 +94,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, LinkedList<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
         String secondsBehindMaster = (String)rowData.get(0);
         if(secondsBehindMaster==null) {
             // Use the highest alert level that may be returned for this replication
