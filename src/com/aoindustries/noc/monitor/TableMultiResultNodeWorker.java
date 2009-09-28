@@ -5,9 +5,10 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.io.LinkedFileList;
+import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.util.persistent.MappedPersistentBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     private final Object timerTaskLock = new Object();
     private RootNodeImpl.RunnableTimerTask timerTask;
 
-    final private LinkedFileList<TableMultiResult> results;
+    final private PersistentLinkedList<TableMultiResult> results;
 
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
     volatile private String alertMessage = null;
@@ -45,7 +46,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     final private List<TableMultiResultNodeImpl> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl>();
 
     TableMultiResultNodeWorker(File persistenceFile, boolean gzipPersistenceFile) throws IOException {
-        this.results = new LinkedFileList<TableMultiResult>(persistenceFile, gzipPersistenceFile, true);
+        this.results = new PersistentLinkedList<TableMultiResult>(new MappedPersistentBuffer(persistenceFile), gzipPersistenceFile, true);
     }
 
     /**
