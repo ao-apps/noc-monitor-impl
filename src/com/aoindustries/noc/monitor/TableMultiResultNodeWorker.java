@@ -8,7 +8,10 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.util.persistent.GZIPSerializer;
 import com.aoindustries.util.persistent.MappedPersistentBuffer;
+import com.aoindustries.util.persistent.PersistentCollections;
+import com.aoindustries.util.persistent.Serializer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,7 +49,9 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     final private List<TableMultiResultNodeImpl> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl>();
 
     TableMultiResultNodeWorker(File persistenceFile, boolean gzipPersistenceFile) throws IOException {
-        this.results = new PersistentLinkedList<TableMultiResult>(new MappedPersistentBuffer(persistenceFile), gzipPersistenceFile, true);
+        Serializer<TableMultiResult> serializer = PersistentCollections.getSerializer(TableMultiResult.class);
+        if(gzipPersistenceFile) serializer = new GZIPSerializer<TableMultiResult>(serializer);
+        this.results = new PersistentLinkedList<TableMultiResult>(new MappedPersistentBuffer(persistenceFile), true, serializer);
     }
 
     /**
