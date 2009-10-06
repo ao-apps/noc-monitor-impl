@@ -37,7 +37,8 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
         "1",
         "Login successful.",
         "User logged in",
-        "Mailbox locked and ready"
+        "Mailbox locked and ready",
+        "[IN-USE] Unable to lock maildrop: Mailbox is locked by POP server"
     };
     private static final Map<String,Integer> commonResultsMap = new HashMap<String,Integer>(commonResults.length*4/3+1);
     static {

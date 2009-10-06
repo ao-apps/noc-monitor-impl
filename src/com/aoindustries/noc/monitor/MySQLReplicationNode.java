@@ -9,6 +9,7 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.BackupPartition;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
+import com.aoindustries.noc.common.MySQLReplicationResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -23,7 +24,7 @@ import java.util.Locale;
  *
  * @author  AO Industries, Inc.
  */
-public class MySQLReplicationNode extends TableMultiResultNodeImpl {
+public class MySQLReplicationNode extends TableMultiResultNodeImpl<String,MySQLReplicationResult> {
 
     private static final long serialVersionUID = 1L;
 

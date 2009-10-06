@@ -10,7 +10,7 @@ import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.noc.common.NetBindResult;
 import com.aoindustries.noc.monitor.portmon.PortMonitor;
 import com.aoindustries.util.ErrorPrinter;
 import java.io.File;
@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
  *
  * @author  AO Industries, Inc.
  */
-class NetBindNodeWorker extends TableMultiResultNodeWorker {
+class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
 
     /**
      * One unique worker is made per persistence file (and should match the NetMonitorSetting)
@@ -59,7 +59,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker {
     private volatile PortMonitor portMonitor;
 
     private NetBindNodeWorker(File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
-        super(persistenceFile, false);
+        super(persistenceFile, new NetBindResultSerializer());
         this.netMonitorSetting = netMonitorSetting;
     }
 
@@ -69,7 +69,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected List<?> getRowData(Locale locale) throws Exception {
+    protected List<String> getRowData(Locale locale) throws Exception {
         // Get the latest netBind for the appProtocol and monitoring parameters
         NetBind netBind = netMonitorSetting.getNetBind();
         NetBind currentNetBind = netBind.getTable().get(netBind.getKey());
@@ -100,17 +100,27 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected void cancel(Future<List<?>> future) {
+    protected void cancel(Future<List<? extends String>> future) {
         super.cancel(future);
         PortMonitor myPortMonitor = portMonitor;
         if(myPortMonitor!=null) myPortMonitor.cancel();
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends String> rowData, Iterable<? extends NetBindResult> previousResults) throws Exception {
         return new AlertLevelAndMessage(
             AlertLevel.NONE,
-            (String)rowData.get(0)
+            rowData.get(0)
         );
+    }
+
+    @Override
+    protected NetBindResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+        return new NetBindResult(time, latency, alertLevel, error, null);
+    }
+
+    @Override
+    protected NetBindResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends String> rowData) {
+        return new NetBindResult(time, latency, alertLevel, null, rowData.get(0));
     }
 }

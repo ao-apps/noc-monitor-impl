@@ -6,6 +6,8 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
+import com.aoindustries.noc.common.ApproximateDisplayExactSize;
+import com.aoindustries.noc.common.MemoryResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -17,7 +19,9 @@ import java.util.Locale;
 /**
  * @author  AO Industries, Inc.
  */
-public class MemoryNode extends TableMultiResultNodeImpl {
+public class MemoryNode extends TableMultiResultNodeImpl<ApproximateDisplayExactSize,MemoryResult> {
+
+    private static final long serialVersionUID = 1L;
 
     private final AOServer _aoServer;
 

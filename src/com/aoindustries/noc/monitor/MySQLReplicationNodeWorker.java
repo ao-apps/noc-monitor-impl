@@ -8,12 +8,11 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.noc.common.MySQLReplicationResult;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +21,7 @@ import java.util.Map;
 /**
  * @author  AO Industries, Inc.
  */
-class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
+class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQLReplicationResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match mysqlReplication exactly)
@@ -46,7 +45,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
     private FailoverMySQLReplication currentFailoverMySQLReplication;
 
     private MySQLReplicationNodeWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) throws IOException {
-        super(new File(persistenceDirectory, Integer.toString(mysqlReplication.getPkey())), false);
+        super(new File(persistenceDirectory, Integer.toString(mysqlReplication.getPkey())), new MySQLReplicationResultSerializer());
         this._mysqlReplication = currentFailoverMySQLReplication = mysqlReplication;
     }
 
@@ -56,7 +55,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected List<?> getRowData(Locale locale) throws Exception {
+    protected List<String> getRowData(Locale locale) throws Exception {
         // Get the latest values
         currentFailoverMySQLReplication = _mysqlReplication.getTable().get(_mysqlReplication.getKey());
         FailoverMySQLReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
@@ -78,7 +77,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
             + (secondsBehindCritical==-1 ? "-" : Integer.toString(secondsBehindCritical))
         ;
 
-        List<Object> rowData = new ArrayList<Object>(11);
+        List<String> rowData = new ArrayList<String>(11);
         rowData.add(slaveStatus.getSecondsBehindMaster());
         rowData.add(masterStatus.getFile());
         rowData.add(masterStatus.getPosition());
@@ -90,11 +89,11 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
         rowData.add(slaveStatus.getLastErrno());
         rowData.add(slaveStatus.getLastError());
         rowData.add(alertThresholds);
-        return Collections.unmodifiableList(rowData);
+        return rowData;
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends String> rowData, Iterable<? extends MySQLReplicationResult> previousResults) throws Exception {
         String secondsBehindMaster = (String)rowData.get(0);
         if(secondsBehindMaster==null) {
             // Use the highest alert level that may be returned for this replication
@@ -193,5 +192,30 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker {
                 )
             );
         }
+    }
+
+    @Override
+    protected MySQLReplicationResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+        return new MySQLReplicationResult(time, latency, alertLevel, error);
+    }
+
+    @Override
+    protected MySQLReplicationResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends String> rowData) {
+        return new MySQLReplicationResult(
+            time,
+            latency,
+            alertLevel,
+            rowData.get(0),
+            rowData.get(1),
+            rowData.get(2),
+            rowData.get(3),
+            rowData.get(4),
+            rowData.get(5),
+            rowData.get(6),
+            rowData.get(7),
+            rowData.get(8),
+            rowData.get(9),
+            rowData.get(10)
+        );
     }
 }

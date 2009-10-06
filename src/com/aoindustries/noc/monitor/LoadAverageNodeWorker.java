@@ -7,12 +7,11 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.noc.common.LoadAverageResult;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -21,7 +20,7 @@ import java.util.Map;
 /**
  * @author  AO Industries, Inc.
  */
-class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
+class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverageResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match aoServer exactly)
@@ -45,7 +44,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
     private AOServer currentAOServer;
 
     private LoadAverageNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
-        super(new File(persistenceDirectory, "loadavg"), false);
+        super(new File(persistenceDirectory, "loadavg"), new LoadAverageResultSerializer());
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -69,33 +68,22 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
         if(pos4==-1) throw new ParseException("Unable to find slash in loadavg", pos3+1);
         int pos5 = loadavg.indexOf(' ', pos4+1);
         if(pos5==-1) throw new ParseException("Unable to find fourth space in loadavg", pos4+1);
-        // Display the alert thresholds
-        float loadLow = currentAOServer.getMonitoringLoadLow();
-        float loadMedium = currentAOServer.getMonitoringLoadMedium();
-        float loadHigh = currentAOServer.getMonitoringLoadHigh();
-        float loadCritical = currentAOServer.getMonitoringLoadCritical();
-        String alertThresholds =
-            (Float.isNaN(loadLow) ? "-" : Float.toString(loadLow))
-            + " / "
-            + (Float.isNaN(loadMedium) ? "-" : Float.toString(loadMedium))
-            + " / "
-            + (Float.isNaN(loadHigh) ? "-" : Float.toString(loadHigh))
-            + " / "
-            + (Float.isNaN(loadCritical) ? "-" : Float.toString(loadCritical))
-        ;
-        List<Object> rowData = new ArrayList<Object>(7);
+        List<Object> rowData = new ArrayList<Object>(10);
         rowData.add(Float.parseFloat(loadavg.substring(0, pos1)));
         rowData.add(Float.parseFloat(loadavg.substring(pos1+1, pos2)));
         rowData.add(Float.parseFloat(loadavg.substring(pos2+1, pos3)));
         rowData.add(Integer.parseInt(loadavg.substring(pos3+1, pos4)));
         rowData.add(Integer.parseInt(loadavg.substring(pos4+1, pos5)));
         rowData.add(Integer.parseInt(loadavg.substring(pos5+1).trim()));
-        rowData.add(alertThresholds);
-        return Collections.unmodifiableList(rowData);
+        rowData.add(currentAOServer.getMonitoringLoadLow());
+        rowData.add(currentAOServer.getMonitoringLoadMedium());
+        rowData.add(currentAOServer.getMonitoringLoadHigh());
+        rowData.add(currentAOServer.getMonitoringLoadCritical());
+        return rowData;
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends Object> rowData, Iterable<? extends LoadAverageResult> previousResults) throws Exception {
         float fiveMinuteAverage = (Float)rowData.get(1);
         float loadCritical = currentAOServer.getMonitoringLoadCritical();
         if(!Float.isNaN(loadCritical) && fiveMinuteAverage>=loadCritical) {
@@ -165,5 +153,29 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker {
                 )
             );
         }
+    }
+
+    @Override
+    protected LoadAverageResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+        return new LoadAverageResult(time, latency, alertLevel, error);
+    }
+
+    @Override
+    protected LoadAverageResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends Object> rowData) {
+        return new LoadAverageResult(
+            time,
+            latency,
+            alertLevel,
+            (Float)rowData.get(0),
+            (Float)rowData.get(1),
+            (Float)rowData.get(2),
+            (Integer)rowData.get(3),
+            (Integer)rowData.get(4),
+            (Integer)rowData.get(5),
+            (Float)rowData.get(6),
+            (Float)rowData.get(7),
+            (Float)rowData.get(8),
+            (Float)rowData.get(9)
+        );
     }
 }

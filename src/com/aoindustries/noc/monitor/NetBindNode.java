@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.noc.common.NetBindResult;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -19,7 +20,7 @@ import java.util.Locale;
  *
  * @author  AO Industries, Inc.
  */
-public class NetBindNode extends TableMultiResultNodeImpl {
+public class NetBindNode extends TableMultiResultNodeImpl<String,NetBindResult> {
 
     private static final long serialVersionUID = 1L;
 

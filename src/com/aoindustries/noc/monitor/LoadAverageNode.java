@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
+import com.aoindustries.noc.common.LoadAverageResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -21,7 +22,7 @@ import java.util.Locale;
  *
  * @author  AO Industries, Inc.
  */
-public class LoadAverageNode extends TableMultiResultNodeImpl {
+public class LoadAverageNode extends TableMultiResultNodeImpl<Object,LoadAverageResult> {
 
     private static final long serialVersionUID = 1L;
 

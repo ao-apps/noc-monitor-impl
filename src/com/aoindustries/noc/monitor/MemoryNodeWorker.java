@@ -8,13 +8,12 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.ApproximateDisplayExactSize;
-import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.noc.common.MemoryResult;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -32,7 +31,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class MemoryNodeWorker extends TableMultiResultNodeWorker {
+class MemoryNodeWorker extends TableMultiResultNodeWorker<ApproximateDisplayExactSize,MemoryResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match aoServer exactly)
@@ -56,7 +55,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
     private AOServer currentAOServer;
 
     private MemoryNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
-        super(new File(persistenceDirectory, "meminfo"), false);
+        super(new File(persistenceDirectory, "meminfo"), new MemoryResultSerializer());
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -66,7 +65,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected List<?> getRowData(Locale locale) throws Exception {
+    protected List<ApproximateDisplayExactSize> getRowData(Locale locale) throws Exception {
         // Get the latest limits
         currentAOServer = _aoServer.getTable().get(_aoServer.getKey());
         String meminfo = currentAOServer.getMemInfoReport();
@@ -103,7 +102,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
         rowData.add(new ApproximateDisplayExactSize(cached));
         rowData.add(new ApproximateDisplayExactSize(swapTotal));
         rowData.add(new ApproximateDisplayExactSize(swapFree));
-        return Collections.unmodifiableList(rowData);
+        return rowData;
     }
 
     private static AlertLevel getAlertLevel(long memoryPercent) {
@@ -116,13 +115,13 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
-        long memTotal = ((ApproximateDisplayExactSize)rowData.get(0)).getSize();
-        long memFree = ((ApproximateDisplayExactSize)rowData.get(1)).getSize();
-        long buffers = ((ApproximateDisplayExactSize)rowData.get(2)).getSize();
-        long cached = ((ApproximateDisplayExactSize)rowData.get(3)).getSize();
-        long swapTotal = ((ApproximateDisplayExactSize)rowData.get(4)).getSize();
-        long swapFree = ((ApproximateDisplayExactSize)rowData.get(5)).getSize();
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends ApproximateDisplayExactSize> rowData, Iterable<? extends MemoryResult> previousResults) throws Exception {
+        long memTotal = rowData.get(0).getSize();
+        long memFree = rowData.get(1).getSize();
+        long buffers = rowData.get(2).getSize();
+        long cached = rowData.get(3).getSize();
+        long swapTotal = rowData.get(4).getSize();
+        long swapFree = rowData.get(5).getSize();
         long memoryPercent = ((memTotal - (memFree + buffers + cached)) + (swapTotal - swapFree)) * 100 / (memTotal + swapTotal);
         return new AlertLevelAndMessage(
             getAlertLevel(memoryPercent),
@@ -131,6 +130,26 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker {
                 "MemoryNodeWorker.alertMessage",
                 memoryPercent
             )
+        );
+    }
+
+    @Override
+    protected MemoryResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+        return new MemoryResult(time, latency, alertLevel, error);
+    }
+
+    @Override
+    protected MemoryResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends ApproximateDisplayExactSize> rowData) {
+        return new MemoryResult(
+            time,
+            latency,
+            alertLevel,
+            rowData.get(0).getSize(),
+            rowData.get(1).getSize(),
+            rowData.get(2).getSize(),
+            rowData.get(3).getSize(),
+            rowData.get(4).getSize(),
+            rowData.get(5).getSize()
         );
     }
 }
