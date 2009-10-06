@@ -7,14 +7,12 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.ApproximateDisplayExactBitRate;
-import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.noc.common.NetDeviceBitRateResult;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -27,7 +25,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
+class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<Object,NetDeviceBitRateResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match the net device exactly)
@@ -52,7 +50,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
     private NetDevice _currentNetDevice;
 
     private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice netDevice) throws IOException {
-        super(new File(persistenceDirectory, "bit_rate"), false);
+        super(new File(persistenceDirectory, "bit_rate"), new NetDeviceBitRateResultSerializer());
         this._netDevice = _currentNetDevice = netDevice;
     }
 
@@ -73,7 +71,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected List<?> getRowData(Locale locale) throws Exception {
+    protected List<Object> getRowData(Locale locale) throws Exception {
         // Get the latest object
         _currentNetDevice = _netDevice.getTable().get(_netDevice.getKey());
 
@@ -118,26 +116,16 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
                 rxPacketsPerSecond = (thisRxPackets - lastRxPackets)*8000 / timeDiff;
             }
             // Display the alert thresholds
-            long bpsLow = _currentNetDevice.getMonitoringBitRateLow();
-            long bpsMedium = _currentNetDevice.getMonitoringBitRateMedium();
-            long bpsHigh = _currentNetDevice.getMonitoringBitRateHigh();
-            long bpsCritical = _currentNetDevice.getMonitoringBitRateCritical();
-            String alertThresholds =
-                (bpsLow==-1 ? "-" : StringUtility.getApproximateBitRate(bpsLow))
-                + " / "
-                + (bpsMedium==-1 ? "-" : StringUtility.getApproximateBitRate(bpsMedium))
-                + " / "
-                + (bpsHigh==-1 ? "-" : StringUtility.getApproximateBitRate(bpsHigh))
-                + " / "
-                + (bpsCritical==-1 ? "-" : StringUtility.getApproximateBitRate(bpsCritical))
-            ;
-            List<Object> rowData = new ArrayList<Object>(5);
-            rowData.add(txBitsPerSecond==-1 ? null : new ApproximateDisplayExactBitRate(txBitsPerSecond));
-            rowData.add(rxBitsPerSecond==-1 ? null : new ApproximateDisplayExactBitRate(rxBitsPerSecond));
-            rowData.add(txPacketsPerSecond==-1 ? null : new ApproximateDisplayExactBitRate(txPacketsPerSecond));
-            rowData.add(rxPacketsPerSecond==-1 ? null : new ApproximateDisplayExactBitRate(rxPacketsPerSecond));
-            rowData.add(alertThresholds);
-            return Collections.unmodifiableList(rowData);
+            List<Object> rowData = new ArrayList<Object>(8);
+            rowData.add(txBitsPerSecond);
+            rowData.add(rxBitsPerSecond);
+            rowData.add(txPacketsPerSecond);
+            rowData.add(rxPacketsPerSecond);
+            rowData.add(_currentNetDevice.getMonitoringBitRateLow());
+            rowData.add(_currentNetDevice.getMonitoringBitRateMedium());
+            rowData.add(_currentNetDevice.getMonitoringBitRateHigh());
+            rowData.add(_currentNetDevice.getMonitoringBitRateCritical());
+            return rowData;
         } finally {
             // Store for the next report
             lastStatsTime = thisStatsTime;
@@ -150,14 +138,12 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
-        ApproximateDisplayExactBitRate txBitsPerSecondA = (ApproximateDisplayExactBitRate)rowData.get(0);
-        ApproximateDisplayExactBitRate rxBitsPerSecondA = (ApproximateDisplayExactBitRate)rowData.get(1);
-        if(txBitsPerSecondA==null || rxBitsPerSecondA==null) {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends Object> rowData, Iterable<? extends NetDeviceBitRateResult> previousResults) throws Exception {
+        long txBitsPerSecond = (Long)rowData.get(0);
+        long rxBitsPerSecond = (Long)rowData.get(1);
+        if(txBitsPerSecond==-1 || rxBitsPerSecond==-1) {
             return new AlertLevelAndMessage(AlertLevel.UNKNOWN, "");
         }
-        long txBitsPerSecond = txBitsPerSecondA.getBitRate();
-        long rxBitsPerSecond = rxBitsPerSecondA.getBitRate();
         long bps;
         String direction;
         if(txBitsPerSecond>rxBitsPerSecond) {
@@ -226,6 +212,28 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker {
                 "NetDeviceBitRateNodeWorker.alertMessage."+direction+".none",
                 bps
             )
+        );
+    }
+
+    @Override
+    protected NetDeviceBitRateResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+        return new NetDeviceBitRateResult(time, latency, alertLevel, error);
+    }
+
+    @Override
+    protected NetDeviceBitRateResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends Object> rowData) {
+        return new NetDeviceBitRateResult(
+            time,
+            latency,
+            alertLevel,
+            (Long)rowData.get(0),
+            (Long)rowData.get(1),
+            (Long)rowData.get(2),
+            (Long)rowData.get(3),
+            (Long)rowData.get(4),
+            (Long)rowData.get(5),
+            (Long)rowData.get(6),
+            (Long)rowData.get(7)
         );
     }
 }

@@ -48,7 +48,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     /**
      * One timer is shared by all instances.

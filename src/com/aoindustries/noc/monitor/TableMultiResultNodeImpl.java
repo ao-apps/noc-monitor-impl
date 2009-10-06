@@ -26,17 +26,17 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract public class TableMultiResultNodeImpl extends NodeImpl implements TableMultiResultNode {
+abstract public class TableMultiResultNodeImpl<T,E extends TableMultiResult<? extends T>> extends NodeImpl implements TableMultiResultNode<T,E> {
 
     private static final Logger logger = Logger.getLogger(TableMultiResultNodeImpl.class.getName());
 
     final RootNodeImpl rootNode;
     final Node parent;
-    final TableMultiResultNodeWorker worker;
+    final TableMultiResultNodeWorker<T,E> worker;
 
-    final private List<TableMultiResultListener> tableMultiResultListeners = new ArrayList<TableMultiResultListener>();
+    final private List<TableMultiResultListener<? super E>> tableMultiResultListeners = new ArrayList<TableMultiResultListener<? super E>>();
 
-    TableMultiResultNodeImpl(RootNodeImpl rootNode, Node parent, TableMultiResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    TableMultiResultNodeImpl(RootNodeImpl rootNode, Node parent, TableMultiResultNodeWorker<T,E> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
         this.rootNode = rootNode;
         this.parent = parent;
@@ -77,7 +77,7 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
     }
 
     @Override
-    final public List<? extends TableMultiResult> getResults() {
+    final public List<? extends E> getResults() {
         return worker.getResults();
     }
 
@@ -96,7 +96,7 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
     }
 
     @Override
-    final public void addTableMultiResultListener(TableMultiResultListener tableMultiResultListener) {
+    final public void addTableMultiResultListener(TableMultiResultListener<? super E> tableMultiResultListener) {
         synchronized(tableMultiResultListeners) {
             tableMultiResultListeners.add(tableMultiResultListener);
         }
@@ -104,7 +104,7 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
 
     // TODO: Remove only once, in case add and remove come in out of order with quick GUI changes?
     @Override
-    final public void removeTableMultiResultListener(TableMultiResultListener tableMultiResultListener) {
+    final public void removeTableMultiResultListener(TableMultiResultListener<? super E> tableMultiResultListener) {
         int foundCount = 0;
         synchronized(tableMultiResultListeners) {
             for(int c=tableMultiResultListeners.size()-1;c>=0;c--) {
@@ -120,13 +120,13 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
     /**
      * Notifies all of the listeners.
      */
-    final void tableMultiResultAdded(TableMultiResult tableMultiResult) {
+    final void tableMultiResultAdded(E tableMultiResult) {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         synchronized(tableMultiResultListeners) {
-            Iterator<TableMultiResultListener> I = tableMultiResultListeners.iterator();
+            Iterator<TableMultiResultListener<? super E>> I = tableMultiResultListeners.iterator();
             while(I.hasNext()) {
-                TableMultiResultListener tableMultiResultListener = I.next();
+                TableMultiResultListener<? super E> tableMultiResultListener = I.next();
                 try {
                     tableMultiResultListener.tableMultiResultAdded(tableMultiResult);
                 } catch(RemoteException err) {
@@ -140,13 +140,13 @@ abstract public class TableMultiResultNodeImpl extends NodeImpl implements Table
     /**
      * Notifies all of the listeners.
      */
-    final void tableMultiResultRemoved(TableMultiResult tableMultiResult) {
+    final void tableMultiResultRemoved(E tableMultiResult) {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         synchronized(tableMultiResultListeners) {
-            Iterator<TableMultiResultListener> I = tableMultiResultListeners.iterator();
+            Iterator<TableMultiResultListener<? super E>> I = tableMultiResultListeners.iterator();
             while(I.hasNext()) {
-                TableMultiResultListener tableMultiResultListener = I.next();
+                TableMultiResultListener<? super E> tableMultiResultListener = I.next();
                 try {
                     tableMultiResultListener.tableMultiResultRemoved(tableMultiResult);
                 } catch(RemoteException err) {

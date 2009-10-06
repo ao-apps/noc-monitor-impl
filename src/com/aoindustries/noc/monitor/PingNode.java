@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.noc.common.PingResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -17,7 +18,9 @@ import java.util.Locale;
  *
  * @author  AO Industries, Inc.
  */
-public class PingNode extends TableMultiResultNodeImpl {
+public class PingNode extends TableMultiResultNodeImpl<Object,PingResult> {
+
+    private static final long serialVersionUID = 1L;
 
     private final IPAddressNode ipAddressNode;
 

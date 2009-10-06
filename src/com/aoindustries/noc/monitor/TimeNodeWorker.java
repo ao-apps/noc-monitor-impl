@@ -7,7 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.noc.common.TimeResult;
 import com.aoindustries.noc.common.TimeSpan;
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +34,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class TimeNodeWorker extends TableMultiResultNodeWorker {
+class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match aoServer exactly)
@@ -58,7 +58,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
     private AOServer currentAOServer;
 
     private TimeNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
-        super(new File(persistenceDirectory, "time"), false);
+        super(new File(persistenceDirectory, "time"), new TimeResultSerializer());
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -68,10 +68,9 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected List<?> getRowData(Locale locale) throws Exception {
+    protected List<TimeSpan> getRowData(Locale locale) throws Exception {
         // Get the latest limits
         currentAOServer = _aoServer.getTable().get(_aoServer.getKey());
-
 
         long requestTime = System.currentTimeMillis();
         long startNanos = System.nanoTime();
@@ -93,8 +92,8 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
-        final long currentSkew = ((TimeSpan)rowData.get(0)).getTimeSpan();
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends TimeSpan> rowData, Iterable<? extends TimeResult> previousResults) throws Exception {
+        final long currentSkew = rowData.get(0).getTimeSpan();
 
         return new AlertLevelAndMessage(
             getAlertLevel(currentSkew),
@@ -106,11 +105,13 @@ class TimeNodeWorker extends TableMultiResultNodeWorker {
         );
     }
 
-    /**
-     * Always sleeps five minutes between checks.
-     */
-    //@Override
-    //protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-    //    return 5*60000L;
-    //}
+    @Override
+    protected TimeResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+        return new TimeResult(time, latency, alertLevel, error);
+    }
+
+    @Override
+    protected TimeResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends TimeSpan> rowData) {
+        return new TimeResult(time, latency, alertLevel, rowData.get(0).getTimeSpan());
+    }
 }

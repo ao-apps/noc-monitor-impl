@@ -7,7 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.noc.common.PingResult;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,7 +26,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @author  AO Industries, Inc.
  */
-class PingNodeWorker extends TableMultiResultNodeWorker {
+class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 
     /**
      * The ping timeout.
@@ -60,7 +60,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     final private String ipAddress;
 
     private PingNodeWorker(File persistenceDirectory, String ipAddress) throws IOException {
-        super(new File(persistenceDirectory, "pings"), false);
+        super(new File(persistenceDirectory, "pings"), new PingResultSerializer());
         this.ipAddress = ipAddress;
     }
 
@@ -70,7 +70,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected List<?> getRowData(Locale locale) throws Exception {
+    protected List<Object> getRowData(Locale locale) throws Exception {
         final InetAddress inetAddress = InetAddress.getByName(ipAddress);
         boolean timeout = !inetAddress.isReachable(TIMEOUT);
         if(timeout) throw new TimeoutException(ApplicationResourcesAccessor.getMessage(locale, "PingNodeWorker.error.timeout"));
@@ -98,12 +98,12 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     /**
      * Gets the packet loss percent.
      */
-    private static int getPacketLossPercent(Iterable<TableMultiResult> previousResults) {
+    private static int getPacketLossPercent(Iterable<? extends PingResult> previousResults) {
         int timeouts = 0;
         // The current value is never a timeout to get this far
         int checked = 1;
         // The history
-        for(TableMultiResult previousResult : previousResults) {
+        for(PingResult previousResult : previousResults) {
             if(previousResult.getError()!=null) timeouts++;
             checked++;
             if(checked>=10) break;
@@ -112,7 +112,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends Object> rowData, Iterable<? extends PingResult> previousResults) throws Exception {
         int packetLossPercent = getPacketLossPercent(previousResults);
         return new AlertLevelAndMessage(
             getAlertLevel(packetLossPercent),
@@ -139,5 +139,15 @@ class PingNodeWorker extends TableMultiResultNodeWorker {
     @Override
     protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
         return 60000;
+    }
+
+    @Override
+    protected PingResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+        return new PingResult(time, latency, alertLevel, error);
+    }
+
+    @Override
+    protected PingResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends Object> rowData) {
+        return new PingResult(time, latency, alertLevel);
     }
 }

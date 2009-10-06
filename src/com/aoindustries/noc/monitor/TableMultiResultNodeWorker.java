@@ -8,12 +8,12 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
-import com.aoindustries.util.persistent.GZIPSerializer;
-import com.aoindustries.util.persistent.MappedPersistentBuffer;
 import com.aoindustries.util.persistent.PersistentCollections;
+import com.aoindustries.util.persistent.ProtectionLevel;
 import com.aoindustries.util.persistent.Serializer;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +31,7 @@ import javax.swing.SwingUtilities;
  * 
  * @author  AO Industries, Inc.
  */
-abstract class TableMultiResultNodeWorker implements Runnable {
+abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extends T>> implements Runnable {
 
     private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
@@ -41,25 +41,26 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     private final Object timerTaskLock = new Object();
     private RootNodeImpl.RunnableTimerTask timerTask;
 
-    final private PersistentLinkedList<TableMultiResult> results;
+    final private PersistentLinkedList<E> results;
 
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
     volatile private String alertMessage = null;
 
-    final private List<TableMultiResultNodeImpl> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl>();
+    final private List<TableMultiResultNodeImpl<T,E>> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl<T,E>>();
 
-    TableMultiResultNodeWorker(File persistenceFile, boolean gzipPersistenceFile) throws IOException {
-        Serializer<TableMultiResult> serializer = PersistentCollections.getSerializer(TableMultiResult.class);
-        if(gzipPersistenceFile) serializer = new GZIPSerializer<TableMultiResult>(serializer);
-        this.results = new PersistentLinkedList<TableMultiResult>(new MappedPersistentBuffer(persistenceFile), true, serializer);
+    TableMultiResultNodeWorker(File persistenceFile, Serializer<E> serializer) throws IOException {
+        this.results = new PersistentLinkedList<E>(
+            PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
+            serializer
+        );
     }
 
     /**
      * Gets an unmodifiable copy of the results.
      */
-    final List<TableMultiResult> getResults() {
+    final List<E> getResults() {
         synchronized(results) {
-            return Collections.unmodifiableList(new ArrayList<TableMultiResult>(results));
+            return Collections.unmodifiableList(new ArrayList<E>(results));
         }
     }
 
@@ -73,21 +74,6 @@ abstract class TableMultiResultNodeWorker implements Runnable {
 
     @SuppressWarnings("unchecked")
     private void start() {
-        /*synchronized(results) {
-            results.clear();
-            try {
-                File localPersistenceFile = this.persistenceFile;
-                if(!localPersistenceFile.exists()) localPersistenceFile = this.newPersistenceFile;
-                if(localPersistenceFile.exists()) {
-                    ObjectInputStream in = new ObjectInputStream(gzipPersistenceFile ? new GZIPInputStream(new BufferedInputStream(new FileInputStream(localPersistenceFile))) : new BufferedInputStream(new FileInputStream(localPersistenceFile)));
-                    Collection<TableMultiResult> saved = (Collection)in.readObject();
-                    in.close();
-                    results.addAll(saved);
-                }
-            } catch(Exception err) {
-                logger.log(Level.SEVERE, null, err);
-            }
-        }*/
         synchronized(timerTaskLock) {
             assert timerTask==null : "thread already started";
             timerTask = RootNodeImpl.schedule(this, TableResultNodeWorker.getNextStartupDelay());
@@ -107,11 +93,11 @@ abstract class TableMultiResultNodeWorker implements Runnable {
         }
     }
 
-    private List<?> getRowDataWithTimeout(final Locale locale) throws Exception {
-        Future<List<?>> future = RootNodeImpl.executorService.submit(
-            new Callable<List<?>>() {
+    private List<? extends T> getRowDataWithTimeout(final Locale locale) throws Exception {
+        Future<List<? extends T>> future = RootNodeImpl.executorService.submit(
+            new Callable<List<? extends T>>() {
                 @Override
-                public List<?> call() throws Exception {
+                public List<? extends T> call() throws Exception {
                     return getRowData(locale);
                 }
             }
@@ -142,7 +128,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
             final Locale locale = Locale.getDefault();
 
             String error;
-            List<?> rowData;
+            List<? extends T> rowData;
             AlertLevelAndMessage alertLevelAndMessage;
             try {
                 error = null;
@@ -169,24 +155,32 @@ abstract class TableMultiResultNodeWorker implements Runnable {
 
             synchronized(timerTaskLock) {if(timerTask==null) return;}
 
-            TableMultiResult added = new TableMultiResult(
-                startMillis,
-                pingNanos,
-                error,
-                rowData,
-                alertLevelAndMessage.getAlertLevel()
-            );
+            if(error==null && rowData==null) throw new IllegalArgumentException("error and rowData may not both be null");
+            if(error!=null && rowData!=null) throw new IllegalArgumentException("error and rowData may not both be non-null");
+
+            E added;
+            if(error!=null) {
+                added = newTableMultiResult(
+                    startMillis,
+                    pingNanos,
+                    alertLevelAndMessage.getAlertLevel(),
+                    error
+                );
+            } else {
+                added = newTableMultiResult(
+                    startMillis,
+                    pingNanos,
+                    alertLevelAndMessage.getAlertLevel(),
+                    rowData
+                );
+            }
 
             // Update the results
-            TableMultiResult removed = null;
-            //ArrayList<TableMultiResult> resultsCopy;
+            E removed = null;
             synchronized(results) {
                 results.addFirst(added);
                 if(results.size()>getHistorySize()) removed = results.removeLast();
-                //resultsCopy = new ArrayList<TableMultiResult>(results);
             }
-            // Update the results storage
-            //BackgroundWriter.enqueueObject(persistenceFile, newPersistenceFile, resultsCopy, gzipPersistenceFile);
 
             tableMultiResultAdded(added);
             if(removed!=null) tableMultiResultRemoved(removed);
@@ -213,7 +207,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
 
             if(oldAlertLevel!=newAlertLevel) {
                 synchronized(tableMultiResultNodeImpls) {
-                    for(TableMultiResultNodeImpl tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+                    for(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                         tableMultiResultNodeImpl.nodeAlertLevelChanged(
                             oldAlertLevel,
                             newAlertLevel,
@@ -238,7 +232,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
         }
     }
 
-    final void addTableMultiResultNodeImpl(TableMultiResultNodeImpl tableMultiResultNodeImpl) {
+    final void addTableMultiResultNodeImpl(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl) {
         synchronized(tableMultiResultNodeImpls) {
             boolean needsStart = tableMultiResultNodeImpls.isEmpty();
             tableMultiResultNodeImpls.add(tableMultiResultNodeImpl);
@@ -246,7 +240,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
         }
     }
 
-    final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl tableMultiResultNodeImpl) {
+    final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl) {
         // TODO: log error if wrong number of listeners matched
         synchronized(tableMultiResultNodeImpls) {
             if(tableMultiResultNodeImpls.isEmpty()) throw new AssertionError("tableMultiResultNodeImpls is empty");
@@ -265,11 +259,11 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     /**
      * Notifies all of the listeners.
      */
-    private void tableMultiResultAdded(TableMultiResult result) {
+    private void tableMultiResultAdded(E result) {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         synchronized(tableMultiResultNodeImpls) {
-            for(TableMultiResultNodeImpl tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+            for(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                 tableMultiResultNodeImpl.tableMultiResultAdded(result);
             }
         }
@@ -278,11 +272,11 @@ abstract class TableMultiResultNodeWorker implements Runnable {
     /**
      * Notifies all of the listeners.
      */
-    private void tableMultiResultRemoved(TableMultiResult result) {
+    private void tableMultiResultRemoved(E result) {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         synchronized(tableMultiResultNodeImpls) {
-            for(TableMultiResultNodeImpl tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+            for(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                 tableMultiResultNodeImpl.tableMultiResultRemoved(result);
             }
         }
@@ -305,14 +299,24 @@ abstract class TableMultiResultNodeWorker implements Runnable {
      * Gets the current row data for this worker, any error should result in an exception.
      * This is the main monitor routine.
      */
-    protected abstract List<?> getRowData(Locale locale) throws Exception;
+    protected abstract List<? extends T> getRowData(Locale locale) throws Exception;
+
+    /**
+     * Creates a new result container object for error condition.
+     */
+    protected abstract E newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error);
+
+    /**
+     * Creates a new result container object for success condition.
+     */
+    protected abstract E newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends T> rowData);
 
     /**
      * Cancles the current getRowData call on a best-effort basis.
      * Implementations of this method <b>must not block</b>.
      * This default implementation calls <code>future.cancel(true)</code>.
      */
-    protected void cancel(Future<List<?>> future) {
+    protected void cancel(Future<List<? extends T>> future) {
         future.cancel(true);
     }
 
@@ -321,7 +325,7 @@ abstract class TableMultiResultNodeWorker implements Runnable {
      * If unable to parse, may throw an exception to report the error.  This
      * should not block or delay for any reason.
      */
-    protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> rowData, Iterable<TableMultiResult> previousResults) throws Exception;
+    protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends T> rowData, Iterable<? extends E> previousResults) throws Exception;
     
     /**
      * By default, the call to <code>getRowData</code> uses a <code>Future</code>

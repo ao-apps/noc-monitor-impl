@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.noc.common.NetDeviceBitRateResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -16,7 +17,9 @@ import java.util.Locale;
 /**
  * @author  AO Industries, Inc.
  */
-public class NetDeviceBitRateNode extends TableMultiResultNodeImpl {
+public class NetDeviceBitRateNode extends TableMultiResultNodeImpl<Object,NetDeviceBitRateResult> {
+
+    private static final long serialVersionUID = 1L;
 
     NetDeviceBitRateNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
         super(
