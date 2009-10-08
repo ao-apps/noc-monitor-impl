@@ -51,6 +51,7 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
     TableMultiResultNodeWorker(File persistenceFile, Serializer<E> serializer) throws IOException {
         this.results = new PersistentLinkedList<E>(
             PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
+            //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
             serializer
         );
     }
@@ -59,9 +60,15 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
      * Gets an unmodifiable copy of the results.
      */
     final List<E> getResults() {
-        synchronized(results) {
-            return Collections.unmodifiableList(new ArrayList<E>(results));
-        }
+        //System.out.println("DEBUG: getResults");
+        //try {
+            synchronized(results) {
+                return Collections.unmodifiableList(new ArrayList<E>(results));
+            }
+        //} catch(RuntimeException err) {
+        //    ErrorPrinter.printStackTraces(err);
+        //    throw err;
+        //}
     }
 
     final AlertLevel getAlertLevel() {

@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.BackupPartition;
+import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.common.MySQLReplicationResult;
@@ -44,10 +45,18 @@ public class MySQLReplicationNode extends TableMultiResultNodeImpl<String,MySQLR
             ssf
         );
         this._mysqlReplication = mysqlReplication;
-        AOServer aoServer = mysqlReplicationsNode.mysqlServerNode._mysqlServersNode.getAOServer();
-        MySQLServer mysqlServer = mysqlReplicationsNode.mysqlServerNode.getMySQLServer();
-        BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
-        this._label = bp.getAOServer().getHostname()+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
+        FailoverFileReplication replication = mysqlReplication.getFailoverFileReplication();
+        if(replication!=null) {
+            // replication-based
+            AOServer aoServer = mysqlReplicationsNode.mysqlServerNode._mysqlServersNode.getAOServer();
+            MySQLServer mysqlServer = mysqlReplicationsNode.mysqlServerNode.getMySQLServer();
+            BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
+            this._label = bp.getAOServer().getHostname()+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
+        } else {
+            // ao_server-based
+            MySQLServer mysqlServer = mysqlReplicationsNode.mysqlServerNode.getMySQLServer();
+            this._label = mysqlReplication.getAOServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
+        }
     }
 
     FailoverMySQLReplication getFailoverMySQLReplication() {
