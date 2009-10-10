@@ -36,7 +36,7 @@ public class MySQLServerNode extends NodeImpl {
     private final MySQLServer _mysqlServer;
     private final String _label;
 
-    volatile private MySQLReplicationsNode _mysqlReplicationsNode;
+    volatile private MySQLSlavesNode _mysqlSlavesNode;
     volatile private MySQLDatabasesNode _mysqlDatabasesNode;
 
     MySQLServerNode(MySQLServersNode mysqlServersNode, MySQLServer mysqlServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
@@ -69,8 +69,8 @@ public class MySQLServerNode extends NodeImpl {
     public List<? extends Node> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(2);
 
-        MySQLReplicationsNode mysqlReplicationsNode = this._mysqlReplicationsNode;
-        if(mysqlReplicationsNode!=null) children.add(mysqlReplicationsNode);
+        MySQLSlavesNode mysqlSlavesNode = this._mysqlSlavesNode;
+        if(mysqlSlavesNode!=null) children.add(mysqlSlavesNode);
 
         MySQLDatabasesNode mysqlDatabasesNode = this._mysqlDatabasesNode;
         if(mysqlDatabasesNode!=null) children.add(mysqlDatabasesNode);
@@ -84,10 +84,10 @@ public class MySQLServerNode extends NodeImpl {
     public AlertLevel getAlertLevel() {
         AlertLevel level = AlertLevel.NONE;
 
-        MySQLReplicationsNode mysqlReplicationsNode = this._mysqlReplicationsNode;
-        if(mysqlReplicationsNode!=null) {
-            AlertLevel mysqlReplicationsNodeLevel = mysqlReplicationsNode.getAlertLevel();
-            if(mysqlReplicationsNodeLevel.compareTo(level)>0) level = mysqlReplicationsNodeLevel;
+        MySQLSlavesNode mysqlSlavesNode = this._mysqlSlavesNode;
+        if(mysqlSlavesNode!=null) {
+            AlertLevel mysqlSlavesNodeLevel = mysqlSlavesNode.getAlertLevel();
+            if(mysqlSlavesNodeLevel.compareTo(level)>0) level = mysqlSlavesNodeLevel;
         }
 
         MySQLDatabasesNode mysqlDatabasesNode = this._mysqlDatabasesNode;
@@ -137,9 +137,9 @@ public class MySQLServerNode extends NodeImpl {
 
     synchronized void stop() {
         RootNodeImpl rootNode = _mysqlServersNode.serverNode.serversNode.rootNode;
-        if(_mysqlReplicationsNode!=null) {
-            _mysqlReplicationsNode.stop();
-            _mysqlReplicationsNode = null;
+        if(_mysqlSlavesNode!=null) {
+            _mysqlSlavesNode.stop();
+            _mysqlSlavesNode = null;
             rootNode.nodeRemoved();
         }
 
@@ -155,15 +155,15 @@ public class MySQLServerNode extends NodeImpl {
 
         List<FailoverMySQLReplication> failoverMySQLReplications = _mysqlServer.getFailoverMySQLReplications();
         if(!failoverMySQLReplications.isEmpty()) {
-            if(_mysqlReplicationsNode==null) {
-                _mysqlReplicationsNode = new MySQLReplicationsNode(this, port, csf, ssf);
-                _mysqlReplicationsNode.start();
+            if(_mysqlSlavesNode==null) {
+                _mysqlSlavesNode = new MySQLSlavesNode(this, port, csf, ssf);
+                _mysqlSlavesNode.start();
                 _mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
             }
         } else {
-            if(_mysqlReplicationsNode!=null) {
-                _mysqlReplicationsNode.stop();
-                _mysqlReplicationsNode = null;
+            if(_mysqlSlavesNode!=null) {
+                _mysqlSlavesNode.stop();
+                _mysqlSlavesNode = null;
                 _mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
             }
         }

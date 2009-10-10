@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 /**
  * The main starting point for the monitor.
  *
+ * TODO: Watch slave databases just like original databases (show table status, check table fast quick, ...)
+ *
  * TODO:
  *     Add warning about total power allocation per rack if max power known
  *

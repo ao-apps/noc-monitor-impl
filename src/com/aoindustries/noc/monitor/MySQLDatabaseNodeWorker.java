@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
@@ -31,12 +32,12 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
      * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
      */
     private static final Map<String, MySQLDatabaseNodeWorker> workerCache = new HashMap<String,MySQLDatabaseNodeWorker>();
-    static MySQLDatabaseNodeWorker getWorker(File persistenceFile, MySQLDatabase mysqlDatabase) throws IOException, SQLException {
+    static MySQLDatabaseNodeWorker getWorker(File persistenceFile, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             MySQLDatabaseNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MySQLDatabaseNodeWorker(persistenceFile, mysqlDatabase);
+                worker = new MySQLDatabaseNodeWorker(persistenceFile, mysqlDatabase, mysqlSlave);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.mysqlDatabase.equals(mysqlDatabase)) throw new AssertionError("worker.mysqlDatabase!=mysqlDatabase: "+worker.mysqlDatabase+"!="+mysqlDatabase);
@@ -47,13 +48,15 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
 
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private MySQLDatabase mysqlDatabase;
+    final private FailoverMySQLReplication mysqlSlave;
     final boolean isSlowServer;
     final private Object lastTableStatusesLock = new Object();
     private List<MySQLDatabase.TableStatus> lastTableStatuses;
 
-    MySQLDatabaseNodeWorker(File persistenceFile, MySQLDatabase mysqlDatabase) throws IOException, SQLException {
+    MySQLDatabaseNodeWorker(File persistenceFile, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
         super(persistenceFile);
         this.mysqlDatabase = mysqlDatabase;
+        this.mysqlSlave = mysqlSlave;
         String hostname = mysqlDatabase.getMySQLServer().getAOServer().getHostname();
         this.isSlowServer =
             hostname.equals("www.swimconnection.com")
@@ -92,7 +95,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
 
     @Override
     protected List<?> getTableData(Locale locale) throws Exception {
-        List<MySQLDatabase.TableStatus> tableStatuses = mysqlDatabase.getTableStatus();
+        List<MySQLDatabase.TableStatus> tableStatuses = mysqlDatabase.getTableStatus(mysqlSlave);
         setLastTableStatuses(tableStatuses);
         List<Object> tableData = new ArrayList<Object>(tableStatuses.size()*18);
 
@@ -136,7 +139,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
                 try {
                     lastTableStatusesLock.wait();
                 } catch(InterruptedException err) {
-                    logger.warning("wait interrupted");
+                    // logger.warning("wait interrupted");
                 }
             }
             return lastTableStatuses;

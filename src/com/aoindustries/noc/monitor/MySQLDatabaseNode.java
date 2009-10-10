@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
@@ -28,16 +29,18 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
     final MySQLDatabaseNodeWorker databaseWorker;
     final MySQLDatabasesNode mysqlDatabasesNode;
     private final MySQLDatabase mysqlDatabase;
+    private final FailoverMySQLReplication mysqlSlave;
     private final String _label;
     volatile private MySQLCheckTablesNode mysqlCheckTablesNode;
 
-    MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, MySQLDatabase mysqlDatabase, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
         super(
             mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
             mysqlDatabasesNode,
             MySQLDatabaseNodeWorker.getWorker(
                 new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName()+".show_full_tables"),
-                mysqlDatabase
+                mysqlDatabase,
+                mysqlSlave
             ),
             port,
             csf,
@@ -46,11 +49,16 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
         this.databaseWorker = (MySQLDatabaseNodeWorker)worker;
         this.mysqlDatabasesNode = mysqlDatabasesNode;
         this.mysqlDatabase = mysqlDatabase;
+        this.mysqlSlave = mysqlSlave;
         this._label = mysqlDatabase.getName();
     }
 
     MySQLDatabase getMySQLDatabase() {
         return mysqlDatabase;
+    }
+
+    FailoverMySQLReplication getMySQLSlave() {
+        return mysqlSlave;
     }
 
     @Override

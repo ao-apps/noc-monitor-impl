@@ -21,18 +21,19 @@ import java.util.Map;
 /**
  * @author  AO Industries, Inc.
  */
-class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQLReplicationResult> {
+class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQLReplicationResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match mysqlReplication exactly)
      */
-    private static final Map<String, MySQLReplicationNodeWorker> workerCache = new HashMap<String,MySQLReplicationNodeWorker>();
-    static MySQLReplicationNodeWorker getWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) throws IOException {
-        String path = persistenceDirectory.getCanonicalPath();
+    private static final Map<String, MySQLSlaveStatusNodeWorker> workerCache = new HashMap<String,MySQLSlaveStatusNodeWorker>();
+    static MySQLSlaveStatusNodeWorker getWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) throws IOException {
+        File persistenceFile = new File(persistenceDirectory, "slave_status");
+        String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
-            MySQLReplicationNodeWorker worker = workerCache.get(path);
+            MySQLSlaveStatusNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MySQLReplicationNodeWorker(persistenceDirectory, mysqlReplication);
+                worker = new MySQLSlaveStatusNodeWorker(persistenceFile, mysqlReplication);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._mysqlReplication.equals(mysqlReplication)) throw new AssertionError("worker.mysqlReplication!=mysqlReplication: "+worker._mysqlReplication+"!="+mysqlReplication);
@@ -44,8 +45,8 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
     final private FailoverMySQLReplication _mysqlReplication;
     private FailoverMySQLReplication currentFailoverMySQLReplication;
 
-    private MySQLReplicationNodeWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) throws IOException {
-        super(new File(persistenceDirectory, Integer.toString(mysqlReplication.getPkey())), new MySQLReplicationResultSerializer());
+    private MySQLSlaveStatusNodeWorker(File persistenceFile, FailoverMySQLReplication mysqlReplication) throws IOException {
+        super(persistenceFile, new MySQLReplicationResultSerializer());
         this._mysqlReplication = currentFailoverMySQLReplication = mysqlReplication;
     }
 
@@ -59,9 +60,9 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
         // Get the latest values
         currentFailoverMySQLReplication = _mysqlReplication.getTable().get(_mysqlReplication.getKey());
         FailoverMySQLReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
-        if(slaveStatus==null) throw new SQLException(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNodeWorker.slaveNotRunning"));
+        if(slaveStatus==null) throw new SQLException(ApplicationResourcesAccessor.getMessage(locale, "MySQLSlaveStatusNodeWorker.slaveNotRunning"));
         MySQLServer.MasterStatus masterStatus = _mysqlReplication.getMySQLServer().getMasterStatus();
-        if(masterStatus==null) throw new SQLException(ApplicationResourcesAccessor.getMessage(locale, "MySQLReplicationNodeWorker.masterNotRunning"));
+        if(masterStatus==null) throw new SQLException(ApplicationResourcesAccessor.getMessage(locale, "MySQLSlaveStatusNodeWorker.masterNotRunning"));
         // Display the alert thresholds
         int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();
         int secondsBehindMedium = currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium();
@@ -108,7 +109,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
                 alertLevel,
                 ApplicationResourcesAccessor.getMessage(
                     locale,
-                    "MySQLReplicationNodeWorker.alertMessage.secondsBehindMaster.null"
+                    "MySQLSlaveStatusNodeWorker.alertMessage.secondsBehindMaster.null"
                 )
             );
         }
@@ -120,7 +121,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
                     AlertLevel.CRITICAL,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "MySQLReplicationNodeWorker.alertMessage.critical",
+                        "MySQLSlaveStatusNodeWorker.alertMessage.critical",
                         secondsBehindCritical,
                         secondsBehind
                     )
@@ -132,7 +133,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
                     AlertLevel.HIGH,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "MySQLReplicationNodeWorker.alertMessage.high",
+                        "MySQLSlaveStatusNodeWorker.alertMessage.high",
                         secondsBehindHigh,
                         secondsBehind
                     )
@@ -144,7 +145,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
                     AlertLevel.MEDIUM,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "MySQLReplicationNodeWorker.alertMessage.medium",
+                        "MySQLSlaveStatusNodeWorker.alertMessage.medium",
                         secondsBehindMedium,
                         secondsBehind
                     )
@@ -156,7 +157,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
                     AlertLevel.LOW,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "MySQLReplicationNodeWorker.alertMessage.low",
+                        "MySQLSlaveStatusNodeWorker.alertMessage.low",
                         secondsBehindLow,
                         secondsBehind
                     )
@@ -167,7 +168,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
                     AlertLevel.NONE,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "MySQLReplicationNodeWorker.alertMessage.notAny",
+                        "MySQLSlaveStatusNodeWorker.alertMessage.notAny",
                         secondsBehind
                     )
                 );
@@ -176,7 +177,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
                     AlertLevel.NONE,
                     ApplicationResourcesAccessor.getMessage(
                         locale,
-                        "MySQLReplicationNodeWorker.alertMessage.none",
+                        "MySQLSlaveStatusNodeWorker.alertMessage.none",
                         secondsBehindLow,
                         secondsBehind
                     )
@@ -187,7 +188,7 @@ class MySQLReplicationNodeWorker extends TableMultiResultNodeWorker<String,MySQL
                 AlertLevel.CRITICAL,
                 ApplicationResourcesAccessor.getMessage(
                     locale,
-                    "MySQLReplicationNodeWorker.alertMessage.secondsBehindMaster.invalid",
+                    "MySQLSlaveStatusNodeWorker.alertMessage.secondsBehindMaster.invalid",
                     secondsBehindMaster
                 )
             );

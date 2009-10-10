@@ -33,16 +33,24 @@ public class MySQLDatabasesNode extends NodeImpl {
     private static final long serialVersionUID = 1L;
 
     final MySQLServerNode mysqlServerNode;
+    final MySQLSlaveNode mysqlSlaveNode;
     private final List<MySQLDatabaseNode> mysqlDatabaseNodes = new ArrayList<MySQLDatabaseNode>();
 
     MySQLDatabasesNode(MySQLServerNode mysqlServerNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
         this.mysqlServerNode = mysqlServerNode;
+        this.mysqlSlaveNode = null;
+    }
+
+    MySQLDatabasesNode(MySQLSlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
+        this.mysqlServerNode = mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode;
+        this.mysqlSlaveNode = mysqlSlaveNode;
     }
 
     @Override
     public Node getParent() {
-        return mysqlServerNode;
+        return mysqlSlaveNode!=null ? mysqlSlaveNode : mysqlServerNode;
     }
 
     @Override
@@ -140,7 +148,7 @@ public class MySQLDatabasesNode extends NodeImpl {
                 MySQLDatabase mysqlDatabase = mysqlDatabases.get(c);
                 if(c>=mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
                     // Insert into proper index
-                    MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, port, csf, ssf);
+                    MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null, port, csf, ssf);
                     mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
                     mysqlDatabaseNode.start();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
@@ -150,7 +158,7 @@ public class MySQLDatabasesNode extends NodeImpl {
     }
 
     File getPersistenceDirectory() throws IOException {
-        File dir = new File(mysqlServerNode.getPersistenceDirectory(), "mysql_databases");
+        File dir = new File((mysqlSlaveNode!=null ? mysqlSlaveNode.getPersistenceDirectory() : mysqlServerNode.getPersistenceDirectory()), "mysql_databases");
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(

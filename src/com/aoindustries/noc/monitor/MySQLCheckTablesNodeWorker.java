@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.common.AlertLevel;
@@ -71,6 +72,7 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
     @Override
     protected List<?> getTableData(Locale locale) throws Exception {
         MySQLDatabase mysqlDatabase = databaseNode.getMySQLDatabase();
+        FailoverMySQLReplication mysqlSlave = databaseNode.getMySQLSlave();
         // Don't check any table on MySQL 5.1 information_schema database
         if(mysqlDatabase.getName().equals(MySQLDatabase.INFORMATION_SCHEMA)) {
             String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
@@ -96,7 +98,7 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
                 tables.put(name, engine);
             }
         }
-        List<MySQLDatabase.CheckTableResult> checkTableResults = mysqlDatabase.checkTables(tableNames);
+        List<MySQLDatabase.CheckTableResult> checkTableResults = mysqlDatabase.checkTables(mysqlSlave, tableNames);
         List<Object> tableData = new ArrayList<Object>(checkTableResults.size()*5);
 
         for(MySQLDatabase.CheckTableResult checkTableResult : checkTableResults) {
