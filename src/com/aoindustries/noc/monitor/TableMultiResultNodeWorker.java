@@ -50,7 +50,7 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
 
     TableMultiResultNodeWorker(File persistenceFile, Serializer<E> serializer) throws IOException {
         this.results = new PersistentLinkedList<E>(
-            PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
+            PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.FORCE, Long.MAX_VALUE),
             //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
             serializer
         );
