@@ -51,7 +51,13 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
         this.results = new PersistentLinkedList<E>(
             //PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.FORCE, Long.MAX_VALUE),
             //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
-            new TwoCopyBarrierBuffer(persistenceFile, ProtectionLevel.BARRIER, 1024, 60L*60L*1000L), // Only commit once per hour to save flash writes
+            new TwoCopyBarrierBuffer(
+                persistenceFile,
+                ProtectionLevel.BARRIER,
+                4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash block size??? Can't find specs.
+                15L*60L*1000L, // Only commit once per 15 minutes in the single asynchronous writer thread
+                4L*60L*60L*1000L  // Only commit synchronously (concurrently) once per four hours to save flash writes
+            ),
             serializer
         );
     }
