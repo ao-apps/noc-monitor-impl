@@ -8,12 +8,11 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
-import com.aoindustries.util.persistent.PersistentCollections;
 import com.aoindustries.util.persistent.ProtectionLevel;
 import com.aoindustries.util.persistent.Serializer;
+import com.aoindustries.util.persistent.TwoCopyBarrierBuffer;
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,8 +49,9 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
 
     TableMultiResultNodeWorker(File persistenceFile, Serializer<E> serializer) throws IOException {
         this.results = new PersistentLinkedList<E>(
-            PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.FORCE, Long.MAX_VALUE),
+            //PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.FORCE, Long.MAX_VALUE),
             //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
+            new TwoCopyBarrierBuffer(persistenceFile, ProtectionLevel.BARRIER, 1024, 60L*60L*1000L), // Only commit once per hour to save flash writes
             serializer
         );
     }
