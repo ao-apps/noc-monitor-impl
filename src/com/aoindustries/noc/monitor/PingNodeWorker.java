@@ -66,7 +66,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 
     @Override
     protected int getHistorySize() {
-        return 1000;
+        return 10000;
     }
 
     @Override

@@ -65,7 +65,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 
     @Override
     protected int getHistorySize() {
-        return 1000;
+        return 2000;
     }
 
     @Override

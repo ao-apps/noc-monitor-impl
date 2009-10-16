@@ -50,7 +50,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
 
     @Override
     protected int getHistorySize() {
-        return 1000;
+        return 2000;
     }
 
     @Override

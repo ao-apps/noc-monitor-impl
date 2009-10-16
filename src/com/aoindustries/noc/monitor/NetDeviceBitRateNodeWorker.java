@@ -56,7 +56,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<Object,NetDe
 
     @Override
     protected int getHistorySize() {
-        return 1000;
+        return 2000;
     }
 
     private long lastStatsTime = -1;

@@ -52,7 +52,7 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
 
     @Override
     protected int getHistorySize() {
-        return 1000;
+        return 2000;
     }
 
     @Override
