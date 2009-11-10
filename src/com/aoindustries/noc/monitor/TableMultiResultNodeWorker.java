@@ -27,7 +27,25 @@ import javax.swing.SwingUtilities;
 
 /**
  * The workers for table multi-results node.
- * 
+ *
+ * TODO: Instead of a fixed history size, aggregate data into larger time ranges and keep
+ * track of mean, min, max, and standard deviation (or perhaps 5th/95th percentile?).  Keep
+ * the following time ranges:
+ * <pre>
+ * 1 minute for 2 days = 2880 samples
+ * 5 minutes for 5 days = 1440 samples
+ * 15 minutes for 7 days = 672 samples
+ * 30 minutes for 14 days = 672 samples
+ * 1 hour for 28 days = 672 samples
+ * 2 hours for 56 days = 672 samples
+ * 4 hours for 112 days = 672 samples
+ * 1 day forever beyond this
+ * ==================================
+ * total: 7680 samples + one per day beyond 224 days
+ * </pre>
+ * Update in a single background thread scross all workers, and handle recovery from unexpected
+ * shutdown gracefully by inserting aggregate before removing samples, and detect on next aggregation.
+ * Also, the linked list should always be sorted by time descending, confirm this on aggregation pass.
  * @author  AO Industries, Inc.
  */
 abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extends T>> implements Runnable {
@@ -85,11 +103,18 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
         return alertMessage;
     }
 
+    /**
+     * The default startup delay is within five minutes.
+     */
+    protected int getNextStartupDelay() {
+        return RootNodeImpl.getNextStartupDelayFiveMinutes();
+    }
+
     @SuppressWarnings("unchecked")
     private void start() {
         synchronized(timerTaskLock) {
             assert timerTask==null : "thread already started";
-            timerTask = RootNodeImpl.schedule(this, TableResultNodeWorker.getNextStartupDelay());
+            timerTask = RootNodeImpl.schedule(this, getNextStartupDelay());
         }
     }
 

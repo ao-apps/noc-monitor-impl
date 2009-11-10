@@ -17,6 +17,8 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class MdRaidNode extends SingleResultNodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     MdRaidNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
         super(
             raidNode.serverNode.serversNode.rootNode,

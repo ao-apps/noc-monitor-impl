@@ -60,10 +60,17 @@ abstract class SingleResultNodeWorker implements Runnable {
         return alertMessage;
     }
 
+    /**
+     * The default startup delay is within five minutes.
+     */
+    protected int getNextStartupDelay() {
+        return RootNodeImpl.getNextStartupDelayFiveMinutes();
+    }
+
     private void start() {
         synchronized(timerTaskLock) {
             assert timerTask==null : "thread already started";
-            timerTask = RootNodeImpl.schedule(this, TableResultNodeWorker.getNextStartupDelay());
+            timerTask = RootNodeImpl.schedule(this, getNextStartupDelay());
         }
     }
 

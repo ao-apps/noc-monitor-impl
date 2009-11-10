@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +50,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
     private static final boolean DEBUG = false;
+
+    /**
+     * Shared random number generator.
+     */
+    public static final Random random = new Random();
 
     /**
      * One timer is shared by all instances.
@@ -588,5 +594,23 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             }
         }
         return dir;
+    }
+
+    private static int lastStartupDelay5;
+    private static final Object lastStartupDelay5Lock = new Object();
+    static int getNextStartupDelayFiveMinutes() {
+        synchronized(lastStartupDelay5Lock) {
+            lastStartupDelay5 = (lastStartupDelay5+5037)%(5*60000);
+            return lastStartupDelay5;
+        }
+    }
+
+    private static int lastStartupDelay15;
+    private static final Object lastStartupDelay15Lock = new Object();
+    static int getNextStartupDelayFifteenMinutes() {
+        synchronized(lastStartupDelay15Lock) {
+            lastStartupDelay15= (lastStartupDelay15+15037)%(15*60000);
+            return lastStartupDelay15;
+        }
     }
 }

@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker {
+class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>,String> {
 
     /**
      * The normal alert thresholds.
@@ -97,7 +97,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getColumnHeaders(Locale locale) {
+    protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(3);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.device"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.model"));
@@ -106,7 +106,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getTableData(Locale locale) throws Exception {
+    protected List<String> getQueryResult(Locale locale) throws Exception {
         String report = aoServer.getHddTempReport();
         List<String> lines = StringUtility.splitLines(report);
         List<String> tableData = new ArrayList<String>(lines.size()*3);
@@ -132,10 +132,15 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<AlertLevel> getAlertLevels(List<?> tableData) {
+    protected List<String> getTableData(List<String> tableData, Locale locale) throws Exception {
+        return tableData;
+    }
+
+    @Override
+    protected List<AlertLevel> getAlertLevels(List<String> tableData) {
         List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/3);
         for(int index=0,len=tableData.size();index<len;index+=3) {
-            String value = tableData.get(index+2).toString();
+            String value = tableData.get(index+2);
             AlertLevel alertLevel = AlertLevel.NONE;
             if(
                 // These values all mean not monitored, keep at alert=NONE
@@ -149,7 +154,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker {
                 if(value.endsWith(" C")) {
                     // A few hard drives read much differently than other drives, offset the thresholds here
                     String hostname = aoServer.getHostname();
-                    String device = tableData.get(index).toString();
+                    String device = tableData.get(index);
                     int offset;
                     if(
                         hostname.equals("xen1.mob.aoindustries.com")

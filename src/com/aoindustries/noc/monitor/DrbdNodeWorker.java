@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class DrbdNodeWorker extends TableResultNodeWorker {
+class DrbdNodeWorker extends TableResultNodeWorker<List<AOServer.DrbdReport>,String> {
 
     /**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
@@ -81,7 +81,7 @@ class DrbdNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getColumnHeaders(Locale locale) {
+    protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(5);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.device"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"));
@@ -92,8 +92,12 @@ class DrbdNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getTableData(Locale locale) throws Exception {
-        List<AOServer.DrbdReport> reports = aoServer.getDrbdReport(locale);
+    protected List<AOServer.DrbdReport> getQueryResult(Locale locale) throws Exception {
+        return aoServer.getDrbdReport(locale);
+    }
+
+    @Override
+    protected List<String> getTableData(List<AOServer.DrbdReport> reports, Locale locale) throws Exception {
         List<String> tableData = new ArrayList<String>(reports.size()*5);
         for(AOServer.DrbdReport report : reports) {
             tableData.add(report.getDevice());
@@ -106,16 +110,17 @@ class DrbdNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<AlertLevel> getAlertLevels(List<?> tableData) {
-        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/5);
-        for(int index=0,len=tableData.size();index<len;index+=5) {
+    protected List<AlertLevel> getAlertLevels(List<AOServer.DrbdReport> reports) {
+        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(reports.size());
+        for(AOServer.DrbdReport report : reports) {
             AlertLevel alertLevel;
             if(
-                !"Connected".equals(tableData.get(index+2))
-                || !"UpToDate/UpToDate".equals(tableData.get(index+3))
+                report.getConnectionState()!=AOServer.DrbdReport.ConnectionState.Connected
+                || report.getLocalDiskState()!=AOServer.DrbdReport.DiskState.UpToDate
+                || report.getRemoteDiskState()!=AOServer.DrbdReport.DiskState.UpToDate
                 || !(
-                    "Primary/Secondary".equals(tableData.get(index+4))
-                    || "Secondary/Primary".equals(tableData.get(index+4))
+                    (report.getLocalRole()==AOServer.DrbdReport.Role.Primary && report.getRemoteRole()==AOServer.DrbdReport.Role.Secondary)
+                    || (report.getLocalRole()==AOServer.DrbdReport.Role.Secondary && report.getRemoteRole()==AOServer.DrbdReport.Role.Primary)
                 )
             ) {
                 alertLevel = AlertLevel.HIGH;

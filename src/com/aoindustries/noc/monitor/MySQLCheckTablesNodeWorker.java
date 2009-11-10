@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
+class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 
     /**
      * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
@@ -59,7 +59,7 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getColumnHeaders(Locale locale) {
+    protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(5);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"));
@@ -70,7 +70,7 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getTableData(Locale locale) throws Exception {
+    protected List<Object> getQueryResult(Locale locale) throws Exception {
         MySQLDatabase mysqlDatabase = databaseNode.getMySQLDatabase();
         FailoverMySQLReplication mysqlSlave = databaseNode.getMySQLSlave();
         // Don't check any table on MySQL 5.1 information_schema database
@@ -112,6 +112,11 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
         return tableData;
     }
 
+    @Override
+    protected List<Object> getTableData(List<Object> tableData, Locale locale) throws Exception {
+        return tableData;
+    }
+
     /**
      * If is a slowServer (many tables), only checks once every 12 hours.
      * Otherwise checks once every five minutes.
@@ -128,7 +133,7 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<AlertLevel> getAlertLevels(List<?> tableData) {
+    protected List<AlertLevel> getAlertLevels(List<Object> tableData) {
         List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/5);
         for(int index=0,len=tableData.size();index<len;index+=5) {
             String msgText = (String)tableData.get(index+4);

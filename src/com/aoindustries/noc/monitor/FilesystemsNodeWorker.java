@@ -27,7 +27,7 @@ import java.util.logging.Logger;
  *
  * @author  AO Industries, Inc.
  */
-class FilesystemsNodeWorker extends TableResultNodeWorker {
+class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 
     private static final Logger logger = Logger.getLogger(FilesystemsNodeWorker.class.getName());
 
@@ -93,7 +93,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getColumnHeaders(Locale locale) {
+    protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(12);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.mountpoint"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.device"));
@@ -114,7 +114,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getTableData(Locale locale) throws Exception {
+    protected List<String> getQueryResult(Locale locale) throws Exception {
         String report = aoServer.getFilesystemsCsvReport();
 
         CSVParse csvParser = new CSVParser(new CharArrayReader(report.toCharArray()));
@@ -168,7 +168,12 @@ class FilesystemsNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<AlertLevel> getAlertLevels(List<?> tableData) {
+    protected List<String> getTableData(List<String> tableData, Locale locale) throws Exception {
+        return tableData;
+    }
+
+    @Override
+    protected List<AlertLevel> getAlertLevels(List<String> tableData) {
         Locale locale = Locale.getDefault();
         List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/12);
         for(int index=0,len=tableData.size();index<len;index+=12) {

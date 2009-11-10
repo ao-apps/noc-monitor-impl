@@ -35,6 +35,8 @@ public class IPAddressNode extends NodeImpl {
 
     volatile private PingNode pingNode;
     volatile private NetBindsNode netBindsNode;
+    volatile private ReverseDnsNode reverseDnsNode;
+    volatile private BlacklistsNode blacklistsNode;
 
     IPAddressNode(IPAddressesNode ipAddressesNode, IPAddress ipAddress, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
         super(port, csf, ssf);
@@ -44,7 +46,7 @@ public class IPAddressNode extends NodeImpl {
         this.ipAddress = ipAddress;
         String ip = ipAddress.getIPAddress();
         String externalIp = ipAddress.getExternalIpAddress();
-        this.label = externalIp==null ? ip : (ip+'@'+externalIp);
+        this.label = (externalIp==null ? ip : (ip+'@'+externalIp)) + '/' + ipAddress.getHostname();
         // Private IPs and loopback IPs are not externally pingable
         this.isPingable =
             ipAddress.isPingMonitorEnabled()
@@ -74,13 +76,19 @@ public class IPAddressNode extends NodeImpl {
      */
     @Override
     public List<? extends Node> getChildren() {
-        List<NodeImpl> children = new ArrayList<NodeImpl>(2);
+        List<NodeImpl> children = new ArrayList<NodeImpl>(3);
 
         PingNode localPingNode = this.pingNode;
         if(localPingNode!=null) children.add(localPingNode);
 
         NetBindsNode localNetBindsNode = this.netBindsNode;
         if(localNetBindsNode!=null) children.add(localNetBindsNode);
+
+        ReverseDnsNode localReverseDnsNode = this.reverseDnsNode;
+        if(localReverseDnsNode!=null) children.add(localReverseDnsNode);
+
+        BlacklistsNode localBlacklistsNode = this.blacklistsNode;
+        if(localBlacklistsNode!=null) children.add(localBlacklistsNode);
 
         return Collections.unmodifiableList(children);
     }
@@ -102,6 +110,18 @@ public class IPAddressNode extends NodeImpl {
         if(localNetBindsNode!=null) {
             AlertLevel netBindsNodeLevel = localNetBindsNode.getAlertLevel();
             if(netBindsNodeLevel.compareTo(level)>0) level = netBindsNodeLevel;
+        }
+
+        ReverseDnsNode localReverseDnsNode = this.reverseDnsNode;
+        if(localReverseDnsNode!=null) {
+            AlertLevel reverseDnsNodeLevel = localReverseDnsNode.getAlertLevel();
+            if(reverseDnsNodeLevel.compareTo(level)>0) level = reverseDnsNodeLevel;
+        }
+
+        BlacklistsNode localBlacklistsNode = this.blacklistsNode;
+        if(localBlacklistsNode!=null) {
+            AlertLevel blacklistsNodeLevel = localBlacklistsNode.getAlertLevel();
+            if(blacklistsNodeLevel.compareTo(level)>0) level = blacklistsNodeLevel;
         }
 
         return level;
@@ -134,10 +154,44 @@ public class IPAddressNode extends NodeImpl {
             netBindsNode.start();
             rootNode.nodeAdded();
         }
+        // Skip loopback device
+        if(reverseDnsNode==null && !ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback()) {
+            String ip = ipAddress.getExternalIpAddress();
+            if(ip==null) ip = ipAddress.getIPAddress();
+            // Skip private IP addresses
+            if(!IPAddress.isPrivate(ip)) {
+                reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
+                reverseDnsNode.start();
+                rootNode.nodeAdded();
+            }
+        }
+        // Skip loopback device
+        if(blacklistsNode==null && !ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback()) {
+            String ip = ipAddress.getExternalIpAddress();
+            if(ip==null) ip = ipAddress.getIPAddress();
+            // Skip private IP addresses
+            if(!IPAddress.isPrivate(ip)) {
+                blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
+                blacklistsNode.start();
+                rootNode.nodeAdded();
+            }
+        }
     }
 
     synchronized void stop() {
         RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+
+        if(blacklistsNode!=null) {
+            blacklistsNode.stop();
+            blacklistsNode = null;
+            rootNode.nodeRemoved();
+        }
+
+        if(reverseDnsNode!=null) {
+            reverseDnsNode.stop();
+            reverseDnsNode = null;
+            rootNode.nodeRemoved();
+        }
 
         if(netBindsNode!=null) {
             netBindsNode.stop();

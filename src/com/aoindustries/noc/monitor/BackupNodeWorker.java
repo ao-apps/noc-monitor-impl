@@ -28,7 +28,7 @@ import java.util.TimeZone;
  *
  * @author  AO Industries, Inc.
  */
-class BackupNodeWorker extends TableResultNodeWorker {
+class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Object> {
 
     private static final int HISTORY_SIZE = 100;
 
@@ -132,7 +132,7 @@ class BackupNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getColumnHeaders(Locale locale) {
+    protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(6);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.columnHeader.duration"));
@@ -144,15 +144,19 @@ class BackupNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getTableData(Locale locale) throws Exception {
-        Server server = failoverFileReplication.getServer();
-        AOServer aoServer = server.getAOServer();
-        TimeZone timeZone = aoServer==null ? null : aoServer.getTimeZone().getTimeZone();
-        
-        List<FailoverFileLog> failoverFileLogs = failoverFileReplication.getFailoverFileLogs(HISTORY_SIZE);
+    protected List<FailoverFileLog> getQueryResult(Locale locale) throws Exception {
+        return failoverFileReplication.getFailoverFileLogs(HISTORY_SIZE);
+    }
+
+    @Override
+    protected List<Object> getTableData(List<FailoverFileLog> failoverFileLogs, Locale locale) throws Exception {
         if(failoverFileLogs.isEmpty()) {
             return Collections.emptyList();
         } else {
+            Server server = failoverFileReplication.getServer();
+            AOServer aoServer = server.getAOServer();
+            TimeZone timeZone = aoServer==null ? null : aoServer.getTimeZone().getTimeZone();
+
             List<Object> tableData = new ArrayList<Object>(failoverFileLogs.size()*6);
             int lineNum = 0;
             for(FailoverFileLog failoverFileLog : failoverFileLogs) {
@@ -170,12 +174,11 @@ class BackupNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<AlertLevel> getAlertLevels(List<?> tableData) {
-        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/6);
-        for(int index=0,len=tableData.size();index<len;index+=6) {
-            boolean successful = (Boolean)tableData.get(index+5);
+    protected List<AlertLevel> getAlertLevels(List<FailoverFileLog> queryResult) {
+        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(queryResult.size());
+        for(FailoverFileLog failoverFileLog : queryResult) {
             // If pass failed then it is HIGH, otherwise it is NONE
-            alertLevels.add(successful ? AlertLevel.NONE : AlertLevel.MEDIUM);
+            alertLevels.add(failoverFileLog.isSuccessful() ? AlertLevel.NONE : AlertLevel.MEDIUM);
         }
         return alertLevels;
     }

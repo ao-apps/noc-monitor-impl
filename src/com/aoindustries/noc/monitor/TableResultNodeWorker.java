@@ -27,7 +27,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract class TableResultNodeWorker implements Runnable {
+abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 
     private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
 
@@ -61,13 +61,11 @@ abstract class TableResultNodeWorker implements Runnable {
         return alertMessage;
     }
 
-    private static int lastStartupDelay;
-    private static final Object lastStartupDelayLock = new Object();
-    static int getNextStartupDelay() {
-        synchronized(lastStartupDelayLock) {
-            lastStartupDelay = (lastStartupDelay+5037)%(5*60000);
-            return lastStartupDelay;
-        }
+    /**
+     * The default startup delay is within five minutes.
+     */
+    protected int getNextStartupDelay() {
+        return RootNodeImpl.getNextStartupDelayFiveMinutes();
     }
 
     private void start() {
@@ -90,12 +88,12 @@ abstract class TableResultNodeWorker implements Runnable {
         }
     }
 
-    private List<?> getTableDataWithTimeout(final Locale locale) throws Exception {
-        Future<List<?>> future = RootNodeImpl.executorService.submit(
-            new Callable<List<?>>() {
+    private QR getQueryResultWithTimeout(final Locale locale) throws Exception {
+        Future<QR> future = RootNodeImpl.executorService.submit(
+            new Callable<QR>() {
                 @Override
-                public List<?> call() throws Exception {
-                    return getTableData(locale);
+                public QR call() throws Exception {
+                    return getQueryResult(locale);
                 }
             }
         );
@@ -126,18 +124,20 @@ abstract class TableResultNodeWorker implements Runnable {
 
             int columns;
             int rows;
-            List<?> columnHeaders;
+            List<String> columnHeaders;
             List<?> tableData;
             List<AlertLevel> alertLevels;
             boolean isError;
             try {
-                tableData = getTableDataWithTimeout(locale);
+                QR queryResult = getQueryResultWithTimeout(locale);
+                List<? extends TD> successfulTableData = getTableData(queryResult, locale);
                 columns = getColumns();
-                rows = tableData.size()/columns;
+                rows = successfulTableData.size()/columns;
                 columnHeaders = getColumnHeaders(locale);
-                alertLevels = getAlertLevels(tableData);
+                alertLevels = getAlertLevels(queryResult);
                 isError = false;
                 lastSuccessful = true;
+                tableData = successfulTableData;
             } catch(Exception err) {
                 String error = err.getLocalizedMessage();
                 columns = 1;
@@ -287,24 +287,29 @@ abstract class TableResultNodeWorker implements Runnable {
     /**
      * Gets the column headers.
      */
-    protected abstract List<?> getColumnHeaders(Locale locale);
+    protected abstract List<String> getColumnHeaders(Locale locale);
 
     /**
      * Gets the current table data for this worker.
      */
-    protected abstract List<?> getTableData(Locale locale) throws Exception;
+    protected abstract QR getQueryResult(Locale locale) throws Exception;
     
     /**
-     * Cancles the current getTableData call on a best-effort basis.
+     * Gets the table data for the query result.  This must be processed quickly.
+     */
+    protected abstract List<? extends TD> getTableData(QR queryResult, Locale locale) throws Exception;
+
+    /**
+     * Cancels the current getTableData call on a best-effort basis.
      * Implementations of this method <b>must not block</b>.
      * This default implementation calls <code>future.cancel(true)</code>.
      */
-    protected void cancel(Future<List<?>> future) {
+    protected void cancel(Future<QR> future) {
         future.cancel(true);
     }
 
     /**
      * Gets the alert levels for the provided data.
      */
-    protected abstract List<AlertLevel> getAlertLevels(List<?> tableData);
+    protected abstract List<AlertLevel> getAlertLevels(QR queryResult);
 }

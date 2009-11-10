@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  *
  * @author  AO Industries, Inc.
  */
-class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
+class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.TableStatus>,Object> {
 
     private static final Logger logger = Logger.getLogger(MySQLDatabaseNodeWorker.class.getName());
 
@@ -70,7 +70,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getColumnHeaders(Locale locale) {
+    protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(18);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"));
@@ -94,9 +94,14 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getTableData(Locale locale) throws Exception {
+    protected List<MySQLDatabase.TableStatus> getQueryResult(Locale locale) throws Exception {
         List<MySQLDatabase.TableStatus> tableStatuses = mysqlDatabase.getTableStatus(mysqlSlave);
         setLastTableStatuses(tableStatuses);
+        return tableStatuses;
+    }
+
+    @Override
+    protected List<?> getTableData(List<MySQLDatabase.TableStatus> tableStatuses, Locale locale) throws Exception {
         List<Object> tableData = new ArrayList<Object>(tableStatuses.size()*18);
 
         for(MySQLDatabase.TableStatus tableStatus : tableStatuses) {
@@ -162,9 +167,9 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<AlertLevel> getAlertLevels(List<?> tableData) {
-        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/18);
-        for(int index=0,len=tableData.size();index<len;index+=18) {
+    protected List<AlertLevel> getAlertLevels(List<MySQLDatabase.TableStatus> tableStatuses) {
+        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableStatuses.size());
+        for(MySQLDatabase.TableStatus tableStatus : tableStatuses) {
             AlertLevel alertLevel = AlertLevel.NONE;
             // Could compare data length to max data length and warn, but max data length is incredibly high in MySQL 5.0+
             alertLevels.add(alertLevel);

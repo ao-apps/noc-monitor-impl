@@ -28,7 +28,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class SignupsNodeWorker extends TableResultNodeWorker {
+class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 
     /**
      * One unique worker is made per persistence file.
@@ -87,7 +87,7 @@ class SignupsNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getColumnHeaders(Locale locale) {
+    protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(6);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.columnHeader.source"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"));
@@ -99,7 +99,7 @@ class SignupsNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<?> getTableData(Locale locale) throws Exception {
+    protected List<Object> getQueryResult(Locale locale) throws Exception {
         final List<Object> tableData = new ArrayList<Object>();
         // Add the old signup forms
         WebSiteDatabase database = WebSiteDatabase.getDatabase();
@@ -134,7 +134,12 @@ class SignupsNodeWorker extends TableResultNodeWorker {
     }
 
     @Override
-    protected List<AlertLevel> getAlertLevels(List<?> tableData) {
+    protected List<Object> getTableData(List<Object> tableData, Locale locale) throws Exception {
+        return tableData;
+    }
+
+    @Override
+    protected List<AlertLevel> getAlertLevels(List<Object> tableData) {
         List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/6);
         for(int index=0,len=tableData.size();index<len;index+=6) {
             String completedBy = (String)tableData.get(index+4);
