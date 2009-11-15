@@ -114,6 +114,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 
         boolean lastSuccessful = false;
         synchronized(timerTaskLock) {if(timerTask==null) return;}
+        AlertLevel maxAlertLevel = alertLevel;
         try {
             long startMillis = System.currentTimeMillis();
             long startNanos = System.nanoTime();
@@ -171,7 +172,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
             AlertLevel curAlertLevel = alertLevel;
             if(curAlertLevel==AlertLevel.UNKNOWN) curAlertLevel = AlertLevel.NONE;
             AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(locale, result);
-            AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
+            maxAlertLevel = alertLevelAndMessage.getAlertLevel();
             AlertLevel newAlertLevel;
             if(maxAlertLevel.compareTo(curAlertLevel)<0) {
                 // If maxAlertLevel < current, drop current to be the max
@@ -207,7 +208,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
                 if(timerTask!=null) {
                     timerTask = RootNodeImpl.schedule(
                         this,
-                        getSleepDelay(lastSuccessful, alertLevel)
+                        getSleepDelay(lastSuccessful, maxAlertLevel)
                     );
                 }
             }

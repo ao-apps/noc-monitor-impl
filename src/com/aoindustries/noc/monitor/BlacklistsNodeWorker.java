@@ -11,6 +11,7 @@ import com.aoindustries.aoserv.client.SchemaType;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.NanoTimeSpan;
 import com.aoindustries.noc.common.TableResult;
+import com.aoindustries.noc.common.TimeWithTimeZone;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -65,7 +66,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
     /**
      * The maximum number of threads.
      */
-    private static final int NUM_THREADS = 16; // Was 32
+    private static final int NUM_THREADS = 8; // Was 16; // Was 32;
 
     /**
      * The delay between submitting each task in milliseconds.
@@ -75,13 +76,15 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
     static class BlacklistQueryResult {
 
         final String basename;
+        final long queryTime;
         final long latency;
         final String query;
         final String result;
         final AlertLevel alertLevel;
 
-        BlacklistQueryResult(String basename, long latency, String query, String result, AlertLevel alertLevel) {
+        BlacklistQueryResult(String basename, long queryTime, long latency, String query, String result, AlertLevel alertLevel) {
             this.basename = basename;
+            this.queryTime = queryTime;
             this.latency = latency;
             this.query = query;
             this.result = result;
@@ -148,7 +151,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
         @Override
         public BlacklistQueryResult call() throws Exception {
-            long startTime = System.nanoTime();
+            long startTime = System.currentTimeMillis();
+            long startNanos = System.nanoTime();
             String result;
             AlertLevel alertLevel;
             // Lookup the IP addresses
@@ -168,6 +172,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
                     // Not blacklisted
                     result = "SERVFAIL";
                     alertLevel = AlertLevel.NONE;
+                } else if("timed out".equals(errorString)) {
+                    result = "Timeout";
+                    alertLevel = AlertLevel.UNKNOWN;
                 } else {
                     result = "A lookup failed: "+errorString;
                     alertLevel = maxAlertLevel;
@@ -201,8 +208,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
                     alertLevel = maxAlertLevel;
                 }
             }
-            long endTime = System.nanoTime();
-            return new BlacklistQueryResult(basename, endTime - startTime, query, result, alertLevel);
+            return new BlacklistQueryResult(basename, startTime, System.nanoTime() - startNanos, query, result, alertLevel);
         }
 
         @Override
@@ -249,6 +255,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
         @Override
         public BlacklistQueryResult call() throws Exception {
+            long startTime = System.currentTimeMillis();
             long startNanos = System.nanoTime();
             // Lookup the MX for the domain
             Lookup mxLookup = new Lookup(domain+'.', Type.MX);
@@ -282,7 +289,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             AlertLevel alertLevel;
             if(statusLine.startsWith("220 ")) alertLevel = AlertLevel.NONE;
             else alertLevel = maxAlertLevel;
-            return new BlacklistQueryResult(domain, endNanos-startNanos, addressIp, statusLine, alertLevel);
+            return new BlacklistQueryResult(domain, startTime, endNanos-startNanos, addressIp, statusLine, alertLevel);
         }
 
         @Override
@@ -393,7 +400,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             new RblBlacklist("psbl.surriel.com"),
             new RblBlacklist("pss.spambusters.org.ar"),
             new RblBlacklist("rbl-plus.mail-abuse.org"),
-            new RblBlacklist("rbl.cluecentral.net"),
+            // Shutdown on 2009-11-11: new RblBlacklist("rbl.cluecentral.net"),
             new RblBlacklist("rbl.efnetrbl.org"),
             new RblBlacklist("rbl.jp"),
             new RblBlacklist("rbl.maps.vix.com"),
@@ -410,7 +417,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             new RblBlacklist("ricn.dnsbl.net.au"),
             new RblBlacklist("rmst.dnsbl.net.au"),
             new RblBlacklist("rsbl.aupads.org"),
-            new RblBlacklist("satos.rbl.cluecentral.net"),
+            // Shutdown on 2009-11-11: new RblBlacklist("satos.rbl.cluecentral.net"),
             new RblBlacklist("sbl-xbl.spamhaus.org"),
             new RblBlacklist("sbl.spamhaus.org"),
             new RblBlacklist("smtp.dnsbl.sorbs.net"),
@@ -542,7 +549,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             //new RblBlacklist("proxy.bl.gweep.ca"),
             //new RblBlacklist("psbl.surriel.com"),
             //new RblBlacklist("pss.spambusters.org.ar"),
-            //new RblBlacklist("rbl.cluecentral.net"),
+            // Shutdown on 2009-11-11: new RblBlacklist("rbl.cluecentral.net"),
             //new RblBlacklist("rbl.schulte.org"),
             //new RblBlacklist("rbl.snark.net"),
             //new RblBlacklist("rbl.triumf.ca"),
@@ -553,7 +560,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             //new RblBlacklist("ricn.dnsbl.net.au"),
             //new RblBlacklist("rmst.dnsbl.net.au"),
             //new RblBlacklist("rsbl.aupads.org"),
-            //new RblBlacklist("satos.rbl.cluecentral.net"),
+            // Shutdown on 2009-11-11: new RblBlacklist("satos.rbl.cluecentral.net"),
             //new RblBlacklist("sbl-xbl.spamhaus.org"),
             //new RblBlacklist("sorbs.dnsbl.net.au"),
             //new RblBlacklist("spam.olsentech.net"),
@@ -758,7 +765,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             new RblBlacklist("dyn.nszones.com"),
             new RblBlacklist("sbl.nszones.com"),
             new RblBlacklist("bl.nszones.com"),
-            new RblBlacklist("rbl.orbitrbl.com"),
+            new RblBlacklist("rbl.orbitrbl.com", AlertLevel.NONE),
             new RblBlacklist("netblock.pedantic.org"),
             new RblBlacklist("spam.pedantic.org"),
             new RblBlacklist("dnsbl.proxybl.org"),
@@ -864,13 +871,14 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
     @Override
     protected int getColumns() {
-        return 4;
+        return 5;
     }
 
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
-        List<String> columnHeaders = new ArrayList<String>(4);
+        List<String> columnHeaders = new ArrayList<String>(5);
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.basename"));
+        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.queryTime"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.latency"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.query"));
         columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.result"));
@@ -887,46 +895,95 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
         }
     );
 
+    private final Map<String,BlacklistQueryResult> queryResultCache = new HashMap<String,BlacklistQueryResult>();
+
     @Override
     protected List<BlacklistQueryResult> getQueryResult(Locale locale) throws Exception {
         // Run each query in parallel
+        List<Long> startTimes = new ArrayList<Long>(lookups.size());
         List<Long> startNanos = new ArrayList<Long>(lookups.size());
         List<Future<BlacklistQueryResult>> futures = new ArrayList<Future<BlacklistQueryResult>>(lookups.size());
-        for(BlacklistLookup lookup : lookups) {
-            startNanos.add(System.nanoTime());
-            futures.add(executorService.submit(lookup));
-            Thread.sleep(TASK_DELAY);
+        synchronized(queryResultCache) {
+            for(BlacklistLookup lookup : lookups) {
+                BlacklistQueryResult oldResult = queryResultCache.get(lookup.getBaseName());
+                long currentTime = System.currentTimeMillis();
+                boolean needNewQuery;
+                if(oldResult==null) {
+                    needNewQuery = true;
+                } else {
+                    long timeSince = currentTime - oldResult.queryTime;
+                    if(timeSince<0) timeSince = -timeSince; // Handle system time reset
+                    switch(oldResult.alertLevel) {
+                        case UNKNOWN:
+                            // Retry 15 minutes for those unknown
+                            needNewQuery = timeSince>=15L*60L*1000L;
+                            break;
+                        case NONE:
+                            // Retry 6 hours when no problem
+                            needNewQuery = timeSince>=6L*60L*60L*1000L;
+                            break;
+                        default:
+                            // All others, retry hourly
+                            needNewQuery = timeSince>=60L*60L*1000L;
+                    }
+                }
+                if(needNewQuery) {
+                    startTimes.add(currentTime);
+                    startNanos.add(System.nanoTime());
+                    futures.add(executorService.submit(lookup));
+                    Thread.sleep(TASK_DELAY);
+                } else {
+                    startTimes.add(null);
+                    startNanos.add(null);
+                    futures.add(null);
+                }
+            }
         }
 
         // Get the results
         List<BlacklistQueryResult> results = new ArrayList<BlacklistQueryResult>(lookups.size());
         for(int c=0;c<lookups.size();c++) {
-            long startNano = startNanos.get(c);
+            BlacklistLookup lookup = lookups.get(c);
+            String baseName = lookup.getBaseName();
+            BlacklistQueryResult result;
             Future<BlacklistQueryResult> future = futures.get(c);
-            try {
-                long timeoutRemainingNanos = startNano + TIMEOUT * 1000000L - System.nanoTime();
-                if(timeoutRemainingNanos<0) timeoutRemainingNanos = 0L;
-                results.add(future.get(timeoutRemainingNanos, TimeUnit.NANOSECONDS));
-            } catch(TimeoutException to) {
-                future.cancel(true);
-                BlacklistLookup lookup = lookups.get(c);
-                results.add(new BlacklistQueryResult(lookup.getBaseName(), System.nanoTime() - startNano, lookup.getQuery(), "Timeout", AlertLevel.UNKNOWN));
-            } catch(ThreadDeath TD) {
-                throw TD;
-            } catch(Throwable T) {
-                future.cancel(true);
-                BlacklistLookup lookup = lookups.get(c);
-                results.add(new BlacklistQueryResult(lookup.getBaseName(), System.nanoTime() - startNano, lookup.getQuery(), T.getMessage(), lookup.getMaxAlertLevel()));
+            if(future==null) {
+                // Use previous cached value
+                synchronized(queryResultCache) {
+                    result = queryResultCache.get(baseName);
+                }
+                if(result==null) throw new AssertionError("result==null");
+            } else {
+                long startTime = startTimes.get(c);
+                long startNano = startNanos.get(c);
+                try {
+                    long timeoutRemainingNanos = startNano + TIMEOUT * 1000000L - System.nanoTime();
+                    if(timeoutRemainingNanos<0) timeoutRemainingNanos = 0L;
+                    result = future.get(timeoutRemainingNanos, TimeUnit.NANOSECONDS);
+                } catch(TimeoutException to) {
+                    future.cancel(false);
+                    result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), "Timeout", AlertLevel.UNKNOWN);
+                } catch(ThreadDeath TD) {
+                    throw TD;
+                } catch(Throwable T) {
+                    future.cancel(false);
+                    result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), T.getMessage(), lookup.getMaxAlertLevel());
+                }
+                synchronized(queryResultCache) {
+                    queryResultCache.put(baseName, result);
+                }
             }
+            results.add(result);
         }
         return results;
     }
 
     @Override
     protected List<Object> getTableData(List<BlacklistQueryResult> queryResult, Locale locale) throws Exception {
-        List<Object> tableData = new ArrayList<Object>(queryResult.size()*4);
+        List<Object> tableData = new ArrayList<Object>(queryResult.size()*5);
         for(BlacklistQueryResult result : queryResult) {
             tableData.add(result.basename);
+            tableData.add(new TimeWithTimeZone(result.queryTime));
             tableData.add(new NanoTimeSpan(result.latency));
             tableData.add(result.query);
             tableData.add(result.result);
@@ -950,24 +1007,27 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             highestAlertLevel = result.getAlertLevels().get(0);
             highestAlertMessage = tableData.get(0).toString();
         } else {
-            for(int index=0,len=tableData.size();index<len;index+=4) {
-                AlertLevel alertLevel = result.getAlertLevels().get(index/4);
+            for(int index=0,len=tableData.size();index<len;index+=5) {
+                AlertLevel alertLevel = result.getAlertLevels().get(index/5);
                 if(alertLevel.compareTo(highestAlertLevel)>0) {
                     highestAlertLevel = alertLevel;
-                    Object resultValue = tableData.get(index+3);
+                    Object resultValue = tableData.get(index+4);
                     highestAlertMessage = tableData.get(index)+": "+(resultValue==null ? "null" : resultValue.toString());
                 }
             }
         }
+        // Do not allow higher than HIGH, even if individual rows are higher
+        if(highestAlertLevel.compareTo(AlertLevel.HIGH)>0) highestAlertLevel=AlertLevel.HIGH;
         return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
     }
 
     /**
-     * The sleep delay is six hours when successful or 15 minutes when unsuccessful or alertLevel==UNKNOWN.
+     * The sleep delay is always 15 minutes.  The query results are cached and will
+     * be reused until individual timeouts.
      */
     @Override
     protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-        return lastSuccessful && alertLevel!=AlertLevel.UNKNOWN ? 6L * 60L * 60L * 1000L : 15L * 60L * 1000L;
+        return 15L * 60L * 1000L;
     }
 
     @Override
