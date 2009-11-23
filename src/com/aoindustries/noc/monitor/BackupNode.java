@@ -42,8 +42,8 @@ public class BackupNode extends TableResultNodeImpl {
         this.label = ApplicationResourcesAccessor.getMessage(
             rootNode.locale,
             "BackupNode.label",
-            backupPartition.getAOServer().getHostname(),
-            backupPartition.getPath()
+            backupPartition==null ? "null" : backupPartition.getAOServer().getHostname(),
+            backupPartition==null ? "null" : backupPartition.getPath()
         );
     }
 

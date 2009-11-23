@@ -182,14 +182,18 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             } else {
                 missingMobBackup = true;
                 for(FailoverFileReplication ffr : failoverFileReplications) {
-                    // 
-                    if(
-                        ffr.getEnabled()
-                        && ffr.getBackupPartition().getAOServer().getServer().getServerFarm().getName().equals(AO_SERVER_REQUIRED_BACKUP_FARM)
-                    ) {
-                        // Has at least one enabled replication in Mobile
-                        missingMobBackup = false;
-                        break;
+                    if(ffr.getEnabled()) {
+                        BackupPartition bp = ffr.getBackupPartition();
+                        if(bp==null) {
+                            missingMobBackup = false;
+                            break;
+                        } else {
+                            if(bp.getAOServer().getServer().getServerFarm().getName().equals(AO_SERVER_REQUIRED_BACKUP_FARM)) {
+                                // Has at least one enabled replication in Mobile
+                                missingMobBackup = false;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -287,8 +291,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 for(int c=0;c<failoverFileReplications.size();c++) {
                     FailoverFileReplication failoverFileReplication = failoverFileReplications.get(c);
                     BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
-                    tableData.add(backupPartition.getAOServer().getHostname());
-                    tableData.add(backupPartition.getPath());
+                    tableData.add(backupPartition==null ? "null" : backupPartition.getAOServer().getHostname());
+                    tableData.add(backupPartition==null ? "null" : backupPartition.getPath());
                     StringBuilder times = new StringBuilder();
                     for(FailoverFileSchedule ffs : failoverFileReplication.getFailoverFileSchedules()) {
                         if(ffs.isEnabled()) {

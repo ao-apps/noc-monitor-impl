@@ -919,8 +919,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
                             needNewQuery = timeSince>=15L*60L*1000L;
                             break;
                         case NONE:
-                            // Retry 6 hours when no problem
-                            needNewQuery = timeSince>=6L*60L*60L*1000L;
+                            // Retry 24 hours when no problem
+                            needNewQuery = timeSince>=24L*60L*60L*1000L;
                             break;
                         default:
                             // All others, retry hourly
@@ -1016,8 +1016,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
                 }
             }
         }
-        // Do not allow higher than HIGH, even if individual rows are higher
-        if(highestAlertLevel.compareTo(AlertLevel.HIGH)>0) highestAlertLevel=AlertLevel.HIGH;
+        // Do not allow higher than MEDIUM, even if individual rows are higher
+        if(highestAlertLevel.compareTo(AlertLevel.MEDIUM)>0) highestAlertLevel=AlertLevel.MEDIUM;
         return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
     }
 

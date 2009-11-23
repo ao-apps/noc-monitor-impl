@@ -36,7 +36,7 @@ public class ServerNode extends NodeImpl {
 
     final ServersNode serversNode;
     private final Server _server;
-    private final String _pack;
+    private final int _pack;
     private final String _name;
     private final String _label;
 
@@ -54,7 +54,7 @@ public class ServerNode extends NodeImpl {
         super(port, csf, ssf);
         this.serversNode = serversNode;
         this._server = server;
-        this._pack = server.getPackage().getName();
+        this._pack = server.getPackageId();
         this._name = server.getName();
         this._label = server.toString();
     }
@@ -433,7 +433,7 @@ public class ServerNode extends NodeImpl {
     }
 
     File getPersistenceDirectory() throws IOException {
-        File packDir = new File(serversNode.getPersistenceDirectory(), _pack);
+        File packDir = new File(serversNode.getPersistenceDirectory(), Integer.toString(_pack));
         if(!packDir.exists()) {
             if(!packDir.mkdir()) {
                 throw new IOException(
