@@ -74,8 +74,8 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
                 persistenceFile,
                 ProtectionLevel.BARRIER,
                 4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash page size??? Can't find specs.
-                15L*60L*1000L, // Only commit once per 15 minutes in the single asynchronous writer thread
-                4L*60L*60L*1000L  // Only commit synchronously (concurrently) once per four hours to save flash writes
+                60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
+                24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
             ),
             serializer
         );
