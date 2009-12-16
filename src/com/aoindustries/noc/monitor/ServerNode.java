@@ -36,7 +36,7 @@ public class ServerNode extends NodeImpl {
 
     final ServersNode serversNode;
     private final Server _server;
-    private final int _pack;
+    private final String _accounting;
     private final String _name;
     private final String _label;
 
@@ -54,7 +54,7 @@ public class ServerNode extends NodeImpl {
         super(port, csf, ssf);
         this.serversNode = serversNode;
         this._server = server;
-        this._pack = server.getPackageId();
+        this._accounting = server.getAccounting();
         this._name = server.getName();
         this._label = server.toString();
     }
@@ -433,19 +433,19 @@ public class ServerNode extends NodeImpl {
     }
 
     File getPersistenceDirectory() throws IOException {
-        File packDir = new File(serversNode.getPersistenceDirectory(), Integer.toString(_pack));
-        if(!packDir.exists()) {
-            if(!packDir.mkdir()) {
+        File accountingDir = new File(serversNode.getPersistenceDirectory(), _accounting);
+        if(!accountingDir.exists()) {
+            if(!accountingDir.mkdir()) {
                 throw new IOException(
                     ApplicationResourcesAccessor.getMessage(
                         serversNode.rootNode.locale,
                         "error.mkdirFailed",
-                        packDir.getCanonicalPath()
+                        accountingDir.getCanonicalPath()
                     )
                 );
             }
         }
-        File serverDir = new File(packDir, _name);
+        File serverDir = new File(accountingDir, _name);
         if(!serverDir.exists()) {
             if(!serverDir.mkdir()) {
                 throw new IOException(

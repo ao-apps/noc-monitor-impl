@@ -264,9 +264,9 @@ public class AOServClusterBuilder {
                 if(physicalServer==null && virtualServer==null) throw new SQLException("Server is neither a physical server nor a virtual server: "+server);
                 if(physicalServer!=null && virtualServer!=null) throw new SQLException("Server is both a physical server and a virtual server: "+server);
                 if(virtualServer!=null) {
-                    // Must always be in the package with the same name as the root business
-                    String packageName = server.getPackage().getName();
-                    if(!packageName.equals(rootAccounting)) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
+                    // Must always be in the business with the same name as the root business
+                    String accounting = server.getBusiness().getAccounting();
+                    if(!accounting.equals(rootAccounting)) throw new SQLException("All virtual servers should have a business name equal to the root business name: servers.accounting!=root_business.accounting: "+accounting+"!="+rootAccounting);
                     String hostname = server.getName();
                     cluster = cluster.addDomU(
                         hostname,
