@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.NanoTimeSpan;
@@ -84,10 +85,10 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(4);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.query"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.latency"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.result"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.message"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "ReverseDnsNodeWorker.columnHeader.query"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "ReverseDnsNodeWorker.columnHeader.latency"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "ReverseDnsNodeWorker.columnHeader.result"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "ReverseDnsNodeWorker.columnHeader.message"));
         return columnHeaders;
     }
 

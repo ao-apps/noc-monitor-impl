@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.common.NetBindResult;
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +14,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The net bind monitor.
@@ -53,7 +53,7 @@ public class NetBindNode extends TableMultiResultNodeImpl<String,NetBindResult> 
     }
 
     @Override
-    public List<?> getColumnHeaders(Locale locale) {
-        return Collections.singletonList(ApplicationResourcesAccessor.getMessage(locale, "NetBindNode.columnHeader.result"));
+    public List<?> getColumnHeaders() {
+        return Collections.singletonList(accessor.getMessage(/*locale,*/ "NetBindNode.columnHeader.result"));
     }
 }

@@ -5,8 +5,6 @@
  */
 package com.aoindustries.noc.monitor.cluster;
 
-import java.util.Locale;
-
 /**
  * Provides a simplified interface for obtaining localized values from the ApplicationResources.properties files.
  *
@@ -20,13 +18,5 @@ final class ApplicationResourcesAccessor {
     private ApplicationResourcesAccessor() {
     }
 
-    private static final com.aoindustries.util.i18n.ApplicationResourcesAccessor accessor = new com.aoindustries.util.i18n.ApplicationResourcesAccessor("com.aoindustries.noc.monitor.cluster.ApplicationResources");
-
-    public static String getMessage(Locale locale, String key) {
-        return accessor.getMessage(locale, key);
-    }
-    
-    public static String getMessage(Locale locale, String key, Object... args) {
-        return accessor.getMessage(locale, key, args);
-    }
+    static final com.aoindustries.util.i18n.ApplicationResourcesAccessor accessor = com.aoindustries.util.i18n.ApplicationResourcesAccessor.getInstance("com.aoindustries.noc.monitor.cluster.ApplicationResources");
 }

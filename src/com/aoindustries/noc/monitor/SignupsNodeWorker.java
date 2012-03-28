@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.BusinessAdministrator;
 import com.aoindustries.aoserv.client.SignupRequest;
@@ -74,8 +75,8 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
                 return new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
                     incompleteCount==1
-                    ? ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
-                    : ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
+                    ? accessor.getMessage(/*locale,*/ "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
+                    : accessor.getMessage(/*locale,*/ "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
                 );
             }
         }
@@ -89,12 +90,12 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(6);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.columnHeader.source"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.columnHeader.time"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.columnHeader.ip_address"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_by"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_time"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.source"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.pkey"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.time"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.ip_address"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.completed_by"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.completed_time"));
         return columnHeaders;
     }
 

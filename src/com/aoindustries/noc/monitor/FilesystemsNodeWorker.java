@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.Ostermiller.util.CSVParse;
 import com.Ostermiller.util.CSVParser;
 import com.aoindustries.aoserv.client.AOServer;
@@ -95,21 +96,21 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(12);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.mountpoint"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.device"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.bytes"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.used"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.free"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.use"));
-        //columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.inodes"));
-        //columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.iused"));
-        //columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.ifree"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.iuse"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.fstype"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.mountoptions"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.extstate"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.extmaxmount"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.columnHeader.extchkint"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.mountpoint"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.device"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.bytes"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.used"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.free"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.use"));
+        //columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.inodes"));
+        //columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.iused"));
+        //columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.ifree"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.iuse"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.fstype"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.mountoptions"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.extstate"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.extmaxmount"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.extchkint"));
         return columnHeaders;
     }
 
@@ -193,7 +194,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
      */
     private AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<?> tableData, int index) throws Exception {
         AlertLevel highestAlertLevel = AlertLevel.NONE;
-        String highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.alertMessage.allOk");
+        String highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.allOk");
 
         // Check extstate
         String fstype = tableData.get(index+7).toString();
@@ -216,7 +217,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
                     AlertLevel newAlertLevel = AlertLevel.CRITICAL;
                     if(newAlertLevel.compareTo(highestAlertLevel)>0) {
                         highestAlertLevel = newAlertLevel;
-                        highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extstate.unexpectedState", extstate);
+                        highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extstate.unexpectedState", extstate);
                     }
                 }
             }
@@ -236,7 +237,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
                 else newAlertLevel = AlertLevel.NONE;
                 if(newAlertLevel.compareTo(highestAlertLevel)>0) {
                     highestAlertLevel = newAlertLevel;
-                    highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.alertMessage.iuse", iuse);
+                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.iuse", iuse);
                 }
             }
         }
@@ -266,7 +267,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
                 else newAlertLevel = AlertLevel.NONE;
                 if(newAlertLevel.compareTo(highestAlertLevel)>0) {
                     highestAlertLevel = newAlertLevel;
-                    highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.alertMessage.use", use);
+                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.use", use);
                 }
             }
         }
@@ -277,12 +278,12 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
             if("ext3".equals(fstype)) {
                 if(!"-1".equals(extmaxmount)) {
                     highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extmaxmount.ext3", extmaxmount);
+                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extmaxmount.ext3", extmaxmount);
                 }
             } else if("ext2".equals(fstype)) {
                 if("-1".equals(extmaxmount)) {
                     highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extmaxmount.ext2", extmaxmount);
+                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extmaxmount.ext2", extmaxmount);
                 }
             }
         }
@@ -293,12 +294,12 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
             if("ext3".equals(fstype)) {
                 if(!"0 (<none>)".equals(extchkint)) {
                     highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extchkint.ext3", extchkint);
+                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extchkint.ext3", extchkint);
                 }
             } else if("ext2".equals(fstype)) {
                 if("0 (<none>)".equals(extchkint)) {
                     highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extchkint.ext2", extchkint);
+                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extchkint.ext2", extchkint);
                 }
             }
         }

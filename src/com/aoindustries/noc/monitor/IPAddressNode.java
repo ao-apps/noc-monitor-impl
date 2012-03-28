@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
@@ -211,8 +212,8 @@ public class IPAddressNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
+                    accessor.getMessage(
+                        //ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

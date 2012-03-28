@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.noc.common.AlertLevel;
@@ -57,7 +58,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
         super(persistenceFile);
         this.mysqlDatabase = mysqlDatabase;
         this.mysqlSlave = mysqlSlave;
-        String hostname = mysqlDatabase.getMySQLServer().getAoServerResource().getAoServer().getHostname();
+        String hostname = mysqlDatabase.getMySQLServer().getAOServer().getHostname();
         this.isSlowServer =
             hostname.equals("www.swimconnection.com")
             // || hostname.equals("www1.leagle.com")
@@ -72,24 +73,24 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(18);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.name"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.engine"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.version"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.rowFormat"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.rows"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.dataLength"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.indexLength"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.dataFree"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.createTime"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.updateTime"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.checkTime"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.collation"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.checksum"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.createOptions"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.comment"));
         return columnHeaders;
     }
 

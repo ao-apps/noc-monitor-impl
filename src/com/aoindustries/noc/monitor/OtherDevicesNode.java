@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
@@ -26,7 +27,7 @@ public class OtherDevicesNode extends ServersNode {
     }
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "OtherDevicesNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "OtherDevicesNode.label");
     }
 
     boolean includeServer(Server server) throws SQLException, IOException {

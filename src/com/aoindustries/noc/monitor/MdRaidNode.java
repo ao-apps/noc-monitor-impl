@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -34,6 +35,6 @@ public class MdRaidNode extends SingleResultNodeImpl {
     }
 
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "MdRaidNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "MdRaidNode.label");
     }
 }

@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TimeResult;
@@ -97,8 +98,8 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
 
         return new AlertLevelAndMessage(
             getAlertLevel(currentSkew),
-            ApplicationResourcesAccessor.getMessage(
-                locale,
+            accessor.getMessage(
+                //locale,
                 "TimeNodeWorker.alertMessage",
                 currentSkew
             )

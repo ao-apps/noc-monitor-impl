@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.common.AlertLevel;
@@ -60,9 +61,9 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
         // Get the latest values
         currentFailoverMySQLReplication = _mysqlReplication.getTable().get(_mysqlReplication.getKey());
         FailoverMySQLReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
-        if(slaveStatus==null) throw new SQLException(ApplicationResourcesAccessor.getMessage(locale, "MySQLSlaveStatusNodeWorker.slaveNotRunning"));
+        if(slaveStatus==null) throw new SQLException(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNodeWorker.slaveNotRunning"));
         MySQLServer.MasterStatus masterStatus = _mysqlReplication.getMySQLServer().getMasterStatus();
-        if(masterStatus==null) throw new SQLException(ApplicationResourcesAccessor.getMessage(locale, "MySQLSlaveStatusNodeWorker.masterNotRunning"));
+        if(masterStatus==null) throw new SQLException(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNodeWorker.masterNotRunning"));
         // Display the alert thresholds
         int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();
         int secondsBehindMedium = currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium();
@@ -107,8 +108,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
 
             return new AlertLevelAndMessage(
                 alertLevel,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "MySQLSlaveStatusNodeWorker.alertMessage.secondsBehindMaster.null"
                 )
             );
@@ -119,8 +120,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
             if(secondsBehindCritical!=-1 && secondsBehind>=secondsBehindCritical) {
                 return new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "MySQLSlaveStatusNodeWorker.alertMessage.critical",
                         secondsBehindCritical,
                         secondsBehind
@@ -131,8 +132,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
             if(secondsBehindHigh!=-1 && secondsBehind>=secondsBehindHigh) {
                 return new AlertLevelAndMessage(
                     AlertLevel.HIGH,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "MySQLSlaveStatusNodeWorker.alertMessage.high",
                         secondsBehindHigh,
                         secondsBehind
@@ -143,8 +144,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
             if(secondsBehindMedium!=-1 && secondsBehind>=secondsBehindMedium) {
                 return new AlertLevelAndMessage(
                     AlertLevel.MEDIUM,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "MySQLSlaveStatusNodeWorker.alertMessage.medium",
                         secondsBehindMedium,
                         secondsBehind
@@ -155,8 +156,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
             if(secondsBehindLow!=-1 && secondsBehind>=secondsBehindLow) {
                 return new AlertLevelAndMessage(
                     AlertLevel.LOW,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "MySQLSlaveStatusNodeWorker.alertMessage.low",
                         secondsBehindLow,
                         secondsBehind
@@ -166,8 +167,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
             if(secondsBehindLow==-1) {
                 return new AlertLevelAndMessage(
                     AlertLevel.NONE,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "MySQLSlaveStatusNodeWorker.alertMessage.notAny",
                         secondsBehind
                     )
@@ -175,8 +176,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
             } else {
                 return new AlertLevelAndMessage(
                     AlertLevel.NONE,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "MySQLSlaveStatusNodeWorker.alertMessage.none",
                         secondsBehindLow,
                         secondsBehind
@@ -186,8 +187,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
         } catch(NumberFormatException err) {
             return new AlertLevelAndMessage(
                 AlertLevel.CRITICAL,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "MySQLSlaveStatusNodeWorker.alertMessage.secondsBehindMaster.invalid",
                     secondsBehindMaster
                 )

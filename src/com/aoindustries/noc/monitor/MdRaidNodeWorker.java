@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.SingleResult;
@@ -78,8 +79,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
         if(result.getError()!=null) {
             return new AlertLevelAndMessage(
                 AlertLevel.CRITICAL,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "MdRaidNode.alertMessage.error",
                     result.getError()
                 )
@@ -107,8 +108,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                     else {
                         return new AlertLevelAndMessage(
                             AlertLevel.CRITICAL,
-                            ApplicationResourcesAccessor.getMessage(
-                                locale,
+                            accessor.getMessage(
+                                //locale,
                                 "MdRaidNode.alertMessage.noRaidType",
                                 line
                             )
@@ -126,8 +127,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                     ) {
                         if(AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
                             highestAlertLevel = AlertLevel.LOW;
-                            highestAlertMessage = ApplicationResourcesAccessor.getMessage(
-                                locale,
+                            highestAlertMessage = accessor.getMessage(
+                                //locale,
                                 "MdRaidNode.alertMessage.resync",
                                 line.trim()
                             );
@@ -151,8 +152,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                             else {
                                                 return new AlertLevelAndMessage(
                                                     AlertLevel.CRITICAL,
-                                                    ApplicationResourcesAccessor.getMessage(
-                                                        locale,
+                                                    accessor.getMessage(
+                                                        //locale,
                                                         "MdRaidNode.alertMessage.invalidCharacter",
                                                         ch
                                                     )
@@ -174,8 +175,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                             else if(upCount==1) alertLevel = AlertLevel.HIGH;
                                             else if(upCount==0) alertLevel = AlertLevel.CRITICAL;
                                             else throw new AssertionError("upCount should have already matched");
-                                            alertMessage = ApplicationResourcesAccessor.getMessage(
-                                                locale,
+                                            alertMessage = accessor.getMessage(
+                                                //locale,
                                                 "MdRaidNode.alertMessage.raid1",
                                                 upCount,
                                                 downCount
@@ -185,8 +186,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                             else if(downCount==1) alertLevel = AlertLevel.HIGH;
                                             else if(downCount>=2) alertLevel = AlertLevel.CRITICAL;
                                             else throw new AssertionError("downCount should have already matched");
-                                            alertMessage = ApplicationResourcesAccessor.getMessage(
-                                                locale,
+                                            alertMessage = accessor.getMessage(
+                                                //locale,
                                                 "MdRaidNode.alertMessage.raid5",
                                                 upCount,
                                                 downCount
@@ -197,8 +198,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                             else if(downCount==2) alertLevel = AlertLevel.HIGH;
                                             else if(downCount>=3) alertLevel = AlertLevel.CRITICAL;
                                             else throw new AssertionError("downCount should have already matched");
-                                            alertMessage = ApplicationResourcesAccessor.getMessage(
-                                                locale,
+                                            alertMessage = accessor.getMessage(
+                                                //locale,
                                                 "MdRaidNode.alertMessage.raid6",
                                                 upCount,
                                                 downCount
@@ -206,8 +207,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                         } else {
                                             return new AlertLevelAndMessage(
                                                 AlertLevel.CRITICAL,
-                                                ApplicationResourcesAccessor.getMessage(
-                                                    locale,
+                                                accessor.getMessage(
+                                                    //locale,
                                                     "MdRaidNode.alertMessage.unexpectedRaidLevel",
                                                     lastRaidLevel
                                                 )
@@ -220,8 +221,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                     } else {
                                         return new AlertLevelAndMessage(
                                             AlertLevel.CRITICAL,
-                                            ApplicationResourcesAccessor.getMessage(
-                                                locale,
+                                            accessor.getMessage(
+                                                //locale,
                                                 "MdRaidNode.alertMessage.unableToFindCharacter",
                                                 ']',
                                                 line
@@ -231,8 +232,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                 } else {
                                     return new AlertLevelAndMessage(
                                         AlertLevel.CRITICAL,
-                                        ApplicationResourcesAccessor.getMessage(
-                                            locale,
+                                        accessor.getMessage(
+                                            //locale,
                                             "MdRaidNode.alertMessage.unableToFindCharacter",
                                             '[',
                                             line
@@ -242,8 +243,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                             } else {
                                 return new AlertLevelAndMessage(
                                     AlertLevel.CRITICAL,
-                                    ApplicationResourcesAccessor.getMessage(
-                                        locale,
+                                    accessor.getMessage(
+                                        //locale,
                                         "MdRaidNode.alertMessage.unableToFindCharacter",
                                         ']',
                                         line

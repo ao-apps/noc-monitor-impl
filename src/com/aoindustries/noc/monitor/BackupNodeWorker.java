@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.FailoverFileLog;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
@@ -73,7 +74,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
             highestAlertMessage = tableData.get(0).toString();
         } else if(tableData.isEmpty()) {
             highestAlertLevel = AlertLevel.MEDIUM;
-            highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.noBackupPassesLogged");
+            highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.noBackupPassesLogged");
         } else {
             // We try to find the most recent successful pass
             // If <30 hours NONE
@@ -90,12 +91,12 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
             if(lastSuccessfulTime==-1) {
                 // No success found, is MEDIUM
                 highestAlertLevel = AlertLevel.MEDIUM;
-                highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
+                highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
             } else {
                 long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime)/((long)60*60*1000);
                 if(hoursSince<0) {
                     highestAlertLevel = AlertLevel.CRITICAL;
-                    highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassInFuture");
+                    highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.lastSuccessfulPassInFuture");
                 } else {
                     if(hoursSince<30) {
                         highestAlertLevel = AlertLevel.NONE;
@@ -105,11 +106,11 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
                         highestAlertLevel = AlertLevel.MEDIUM;
                     }
                     if(hoursSince<=48) {
-                        highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.lastSuccessfulPass", hoursSince);
+                        highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.lastSuccessfulPass", hoursSince);
                     } else {
                         long days = hoursSince / 24;
                         long hours = hoursSince % 24;
-                        highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassDays", days, hours);
+                        highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.lastSuccessfulPassDays", days, hours);
                     }
                 }
             }
@@ -118,7 +119,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
             if(!lastSuccessful) {
                 if(AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
                     highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.lastPassNotSuccessful");
+                    highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.lastPassNotSuccessful");
                 }
             }
         }
@@ -134,12 +135,12 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(6);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.columnHeader.duration"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.columnHeader.updated"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.columnHeader.bytes"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BackupNodeWorker.columnHeader.successful"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.startTime"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.duration"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.scanned"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.updated"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.bytes"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.successful"));
         return columnHeaders;
     }
 

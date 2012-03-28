@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -33,6 +34,6 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "ThreeWareRaidNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "ThreeWareRaidNode.label");
     }
 }

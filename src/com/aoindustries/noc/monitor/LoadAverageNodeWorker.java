@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.LoadAverageResult;
@@ -89,8 +90,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
         if(!Float.isNaN(loadCritical) && fiveMinuteAverage>=loadCritical) {
             return new AlertLevelAndMessage(
                 AlertLevel.CRITICAL,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "LoadAverageNodeWorker.alertMessage.critical",
                     loadCritical,
                     fiveMinuteAverage
@@ -101,8 +102,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
         if(!Float.isNaN(loadHigh) && fiveMinuteAverage>=loadHigh) {
             return new AlertLevelAndMessage(
                 AlertLevel.HIGH,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "LoadAverageNodeWorker.alertMessage.high",
                     loadHigh,
                     fiveMinuteAverage
@@ -113,8 +114,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
         if(!Float.isNaN(loadMedium) && fiveMinuteAverage>=loadMedium) {
             return new AlertLevelAndMessage(
                 AlertLevel.MEDIUM,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "LoadAverageNodeWorker.alertMessage.medium",
                     loadMedium,
                     fiveMinuteAverage
@@ -125,8 +126,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
         if(!Float.isNaN(loadLow) && fiveMinuteAverage>=loadLow) {
             return new AlertLevelAndMessage(
                 AlertLevel.LOW,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "LoadAverageNodeWorker.alertMessage.low",
                     loadLow,
                     fiveMinuteAverage
@@ -136,8 +137,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
         if(Float.isNaN(loadLow)) {
             return new AlertLevelAndMessage(
                 AlertLevel.NONE,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "LoadAverageNodeWorker.alertMessage.notAny",
                     fiveMinuteAverage
                 )
@@ -145,8 +146,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
         } else {
             return new AlertLevelAndMessage(
                 AlertLevel.NONE,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "LoadAverageNodeWorker.alertMessage.none",
                     loadLow,
                     fiveMinuteAverage

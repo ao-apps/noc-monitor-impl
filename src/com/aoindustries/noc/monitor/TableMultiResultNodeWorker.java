@@ -5,14 +5,16 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.util.persistent.PersistentCollections;
 import com.aoindustries.util.persistent.ProtectionLevel;
 import com.aoindustries.util.persistent.Serializer;
-import com.aoindustries.util.persistent.TwoCopyBarrierBuffer;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +58,7 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
      * The most recent timer task
      */
     private final Object timerTaskLock = new Object();
-    private RootNodeImpl.RunnableTimerTask timerTask;
+    private Future<?> timerTask;
 
     final private PersistentLinkedList<E> results;
 
@@ -67,15 +69,16 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
 
     TableMultiResultNodeWorker(File persistenceFile, Serializer<E> serializer) throws IOException {
         this.results = new PersistentLinkedList<E>(
-            //PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.FORCE, Long.MAX_VALUE),
+            PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.FORCE, Long.MAX_VALUE),
             //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
+            /*
             new TwoCopyBarrierBuffer(
                 persistenceFile,
                 ProtectionLevel.BARRIER,
                 4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash page size??? Can't find specs.
                 60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
                 24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
-            ),
+            ),*/
             serializer
         );
     }
@@ -121,18 +124,14 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
     private void stop() {
         synchronized(timerTaskLock) {
             if(timerTask!=null) {
-                timerTask.cancel();
-                Future<?> future = timerTask.getFuture();
-                if(future!=null) {
-                    future.cancel(true);
-                }
+                timerTask.cancel(true);
                 timerTask = null;
             }
         }
     }
 
     private List<? extends T> getRowDataWithTimeout(final Locale locale) throws Exception {
-        Future<List<? extends T>> future = RootNodeImpl.executorService.submit(
+        Future<List<? extends T>> future = RootNodeImpl.executorService.submitUnbounded(
             new Callable<List<? extends T>>() {
                 @Override
                 public List<? extends T> call() throws Exception {
@@ -185,7 +184,7 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
                 rowData = null;
                 alertLevelAndMessage = new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
-                    ApplicationResourcesAccessor.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", error)
+                    accessor.getMessage(/*locale,*/ "TableMultiResultNodeWorker.tableData.error", error)
                 );
                 lastSuccessful = false;
             }

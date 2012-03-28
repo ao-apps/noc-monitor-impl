@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
@@ -99,9 +100,9 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(3);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.device"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.model"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.temperature"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.device"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.model"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.temperature"));
         return columnHeaders;
     }
 
@@ -116,8 +117,8 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
             String[] values = StringUtility.splitString(line, ':');
             if(values.length!=3) {
                 throw new ParseException(
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "HardDrivesTemperatureNodeWorker.alertMessage.badColumnCount",
                         line
                     ),

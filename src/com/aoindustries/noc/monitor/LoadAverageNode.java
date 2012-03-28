@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.LoadAverageResult;
 import java.io.IOException;
@@ -13,7 +14,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The load average per ao_server is watched on a minutely basis.  The five-minute
@@ -45,19 +45,19 @@ public class LoadAverageNode extends TableMultiResultNodeImpl<Object,LoadAverage
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "LoadAverageNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "LoadAverageNode.label");
     }
 
     @Override
-    public List<?> getColumnHeaders(Locale locale) {
+    public List<?> getColumnHeaders(/*Locale locale*/) {
         List<String> headers = new ArrayList<String>(7);
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "LoadAverageNode.columnHeader.oneMinute"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "LoadAverageNode.columnHeader.fiveMinute"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "LoadAverageNode.columnHeader.tenMinute"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "LoadAverageNode.columnHeader.runningProcesses"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "LoadAverageNode.columnHeader.totalProcesses"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "LoadAverageNode.columnHeader.lastPID"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "LoadAverageNode.columnHeader.alertThresholds"));
+        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.oneMinute"));
+        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.fiveMinute"));
+        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.tenMinute"));
+        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.runningProcesses"));
+        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.totalProcesses"));
+        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.lastPID"));
+        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.alertThresholds"));
         return Collections.unmodifiableList(headers);
     }
 }

@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.AlertLevelChange;
@@ -13,6 +14,7 @@ import com.aoindustries.noc.common.NodeSnapshot;
 import com.aoindustries.noc.common.RootNode;
 import com.aoindustries.noc.common.TreeListener;
 import com.aoindustries.util.ErrorPrinter;
+import com.aoindustries.util.concurrent.ExecutorService;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -26,10 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,60 +55,15 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     public static final Random random = new Random();
 
     /**
-     * One timer is shared by all instances.
+     * One thread pool is shared by all instances, and it is never
      */
-    private final static Timer timer = new Timer("noc-monitor");
-
-    /**
-     * One thread pool is shared by all instances.
-     */
-    public final static ExecutorService executorService = Executors.newCachedThreadPool();
-
-    /** 
-     * A bridge between a TimerTask and a Runnable.
-     */
-    public static class RunnableTimerTask extends TimerTask {
-
-        private final ExecutorService executorService;
-        private final Runnable runnable;
-        volatile private Future<?> future;
-
-        RunnableTimerTask(ExecutorService executorService, Runnable runnable) {
-            this.executorService = executorService;
-            this.runnable = runnable;
-        }
-
-        @Override
-        public void run() {
-            future = executorService.submit(runnable);
-        }
-
-        ExecutorService getExecutorService() {
-            return executorService;
-        }
-
-        Runnable getRunnable() {
-            return runnable;
-        }
-
-        /**
-         * Gets the Future, which is only available once the timer has been reached.
-         */
-        Future<?> getFuture() {
-            return future;
-        }
-    }
+    public final static ExecutorService executorService = ExecutorService.newInstance();
 
     /**
      * Schedules a task to be performed in the future.  It will be performed in a background thread via the ExecutorService.
      */
-    public static RunnableTimerTask schedule(Runnable runnable, long delay) {
-        RunnableTimerTask timerTask = new RunnableTimerTask(executorService, runnable);
-        timer.schedule(
-            timerTask,
-            delay
-        );
-        return timerTask;
+    public static Future<?> schedule(Runnable task, long delay) {
+        return executorService.submitUnbounded(task, delay);
     }
 
     /**
@@ -174,7 +127,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                 if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
                 final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, port, csf, ssf);
                 // Start as a background task
-                executorService.submit(
+                executorService.submitUnbounded(
                     new Runnable() {
                         @Override
                         public void run() {
@@ -286,7 +239,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(locale, "RootNode.label");
+        return accessor.getMessage(/*locale,*/ "RootNode.label");
     }
 
     /**
@@ -515,7 +468,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                     nodeAddedSignaler = new NodeAddedSignaler(treeListener);
                     nodeAddedSignalers.put(treeListener, nodeAddedSignaler);
                     nodeAddedSignaler.nodeAdded();
-                    executorService.execute(nodeAddedSignaler);
+                    executorService.submitUnbounded(nodeAddedSignaler);
                 } else {
                     nodeAddedSignaler.nodeAdded();
                 }
@@ -535,7 +488,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                     nodeRemovedSignaler = new NodeRemovedSignaler(treeListener);
                     nodeRemovedSignalers.put(treeListener, nodeRemovedSignaler);
                     nodeRemovedSignaler.nodeRemoved();
-                    executorService.execute(nodeRemovedSignaler);
+                    executorService.submitUnbounded(nodeRemovedSignaler);
                 } else {
                     nodeRemovedSignaler.nodeRemoved();
                 }
@@ -564,7 +517,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                     nodeAlertLevelChangedSignaler = new NodeAlertLevelChangedSignaler(treeListener);
                     nodeAlertLevelChangedSignalers.put(treeListener, nodeAlertLevelChangedSignaler);
                     nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
-                    executorService.execute(nodeAlertLevelChangedSignaler);
+                    executorService.submitUnbounded(nodeAlertLevelChangedSignaler);
                 } else {
                     nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
                 }
@@ -585,8 +538,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

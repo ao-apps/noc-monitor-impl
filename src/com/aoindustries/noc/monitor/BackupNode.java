@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.BackupPartition;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.noc.common.TableResult;
@@ -39,8 +40,8 @@ public class BackupNode extends TableResultNodeImpl {
         );
         this.failoverFileReplication = failoverFileReplication;
         BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
-        this.label = ApplicationResourcesAccessor.getMessage(
-            rootNode.locale,
+        this.label = accessor.getMessage(
+            //rootNode.locale,
             "BackupNode.label",
             backupPartition==null ? "null" : backupPartition.getAOServer().getHostname(),
             backupPartition==null ? "null" : backupPartition.getPath()

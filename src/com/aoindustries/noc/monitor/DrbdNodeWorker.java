@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
@@ -83,17 +84,17 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<AOServer.DrbdReport>,Str
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(5);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.device"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.ds"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "DrbdNodeWorker.columnHeader.st"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.device"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.resource"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.cs"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.ds"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.st"));
         return columnHeaders;
     }
 
     @Override
     protected List<AOServer.DrbdReport> getQueryResult(Locale locale) throws Exception {
-        return aoServer.getDrbdReport(locale);
+        return aoServer.getDrbdReport();
     }
 
     @Override

@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
 import java.rmi.RemoteException;
@@ -63,7 +64,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
      * Gets the full path to the node.
      */
     String getFullPath(Locale locale) throws RemoteException {
-        String pathSeparator = ApplicationResourcesAccessor.getMessage(locale, "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
+        String pathSeparator = accessor.getMessage(/*locale,*/ "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
         final StringBuilder fullPath = new StringBuilder();
         Stack<Node> path = new Stack<Node>();
         Node parent = this;

@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.BackupPartition;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
@@ -153,8 +154,8 @@ public class MySQLSlaveNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,
+                    accessor.getMessage(
+                        //mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

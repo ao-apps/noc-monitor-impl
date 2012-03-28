@@ -5,13 +5,13 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.common.PingResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The ping node per server.
@@ -41,11 +41,11 @@ public class PingNode extends TableMultiResultNodeImpl<Object,PingResult> {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale, "PingNode.label");
+        return accessor.getMessage(/*ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "PingNode.label");
     }
 
     @Override
-    public List<?> getColumnHeaders(Locale locale) {
+    public List<?> getColumnHeaders() {
         return Collections.emptyList();
     }
 }

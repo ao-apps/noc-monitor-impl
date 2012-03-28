@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +38,6 @@ public class FilesystemsNode extends TableResultNodeImpl {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "FilesystemsNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "FilesystemsNode.label");
     }
 }

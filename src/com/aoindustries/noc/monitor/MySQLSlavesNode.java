@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
@@ -85,7 +86,7 @@ public class MySQLSlavesNode extends NodeImpl {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale, "MySQLSlavesNode.label");
+        return accessor.getMessage(/*mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,*/ "MySQLSlavesNode.label");
     }
     
     private TableListener tableListener = new TableListener() {
@@ -156,8 +157,8 @@ public class MySQLSlavesNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,
+                    accessor.getMessage(
+                        //mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

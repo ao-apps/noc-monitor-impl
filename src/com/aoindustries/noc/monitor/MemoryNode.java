@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.ApproximateDisplayExactSize;
 import com.aoindustries.noc.common.MemoryResult;
@@ -14,7 +15,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * @author  AO Industries, Inc.
@@ -42,18 +42,18 @@ public class MemoryNode extends TableMultiResultNodeImpl<ApproximateDisplayExact
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "MemoryNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "MemoryNode.label");
     }
 
     @Override
-    public List<?> getColumnHeaders(Locale locale) {
+    public List<?> getColumnHeaders(/*Locale locale*/) {
         List<String> headers = new ArrayList<String>(6);
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "MemoryNode.columnHeader.memTotal"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "MemoryNode.columnHeader.memFree"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "MemoryNode.columnHeader.buffers"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "MemoryNode.columnHeader.cached"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "MemoryNode.columnHeader.swapTotal"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "MemoryNode.columnHeader.swapFree"));
+        headers.add(accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.memTotal"));
+        headers.add(accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.memFree"));
+        headers.add(accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.buffers"));
+        headers.add(accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.cached"));
+        headers.add(accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.swapTotal"));
+        headers.add(accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.swapFree"));
         return Collections.unmodifiableList(headers);
     }
 }

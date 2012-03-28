@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.TimeResult;
 import com.aoindustries.noc.common.TimeSpan;
@@ -14,7 +15,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * @author  AO Industries, Inc.
@@ -42,13 +42,13 @@ public class TimeNode extends TableMultiResultNodeImpl<TimeSpan,TimeResult> {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "TimeNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "TimeNode.label");
     }
 
     @Override
-    public List<?> getColumnHeaders(Locale locale) {
+    public List<?> getColumnHeaders() {
         List<String> headers = new ArrayList<String>(1);
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "TimeNode.columnHeader.clockSkew"));
+        headers.add(accessor.getMessage(/*locale,*/ "TimeNode.columnHeader.clockSkew"));
         return Collections.unmodifiableList(headers);
     }
 }

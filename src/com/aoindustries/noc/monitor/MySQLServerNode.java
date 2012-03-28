@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.common.AlertLevel;
@@ -174,8 +175,8 @@ public class MySQLServerNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        _mysqlServersNode.serverNode.serversNode.rootNode.locale,
+                    accessor.getMessage(
+                        //_mysqlServersNode.serverNode.serversNode.rootNode.locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

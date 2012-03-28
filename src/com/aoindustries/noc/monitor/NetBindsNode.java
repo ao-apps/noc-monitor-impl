@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetBind;
@@ -92,7 +93,7 @@ public class NetBindsNode extends NodeImpl {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale, "NetBindsNode.label");
+        return accessor.getMessage(/*ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "NetBindsNode.label");
     }
 
     private TableListener tableListener = new TableListener() {
@@ -307,8 +308,8 @@ public class NetBindsNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
+                    accessor.getMessage(
+                        /*ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

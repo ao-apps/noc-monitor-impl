@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -27,7 +27,7 @@ public class VirtualServersNode extends ServersNode {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "VirtualServersNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "VirtualServersNode.label");
     }
 
     boolean includeServer(Server server) throws SQLException, IOException {

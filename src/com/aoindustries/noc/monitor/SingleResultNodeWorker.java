@@ -34,7 +34,7 @@ abstract class SingleResultNodeWorker implements Runnable {
      * The most recent timer task
      */
     private final Object timerTaskLock = new Object();
-    private RootNodeImpl.RunnableTimerTask timerTask;
+    private Future<?> timerTask;
 
     volatile private SingleResult lastResult;
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
@@ -77,18 +77,14 @@ abstract class SingleResultNodeWorker implements Runnable {
     private void stop() {
         synchronized(timerTaskLock) {
             if(timerTask!=null) {
-                timerTask.cancel();
-                Future<?> future = timerTask.getFuture();
-                if(future!=null) {
-                    future.cancel(true);
-                }
+                timerTask.cancel(true);
                 timerTask = null;
             }
         }
     }
 
     private String getReportWithTimeout() throws Exception {
-        Future<String> future = RootNodeImpl.executorService.submit(
+        Future<String> future = RootNodeImpl.executorService.submitUnbounded(
             new Callable<String>() {
                 @Override
                 public String call() throws Exception {

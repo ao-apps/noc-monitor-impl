@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,7 +14,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +76,7 @@ class BackgroundWriter {
                 if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Updating existing in queue");
             }
             if(!running) {
-                RootNodeImpl.executorService.submit(
+                RootNodeImpl.executorService.submitUnbounded(
                     new Runnable() {
                         @Override
                         public void run() {
@@ -114,8 +114,8 @@ class BackgroundWriter {
                                         // Delete and rename (Windows)
                                         if(!persistenceFile.delete()) {
                                             throw new IOException(
-                                                ApplicationResourcesAccessor.getMessage(
-                                                    Locale.getDefault(),
+                                                accessor.getMessage(
+                                                    //Locale.getDefault(),
                                                     "BackgroundWriter.error.unableToDelete",
                                                     persistenceFile.getCanonicalPath()
                                                 )
@@ -123,8 +123,8 @@ class BackgroundWriter {
                                         }
                                         if(!queueEntry.newPersistenceFile.renameTo(persistenceFile)) {
                                             throw new IOException(
-                                                ApplicationResourcesAccessor.getMessage(
-                                                    Locale.getDefault(),
+                                                accessor.getMessage(
+                                                    //Locale.getDefault(),
                                                     "BackgroundWriter.error.unableToRename",
                                                     queueEntry.newPersistenceFile.getCanonicalPath(),
                                                     persistenceFile.getCanonicalPath()

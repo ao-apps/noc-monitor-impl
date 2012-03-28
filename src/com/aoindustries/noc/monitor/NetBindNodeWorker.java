@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetBind;
@@ -78,7 +79,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
         if(IPAddress.isPrivate(ipAddress) || IPAddress.LOOPBACK_IP.equals(ipAddress)) {
             Server server = netMonitorSetting.getServer();
             AOServer aoServer = server.getAOServer();
-            if(aoServer==null) throw new IllegalArgumentException(ApplicationResourcesAccessor.getMessage(locale, "NetBindNodeWorker.server.notAOServer", server));
+            if(aoServer==null) throw new IllegalArgumentException(accessor.getMessage(/*locale,*/ "NetBindNodeWorker.server.notAOServer", server));
             portMonitor = new AOServDaemonPortMonitor(
                 aoServer,
                 netMonitorSetting.getIpAddress(),

@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.aoserv.client.MySQLServer;
@@ -61,11 +62,11 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(5);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.duration"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgType"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgText"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.name"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.engine"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.duration"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.msgType"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.msgText"));
         return columnHeaders;
     }
 
@@ -94,8 +95,19 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
                 && !(engine==null && "VIEW".equals(lastTableStatus.getComment()))
             ) {
                 String name = lastTableStatus.getName();
-                tableNames.add(name);
-                tables.put(name, engine);
+                if(
+                    // Skip the four expected non-checkable tables in information_schema
+                    !mysqlDatabase.getName().equals("information_schema")
+                    || (
+                        !name.equals("COLUMNS")
+                        && !name.equals("ROUTINES")
+                        && !name.equals("TRIGGERS")
+                        && !name.equals("VIEWS")
+                    )
+                ) {
+                    tableNames.add(name);
+                    tables.put(name, engine);
+                }
             }
         }
         List<MySQLDatabase.CheckTableResult> checkTableResults = mysqlDatabase.checkTables(mysqlSlave, tableNames);

@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.TableResult;
 import java.io.File;
@@ -35,7 +36,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
      * The most recent timer task
      */
     private final Object timerTaskLock = new Object();
-    private RootNodeImpl.RunnableTimerTask timerTask;
+    private Future<?> timerTask;
 
     volatile private TableResult lastResult;
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
@@ -78,18 +79,14 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
     private void stop() {
         synchronized(timerTaskLock) {
             if(timerTask!=null) {
-                timerTask.cancel();
-                Future<?> future = timerTask.getFuture();
-                if(future!=null) {
-                    future.cancel(true);
-                }
+                timerTask.cancel(true);
                 timerTask = null;
             }
         }
     }
 
     private QR getQueryResultWithTimeout(final Locale locale) throws Exception {
-        Future<QR> future = RootNodeImpl.executorService.submit(
+        Future<QR> future = RootNodeImpl.executorService.submitUnbounded(
             new Callable<QR>() {
                 @Override
                 public QR call() throws Exception {
@@ -144,10 +141,10 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
                 columns = 1;
                 rows = 1;
                 columnHeaders = Collections.singletonList(
-                    ApplicationResourcesAccessor.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
+                    accessor.getMessage(/*locale,*/ "TableResultNodeWorker.columnHeaders.error")
                 );
                 tableData = Collections.singletonList(
-                    ApplicationResourcesAccessor.getMessage(locale, "TableResultNodeWorker.tableData.error", error)
+                    accessor.getMessage(/*locale,*/ "TableResultNodeWorker.tableData.error", error)
                 );
                 alertLevels = Collections.singletonList(AlertLevel.CRITICAL);
                 isError = true;

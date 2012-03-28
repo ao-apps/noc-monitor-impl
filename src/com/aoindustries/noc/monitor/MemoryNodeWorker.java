@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.ApproximateDisplayExactSize;
@@ -125,8 +126,8 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<ApproximateDisplayExac
         long memoryPercent = ((memTotal - (memFree + buffers + cached)) + (swapTotal - swapFree)) * 100 / (memTotal + swapTotal);
         return new AlertLevelAndMessage(
             getAlertLevel(memoryPercent),
-            ApplicationResourcesAccessor.getMessage(
-                locale,
+            accessor.getMessage(
+                //locale,
                 "MemoryNodeWorker.alertMessage",
                 memoryPercent
             )

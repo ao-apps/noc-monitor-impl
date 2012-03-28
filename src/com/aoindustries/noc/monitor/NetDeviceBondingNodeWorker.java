@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.NetDeviceID;
@@ -67,8 +68,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
             if(result.getError()!=null) {
                 return new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "NetDeviceBondingNode.alertMessage.error",
                         result.getError()
                     )
@@ -92,8 +93,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
             if(upCount==0) alertLevel = AlertLevel.CRITICAL;
             else if(downCount!=0) alertLevel = AlertLevel.HIGH;
             else alertLevel = AlertLevel.NONE;
-            String alertMessage = ApplicationResourcesAccessor.getMessage(
-                locale,
+            String alertMessage = accessor.getMessage(
+                //locale,
                 "NetDeviceBondingNode.alertMessage.counts",
                 upCount,
                 downCount

@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.PingResult;
@@ -73,7 +74,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
     protected List<Object> getRowData(Locale locale) throws Exception {
         final InetAddress inetAddress = InetAddress.getByName(ipAddress);
         boolean timeout = !inetAddress.isReachable(TIMEOUT);
-        if(timeout) throw new TimeoutException(ApplicationResourcesAccessor.getMessage(locale, "PingNodeWorker.error.timeout"));
+        if(timeout) throw new TimeoutException(accessor.getMessage(/*locale,*/ "PingNodeWorker.error.timeout"));
         return Collections.emptyList();
     }
 
@@ -116,8 +117,8 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
         int packetLossPercent = getPacketLossPercent(previousResults);
         return new AlertLevelAndMessage(
             getAlertLevel(packetLossPercent),
-            ApplicationResourcesAccessor.getMessage(
-                locale,
+            accessor.getMessage(
+                //locale,
                 "PingNodeWorker.alertMessage",
                 packetLossPercent
             )

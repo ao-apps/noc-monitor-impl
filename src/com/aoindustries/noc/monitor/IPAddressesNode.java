@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.noc.common.AlertLevel;
@@ -87,7 +88,7 @@ public class IPAddressesNode extends NodeImpl {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale, "IPAddressesNode.label");
+        return accessor.getMessage(/*netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "IPAddressesNode.label");
     }
     
     private TableListener tableListener = new TableListener() {
@@ -161,8 +162,8 @@ public class IPAddressesNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
+                    accessor.getMessage(
+                        //netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

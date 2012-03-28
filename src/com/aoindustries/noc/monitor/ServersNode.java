@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
@@ -161,8 +162,8 @@ abstract public class ServersNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        rootNode.locale,
+                    accessor.getMessage(
+                        //rootNode.locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

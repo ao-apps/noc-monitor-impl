@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.NetDeviceID;
 import com.aoindustries.noc.common.AlertLevel;
@@ -172,8 +173,8 @@ public class NetDeviceNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        _networkDevicesNode.serverNode.serversNode.rootNode.locale,
+                    accessor.getMessage(
+                        //_networkDevicesNode.serverNode.serversNode.rootNode.locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

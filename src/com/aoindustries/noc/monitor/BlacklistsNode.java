@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +41,6 @@ public class BlacklistsNode extends TableResultNodeImpl {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "BlacklistsNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "BlacklistsNode.label");
     }
 }

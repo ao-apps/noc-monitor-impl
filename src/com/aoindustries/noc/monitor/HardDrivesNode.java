@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
@@ -85,7 +86,7 @@ public class HardDrivesNode extends NodeImpl {
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(serverNode.serversNode.rootNode.locale, "HardDrivesNode.label");
+        return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "HardDrivesNode.label");
     }
     
     synchronized void start() throws IOException {
@@ -109,8 +110,8 @@ public class HardDrivesNode extends NodeImpl {
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(
-                    ApplicationResourcesAccessor.getMessage(
-                        serverNode.serversNode.rootNode.locale,
+                    accessor.getMessage(
+                        //serverNode.serversNode.rootNode.locale,
                         "error.mkdirFailed",
                         dir.getCanonicalPath()
                     )

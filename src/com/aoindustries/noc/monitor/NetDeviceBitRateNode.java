@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.common.NetDeviceBitRateResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -12,7 +13,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * @author  AO Industries, Inc.
@@ -37,17 +37,17 @@ public class NetDeviceBitRateNode extends TableMultiResultNodeImpl<Object,NetDev
 
     @Override
     public String getLabel() {
-        return ApplicationResourcesAccessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "NetDeviceBitRateNode.label");
     }
 
     @Override
-    public List<?> getColumnHeaders(Locale locale) {
+    public List<?> getColumnHeaders() {
         List<String> headers = new ArrayList<String>(5);
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "NetDeviceBitRateNode.columnHeader.txBitRate"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"));
-        headers.add(ApplicationResourcesAccessor.getMessage(locale, "NetDeviceBitRateNode.columnHeader.alertThresholds"));
+        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.txBitRate"));
+        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.rxBitRate"));
+        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.txPacketRate"));
+        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.rxPacketRate"));
+        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.alertThresholds"));
         return Collections.unmodifiableList(headers);
     }
 }

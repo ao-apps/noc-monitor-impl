@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.SchemaType;
@@ -385,7 +386,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             new RblBlacklist("no-more-funn.moensted.dk"),
             new RblBlacklist("nomail.rhsbl.sorbs.net"),
             new RblBlacklist("ohps.dnsbl.net.au"),
-            new RblBlacklist("okrelays.nthelp.com"),
+            // Disabled 2012-02-07: new RblBlacklist("okrelays.nthelp.com"),
             new RblBlacklist("omrs.dnsbl.net.au"),
             new RblBlacklist("orid.dnsbl.net.au"),
             new RblBlacklist("orvedb.aupads.org"),
@@ -412,7 +413,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             new RblBlacklist("relays.bl.kundenserver.de"),
             new RblBlacklist("relays.mail-abuse.org"),
             new RblBlacklist("relays.nether.net"),
-            new RblBlacklist("relays.nthelp.com"),
+            // Disabled 2012-02-07: new RblBlacklist("relays.nthelp.com"),
             new RblBlacklist("rhsbl.sorbs.net"),
             new RblBlacklist("ricn.dnsbl.net.au"),
             new RblBlacklist("rmst.dnsbl.net.au"),
@@ -430,7 +431,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             new RblBlacklist("bl.spamcop.net"),
             new RblBlacklist("spamguard.leadmon.net"),
             new RblBlacklist("spamsites.dnsbl.net.au"),
-            new RblBlacklist("spamsources.dnsbl.info"),
+            // Shutdown 2012-02-07: new RblBlacklist("spamsources.dnsbl.info"),
             new RblBlacklist("spamsources.fabel.dk"),
             new RblBlacklist("spews.dnsbl.net.au"),
             new RblBlacklist("t1.dnsbl.net.au"),
@@ -822,7 +823,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             new RblBlacklist("ph.surbl.org"),
             new RblBlacklist("sc.surbl.org"),
             new RblBlacklist("ws.surbl.org"),
-            new RblBlacklist("dnsbl.swiftbl.net"),
+            // Disabled 2012-02-07: new RblBlacklist("dnsbl.swiftbl.net"),
             new RblBlacklist("dnsrbl.swinog.ch"),
             //new RblBlacklist("bl.technovision.dk"),
             new RblBlacklist("st.technovision.dk"),
@@ -877,11 +878,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
         List<String> columnHeaders = new ArrayList<String>(5);
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.basename"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.queryTime"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.latency"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.query"));
-        columnHeaders.add(ApplicationResourcesAccessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.result"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.basename"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.queryTime"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.latency"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.query"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.result"));
         return columnHeaders;
     }
 

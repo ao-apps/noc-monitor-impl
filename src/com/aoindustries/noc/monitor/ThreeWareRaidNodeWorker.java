@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.SingleResult;
@@ -63,8 +64,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
         if(result.getError()!=null) {
             return new AlertLevelAndMessage(
                 AlertLevel.CRITICAL,
-                ApplicationResourcesAccessor.getMessage(
-                    locale,
+                accessor.getMessage(
+                    //locale,
                     "ThreeWareRaidNode.alertMessage.error",
                     result.getError()
                 )
@@ -79,8 +80,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
             if(lines.size()<4) {
                 return new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "ThreeWareRaidNode.alertMessage.fourLinesOrMore",
                         lines.size()
                     )
@@ -89,8 +90,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
             if(lines.get(0).length()>0) {
                 return new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "ThreeWareRaidNode.alertMessage.firstLineShouldBeBlank",
                         lines.get(0)
                     )
@@ -102,8 +103,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
             ) {
                 return new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "ThreeWareRaidNode.alertMessage.secondLineNotColumns",
                         lines.get(1)
                     )
@@ -112,8 +113,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
             if(!"------------------------------------------------------------------------".equals(lines.get(2))) {
                 return new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
-                    ApplicationResourcesAccessor.getMessage(
-                        locale,
+                    accessor.getMessage(
+                        //locale,
                         "ThreeWareRaidNode.alertMessage.thirdLineSeparator",
                         lines.get(2)
                     )
@@ -126,8 +127,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
                     if(values.size()!=9) {
                         return new AlertLevelAndMessage(
                             AlertLevel.CRITICAL,
-                            ApplicationResourcesAccessor.getMessage(
-                                locale,
+                            accessor.getMessage(
+                                //locale,
                                 "ThreeWareRaidNode.alertMessage.notNineValues",
                                 values.size(),
                                 line
@@ -140,8 +141,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
                         if(notOpt>0) {
                             if(AlertLevel.HIGH.compareTo(highestAlertLevel)>0) {
                                 highestAlertLevel = AlertLevel.HIGH;
-                                highestAlertMessage = ApplicationResourcesAccessor.getMessage(
-                                    locale,
+                                highestAlertMessage = accessor.getMessage(
+                                    //locale,
                                     notOpt==1 ? "ThreeWareRaidNode.alertMessage.notOpt.singular" : "ThreeWareRaidNode.alertMessage.notOpt.plural",
                                     values.get(0),
                                     notOpt
@@ -151,8 +152,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
                     } catch(NumberFormatException err) {
                         return new AlertLevelAndMessage(
                             AlertLevel.CRITICAL,
-                            ApplicationResourcesAccessor.getMessage(
-                                locale,
+                            accessor.getMessage(
+                                //locale,
                                 "ThreeWareRaidNode.alertMessage.badNotOpt",
                                 notOptString
                             )
@@ -165,8 +166,8 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
                     ) {
                         if(AlertLevel.MEDIUM.compareTo(highestAlertLevel)>0) {
                             highestAlertLevel = AlertLevel.MEDIUM;
-                            highestAlertMessage = ApplicationResourcesAccessor.getMessage(
-                                locale,
+                            highestAlertMessage = accessor.getMessage(
+                                //locale,
                                 "ThreeWareRaidNode.alertMessage.bbuNotOk",
                                 values.get(0),
                                 bbu
