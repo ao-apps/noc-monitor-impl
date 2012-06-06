@@ -122,8 +122,13 @@ public class NetDeviceNode extends NodeImpl {
         final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
         // bit rate and network bonding monitoring only supported for AOServer
         if(_networkDevicesNode.getServer().getAOServer()!=null) {
-            // bit rate for non-loopback devices
-            if(!_netDevice.getNetDeviceID().isLoopback()) {
+            NetDeviceID netDeviceID = _netDevice.getNetDeviceID();
+            if(
+                // bit rate for non-loopback devices
+                !netDeviceID.isLoopback()
+                // and non-BMC
+                && !netDeviceID.getName().equals(NetDeviceID.BMC)
+            ) {
                 if(_netDeviceBitRateNode==null) {
                     _netDeviceBitRateNode = new NetDeviceBitRateNode(this, port, csf, ssf);
                     _netDeviceBitRateNode.start();
@@ -131,7 +136,11 @@ public class NetDeviceNode extends NodeImpl {
                 }
             }
             // bonding
-            if(_label.equals(NetDeviceID.BOND0)) {
+            if(
+                _label.equals(NetDeviceID.BOND0)
+                || _label.equals(NetDeviceID.BOND1)
+                || _label.equals(NetDeviceID.BOND2)
+            ) {
                 if(_netDeviceBondingNode==null) {
                     _netDeviceBondingNode = new NetDeviceBondingNode(this, port, csf, ssf);
                     _netDeviceBondingNode.start();
