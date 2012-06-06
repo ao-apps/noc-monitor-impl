@@ -37,6 +37,7 @@ import java.util.logging.Logger;
  * watchdog to detect failure between RMI client and server
  *     handle failed RMI
  * 3ware, verify last battery test interval, test at least once a year
+ *     same for LSI
  * Monitor all syslog stuff for errors, split to separate logs for error, warning, info.  errors and higher to one file to monitor.
  *     watch for SMART status (May 20 04:42:31 xen907-5 smartd[3454]: Device: /dev/hde, 1 Offline uncorrectable sectors) in /var/log/messages
  *         smartd -q onecheck?
@@ -50,7 +51,7 @@ import java.util.logging.Logger;
  * DiskIO
  * port monitoring
  *     also enable port monitoring on all ports (including 127.0.0.1 via aoserv-daemon)
- *     update all code and procesures that adds net_binds to start them all as monitored
+ *     update all code and procedures that adds net_binds to start them all as monitored
  *     maximum alert level based on account level?
  *     monitor the 0.0.0.0 ports on all IP addresses (including 127.0.0.1), minimize use of wildcard to reduce monitoring rate - or monitor on separate node for 0.0.0.0?
  * AOServ data integrity?
@@ -63,7 +64,7 @@ import java.util.logging.Logger;
  * smart monitoring?
  *     kernel?
  *     3ware?
- *     Dell?
+ *     Dell/LSI?
  * backups
  *   make sure backups not going to the same primary or secondary physical machine
  *   low priority if successful but scanned 0 (like no backups configured)
@@ -75,14 +76,14 @@ import java.util.logging.Logger;
  * software updates (could we auto-search for them)?
  * snapshot-backups space and timing (adpserver)
  * jilter state
- * RBLs that may be listing us
  * netstat
  * aoserv daemon/master/website errors (and anything else that used to get emailed to aoserv@aoindustries.com address)
  * sendmail queues
  *     watch for files older than 7 days to help keep things clean - eventually delete outright?
+ *     watch for growing - this is a sign of a problem
  * nmap - other tools that Mark Akins uses - nessus
  * domain registration expiration :)
- * postgresql, mysql, apache (make sure no empty apache logs after rotate !)
+ * apache (make sure no empty apache logs after rotate !)
  *
  * max latency setting on a per-server basis (or per netdevice) - or a hierachy server_farms, server, net_device, ip_address
  *
@@ -112,7 +113,44 @@ import java.util.logging.Logger;
  *     Make part of port monitoring
  *
  * 3ware/BIOS firmware version monitoring?
+ * LSI monitoring (MegaCli LdInfo/PdList, battery monitoring, too)?
  *
+ * UPS Monitor:
+ *      battery calibration once a year or when load is increased
+ *      apcaccess status
+ *          UPSNAME: Display, No alert
+ *          STATUS: Display, Alert
+ *              ONLINE (SLAVE): Normal
+ *              CHARGING: Medium
+ *              ONBATT: Critical
+ *          LINEV: Display, Alert, between 50% to LOTRANS and 50% to HITRANS
+ *              Values?
+ *              LINEFREQ: Display, Alert (Combine with LINEV?  115.4V @ 60Hz?), deviation from 60Hz
+ *          OUTPUTV: Display, Alert, deviation from NOMOUTV
+ *          LOADPCT: Display, Alert
+ *              96%: Critical
+ *              94%: High
+ *              92%: Medium
+ *              90%: Low
+ *              &lt;90%: Normal
+ *          BCHARGE:
+ *              &gt;95%: Normal
+ *              &gt;90%: Low
+ *              &gt;85%: Medium
+ *              &gt;80%: High
+ *              &lt;=80%: Critical
+ *          BATTV: Display, Alert, deviation from NOMBATTV?
+ *          EXTBATTS, BADBATTS: Display, Alert
+ *          TONBATT: Display, Alert
+ *              0: Normal
+ *              1: Low
+ *              2: Medium
+ *              3: High
+ *              4+: Critical
+ *          TIMELEFT:
+ *              &lt;10: Critical
+ *          ITEMP: Display, Alert
+ * 
  * @author  AO Industries, Inc.
  */
 public class MonitorImpl extends UnicastRemoteObject implements Monitor {
