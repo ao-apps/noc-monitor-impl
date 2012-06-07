@@ -25,7 +25,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
     private static final float LINEV_HIGH_TOLERANCE = 0.75f;
 
     private static final float LOW_LINEFREQ = 58;
-    private static final float HIGH_LINEFREQ = 60;
+    private static final float HIGH_LINEFREQ = 62;
 
     private static final float OUTPUTV_TOLERANCE = 5;
 
