@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -12,9 +12,7 @@ import com.aoindustries.noc.common.PingResult;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -70,12 +68,17 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
         return 10000;
     }
 
+    /**
+     * Uses a single sample object because no data is contained in the sample, only the timing information is maintained.
+     */
+    private static final Object SAMPLE = new Object();
+
     @Override
-    protected List<Object> getRowData(Locale locale) throws Exception {
+    protected Object getSample(Locale locale) throws Exception {
         final InetAddress inetAddress = InetAddress.getByName(ipAddress);
         boolean timeout = !inetAddress.isReachable(TIMEOUT);
         if(timeout) throw new TimeoutException(accessor.getMessage(/*locale,*/ "PingNodeWorker.error.timeout"));
-        return Collections.emptyList();
+        return SAMPLE;
     }
 
     /**
@@ -113,7 +116,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends Object> rowData, Iterable<? extends PingResult> previousResults) throws Exception {
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, Object sample, Iterable<? extends PingResult> previousResults) throws Exception {
         int packetLossPercent = getPacketLossPercent(previousResults);
         return new AlertLevelAndMessage(
             getAlertLevel(packetLossPercent),
@@ -143,12 +146,12 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
     }
 
     @Override
-    protected PingResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+    protected PingResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
         return new PingResult(time, latency, alertLevel, error);
     }
 
     @Override
-    protected PingResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends Object> rowData) {
+    protected PingResult newSampleResult(long time, long latency, AlertLevel alertLevel, Object sample) {
         return new PingResult(time, latency, alertLevel);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -12,9 +12,7 @@ import com.aoindustries.noc.common.TimeResult;
 import com.aoindustries.noc.common.TimeSpan;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -69,7 +67,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
     }
 
     @Override
-    protected List<TimeSpan> getRowData(Locale locale) throws Exception {
+    protected TimeSpan getSample(Locale locale) throws Exception {
         // Get the latest limits
         currentAOServer = _aoServer.getTable().get(_aoServer.getKey());
 
@@ -81,7 +79,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
         long skew = systemTime - (requestTime + latency/2000000);
         if(lRemainder >= 1000000) skew--;
 
-        return Collections.singletonList(new TimeSpan(skew));
+        return new TimeSpan(skew);
     }
 
     private static AlertLevel getAlertLevel(long skew) {
@@ -93,8 +91,8 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends TimeSpan> rowData, Iterable<? extends TimeResult> previousResults) throws Exception {
-        final long currentSkew = rowData.get(0).getTimeSpan();
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TimeSpan sample, Iterable<? extends TimeResult> previousResults) throws Exception {
+        final long currentSkew = sample.getTimeSpan();
 
         return new AlertLevelAndMessage(
             getAlertLevel(currentSkew),
@@ -107,12 +105,12 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
     }
 
     @Override
-    protected TimeResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+    protected TimeResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
         return new TimeResult(time, latency, alertLevel, error);
     }
 
     @Override
-    protected TimeResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends TimeSpan> rowData) {
-        return new TimeResult(time, latency, alertLevel, rowData.get(0).getTimeSpan());
+    protected TimeResult newSampleResult(long time, long latency, AlertLevel alertLevel, TimeSpan sample) {
+        return new TimeResult(time, latency, alertLevel, sample.getTimeSpan());
     }
 }

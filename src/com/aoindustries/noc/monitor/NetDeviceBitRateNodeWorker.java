@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<Object,NetDeviceBitRateResult> {
+class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,NetDeviceBitRateResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match the net device exactly)
@@ -72,7 +72,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<Object,NetDe
     }
 
     @Override
-    protected List<Object> getRowData(Locale locale) throws Exception {
+    protected List<Object> getSample(Locale locale) throws Exception {
         // Get the latest object
         _currentNetDevice = _netDevice.getTable().get(_netDevice.getKey());
 
@@ -117,16 +117,16 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<Object,NetDe
                 rxPacketsPerSecond = (thisRxPackets - lastRxPackets)*8000 / timeDiff;
             }
             // Display the alert thresholds
-            List<Object> rowData = new ArrayList<Object>(8);
-            rowData.add(txBitsPerSecond);
-            rowData.add(rxBitsPerSecond);
-            rowData.add(txPacketsPerSecond);
-            rowData.add(rxPacketsPerSecond);
-            rowData.add(_currentNetDevice.getMonitoringBitRateLow());
-            rowData.add(_currentNetDevice.getMonitoringBitRateMedium());
-            rowData.add(_currentNetDevice.getMonitoringBitRateHigh());
-            rowData.add(_currentNetDevice.getMonitoringBitRateCritical());
-            return rowData;
+            List<Object> sample = new ArrayList<Object>(8);
+            sample.add(txBitsPerSecond);
+            sample.add(rxBitsPerSecond);
+            sample.add(txPacketsPerSecond);
+            sample.add(rxPacketsPerSecond);
+            sample.add(_currentNetDevice.getMonitoringBitRateLow());
+            sample.add(_currentNetDevice.getMonitoringBitRateMedium());
+            sample.add(_currentNetDevice.getMonitoringBitRateHigh());
+            sample.add(_currentNetDevice.getMonitoringBitRateCritical());
+            return sample;
         } finally {
             // Store for the next report
             lastStatsTime = thisStatsTime;
@@ -139,9 +139,9 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<Object,NetDe
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends Object> rowData, Iterable<? extends NetDeviceBitRateResult> previousResults) throws Exception {
-        long txBitsPerSecond = (Long)rowData.get(0);
-        long rxBitsPerSecond = (Long)rowData.get(1);
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<Object> sample, Iterable<? extends NetDeviceBitRateResult> previousResults) throws Exception {
+        long txBitsPerSecond = (Long)sample.get(0);
+        long rxBitsPerSecond = (Long)sample.get(1);
         if(txBitsPerSecond==-1 || rxBitsPerSecond==-1) {
             return new AlertLevelAndMessage(AlertLevel.UNKNOWN, "");
         }
@@ -217,24 +217,24 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<Object,NetDe
     }
 
     @Override
-    protected NetDeviceBitRateResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+    protected NetDeviceBitRateResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
         return new NetDeviceBitRateResult(time, latency, alertLevel, error);
     }
 
     @Override
-    protected NetDeviceBitRateResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends Object> rowData) {
+    protected NetDeviceBitRateResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<Object> sample) {
         return new NetDeviceBitRateResult(
             time,
             latency,
             alertLevel,
-            (Long)rowData.get(0),
-            (Long)rowData.get(1),
-            (Long)rowData.get(2),
-            (Long)rowData.get(3),
-            (Long)rowData.get(4),
-            (Long)rowData.get(5),
-            (Long)rowData.get(6),
-            (Long)rowData.get(7)
+            (Long)sample.get(0),
+            (Long)sample.get(1),
+            (Long)sample.get(2),
+            (Long)sample.get(3),
+            (Long)sample.get(4),
+            (Long)sample.get(5),
+            (Long)sample.get(6),
+            (Long)sample.get(7)
         );
     }
 }

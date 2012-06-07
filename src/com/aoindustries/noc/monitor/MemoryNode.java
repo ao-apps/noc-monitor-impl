@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.noc.common.ApproximateDisplayExactSize;
 import com.aoindustries.noc.common.MemoryResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -19,7 +18,7 @@ import java.util.List;
 /**
  * @author  AO Industries, Inc.
  */
-public class MemoryNode extends TableMultiResultNodeImpl<ApproximateDisplayExactSize,MemoryResult> {
+public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
     private static final long serialVersionUID = 1L;
 

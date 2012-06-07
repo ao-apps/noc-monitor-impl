@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * @author  AO Industries, Inc.
  */
-class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQLReplicationResult> {
+class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>,MySQLReplicationResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match mysqlReplication exactly)
@@ -57,7 +57,7 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
     }
 
     @Override
-    protected List<String> getRowData(Locale locale) throws Exception {
+    protected List<String> getSample(Locale locale) throws Exception {
         // Get the latest values
         currentFailoverMySQLReplication = _mysqlReplication.getTable().get(_mysqlReplication.getKey());
         FailoverMySQLReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
@@ -79,24 +79,24 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
             + (secondsBehindCritical==-1 ? "-" : Integer.toString(secondsBehindCritical))
         ;
 
-        List<String> rowData = new ArrayList<String>(11);
-        rowData.add(slaveStatus.getSecondsBehindMaster());
-        rowData.add(masterStatus.getFile());
-        rowData.add(masterStatus.getPosition());
-        rowData.add(slaveStatus.getSlaveIOState());
-        rowData.add(slaveStatus.getMasterLogFile());
-        rowData.add(slaveStatus.getReadMasterLogPos());
-        rowData.add(slaveStatus.getSlaveIORunning());
-        rowData.add(slaveStatus.getSlaveSQLRunning());
-        rowData.add(slaveStatus.getLastErrno());
-        rowData.add(slaveStatus.getLastError());
-        rowData.add(alertThresholds);
-        return rowData;
+        List<String> sample = new ArrayList<String>(11);
+        sample.add(slaveStatus.getSecondsBehindMaster());
+        sample.add(masterStatus.getFile());
+        sample.add(masterStatus.getPosition());
+        sample.add(slaveStatus.getSlaveIOState());
+        sample.add(slaveStatus.getMasterLogFile());
+        sample.add(slaveStatus.getReadMasterLogPos());
+        sample.add(slaveStatus.getSlaveIORunning());
+        sample.add(slaveStatus.getSlaveSQLRunning());
+        sample.add(slaveStatus.getLastErrno());
+        sample.add(slaveStatus.getLastError());
+        sample.add(alertThresholds);
+        return sample;
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends String> rowData, Iterable<? extends MySQLReplicationResult> previousResults) throws Exception {
-        String secondsBehindMaster = (String)rowData.get(0);
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<String> sample, Iterable<? extends MySQLReplicationResult> previousResults) throws Exception {
+        String secondsBehindMaster = sample.get(0);
         if(secondsBehindMaster==null) {
             // Use the highest alert level that may be returned for this replication
             AlertLevel alertLevel;
@@ -197,27 +197,27 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<String,MySQL
     }
 
     @Override
-    protected MySQLReplicationResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+    protected MySQLReplicationResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
         return new MySQLReplicationResult(time, latency, alertLevel, error);
     }
 
     @Override
-    protected MySQLReplicationResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends String> rowData) {
+    protected MySQLReplicationResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<String> sample) {
         return new MySQLReplicationResult(
             time,
             latency,
             alertLevel,
-            rowData.get(0),
-            rowData.get(1),
-            rowData.get(2),
-            rowData.get(3),
-            rowData.get(4),
-            rowData.get(5),
-            rowData.get(6),
-            rowData.get(7),
-            rowData.get(8),
-            rowData.get(9),
-            rowData.get(10)
+            sample.get(0),
+            sample.get(1),
+            sample.get(2),
+            sample.get(3),
+            sample.get(4),
+            sample.get(5),
+            sample.get(6),
+            sample.get(7),
+            sample.get(8),
+            sample.get(9),
+            sample.get(10)
         );
     }
 }

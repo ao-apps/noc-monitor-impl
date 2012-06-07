@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -117,45 +117,15 @@ import java.util.logging.Logger;
  *
  * UPS Monitor:
  *      battery calibration once a year or when load is increased
- *      apcaccess status
- *          UPSNAME: Display, No alert
- *          STATUS: Display, Alert
- *              ONLINE (SLAVE): Normal
- *              CHARGING: Medium
- *              ONBATT: Critical
- *          LINEV: Display, Alert, between 50% to LOTRANS and 50% to HITRANS
- *              Values?
- *              LINEFREQ: Display, Alert (Combine with LINEV?  115.4V @ 60Hz?), deviation from 60Hz
- *          OUTPUTV: Display, Alert, deviation from NOMOUTV
- *          LOADPCT: Display, Alert
- *              96%: Critical
- *              94%: High
- *              92%: Medium
- *              90%: Low
- *              &lt;90%: Normal
- *          BCHARGE:
- *              &gt;95%: Normal
- *              &gt;90%: Low
- *              &gt;85%: Medium
- *              &gt;80%: High
- *              &lt;=80%: Critical
- *          BATTV: Display, Alert, deviation from NOMBATTV?
- *          EXTBATTS, BADBATTS: Display, Alert
- *          TONBATT: Display, Alert
- *              0: Normal
- *              1: Low
- *              2: Medium
- *              3: High
- *              4+: Critical
- *          TIMELEFT:
- *              &lt;10: Critical
- *          ITEMP: Display, Alert
- * 
+ *      Perhaps just as a procedure - how to schedule in NOC interface?
+ *
  * @author  AO Industries, Inc.
  */
 public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 
     private static final Logger logger = Logger.getLogger(MonitorImpl.class.getName());
+
+    private static final long serialVersionUID = 1L;
 
     final private int port;
     final private RMIClientSocketFactory csf;

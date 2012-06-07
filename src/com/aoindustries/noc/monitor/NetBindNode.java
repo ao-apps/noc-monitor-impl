@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author  AO Industries, Inc.
  */
-public class NetBindNode extends TableMultiResultNodeImpl<String,NetBindResult> {
+public class NetBindNode extends TableMultiResultNodeImpl<NetBindResult> {
 
     private static final long serialVersionUID = 1L;
 

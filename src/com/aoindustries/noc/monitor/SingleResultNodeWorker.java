@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -243,7 +243,7 @@ abstract class SingleResultNodeWorker implements Runnable {
     protected abstract String getReport() throws Exception;
 
     /**
-     * Cancles the current getReport call on a best-effort basis.
+     * Cancels the current getReport call on a best-effort basis.
      * Implementations of this method <b>must not block</b>.
      * This default implementation calls <code>future.cancel(true)</code>.
      */

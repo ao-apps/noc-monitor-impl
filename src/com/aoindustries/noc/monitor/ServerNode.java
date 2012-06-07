@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,6 +9,7 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.aoserv.client.OperatingSystemVersion;
+import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.common.AlertLevel;
 import com.aoindustries.noc.common.Node;
@@ -46,6 +47,7 @@ public class ServerNode extends NodeImpl {
     volatile private MySQLServersNode _mysqlServersNode;
     volatile private HardDrivesNode _hardDrivesNode;
     volatile private RaidNode _raidNode;
+    volatile private UpsNode _upsNode;
     volatile private FilesystemsNode _filesystemsNode;
     volatile private LoadAverageNode _loadAverageNode;
     volatile private MemoryNode _memoryNode;
@@ -90,6 +92,8 @@ public class ServerNode extends NodeImpl {
         if(hardDrivesNode!=null) children.add(hardDrivesNode);
         RaidNode raidNode = this._raidNode;
         if(raidNode!=null) children.add(raidNode);
+        UpsNode upsNode = this._upsNode;
+        if(upsNode!=null) children.add(upsNode);
         FilesystemsNode filesystemsNode = this._filesystemsNode;
         if(filesystemsNode!=null) children.add(filesystemsNode);
         LoadAverageNode loadAverageNode = this._loadAverageNode;
@@ -132,6 +136,11 @@ public class ServerNode extends NodeImpl {
         if(raidNode!=null) {
             AlertLevel raidNodeLevel = raidNode.getAlertLevel();
             if(raidNodeLevel.compareTo(level)>0) level = raidNodeLevel;
+        }
+        UpsNode upsNode = this._upsNode;
+        if(upsNode!=null) {
+            AlertLevel upsNodeLevel = upsNode.getAlertLevel();
+            if(upsNodeLevel.compareTo(level)>0) level = upsNodeLevel;
         }
         FilesystemsNode filesystemsNode = this._filesystemsNode;
         if(filesystemsNode!=null) {
@@ -177,6 +186,7 @@ public class ServerNode extends NodeImpl {
                 verifyMySQLServers();
                 verifyHardDrives();
                 verifyRaid();
+                verifyUps();
                 verifyFilesystems();
                 verifyLoadAverage();
                 verifyMemory();
@@ -196,6 +206,7 @@ public class ServerNode extends NodeImpl {
         serversNode.rootNode.conn.getAoServers().addTableListener(tableListener, 100);
         serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
         serversNode.rootNode.conn.getMysqlServers().addTableListener(tableListener, 100);
+        serversNode.rootNode.conn.getPhysicalServers().addTableListener(tableListener, 100);
         serversNode.rootNode.conn.getServers().addTableListener(tableListener, 100);
         if(_backupsNode==null) {
             _backupsNode = new BackupsNode(this, port, csf, ssf);
@@ -206,6 +217,7 @@ public class ServerNode extends NodeImpl {
         verifyMySQLServers();
         verifyHardDrives();
         verifyRaid();
+        verifyUps();
         verifyFilesystems();
         verifyLoadAverage();
         verifyMemory();
@@ -219,6 +231,7 @@ public class ServerNode extends NodeImpl {
         serversNode.rootNode.conn.getAoServers().removeTableListener(tableListener);
         serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
         serversNode.rootNode.conn.getMysqlServers().removeTableListener(tableListener);
+        serversNode.rootNode.conn.getPhysicalServers().removeTableListener(tableListener);
         serversNode.rootNode.conn.getServers().removeTableListener(tableListener);
         if(_timeNode!=null) {
             _timeNode.stop();
@@ -238,6 +251,11 @@ public class ServerNode extends NodeImpl {
         if(_filesystemsNode!=null) {
             _filesystemsNode.stop();
             _filesystemsNode = null;
+            serversNode.rootNode.nodeRemoved();
+        }
+        if(_upsNode!=null) {
+            _upsNode.stop();
+            _upsNode = null;
             serversNode.rootNode.nodeRemoved();
         }
         if(_raidNode!=null) {
@@ -344,6 +362,32 @@ public class ServerNode extends NodeImpl {
             if(_raidNode==null) {
                 _raidNode = new RaidNode(this, aoServer, port, csf, ssf);
                 _raidNode.start();
+                serversNode.rootNode.nodeAdded();
+            }
+        }
+    }
+
+    synchronized private void verifyUps() throws IOException, SQLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+        AOServer aoServer = _server.getAOServer();
+        PhysicalServer physicalServer = _server.getPhysicalServer();
+        if(
+            aoServer==null
+            || physicalServer==null
+            || physicalServer.getUpsType()!=PhysicalServer.UpsType.apc
+        ) {
+            // No UPS monitoring
+            if(_upsNode!=null) {
+                _upsNode.stop();
+                _upsNode = null;
+                serversNode.rootNode.nodeRemoved();
+            }
+        } else {
+            // Has UPS monitoring
+            if(_upsNode==null) {
+                _upsNode = new UpsNode(this, aoServer, port, csf, ssf);
+                _upsNode.start();
                 serversNode.rootNode.nodeAdded();
             }
         }
