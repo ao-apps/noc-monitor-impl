@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * @author  AO Industries, Inc.
  */
-class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverageResult> {
+class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Object>,LoadAverageResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match aoServer exactly)
@@ -55,7 +55,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
     }
 
     @Override
-    protected List<?> getRowData(Locale locale) throws Exception {
+    protected List<Object> getSample(Locale locale) throws Exception {
         // Get the latest limits
         currentAOServer = _aoServer.getTable().get(_aoServer.getKey());
         String loadavg = currentAOServer.getLoadAvgReport();
@@ -69,23 +69,23 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
         if(pos4==-1) throw new ParseException("Unable to find slash in loadavg", pos3+1);
         int pos5 = loadavg.indexOf(' ', pos4+1);
         if(pos5==-1) throw new ParseException("Unable to find fourth space in loadavg", pos4+1);
-        List<Object> rowData = new ArrayList<Object>(10);
-        rowData.add(Float.parseFloat(loadavg.substring(0, pos1)));
-        rowData.add(Float.parseFloat(loadavg.substring(pos1+1, pos2)));
-        rowData.add(Float.parseFloat(loadavg.substring(pos2+1, pos3)));
-        rowData.add(Integer.parseInt(loadavg.substring(pos3+1, pos4)));
-        rowData.add(Integer.parseInt(loadavg.substring(pos4+1, pos5)));
-        rowData.add(Integer.parseInt(loadavg.substring(pos5+1).trim()));
-        rowData.add(currentAOServer.getMonitoringLoadLow());
-        rowData.add(currentAOServer.getMonitoringLoadMedium());
-        rowData.add(currentAOServer.getMonitoringLoadHigh());
-        rowData.add(currentAOServer.getMonitoringLoadCritical());
-        return rowData;
+        List<Object> sample = new ArrayList<Object>(10);
+        sample.add(Float.parseFloat(loadavg.substring(0, pos1)));
+        sample.add(Float.parseFloat(loadavg.substring(pos1+1, pos2)));
+        sample.add(Float.parseFloat(loadavg.substring(pos2+1, pos3)));
+        sample.add(Integer.parseInt(loadavg.substring(pos3+1, pos4)));
+        sample.add(Integer.parseInt(loadavg.substring(pos4+1, pos5)));
+        sample.add(Integer.parseInt(loadavg.substring(pos5+1).trim()));
+        sample.add(currentAOServer.getMonitoringLoadLow());
+        sample.add(currentAOServer.getMonitoringLoadMedium());
+        sample.add(currentAOServer.getMonitoringLoadHigh());
+        sample.add(currentAOServer.getMonitoringLoadCritical());
+        return sample;
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends Object> rowData, Iterable<? extends LoadAverageResult> previousResults) throws Exception {
-        float fiveMinuteAverage = (Float)rowData.get(1);
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<Object> sample, Iterable<? extends LoadAverageResult> previousResults) throws Exception {
+        float fiveMinuteAverage = (Float)sample.get(1);
         float loadCritical = currentAOServer.getMonitoringLoadCritical();
         if(!Float.isNaN(loadCritical) && fiveMinuteAverage>=loadCritical) {
             return new AlertLevelAndMessage(
@@ -157,26 +157,26 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<Object,LoadAverag
     }
 
     @Override
-    protected LoadAverageResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error) {
+    protected LoadAverageResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
         return new LoadAverageResult(time, latency, alertLevel, error);
     }
 
     @Override
-    protected LoadAverageResult newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends Object> rowData) {
+    protected LoadAverageResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<Object> sample) {
         return new LoadAverageResult(
             time,
             latency,
             alertLevel,
-            (Float)rowData.get(0),
-            (Float)rowData.get(1),
-            (Float)rowData.get(2),
-            (Integer)rowData.get(3),
-            (Integer)rowData.get(4),
-            (Integer)rowData.get(5),
-            (Float)rowData.get(6),
-            (Float)rowData.get(7),
-            (Float)rowData.get(8),
-            (Float)rowData.get(9)
+            (Float)sample.get(0),
+            (Float)sample.get(1),
+            (Float)sample.get(2),
+            (Integer)sample.get(3),
+            (Integer)sample.get(4),
+            (Integer)sample.get(5),
+            (Float)sample.get(6),
+            (Float)sample.get(7),
+            (Float)sample.get(8),
+            (Float)sample.get(9)
         );
     }
 }

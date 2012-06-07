@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -12,7 +12,6 @@ import com.aoindustries.noc.common.TableMultiResult;
 import com.aoindustries.util.persistent.PersistentCollections;
 import com.aoindustries.util.persistent.ProtectionLevel;
 import com.aoindustries.util.persistent.Serializer;
-import com.aoindustries.util.persistent.TwoCopyBarrierBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -46,12 +45,12 @@ import javax.swing.SwingUtilities;
  * ==================================
  * total: 7680 samples + one per day beyond 224 days
  * </pre>
- * Update in a single background thread scross all workers, and handle recovery from unexpected
+ * Update in a single background thread across all workers, and handle recovery from unexpected
  * shutdown gracefully by inserting aggregate before removing samples, and detect on next aggregation.
  * Also, the linked list should always be sorted by time descending, confirm this on aggregation pass.
  * @author  AO Industries, Inc.
  */
-abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extends T>> implements Runnable {
+abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implements Runnable {
 
     private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
@@ -61,17 +60,18 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
     private final Object timerTaskLock = new Object();
     private Future<?> timerTask;
 
-    final private PersistentLinkedList<E> results;
+    final private PersistentLinkedList<R> results;
 
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
     volatile private String alertMessage = null;
 
-    final private List<TableMultiResultNodeImpl<T,E>> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl<T,E>>();
+    final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl<R>>();
 
-    TableMultiResultNodeWorker(File persistenceFile, Serializer<E> serializer) throws IOException {
-        this.results = new PersistentLinkedList<E>(
-            //PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.FORCE, Long.MAX_VALUE),
+    TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
+        this.results = new PersistentLinkedList<R>(
+            PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
             //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
+            /*
             new TwoCopyBarrierBuffer(
                 persistenceFile,
                 ProtectionLevel.BARRIER,
@@ -79,6 +79,7 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
                 60L*1000L, // TODO: Flash: 60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
                 5L*60L*1000L // TODO: Flash: 24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
             ),
+             */
             serializer
         );
     }
@@ -86,11 +87,11 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
     /**
      * Gets an unmodifiable copy of the results.
      */
-    final List<E> getResults() {
+    final List<R> getResults() {
         //System.out.println("DEBUG: getResults");
         //try {
             synchronized(results) {
-                return Collections.unmodifiableList(new ArrayList<E>(results));
+                return Collections.unmodifiableList(new ArrayList<R>(results));
             }
         //} catch(RuntimeException err) {
         //    ErrorPrinter.printStackTraces(err);
@@ -130,12 +131,12 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
         }
     }
 
-    private List<? extends T> getRowDataWithTimeout(final Locale locale) throws Exception {
-        Future<List<? extends T>> future = RootNodeImpl.executorService.submitUnbounded(
-            new Callable<List<? extends T>>() {
+    private S getSampleWithTimeout(final Locale locale) throws Exception {
+        Future<S> future = RootNodeImpl.executorService.submitUnbounded(
+            new Callable<S>() {
                 @Override
-                public List<? extends T> call() throws Exception {
-                    return getRowData(locale);
+                public S call() throws Exception {
+                    return getSample(locale);
                 }
             }
         );
@@ -165,23 +166,23 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
             final Locale locale = Locale.getDefault();
 
             String error;
-            List<? extends T> rowData;
+            S sample;
             AlertLevelAndMessage alertLevelAndMessage;
             try {
                 error = null;
                 if(useFutureTimeout()) {
-                    rowData = getRowDataWithTimeout(locale);
+                    sample = getSampleWithTimeout(locale);
                 } else {
-                    rowData = getRowData(locale);
+                    sample = getSample(locale);
                 }
                 synchronized(results) {
-                    alertLevelAndMessage = getAlertLevelAndMessage(locale, rowData, results);
+                    alertLevelAndMessage = getAlertLevelAndMessage(locale, sample, results);
                 }
                 lastSuccessful = true;
             } catch(Exception err) {
                 error = err.getLocalizedMessage();
                 if(error==null) error = err.toString();
-                rowData = null;
+                sample = null;
                 alertLevelAndMessage = new AlertLevelAndMessage(
                     AlertLevel.CRITICAL,
                     accessor.getMessage(/*locale,*/ "TableMultiResultNodeWorker.tableData.error", error)
@@ -192,28 +193,28 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
 
             synchronized(timerTaskLock) {if(timerTask==null) return;}
 
-            if(error==null && rowData==null) throw new IllegalArgumentException("error and rowData may not both be null");
-            if(error!=null && rowData!=null) throw new IllegalArgumentException("error and rowData may not both be non-null");
+            if(error==null && sample==null) throw new IllegalArgumentException("error and sample may not both be null");
+            if(error!=null && sample!=null) throw new IllegalArgumentException("error and sample may not both be non-null");
 
-            E added;
+            R added;
             if(error!=null) {
-                added = newTableMultiResult(
+                added = newErrorResult(
                     startMillis,
                     pingNanos,
                     alertLevelAndMessage.getAlertLevel(),
                     error
                 );
             } else {
-                added = newTableMultiResult(
+                added = newSampleResult(
                     startMillis,
                     pingNanos,
                     alertLevelAndMessage.getAlertLevel(),
-                    rowData
+                    sample
                 );
             }
 
             // Update the results
-            E removed = null;
+            R removed = null;
             synchronized(results) {
                 results.addFirst(added);
                 if(results.size()>getHistorySize()) removed = results.removeLast();
@@ -244,7 +245,7 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
 
             if(oldAlertLevel!=newAlertLevel) {
                 synchronized(tableMultiResultNodeImpls) {
-                    for(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+                    for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                         tableMultiResultNodeImpl.nodeAlertLevelChanged(
                             oldAlertLevel,
                             newAlertLevel,
@@ -269,7 +270,7 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
         }
     }
 
-    final void addTableMultiResultNodeImpl(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl) {
+    final void addTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
         synchronized(tableMultiResultNodeImpls) {
             boolean needsStart = tableMultiResultNodeImpls.isEmpty();
             tableMultiResultNodeImpls.add(tableMultiResultNodeImpl);
@@ -277,7 +278,7 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
         }
     }
 
-    final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl) {
+    final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
         // TODO: log error if wrong number of listeners matched
         synchronized(tableMultiResultNodeImpls) {
             if(tableMultiResultNodeImpls.isEmpty()) throw new AssertionError("tableMultiResultNodeImpls is empty");
@@ -296,11 +297,11 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
     /**
      * Notifies all of the listeners.
      */
-    private void tableMultiResultAdded(E result) {
+    private void tableMultiResultAdded(R result) {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         synchronized(tableMultiResultNodeImpls) {
-            for(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+            for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                 tableMultiResultNodeImpl.tableMultiResultAdded(result);
             }
         }
@@ -309,11 +310,11 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
     /**
      * Notifies all of the listeners.
      */
-    private void tableMultiResultRemoved(E result) {
+    private void tableMultiResultRemoved(R result) {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
         synchronized(tableMultiResultNodeImpls) {
-            for(TableMultiResultNodeImpl<T,E> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+            for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                 tableMultiResultNodeImpl.tableMultiResultRemoved(result);
             }
         }
@@ -333,27 +334,29 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
     protected abstract int getHistorySize();
 
     /**
-     * Gets the current row data for this worker, any error should result in an exception.
      * This is the main monitor routine.
+     * Gets the current sample for this worker, any error should result in an exception.
+     * The sample may be any object that encapsulates the state of the resource in order
+     * to determine its alert level, alert message, and overall result.
      */
-    protected abstract List<? extends T> getRowData(Locale locale) throws Exception;
+    protected abstract S getSample(Locale locale) throws Exception;
 
     /**
      * Creates a new result container object for error condition.
      */
-    protected abstract E newTableMultiResult(long time, long latency, AlertLevel alertLevel, String error);
+    protected abstract R newErrorResult(long time, long latency, AlertLevel alertLevel, String error);
 
     /**
      * Creates a new result container object for success condition.
      */
-    protected abstract E newTableMultiResult(long time, long latency, AlertLevel alertLevel, List<? extends T> rowData);
+    protected abstract R newSampleResult(long time, long latency, AlertLevel alertLevel, S sample);
 
     /**
-     * Cancles the current getRowData call on a best-effort basis.
+     * Cancels the current getSample call on a best-effort basis.
      * Implementations of this method <b>must not block</b>.
      * This default implementation calls <code>future.cancel(true)</code>.
      */
-    protected void cancel(Future<List<? extends T>> future) {
+    protected void cancel(Future<S> future) {
         future.cancel(true);
     }
 
@@ -362,10 +365,10 @@ abstract class TableMultiResultNodeWorker<T, E extends TableMultiResult<? extend
      * If unable to parse, may throw an exception to report the error.  This
      * should not block or delay for any reason.
      */
-    protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<? extends T> rowData, Iterable<? extends E> previousResults) throws Exception;
-    
+    protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, S sample, Iterable<? extends R> previousResults) throws Exception;
+
     /**
-     * By default, the call to <code>getRowData</code> uses a <code>Future</code>
+     * By default, the call to <code>getSample</code> uses a <code>Future</code>
      * and times-out at 5 minutes.  If the monitoring check cannot block
      * indefinitely, it is more efficient to not use this decoupling.
      */
