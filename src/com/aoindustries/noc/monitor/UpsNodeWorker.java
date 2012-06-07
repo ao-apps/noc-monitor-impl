@@ -81,9 +81,12 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
         this._aoServer = currentAOServer = aoServer;
     }
 
+    /**
+     * Keep approximately one week of results.
+     */
     @Override
     protected int getHistorySize() {
-        return 2000;
+        return 10000;
     }
 
     @Override
@@ -264,5 +267,21 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
     @Override
     protected UpsResult newSampleResult(long time, long latency, AlertLevel alertLevel, UpsStatus sample) {
         return sample.getResult(time, latency, alertLevel);
+    }
+
+    /**
+     * Check once a minute.
+     */
+    @Override
+    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+        return 60000;
+    }
+
+    /**
+     * Shorter timeout of one minute.
+     */
+    @Override
+    protected long getFutureTimeout() {
+        return 1;
     }
 }
