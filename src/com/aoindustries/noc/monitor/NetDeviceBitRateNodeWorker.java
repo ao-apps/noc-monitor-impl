@@ -113,8 +113,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
                 long timeDiff = thisStatsTime - lastStatsTime;
                 txBitsPerSecond = (thisTxBytes - lastTxBytes)*8000 / timeDiff;
                 rxBitsPerSecond = (thisRxBytes - lastRxBytes)*8000 / timeDiff;
-                txPacketsPerSecond = (thisTxPackets - lastTxPackets)*8000 / timeDiff;
-                rxPacketsPerSecond = (thisRxPackets - lastRxPackets)*8000 / timeDiff;
+                txPacketsPerSecond = (thisTxPackets - lastTxPackets)*1000 / timeDiff;
+                rxPacketsPerSecond = (thisRxPackets - lastRxPackets)*1000 / timeDiff;
             }
             // Display the alert thresholds
             List<Object> sample = new ArrayList<Object>(8);

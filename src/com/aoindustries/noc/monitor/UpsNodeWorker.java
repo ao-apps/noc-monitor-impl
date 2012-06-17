@@ -108,6 +108,8 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
                 highest = highest.escalate(AlertLevel.LOW, accessor.getMessage("UpsNodeWorker.getAlertLevelAndMessage.status.charging"));
             } else if(status.equals("ONBATT") || status.startsWith("ONBATT ")) {
                 highest = highest.escalate(AlertLevel.CRITICAL, accessor.getMessage("UpsNodeWorker.getAlertLevelAndMessage.status.onbatt"));
+            } else if(status.equals("COMMLOST")) {
+                highest = highest.escalate(AlertLevel.CRITICAL, accessor.getMessage("UpsNodeWorker.getAlertLevelAndMessage.status.commlost"));
             } else {
                 highest = highest.escalate(AlertLevel.UNKNOWN, accessor.getMessage("UpsNodeWorker.getAlertLevelAndMessage.status.unknown", status));
             }
