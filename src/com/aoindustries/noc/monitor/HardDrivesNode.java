@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,8 +7,8 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -24,6 +24,8 @@ import java.util.List;
  * @author  AO Industries, Inc.
  */
 public class HardDrivesNode extends NodeImpl {
+
+    private static final long serialVersionUID = 1L;
 
     final ServerNode serverNode;
     private final AOServer _aoServer;
@@ -82,6 +84,11 @@ public class HardDrivesNode extends NodeImpl {
     @Override
     public String getAlertMessage() {
         return null;
+    }
+
+    @Override
+    public String getId() {
+        return "hard_drives";
     }
 
     @Override

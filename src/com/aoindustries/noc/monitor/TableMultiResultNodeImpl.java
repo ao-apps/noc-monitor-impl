@@ -5,11 +5,11 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
-import com.aoindustries.noc.common.TableMultiResult;
-import com.aoindustries.noc.common.TableMultiResultListener;
-import com.aoindustries.noc.common.TableMultiResultNode;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
+import com.aoindustries.noc.monitor.common.TableMultiResult;
+import com.aoindustries.noc.monitor.common.TableMultiResultListener;
+import com.aoindustries.noc.monitor.common.TableMultiResultNode;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;

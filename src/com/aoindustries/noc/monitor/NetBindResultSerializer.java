@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,8 +7,9 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.io.CompressedDataInputStream;
 import com.aoindustries.io.CompressedDataOutputStream;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.NetBindResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.NetBindResult;
 import com.aoindustries.util.persistent.BufferedSerializer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -59,6 +60,12 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
     ;
 
     private static final ConcurrentMap<String,Boolean> commonResultsSuggested = new ConcurrentHashMap<String,Boolean>();
+
+    private final MonitoringPoint monitoringPoint;
+
+    public NetBindResultSerializer(MonitoringPoint monitoringPoint) {
+        this.monitoringPoint = monitoringPoint;
+    }
 
     @Override
     protected void serialize(NetBindResult value, ByteArrayOutputStream buffer) throws IOException {
@@ -111,11 +118,11 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
                 AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
                 byte encodingType = in.readByte();
                 switch(encodingType) {
-                    case ERROR : return new NetBindResult(time, latency, alertLevel, in.readUTF(), null);
-                    case NULL_RESULT : return new NetBindResult(time, latency, alertLevel, null, null);
-                    case COMMON_RESULTS : return new NetBindResult(time, latency, alertLevel, null, commonResults[in.readCompressedInt()]);
-                    case MESSAGE_ACCEPTED : return new NetBindResult(time, latency, alertLevel, null, in.readUTF()+MESSAGE_ACCEPTED_SUFFIX);
-                    case RAW : return new NetBindResult(time, latency, alertLevel, null, in.readUTF());
+                    case ERROR : return new NetBindResult(monitoringPoint, time, latency, alertLevel, in.readUTF(), null);
+                    case NULL_RESULT : return new NetBindResult(monitoringPoint, time, latency, alertLevel, null, null);
+                    case COMMON_RESULTS : return new NetBindResult(monitoringPoint, time, latency, alertLevel, null, commonResults[in.readCompressedInt()]);
+                    case MESSAGE_ACCEPTED : return new NetBindResult(monitoringPoint, time, latency, alertLevel, null, in.readUTF()+MESSAGE_ACCEPTED_SUFFIX);
+                    case RAW : return new NetBindResult(monitoringPoint, time, latency, alertLevel, null, in.readUTF());
                     default : throw new IOException("Unexpected value for encodingType: "+encodingType);
                 }
             } else if(version==1) {
@@ -123,8 +130,9 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
                 long latency = in.readLong();
                 AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
                 String error = in.readNullUTF();
-                if(error!=null) return new NetBindResult(time, latency, alertLevel, error, null);
+                if(error!=null) return new NetBindResult(monitoringPoint, time, latency, alertLevel, error, null);
                 return new NetBindResult(
+                    monitoringPoint,
                     time,
                     latency,
                     alertLevel,

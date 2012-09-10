@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -25,6 +25,7 @@ public class MySQLCheckTablesNode extends TableResultNodeImpl {
             mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
             mysqlDatabaseNode,
             MySQLCheckTablesNodeWorker.getWorker(
+                mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.monitoringPoint,
                 mysqlDatabaseNode,
                 new File(mysqlDatabaseNode.getPersistenceDirectory(), "check_tables")
             ),
@@ -32,6 +33,11 @@ public class MySQLCheckTablesNode extends TableResultNodeImpl {
             csf,
             ssf
         );
+    }
+
+    @Override
+    public String getId() {
+        return "check_tables";
     }
 
     @Override

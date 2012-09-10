@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -25,6 +25,7 @@ public class MdRaidNode extends SingleResultNodeImpl {
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
             MdRaidNodeWorker.getWorker(
+                raidNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(raidNode.getPersistenceDirectory(), "mdstat"),
                 raidNode.getAOServer()
             ),
@@ -34,6 +35,12 @@ public class MdRaidNode extends SingleResultNodeImpl {
         );
     }
 
+    @Override
+    public String getId() {
+        return "md";
+    }
+
+    @Override
     public String getLabel() {
         return accessor.getMessage(/*rootNode.locale,*/ "MdRaidNode.label");
     }

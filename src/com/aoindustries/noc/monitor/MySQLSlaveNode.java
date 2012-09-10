@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -11,8 +11,8 @@ import com.aoindustries.aoserv.client.BackupPartition;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -34,6 +34,7 @@ public class MySQLSlaveNode extends NodeImpl {
 
     final MySQLSlavesNode mysqlSlavesNode;
     private final FailoverMySQLReplication _mysqlReplication;
+    private final String id;
     private final String _label;
 
     volatile private MySQLSlaveStatusNode _mysqlSlaveStatusNode;
@@ -49,11 +50,15 @@ public class MySQLSlaveNode extends NodeImpl {
             AOServer aoServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
             MySQLServer mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
             BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
-            this._label = bp.getAOServer().getHostname()+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
+            String hostname = bp.getAOServer().getHostname();
+            this.id = hostname;
+            this._label = hostname+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
         } else {
             // ao_server-based
             MySQLServer mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
-            this._label = mysqlReplication.getAOServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
+            String hostname = mysqlReplication.getAOServer().getHostname();
+            this.id = hostname;
+            this._label = hostname+":/var/lib/mysql/"+mysqlServer.getName();
         }
     }
 
@@ -113,6 +118,11 @@ public class MySQLSlaveNode extends NodeImpl {
     @Override
     public String getAlertMessage() {
         return null;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override

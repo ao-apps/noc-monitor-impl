@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,8 +7,9 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.SingleResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.SingleResult;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
@@ -29,12 +30,12 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
     private static final Map<String, MdRaidNodeWorker> workerCache = new HashMap<String,MdRaidNodeWorker>();
-    static MdRaidNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+    static MdRaidNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             MdRaidNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MdRaidNodeWorker(persistenceFile, aoServer);
+                worker = new MdRaidNodeWorker(monitoringPoint, persistenceFile, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
@@ -46,8 +47,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private AOServer aoServer;
 
-    MdRaidNodeWorker(File persistenceFile, AOServer aoServer) {
-        super(persistenceFile);
+    MdRaidNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServer aoServer) {
+        super(monitoringPoint, persistenceFile);
         this.aoServer = aoServer;
     }
 

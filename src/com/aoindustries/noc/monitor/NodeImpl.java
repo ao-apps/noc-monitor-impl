@@ -1,13 +1,13 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -22,6 +22,8 @@ import java.util.Stack;
  * @author  AO Industries, Inc.
  */
 public abstract class NodeImpl extends UnicastRemoteObject implements Node {
+
+    private static final long serialVersionUID = 1L;
 
     final protected int port;
     final protected RMIClientSocketFactory csf;

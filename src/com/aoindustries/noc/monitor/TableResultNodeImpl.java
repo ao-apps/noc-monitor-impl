@@ -1,15 +1,15 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
-import com.aoindustries.noc.common.TableResult;
-import com.aoindustries.noc.common.TableResultListener;
-import com.aoindustries.noc.common.TableResultNode;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
+import com.aoindustries.noc.monitor.common.TableResult;
+import com.aoindustries.noc.monitor.common.TableResultListener;
+import com.aoindustries.noc.monitor.common.TableResultNode;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -31,13 +31,15 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 
     private static final Logger logger = Logger.getLogger(TableResultNodeImpl.class.getName());
 
+    private static final long serialVersionUID = 1L;
+
     final RootNodeImpl rootNode;
     final Node parent;
-    final TableResultNodeWorker worker;
+    final TableResultNodeWorker<?,?> worker;
 
     final private List<TableResultListener> tableResultListeners = new ArrayList<TableResultListener>();
 
-    TableResultNodeImpl(RootNodeImpl rootNode, Node parent, TableResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    TableResultNodeImpl(RootNodeImpl rootNode, Node parent, TableResultNodeWorker<?,?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
         this.rootNode = rootNode;
         this.parent = parent;

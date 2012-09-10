@@ -6,7 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.noc.common.MySQLReplicationResult;
+import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -29,6 +29,7 @@ public class MySQLSlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicat
             mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
             mysqlSlaveNode,
             MySQLSlaveStatusNodeWorker.getWorker(
+                mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.monitoringPoint,
                 mysqlSlaveNode.getPersistenceDirectory(),
                 mysqlSlaveNode.getFailoverMySQLReplication()
             ),
@@ -36,6 +37,11 @@ public class MySQLSlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicat
             csf,
             ssf
         );
+    }
+
+    @Override
+    public String getId() {
+        return "status";
     }
 
     @Override

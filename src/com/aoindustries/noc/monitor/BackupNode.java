@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,7 +8,7 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.BackupPartition;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
-import com.aoindustries.noc.common.TableResult;
+import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -24,6 +24,7 @@ import java.util.Locale;
 public class BackupNode extends TableResultNodeImpl {
 
     final private FailoverFileReplication failoverFileReplication;
+    final private String id;
     final private String label;
     
     BackupNode(BackupsNode backupsNode, FailoverFileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
@@ -31,6 +32,7 @@ public class BackupNode extends TableResultNodeImpl {
             backupsNode.serverNode.serversNode.rootNode,
             backupsNode,
             BackupNodeWorker.getWorker(
+                backupsNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
                 failoverFileReplication
             ),
@@ -40,7 +42,7 @@ public class BackupNode extends TableResultNodeImpl {
         );
         this.failoverFileReplication = failoverFileReplication;
         BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
-        this.label = accessor.getMessage(
+        this.id = this.label = accessor.getMessage(
             //rootNode.locale,
             "BackupNode.label",
             backupPartition==null ? "null" : backupPartition.getAOServer().getHostname(),
@@ -50,6 +52,11 @@ public class BackupNode extends TableResultNodeImpl {
 
     FailoverFileReplication getFailoverFileReplication() {
         return failoverFileReplication;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override

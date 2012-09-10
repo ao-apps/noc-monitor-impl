@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -23,6 +23,7 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
             ThreeWareRaidNodeWorker.getWorker(
+                raidNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(raidNode.getPersistenceDirectory(), "3ware"),
                 raidNode.getAOServer()
             ),
@@ -30,6 +31,11 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
             csf,
             ssf
         );
+    }
+
+    @Override
+    public String getId() {
+        return "3ware";
     }
 
     @Override

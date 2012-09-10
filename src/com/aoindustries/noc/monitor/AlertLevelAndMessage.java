@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.noc.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.AlertLevel;
 
 /**
  * Stores two return values.

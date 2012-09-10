@@ -11,8 +11,8 @@ import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.aoserv.client.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
@@ -174,13 +174,18 @@ public class ServerNode extends NodeImpl {
     }
 
     @Override
+    public String getId() {
+        return _label;
+    }
+
+    @Override
     public String getLabel() {
         return _label;
     }
 
     private TableListener tableListener = new TableListener() {
         @Override
-        public void tableUpdated(Table table) {
+        public void tableUpdated(Table<?> table) {
             try {
                 verifyNetDevices();
                 verifyMySQLServers();

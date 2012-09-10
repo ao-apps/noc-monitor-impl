@@ -1,15 +1,15 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
-import com.aoindustries.noc.common.SingleResult;
-import com.aoindustries.noc.common.SingleResultListener;
-import com.aoindustries.noc.common.SingleResultNode;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
+import com.aoindustries.noc.monitor.common.SingleResult;
+import com.aoindustries.noc.monitor.common.SingleResultListener;
+import com.aoindustries.noc.monitor.common.SingleResultNode;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -29,6 +29,8 @@ import javax.swing.SwingUtilities;
 abstract public class SingleResultNodeImpl extends NodeImpl implements SingleResultNode {
 
     private static final Logger logger = Logger.getLogger(SingleResultNodeImpl.class.getName());
+
+    private static final long serialVersionUID = 1L;
 
     protected final RootNodeImpl rootNode;
     protected final Node parent;

@@ -7,8 +7,9 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.LoadAverageResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.LoadAverageResult;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -27,12 +28,12 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Object>,Load
      * One unique worker is made per persistence directory (and should match aoServer exactly)
      */
     private static final Map<String, LoadAverageNodeWorker> workerCache = new HashMap<String,LoadAverageNodeWorker>();
-    static LoadAverageNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+    static LoadAverageNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, AOServer aoServer) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             LoadAverageNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new LoadAverageNodeWorker(persistenceDirectory, aoServer);
+                worker = new LoadAverageNodeWorker(monitoringPoint, persistenceDirectory, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
@@ -44,8 +45,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Object>,Load
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private LoadAverageNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
-        super(new File(persistenceDirectory, "loadavg"), new LoadAverageResultSerializer());
+    private LoadAverageNodeWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, AOServer aoServer) throws IOException {
+        super(monitoringPoint, new File(persistenceDirectory, "loadavg"), new LoadAverageResultSerializer(monitoringPoint));
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -158,12 +159,13 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Object>,Load
 
     @Override
     protected LoadAverageResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new LoadAverageResult(time, latency, alertLevel, error);
+        return new LoadAverageResult(monitoringPoint, time, latency, alertLevel, error);
     }
 
     @Override
     protected LoadAverageResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<Object> sample) {
         return new LoadAverageResult(
+            monitoringPoint,
             time,
             latency,
             alertLevel,

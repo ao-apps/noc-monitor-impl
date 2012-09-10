@@ -1,13 +1,14 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +33,8 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 
     private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
 
+    final protected MonitoringPoint monitoringPoint;
+
     /**
      * The most recent timer task
      */
@@ -46,7 +49,8 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 
     final protected File persistenceFile;
 
-    TableResultNodeWorker(File persistenceFile) {
+    TableResultNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile) {
+        this.monitoringPoint = monitoringPoint;
         this.persistenceFile = persistenceFile;
     }
 
@@ -155,6 +159,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
             synchronized(timerTaskLock) {if(timerTask==null) return;}
 
             TableResult result = new TableResult(
+                monitoringPoint,
                 startMillis,
                 pingNanos,
                 isError,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,8 +8,9 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -33,12 +34,12 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
      * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
      */
     private static final Map<String, MySQLDatabaseNodeWorker> workerCache = new HashMap<String,MySQLDatabaseNodeWorker>();
-    static MySQLDatabaseNodeWorker getWorker(File persistenceFile, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
+    static MySQLDatabaseNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             MySQLDatabaseNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MySQLDatabaseNodeWorker(persistenceFile, mysqlDatabase, mysqlSlave);
+                worker = new MySQLDatabaseNodeWorker(monitoringPoint, persistenceFile, mysqlDatabase, mysqlSlave);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.mysqlDatabase.equals(mysqlDatabase)) throw new AssertionError("worker.mysqlDatabase!=mysqlDatabase: "+worker.mysqlDatabase+"!="+mysqlDatabase);
@@ -54,8 +55,8 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
     final private Object lastTableStatusesLock = new Object();
     private List<MySQLDatabase.TableStatus> lastTableStatuses;
 
-    MySQLDatabaseNodeWorker(File persistenceFile, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
-        super(persistenceFile);
+    MySQLDatabaseNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
+        super(monitoringPoint, persistenceFile);
         this.mysqlDatabase = mysqlDatabase;
         this.mysqlSlave = mysqlSlave;
         String hostname = mysqlDatabase.getMySQLServer().getAOServer().getHostname();

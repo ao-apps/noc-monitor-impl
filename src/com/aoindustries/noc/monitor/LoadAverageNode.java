@@ -7,7 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.noc.common.LoadAverageResult;
+import com.aoindustries.noc.monitor.common.LoadAverageResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -33,6 +33,7 @@ public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult>
             serverNode.serversNode.rootNode,
             serverNode,
             LoadAverageNodeWorker.getWorker(
+                serverNode.serversNode.rootNode.monitoringPoint,
                 serverNode.getPersistenceDirectory(),
                 aoServer
             ),
@@ -41,6 +42,11 @@ public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult>
             ssf
         );
         this._aoServer = aoServer;
+    }
+
+    @Override
+    public String getId() {
+        return "load_average";
     }
 
     @Override

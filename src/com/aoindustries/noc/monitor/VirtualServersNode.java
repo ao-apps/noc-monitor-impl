@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -21,8 +21,15 @@ import java.sql.SQLException;
  */
 public class VirtualServersNode extends ServersNode {
 
+    private static final long serialVersionUID = 1L;
+
     VirtualServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(rootNode, port, csf, ssf);
+    }
+
+    @Override
+    public String getId() {
+        return "virtual_servers";
     }
 
     @Override
@@ -30,6 +37,7 @@ public class VirtualServersNode extends ServersNode {
         return accessor.getMessage(/*rootNode.locale,*/ "VirtualServersNode.label");
     }
 
+    @Override
     boolean includeServer(Server server) throws SQLException, IOException {
         AOServer aoServer = server.getAOServer();
         return

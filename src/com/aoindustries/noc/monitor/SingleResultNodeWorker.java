@@ -5,8 +5,9 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.SingleResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.SingleResult;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,8 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
 
+    final protected MonitoringPoint monitoringPoint;
+
     /**
      * The most recent timer task
      */
@@ -44,7 +47,8 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     final protected File persistenceFile;
 
-    SingleResultNodeWorker(File persistenceFile) {
+    SingleResultNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile) {
+        this.monitoringPoint = monitoringPoint;
         this.persistenceFile = persistenceFile;
     }
 
@@ -133,6 +137,7 @@ abstract class SingleResultNodeWorker implements Runnable {
             synchronized(timerTaskLock) {if(timerTask==null) return;}
 
             SingleResult result = new SingleResult(
+                monitoringPoint,
                 startMillis,
                 pingNanos,
                 error,

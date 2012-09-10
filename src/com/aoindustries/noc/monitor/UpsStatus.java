@@ -6,9 +6,10 @@
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TimeSpan;
-import com.aoindustries.noc.common.UpsResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.TimeSpan;
+import com.aoindustries.noc.monitor.common.UpsResult;
 import com.aoindustries.util.StringUtility;
 import java.text.ParseException;
 
@@ -108,23 +109,23 @@ class UpsStatus {
 
     UpsStatus(String upsStatus) throws ParseException {
         // Default values
-        String upsname = null;
-        String status = null;
-        float linev = Float.NaN;
-        float lotrans = Float.NaN;
-        float hitrans = Float.NaN;
-        float linefreq = Float.NaN;
-        float outputv = Float.NaN;
-        float nomoutv = Float.NaN;
-        float loadpct = Float.NaN;
-        float bcharge = Float.NaN;
-        float battv = Float.NaN;
-        float nombattv = Float.NaN;
-        int extbatts = -1;
-        int badbatts = -1;
-        TimeSpan tonbatt = null;
-        TimeSpan timeleft = null;
-        float itemp = Float.NaN;
+        String _upsname = null;
+        String _status = null;
+        float _linev = Float.NaN;
+        float _lotrans = Float.NaN;
+        float _hitrans = Float.NaN;
+        float _linefreq = Float.NaN;
+        float _outputv = Float.NaN;
+        float _nomoutv = Float.NaN;
+        float _loadpct = Float.NaN;
+        float _bcharge = Float.NaN;
+        float _battv = Float.NaN;
+        float _nombattv = Float.NaN;
+        int _extbatts = -1;
+        int _badbatts = -1;
+        TimeSpan _tonbatt = null;
+        TimeSpan _timeleft = null;
+        float _itemp = Float.NaN;
 
         // Parse the status
         for(String line : StringUtility.splitLines(upsStatus)) {
@@ -132,42 +133,42 @@ class UpsStatus {
             if(colonPos==-1) throw new ParseException(accessor.getMessage("UpsStatus.parse.noColon", line), 0);
             String name = line.substring(0, colonPos).trim();
             String value = line.substring(colonPos+1).trim();
-                 if("UPSNAME" .equals(name)) upsname  = value;
-            else if("STATUS"  .equals(name)) status   = value;
-            else if("LINEV"   .equals(name)) linev    = parseVolts(value);
-            else if("LOTRANS" .equals(name)) lotrans  = parseVolts(value);
-            else if("HITRANS" .equals(name)) hitrans  = parseVolts(value);
-            else if("LINEFREQ".equals(name)) linefreq = parseFrequency(value);
-            else if("OUTPUTV" .equals(name)) outputv  = parseVolts(value);
-            else if("NOMOUTV" .equals(name)) nomoutv  = parseVolts(value);
-            else if("LOADPCT" .equals(name)) loadpct  = parsePercent(value);
-            else if("BCHARGE" .equals(name)) bcharge  = parsePercent(value);
-            else if("BATTV"   .equals(name)) battv    = parseVolts(value);
-            else if("NOMBATTV".equals(name)) nombattv = parseVolts(value);
-            else if("EXTBATTS".equals(name)) extbatts = parseInt(value);
-            else if("BADBATTS".equals(name)) badbatts = parseInt(value);
-            else if("TONBATT" .equals(name)) tonbatt  = parseTimeSpan(value);
-            else if("TIMELEFT".equals(name)) timeleft = parseTimeSpan(value);
-            else if("ITEMP"   .equals(name)) itemp    = parseTemperature(value);
+                 if("UPSNAME" .equals(name)) _upsname  = value;
+            else if("STATUS"  .equals(name)) _status   = value;
+            else if("LINEV"   .equals(name)) _linev    = parseVolts(value);
+            else if("LOTRANS" .equals(name)) _lotrans  = parseVolts(value);
+            else if("HITRANS" .equals(name)) _hitrans  = parseVolts(value);
+            else if("LINEFREQ".equals(name)) _linefreq = parseFrequency(value);
+            else if("OUTPUTV" .equals(name)) _outputv  = parseVolts(value);
+            else if("NOMOUTV" .equals(name)) _nomoutv  = parseVolts(value);
+            else if("LOADPCT" .equals(name)) _loadpct  = parsePercent(value);
+            else if("BCHARGE" .equals(name)) _bcharge  = parsePercent(value);
+            else if("BATTV"   .equals(name)) _battv    = parseVolts(value);
+            else if("NOMBATTV".equals(name)) _nombattv = parseVolts(value);
+            else if("EXTBATTS".equals(name)) _extbatts = parseInt(value);
+            else if("BADBATTS".equals(name)) _badbatts = parseInt(value);
+            else if("TONBATT" .equals(name)) _tonbatt  = parseTimeSpan(value);
+            else if("TIMELEFT".equals(name)) _timeleft = parseTimeSpan(value);
+            else if("ITEMP"   .equals(name)) _itemp    = parseTemperature(value);
         }
 
-        this.upsname = upsname;
-        this.status = status;
-        this.linev = linev;
-        this.lotrans = lotrans;
-        this.hitrans = hitrans;
-        this.linefreq = linefreq;
-        this.outputv = outputv;
-        this.nomoutv = nomoutv;
-        this.loadpct = loadpct;
-        this.bcharge = bcharge;
-        this.battv = battv;
-        this.nombattv = nombattv;
-        this.extbatts = extbatts;
-        this.badbatts = badbatts;
-        this.tonbatt = tonbatt;
-        this.timeleft = timeleft;
-        this.itemp = itemp;
+        this.upsname = _upsname;
+        this.status = _status;
+        this.linev = _linev;
+        this.lotrans = _lotrans;
+        this.hitrans = _hitrans;
+        this.linefreq = _linefreq;
+        this.outputv = _outputv;
+        this.nomoutv = _nomoutv;
+        this.loadpct = _loadpct;
+        this.bcharge = _bcharge;
+        this.battv = _battv;
+        this.nombattv = _nombattv;
+        this.extbatts = _extbatts;
+        this.badbatts = _badbatts;
+        this.tonbatt = _tonbatt;
+        this.timeleft = _timeleft;
+        this.itemp = _itemp;
     }
 
     /**
@@ -289,8 +290,9 @@ class UpsStatus {
         return itemp;
     }
 
-    UpsResult getResult(long time, long latency, AlertLevel alertLevel) {
+    UpsResult getResult(MonitoringPoint monitoringPoint, long time, long latency, AlertLevel alertLevel) {
         return new UpsResult(
+            monitoringPoint,
             time,
             latency,
             alertLevel,

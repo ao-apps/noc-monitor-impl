@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -26,6 +26,7 @@ public class FilesystemsNode extends TableResultNodeImpl {
             serverNode.serversNode.rootNode,
             serverNode,
             FilesystemsNodeWorker.getWorker(
+                serverNode.serversNode.rootNode.monitoringPoint,
                 new File(serverNode.getPersistenceDirectory(), "filesystems"),
                 aoServer
             ),
@@ -34,6 +35,11 @@ public class FilesystemsNode extends TableResultNodeImpl {
             ssf
         );
         this._aoServer = aoServer;
+    }
+
+    @Override
+    public String getId() {
+        return "filesystems";
     }
 
     @Override

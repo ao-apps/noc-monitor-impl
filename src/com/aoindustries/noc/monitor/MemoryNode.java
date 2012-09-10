@@ -7,7 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.noc.common.MemoryResult;
+import com.aoindustries.noc.monitor.common.MemoryResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -29,6 +29,7 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
             serverNode.serversNode.rootNode,
             serverNode,
             MemoryNodeWorker.getWorker(
+                serverNode.serversNode.rootNode.monitoringPoint,
                 serverNode.getPersistenceDirectory(),
                 aoServer
             ),
@@ -37,6 +38,11 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
             ssf
         );
         this._aoServer = aoServer;
+    }
+
+    @Override
+    public String getId() {
+        return "memory";
     }
 
     @Override

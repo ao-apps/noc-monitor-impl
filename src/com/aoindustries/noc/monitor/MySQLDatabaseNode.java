@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,8 +8,8 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -39,6 +39,7 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
             mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
             mysqlDatabasesNode,
             MySQLDatabaseNodeWorker.getWorker(
+                mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName()+".show_full_tables"),
                 mysqlDatabase,
                 mysqlSlave
@@ -91,6 +92,11 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
             if(mysqlCheckTablesNodeLevel.compareTo(level)>0) level = mysqlCheckTablesNodeLevel;
         }
         return level;
+    }
+
+    @Override
+    public String getId() {
+        return _label;
     }
 
     @Override

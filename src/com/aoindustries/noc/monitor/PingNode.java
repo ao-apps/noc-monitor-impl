@@ -6,7 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.noc.common.PingResult;
+import com.aoindustries.noc.monitor.common.PingResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -29,6 +29,7 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
             ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
             ipAddressNode,
             PingNodeWorker.getWorker(
+                ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 ipAddressNode.getPersistenceDirectory(),
                 ipAddressNode.getIPAddress()
             ),
@@ -37,6 +38,11 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
             ssf
         );
         this.ipAddressNode = ipAddressNode;
+    }
+
+    @Override
+    public String getId() {
+        return "pings";
     }
 
     @Override

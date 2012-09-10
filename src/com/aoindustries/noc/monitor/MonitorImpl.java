@@ -6,8 +6,9 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.noc.common.Monitor;
-import com.aoindustries.noc.common.RootNode;
+import com.aoindustries.noc.monitor.common.Monitor;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.RootNode;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -125,14 +126,16 @@ public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 
     private static final Logger logger = Logger.getLogger(MonitorImpl.class.getName());
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
+    final private MonitoringPoint monitoringPoint;
     final private int port;
     final private RMIClientSocketFactory csf;
     final private RMIServerSocketFactory ssf;
 
-    public MonitorImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    public MonitorImpl(MonitoringPoint monitoringPoint, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
+        this.monitoringPoint = monitoringPoint;
         this.port = port;
         this.csf = csf;
         this.ssf = ssf;
@@ -142,6 +145,6 @@ public class MonitorImpl extends UnicastRemoteObject implements Monitor {
     public RootNode login(Locale locale, String username, String password) throws IOException, SQLException {
         AOServConnector connector=AOServConnector.getConnector(username, password, logger);
         connector.testConnect();
-        return RootNodeImpl.getRootNode(locale, connector, port, csf, ssf);
+        return RootNodeImpl.getRootNode(locale, connector, monitoringPoint, port, csf, ssf);
     }
 }

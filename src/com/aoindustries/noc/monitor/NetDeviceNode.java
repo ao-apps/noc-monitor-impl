@@ -8,8 +8,8 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.NetDeviceID;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -113,6 +113,11 @@ public class NetDeviceNode extends NodeImpl {
     @Override
     public String getAlertMessage() {
         return null;
+    }
+
+    @Override
+    public String getId() {
+        return _label;
     }
 
     @Override

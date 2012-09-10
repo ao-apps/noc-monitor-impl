@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -29,6 +29,7 @@ public class ReverseDnsNode extends TableResultNodeImpl {
             ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
             ipAddressNode,
             ReverseDnsNodeWorker.getWorker(
+                ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
                 ipAddressNode.getIPAddress()
             ),
@@ -37,6 +38,11 @@ public class ReverseDnsNode extends TableResultNodeImpl {
             ssf
         );
         this.ipAddress = ipAddressNode.getIPAddress();
+    }
+
+    @Override
+    public String getId() {
+        return "reverse_dns";
     }
 
     @Override

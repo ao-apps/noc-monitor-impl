@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -25,6 +25,7 @@ public class DrbdNode extends TableResultNodeImpl {
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
             DrbdNodeWorker.getWorker(
+                raidNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
                 raidNode.getAOServer()
             ),
@@ -32,6 +33,11 @@ public class DrbdNode extends TableResultNodeImpl {
             csf,
             ssf
         );
+    }
+
+    @Override
+    public String getId() {
+        return "drbd";
     }
 
     @Override

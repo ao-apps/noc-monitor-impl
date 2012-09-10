@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,9 +9,10 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.BusinessAdministrator;
 import com.aoindustries.aoserv.client.SignupRequest;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableResult;
-import com.aoindustries.noc.common.TimeWithTimeZone;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.TableResult;
+import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
 import com.aoindustries.sql.ResultSetHandler;
 import java.io.File;
 import java.io.IOException;
@@ -35,12 +36,12 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
      * One unique worker is made per persistence file.
      */
     private static final Map<String, SignupsNodeWorker> workerCache = new HashMap<String,SignupsNodeWorker>();
-    static SignupsNodeWorker getWorker(File persistenceFile, AOServConnector conn) throws IOException {
+    static SignupsNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServConnector conn) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             SignupsNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new SignupsNodeWorker(persistenceFile, conn);
+                worker = new SignupsNodeWorker(monitoringPoint, persistenceFile, conn);
                 workerCache.put(path, worker);
             }
             return worker;
@@ -49,8 +50,8 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 
     private final AOServConnector conn;
 
-    SignupsNodeWorker(File persistenceFile, AOServConnector conn) {
-        super(persistenceFile);
+    SignupsNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServConnector conn) {
+        super(monitoringPoint, persistenceFile);
         this.conn = conn;
     }
 

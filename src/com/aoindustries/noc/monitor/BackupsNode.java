@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -12,11 +12,11 @@ import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.aoserv.client.FailoverFileSchedule;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.aoserv.client.ServerFarm;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
-import com.aoindustries.noc.common.TableResult;
-import com.aoindustries.noc.common.TableResultListener;
-import com.aoindustries.noc.common.TableResultNode;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
+import com.aoindustries.noc.monitor.common.TableResult;
+import com.aoindustries.noc.monitor.common.TableResultListener;
+import com.aoindustries.noc.monitor.common.TableResultNode;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
@@ -107,13 +107,18 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
     }
 
     @Override
+    public String getId() {
+        return "backups";
+    }
+
+    @Override
     public String getLabel() {
         return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.label");
     }
     
     private TableListener tableListener = new TableListener() {
         @Override
-        public void tableUpdated(Table table) {
+        public void tableUpdated(Table<?> table) {
             try {
                 verifyBackups();
             } catch(IOException err) {
@@ -257,6 +262,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             long latency = System.nanoTime() - startNanos;
             if(failoverFileReplications.isEmpty()) {
                 newResult = new TableResult(
+                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     true,
@@ -268,6 +274,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 );
             } else if(missingMobBackup) {
                 newResult = new TableResult(
+                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     true,
@@ -328,6 +335,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                     }
                 }
                 newResult = new TableResult(
+                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     false,

@@ -7,9 +7,10 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.io.CompressedDataInputStream;
 import com.aoindustries.io.CompressedDataOutputStream;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TimeSpan;
-import com.aoindustries.noc.common.UpsResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.TimeSpan;
+import com.aoindustries.noc.monitor.common.UpsResult;
 import com.aoindustries.util.persistent.BufferedSerializer;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -23,6 +24,12 @@ import java.io.InputStream;
 public class UpsResultSerializer extends BufferedSerializer<UpsResult> {
 
     private static final int VERSION = 1;
+
+    private final MonitoringPoint monitoringPoint;
+
+    public UpsResultSerializer(MonitoringPoint monitoringPoint) {
+        this.monitoringPoint = monitoringPoint;
+    }
 
     private static void writeTimeSpan(TimeSpan value, DataOutput out) throws IOException {
         out.writeLong(value==null ? Long.MIN_VALUE : value.getTimeSpan());
@@ -77,8 +84,9 @@ public class UpsResultSerializer extends BufferedSerializer<UpsResult> {
                 long latency = in.readLong();
                 AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
                 String error = in.readNullUTF();
-                if(error!=null) return new UpsResult(time, latency, alertLevel, error);
+                if(error!=null) return new UpsResult(monitoringPoint, time, latency, alertLevel, error);
                 return new UpsResult(
+                    monitoringPoint,
                     time,
                     latency,
                     alertLevel,

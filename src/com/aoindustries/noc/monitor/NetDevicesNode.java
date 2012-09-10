@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,8 +8,8 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.Server;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
@@ -92,13 +92,18 @@ public class NetDevicesNode extends NodeImpl {
     }
 
     @Override
+    public String getId() {
+        return "net_devices";
+    }
+
+    @Override
     public String getLabel() {
         return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "NetDevicesNode.label");
     }
     
     private TableListener tableListener = new TableListener() {
         @Override
-        public void tableUpdated(Table table) {
+        public void tableUpdated(Table<?> table) {
             try {
                 verifyNetDevices();
             } catch(IOException err) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,8 +7,8 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.Node;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -31,6 +31,7 @@ public class IPAddressNode extends NodeImpl {
 
     final IPAddressesNode ipAddressesNode;
     private final IPAddress ipAddress;
+    private final String id;
     private final String label;
     private final boolean isPingable;
 
@@ -47,6 +48,7 @@ public class IPAddressNode extends NodeImpl {
         this.ipAddress = ipAddress;
         String ip = ipAddress.getIPAddress();
         String externalIp = ipAddress.getExternalIpAddress();
+        this.id = ip;
         this.label = (externalIp==null ? ip : (ip+'@'+externalIp)) + '/' + ipAddress.getHostname();
         // Private IPs and loopback IPs are not externally pingable
         this.isPingable =
@@ -134,6 +136,11 @@ public class IPAddressNode extends NodeImpl {
     @Override
     public String getAlertMessage() {
         return null;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override

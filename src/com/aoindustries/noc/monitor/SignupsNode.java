@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -18,11 +18,14 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class SignupsNode extends TableResultNodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     SignupsNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
         super(
             rootNode,
             rootNode,
             SignupsNodeWorker.getWorker(
+                rootNode.monitoringPoint,
                 new File(rootNode.getPersistenceDirectory(), "signups"),
                 rootNode.conn
             ),
@@ -30,6 +33,11 @@ public class SignupsNode extends TableResultNodeImpl {
             csf,
             ssf
         );
+    }
+
+    @Override
+    public String getId() {
+        return "signups";
     }
 
     @Override

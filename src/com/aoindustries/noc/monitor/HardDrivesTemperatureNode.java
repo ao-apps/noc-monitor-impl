@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -18,11 +18,14 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class HardDrivesTemperatureNode extends TableResultNodeImpl {
 
+    private static final long serialVersionUID = 1L;
+
     HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
         super(
             hardDrivesNode.serverNode.serversNode.rootNode,
             hardDrivesNode,
             HardDrivesTemperatureNodeWorker.getWorker(
+                hardDrivesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
                 hardDrivesNode.getAOServer()
             ),
@@ -30,6 +33,11 @@ public class HardDrivesTemperatureNode extends TableResultNodeImpl {
             csf,
             ssf
         );
+    }
+
+    @Override
+    public String getId() {
+        return "hard_drives";
     }
 
     @Override

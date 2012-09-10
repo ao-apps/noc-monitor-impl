@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,12 +7,14 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.AlertLevelChange;
-import com.aoindustries.noc.common.Node;
-import com.aoindustries.noc.common.NodeSnapshot;
-import com.aoindustries.noc.common.RootNode;
-import com.aoindustries.noc.common.TreeListener;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.AlertLevelChange;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.Node;
+import com.aoindustries.noc.monitor.common.NodeSnapshot;
+import com.aoindustries.noc.monitor.common.RootNode;
+import com.aoindustries.noc.monitor.common.TreeListener;
+import com.aoindustries.util.AoCollections;
 import com.aoindustries.util.ErrorPrinter;
 import com.aoindustries.util.concurrent.ExecutorService;
 import java.io.File;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.SortedSet;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,6 +119,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     static RootNodeImpl getRootNode(
         Locale locale,
         AOServConnector connector,
+        MonitoringPoint monitoringPoint,
         int port,
         RMIClientSocketFactory csf,
         RMIServerSocketFactory ssf
@@ -125,7 +129,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             RootNodeImpl rootNode = rootNodeCache.get(key);
             if(rootNode==null) {
                 if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
-                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, port, csf, ssf);
+                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, monitoringPoint, port, csf, ssf);
                 // Start as a background task
                 executorService.submitUnbounded(
                     new Runnable() {
@@ -154,16 +158,18 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     final Locale locale;
     final AOServConnector conn;
+    final MonitoringPoint monitoringPoint;
 
     volatile private OtherDevicesNode otherDevicesNode;
     volatile private PhysicalServersNode physicalServersNode;
     volatile private VirtualServersNode virtualServersNode;
     volatile private SignupsNode signupsNode;
 
-    private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    private RootNodeImpl(Locale locale, AOServConnector conn, MonitoringPoint monitoringPoint, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
         this.locale = locale;
         this.conn = conn;
+        this.monitoringPoint = monitoringPoint;
     }
 
     @Override
@@ -235,6 +241,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     @Override
     public String getAlertMessage() {
         return null;
+    }
+
+    @Override
+    public String getId() {
+        return "root";
     }
 
     @Override
@@ -528,6 +539,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     @Override
     public NodeSnapshot getSnapshot() throws RemoteException {
         return new NodeSnapshot(null, this);
+    }
+
+    @Override
+    public SortedSet<MonitoringPoint> getMonitoringPoints() throws RemoteException {
+        return AoCollections.singletonSortedSet(monitoringPoint);
     }
 
     /**

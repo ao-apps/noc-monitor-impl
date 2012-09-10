@@ -7,8 +7,9 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.util.persistent.PersistentLinkedList;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.TableMultiResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.TableMultiResult;
 import com.aoindustries.util.persistent.PersistentCollections;
 import com.aoindustries.util.persistent.ProtectionLevel;
 import com.aoindustries.util.persistent.Serializer;
@@ -54,6 +55,8 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
     private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
+    final protected MonitoringPoint monitoringPoint;
+
     /**
      * The most recent timer task
      */
@@ -67,7 +70,8 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
     final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl<R>>();
 
-    TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
+    TableMultiResultNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, Serializer<R> serializer) throws IOException {
+        this.monitoringPoint = monitoringPoint;
         this.results = new PersistentLinkedList<R>(
             PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
             //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,10 +9,11 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.SchemaType;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.NanoTimeSpan;
-import com.aoindustries.noc.common.TableResult;
-import com.aoindustries.noc.common.TimeWithTimeZone;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.NanoTimeSpan;
+import com.aoindustries.noc.monitor.common.TableResult;
+import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -112,9 +113,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
         Cache inCache = Lookup.getDefaultCache(DClass.IN);
         inCache.setMaxEntries(-1);
         if(logger.isLoggable(Level.FINE)) {
-            logger.fine("maxCache="+inCache.getMaxCache());
-            logger.fine("maxEntries="+inCache.getMaxEntries());
-            logger.fine("maxNCache="+inCache.getMaxNCache());
+            logger.log(Level.FINE, "maxCache={0}", inCache.getMaxCache());
+            logger.log(Level.FINE, "maxEntries={0}", inCache.getMaxEntries());
+            logger.log(Level.FINE, "maxNCache={0}", inCache.getMaxNCache());
         }
     }
 
@@ -303,12 +304,12 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
      * One unique worker is made per persistence file (and should match the ipAddress exactly)
      */
     private static final Map<String, BlacklistsNodeWorker> workerCache = new HashMap<String,BlacklistsNodeWorker>();
-    static BlacklistsNodeWorker getWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+    static BlacklistsNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             BlacklistsNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new BlacklistsNodeWorker(persistenceFile, ipAddress);
+                worker = new BlacklistsNodeWorker(monitoringPoint, persistenceFile, ipAddress);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.ipAddress.equals(ipAddress)) throw new AssertionError("worker.ipAddress!=ipAddress: "+worker.ipAddress+"!="+ipAddress);
@@ -321,8 +322,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
     final private IPAddress ipAddress;
     final private List<BlacklistLookup> lookups;
 
-    BlacklistsNodeWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
-        super(persistenceFile);
+    BlacklistsNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+        super(monitoringPoint, persistenceFile);
         this.ipAddress = ipAddress;
         // Build the list of lookups
         RblBlacklist[] rblBlacklists = {
@@ -858,7 +859,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
         Set<String> basenames = new HashSet<String>(rblBlacklists.length*4/3+1);
         for(BlacklistLookup rblBlacklist : rblBlacklists) {
             if(basenames.add(rblBlacklist.getBaseName())) lookups.add(rblBlacklist);
-            else logger.log(Level.WARNING, "Ignoring duplicate basename: "+rblBlacklist.getBaseName());
+            else logger.log(Level.WARNING, "Ignoring duplicate basename: {0}", rblBlacklist.getBaseName());
         }
         if(checkSmtpBlacklist) {
             lookups.add(new SmtpBlacklist("att.net", AlertLevel.MEDIUM));

@@ -6,7 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.noc.common.NetDeviceBitRateResult;
+import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -26,6 +26,7 @@ public class NetDeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitR
             netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
             netDeviceNode,
             NetDeviceBitRateNodeWorker.getWorker(
+                netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 netDeviceNode.getPersistenceDirectory(),
                 netDeviceNode.getNetDevice()
             ),
@@ -33,6 +34,11 @@ public class NetDeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitR
             csf,
             ssf
         );
+    }
+
+    @Override
+    public String getId() {
+        return "bit_rate";
     }
 
     @Override

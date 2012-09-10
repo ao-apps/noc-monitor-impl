@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2012 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,8 +7,9 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.io.CompressedDataInputStream;
 import com.aoindustries.io.CompressedDataOutputStream;
-import com.aoindustries.noc.common.AlertLevel;
-import com.aoindustries.noc.common.NetDeviceBitRateResult;
+import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
+import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import com.aoindustries.util.persistent.BufferedSerializer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,6 +21,12 @@ import java.io.InputStream;
 public class NetDeviceBitRateResultSerializer extends BufferedSerializer<NetDeviceBitRateResult> {
 
     private static final int VERSION = 1;
+
+    private final MonitoringPoint monitoringPoint;
+
+    public NetDeviceBitRateResultSerializer(MonitoringPoint monitoringPoint) {
+        this.monitoringPoint = monitoringPoint;
+    }
 
     @Override
     protected void serialize(NetDeviceBitRateResult value, ByteArrayOutputStream buffer) throws IOException {
@@ -56,8 +63,9 @@ public class NetDeviceBitRateResultSerializer extends BufferedSerializer<NetDevi
                 long latency = in.readLong();
                 AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
                 String error = in.readNullUTF();
-                if(error!=null) return new NetDeviceBitRateResult(time, latency, alertLevel, error);
+                if(error!=null) return new NetDeviceBitRateResult(monitoringPoint, time, latency, alertLevel, error);
                 return new NetDeviceBitRateResult(
+                    monitoringPoint,
                     time,
                     latency,
                     alertLevel,
