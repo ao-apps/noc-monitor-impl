@@ -11,8 +11,6 @@ import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.Locale;
 
@@ -27,7 +25,7 @@ public class BackupNode extends TableResultNodeImpl {
     final private String id;
     final private String label;
     
-    BackupNode(BackupsNode backupsNode, FailoverFileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    BackupNode(BackupsNode backupsNode, FailoverFileReplication failoverFileReplication) throws IOException, SQLException {
         super(
             backupsNode.serverNode.serversNode.rootNode,
             backupsNode,
@@ -35,10 +33,7 @@ public class BackupNode extends TableResultNodeImpl {
                 backupsNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
                 failoverFileReplication
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
         this.failoverFileReplication = failoverFileReplication;
         BackupPartition backupPartition = failoverFileReplication.getBackupPartition();

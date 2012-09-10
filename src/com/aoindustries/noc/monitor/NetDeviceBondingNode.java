@@ -8,8 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 
 /**
  * The node for the bonding monitoring.
@@ -20,18 +18,15 @@ public class NetDeviceBondingNode extends SingleResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    NetDeviceBondingNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    NetDeviceBondingNode(NetDeviceNode netDeviceNode) throws IOException {
         super(
-            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+            netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode,
             netDeviceNode,
             NetDeviceBondingNodeWorker.getWorker(
-                netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
+                netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
                 netDeviceNode.getNetDevice()
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
     }
 

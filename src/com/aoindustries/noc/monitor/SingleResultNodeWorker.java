@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 /**
  * The workers for single results node.
@@ -109,8 +108,6 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     @Override
     final public void run() {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         boolean lastSuccessful = false;
         synchronized(timerTaskLock) {if(timerTask==null) return;}
         try {
@@ -220,8 +217,6 @@ abstract class SingleResultNodeWorker implements Runnable {
      * Notifies all of the listeners.
      */
     private void singleResultUpdated(SingleResult singleResult) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         synchronized(singleResultNodeImpls) {
             for(SingleResultNodeImpl singleResultNodeImpl : singleResultNodeImpls) {
                 singleResultNodeImpl.singleResultUpdated(singleResult);

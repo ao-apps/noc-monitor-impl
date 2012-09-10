@@ -8,8 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 
 /**
  * The node for the 3ware monitoring.
@@ -20,7 +18,7 @@ public class MdRaidNode extends SingleResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    MdRaidNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    MdRaidNode(RaidNode raidNode) throws IOException {
         super(
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
@@ -28,10 +26,7 @@ public class MdRaidNode extends SingleResultNodeImpl {
                 raidNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(raidNode.getPersistenceDirectory(), "mdstat"),
                 raidNode.getAOServer()
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
     }
 

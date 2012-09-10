@@ -11,9 +11,6 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,14 +29,13 @@ public class HardDrivesNode extends NodeImpl {
 
     volatile private HardDrivesTemperatureNode _hardDriveTemperatureNode;
 
-    HardDrivesNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+    HardDrivesNode(ServerNode serverNode, AOServer aoServer) {
         this.serverNode = serverNode;
         this._aoServer = aoServer;
     }
 
     @Override
-    public Node getParent() {
+    public ServerNode getParent() {
         return serverNode;
     }
 
@@ -98,7 +94,7 @@ public class HardDrivesNode extends NodeImpl {
     
     synchronized void start() throws IOException {
         if(_hardDriveTemperatureNode==null) {
-            _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
+            _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this);
             _hardDriveTemperatureNode.start();
             serverNode.serversNode.rootNode.nodeAdded();
         }

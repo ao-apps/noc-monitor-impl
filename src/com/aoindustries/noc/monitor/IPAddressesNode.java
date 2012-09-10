@@ -15,15 +15,11 @@ import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.SwingUtilities;
 
 /**
  * The node of all IPAddresses per NetDevice.
@@ -37,14 +33,12 @@ public class IPAddressesNode extends NodeImpl {
     final NetDeviceNode netDeviceNode;
     private final List<IPAddressNode> ipAddressNodes = new ArrayList<IPAddressNode>();
 
-    IPAddressesNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
-
+    IPAddressesNode(NetDeviceNode netDeviceNode) {
         this.netDeviceNode = netDeviceNode;
     }
 
     @Override
-    public Node getParent() {
+    public NetDeviceNode getParent() {
         return netDeviceNode;
     }
     
@@ -111,14 +105,14 @@ public class IPAddressesNode extends NodeImpl {
 
     void start() throws IOException, SQLException {
         synchronized(ipAddressNodes) {
-            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
+            netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
             verifyIPAddresses();
         }
     }
     
     void stop() {
         synchronized(ipAddressNodes) {
-            RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+            RootNodeImpl rootNode = netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode;
             rootNode.conn.getIpAddresses().removeTableListener(tableListener);
             for(IPAddressNode ipAddressNode : ipAddressNodes) {
                 ipAddressNode.stop();
@@ -128,10 +122,8 @@ public class IPAddressesNode extends NodeImpl {
         }
     }
 
-    private void verifyIPAddresses() throws RemoteException, IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
-        final RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+    private void verifyIPAddresses() throws IOException, SQLException {
+        final RootNodeImpl rootNode = netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode;
 
         NetDevice netDevice = netDeviceNode.getNetDevice();
         List<IPAddress> ipAddresses = netDevice.getIPAddresses();
@@ -153,7 +145,7 @@ public class IPAddressesNode extends NodeImpl {
                 assert !ipAddress.isWildcard() : "Wildcard IP address on NetDevice: "+netDevice;
                 if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
                     // Insert into proper index
-                    IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
+                    IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress);
                     ipAddressNodes.add(c, ipAddressNode);
                     ipAddressNode.start();
                     rootNode.nodeAdded();

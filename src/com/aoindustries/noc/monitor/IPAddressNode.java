@@ -11,14 +11,10 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.SwingUtilities;
 
 /**
  * The node per IPAddress.
@@ -40,10 +36,7 @@ public class IPAddressNode extends NodeImpl {
     volatile private ReverseDnsNode reverseDnsNode;
     volatile private BlacklistsNode blacklistsNode;
 
-    IPAddressNode(IPAddressesNode ipAddressesNode, IPAddress ipAddress, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
-        super(port, csf, ssf);
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
+    IPAddressNode(IPAddressesNode ipAddressesNode, IPAddress ipAddress) throws SQLException, IOException {
         this.ipAddressesNode = ipAddressesNode;
         this.ipAddress = ipAddress;
         String ip = ipAddress.getIPAddress();
@@ -61,7 +54,7 @@ public class IPAddressNode extends NodeImpl {
     }
 
     @Override
-    public Node getParent() {
+    public IPAddressesNode getParent() {
         return ipAddressesNode;
     }
     
@@ -148,17 +141,17 @@ public class IPAddressNode extends NodeImpl {
         return label;
     }
 
-    synchronized void start() throws RemoteException, IOException, SQLException {
-        RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+    synchronized void start() throws IOException, SQLException {
+        RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode;
         if(isPingable) {
             if(pingNode==null) {
-                pingNode = new PingNode(this, port, csf, ssf);
+                pingNode = new PingNode(this);
                 pingNode.start();
                 rootNode.nodeAdded();
             }
         }
         if(netBindsNode==null) {
-            netBindsNode = new NetBindsNode(this, port, csf, ssf);
+            netBindsNode = new NetBindsNode(this);
             netBindsNode.start();
             rootNode.nodeAdded();
         }
@@ -168,7 +161,7 @@ public class IPAddressNode extends NodeImpl {
             if(ip==null) ip = ipAddress.getIPAddress();
             // Skip private IP addresses
             if(!IPAddress.isPrivate(ip)) {
-                reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
+                reverseDnsNode = new ReverseDnsNode(this);
                 reverseDnsNode.start();
                 rootNode.nodeAdded();
             }
@@ -179,7 +172,7 @@ public class IPAddressNode extends NodeImpl {
             if(ip==null) ip = ipAddress.getIPAddress();
             // Skip private IP addresses
             if(!IPAddress.isPrivate(ip)) {
-                blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
+                blacklistsNode = new BlacklistsNode(this);
                 blacklistsNode.start();
                 rootNode.nodeAdded();
             }
@@ -187,7 +180,7 @@ public class IPAddressNode extends NodeImpl {
     }
 
     synchronized void stop() {
-        RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+        RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode;
 
         if(blacklistsNode!=null) {
             blacklistsNode.stop();

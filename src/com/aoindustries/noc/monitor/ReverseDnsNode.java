@@ -9,8 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 
 /**
@@ -24,18 +22,15 @@ public class ReverseDnsNode extends TableResultNodeImpl {
 
     private final IPAddress ipAddress;
     
-    ReverseDnsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    ReverseDnsNode(IPAddressNode ipAddressNode) throws IOException, SQLException {
         super(
-            ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+            ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode,
             ipAddressNode,
             ReverseDnsNodeWorker.getWorker(
-                ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
+                ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
                 ipAddressNode.getIPAddress()
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
         this.ipAddress = ipAddressNode.getIPAddress();
     }

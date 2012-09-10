@@ -8,8 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 
 /**
  * The node for the DRBD monitoring.
@@ -20,7 +18,7 @@ public class DrbdNode extends TableResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    DrbdNode(RaidNode raidNode) throws IOException {
         super(
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
@@ -28,10 +26,7 @@ public class DrbdNode extends TableResultNodeImpl {
                 raidNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
                 raidNode.getAOServer()
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
     }
 

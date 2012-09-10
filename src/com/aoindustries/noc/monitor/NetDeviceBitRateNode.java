@@ -8,8 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,18 +19,15 @@ public class NetDeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitR
 
     private static final long serialVersionUID = 1L;
 
-    NetDeviceBitRateNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    NetDeviceBitRateNode(NetDeviceNode netDeviceNode) throws IOException {
         super(
-            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+            netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode,
             netDeviceNode,
             NetDeviceBitRateNodeWorker.getWorker(
-                netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
+                netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 netDeviceNode.getPersistenceDirectory(),
                 netDeviceNode.getNetDevice()
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
     }
 

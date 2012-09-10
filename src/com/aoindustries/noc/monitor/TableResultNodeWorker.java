@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 /**
  * The workers for table results node.
@@ -111,8 +110,6 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 
     @Override
     final public void run() {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         boolean lastSuccessful = false;
         synchronized(timerTaskLock) {if(timerTask==null) return;}
         AlertLevel maxAlertLevel = alertLevel;
@@ -259,8 +256,6 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
      * Notifies all of the listeners.
      */
     private void tableResultUpdated(TableResult tableResult) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         synchronized(tableResultNodeImpls) {
             for(TableResultNodeImpl tableResultNodeImpl : tableResultNodeImpls) {
                 tableResultNodeImpl.tableResultUpdated(tableResult);

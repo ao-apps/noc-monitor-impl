@@ -9,8 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.NetBindResult;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -28,18 +26,15 @@ public class NetBindNode extends TableMultiResultNodeImpl<NetBindResult> {
     private final String id;
     private final String label;
 
-    NetBindNode(NetBindsNode netBindsNode, NetBindsNode.NetMonitorSetting netMonitorSetting, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, IOException, SQLException {
+    NetBindNode(NetBindsNode netBindsNode, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException, SQLException {
         super(
-            netBindsNode.ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+            netBindsNode.ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode,
             netBindsNode,
             NetBindNodeWorker.getWorker(
-                netBindsNode.ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
+                netBindsNode.ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(netBindsNode.getPersistenceDirectory(), netMonitorSetting.getPort()+"_"+netMonitorSetting.getNetProtocol()),
                 netMonitorSetting
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
         this.netMonitorSetting = netMonitorSetting;
         this.id = netMonitorSetting.getPort()+"/"+netMonitorSetting.getNetProtocol();

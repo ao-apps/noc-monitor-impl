@@ -8,8 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 
 /**
  * The node for the signups monitoring.
@@ -20,7 +18,7 @@ public class SignupsNode extends TableResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    SignupsNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    SignupsNode(RootNodeImpl rootNode) throws IOException {
         super(
             rootNode,
             rootNode,
@@ -28,10 +26,7 @@ public class SignupsNode extends TableResultNodeImpl {
                 rootNode.monitoringPoint,
                 new File(rootNode.getPersistenceDirectory(), "signups"),
                 rootNode.conn
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
     }
 

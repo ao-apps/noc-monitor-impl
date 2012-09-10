@@ -15,9 +15,6 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,8 +37,7 @@ public class MySQLSlaveNode extends NodeImpl {
     volatile private MySQLSlaveStatusNode _mysqlSlaveStatusNode;
     volatile private MySQLDatabasesNode _mysqlDatabasesNode;
 
-    MySQLSlaveNode(MySQLSlavesNode mysqlSlavesNode, FailoverMySQLReplication mysqlReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
-        super(port, csf, ssf);
+    MySQLSlaveNode(MySQLSlavesNode mysqlSlavesNode, FailoverMySQLReplication mysqlReplication) throws IOException, SQLException {
         this.mysqlSlavesNode = mysqlSlavesNode;
         this._mysqlReplication = mysqlReplication;
         FailoverFileReplication replication = mysqlReplication.getFailoverFileReplication();
@@ -67,7 +63,7 @@ public class MySQLSlaveNode extends NodeImpl {
     }
 
     @Override
-    public Node getParent() {
+    public MySQLSlavesNode getParent() {
         return mysqlSlavesNode;
     }
 
@@ -133,12 +129,12 @@ public class MySQLSlaveNode extends NodeImpl {
     synchronized void start() throws IOException, SQLException {
         RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode;
         if(_mysqlSlaveStatusNode==null) {
-            _mysqlSlaveStatusNode = new MySQLSlaveStatusNode(this, port, csf, ssf);
+            _mysqlSlaveStatusNode = new MySQLSlaveStatusNode(this);
             _mysqlSlaveStatusNode.start();
             rootNode.nodeAdded();
         }
         if(_mysqlDatabasesNode==null) {
-            _mysqlDatabasesNode = new MySQLDatabasesNode(this, port, csf, ssf);
+            _mysqlDatabasesNode = new MySQLDatabasesNode(this);
             _mysqlDatabasesNode.start();
             rootNode.nodeAdded();
         }

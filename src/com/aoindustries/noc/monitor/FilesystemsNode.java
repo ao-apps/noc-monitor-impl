@@ -9,8 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 
 /**
  * The node for the filesystem monitoring.
@@ -21,7 +19,7 @@ public class FilesystemsNode extends TableResultNodeImpl {
 
     private final AOServer _aoServer;
     
-    FilesystemsNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    FilesystemsNode(ServerNode serverNode, AOServer aoServer) throws IOException {
         super(
             serverNode.serversNode.rootNode,
             serverNode,
@@ -29,10 +27,7 @@ public class FilesystemsNode extends TableResultNodeImpl {
                 serverNode.serversNode.rootNode.monitoringPoint,
                 new File(serverNode.getPersistenceDirectory(), "filesystems"),
                 aoServer
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
         this._aoServer = aoServer;
     }

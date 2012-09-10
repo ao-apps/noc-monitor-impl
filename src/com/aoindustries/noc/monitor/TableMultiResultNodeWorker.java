@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 /**
  * The workers for table multi-results node.
@@ -157,8 +156,6 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
     @Override
     final public void run() {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         boolean lastSuccessful = false;
         synchronized(timerTaskLock) {if(timerTask==null) return;}
         try {
@@ -302,8 +299,6 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
      * Notifies all of the listeners.
      */
     private void tableMultiResultAdded(R result) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         synchronized(tableMultiResultNodeImpls) {
             for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                 tableMultiResultNodeImpl.tableMultiResultAdded(result);
@@ -315,8 +310,6 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
      * Notifies all of the listeners.
      */
     private void tableMultiResultRemoved(R result) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         synchronized(tableMultiResultNodeImpls) {
             for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                 tableMultiResultNodeImpl.tableMultiResultRemoved(result);

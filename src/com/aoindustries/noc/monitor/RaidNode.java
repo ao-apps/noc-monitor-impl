@@ -12,9 +12,6 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,14 +33,13 @@ public class RaidNode extends NodeImpl {
     volatile private MdRaidNode _mdRaidNode;
     volatile private DrbdNode _drbdNode;
 
-    RaidNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+    RaidNode(ServerNode serverNode, AOServer aoServer) {
         this.serverNode = serverNode;
         this.aoServer = aoServer;
     }
 
     @Override
-    public Node getParent() {
+    public ServerNode getParent() {
         return serverNode;
     }
 
@@ -122,14 +118,14 @@ public class RaidNode extends NodeImpl {
             || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
         ) {
             if(_threeWareRaidNode==null) {
-                _threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
+                _threeWareRaidNode = new ThreeWareRaidNode(this);
                 _threeWareRaidNode.start();
                 serverNode.serversNode.rootNode.nodeAdded();
             }
         }
         // Any machine may have MD RAID (at least until all services run in Xen outers)
         if(_mdRaidNode==null) {
-            _mdRaidNode = new MdRaidNode(this, port, csf, ssf);
+            _mdRaidNode = new MdRaidNode(this);
             _mdRaidNode.start();
             serverNode.serversNode.rootNode.nodeAdded();
         }
@@ -139,7 +135,7 @@ public class RaidNode extends NodeImpl {
             || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
         ) {
             if(_drbdNode==null) {
-                _drbdNode = new DrbdNode(this, port, csf, ssf);
+                _drbdNode = new DrbdNode(this);
                 _drbdNode.start();
                 serverNode.serversNode.rootNode.nodeAdded();
             }

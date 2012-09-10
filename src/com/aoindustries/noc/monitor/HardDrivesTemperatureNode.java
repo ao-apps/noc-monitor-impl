@@ -8,8 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 
 /**
  * The node for the hard drive temperature monitoring.
@@ -20,7 +18,7 @@ public class HardDrivesTemperatureNode extends TableResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode) throws IOException {
         super(
             hardDrivesNode.serverNode.serversNode.rootNode,
             hardDrivesNode,
@@ -28,10 +26,7 @@ public class HardDrivesTemperatureNode extends TableResultNodeImpl {
                 hardDrivesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
                 hardDrivesNode.getAOServer()
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
     }
 

@@ -8,8 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +22,7 @@ public class MySQLSlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicat
 
     private static final long serialVersionUID = 1L;
 
-    MySQLSlaveStatusNode(MySQLSlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    MySQLSlaveStatusNode(MySQLSlaveNode mysqlSlaveNode) throws IOException, SQLException {
         super(
             mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
             mysqlSlaveNode,
@@ -32,10 +30,7 @@ public class MySQLSlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicat
                 mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.monitoringPoint,
                 mysqlSlaveNode.getPersistenceDirectory(),
                 mysqlSlaveNode.getFailoverMySQLReplication()
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
     }
 

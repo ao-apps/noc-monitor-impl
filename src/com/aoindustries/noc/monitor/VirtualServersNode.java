@@ -9,9 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.Server;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 
 /**
@@ -23,8 +20,8 @@ public class VirtualServersNode extends ServersNode {
 
     private static final long serialVersionUID = 1L;
 
-    VirtualServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(rootNode, port, csf, ssf);
+    VirtualServersNode(RootNodeImpl rootNode) {
+        super(rootNode);
     }
 
     @Override
