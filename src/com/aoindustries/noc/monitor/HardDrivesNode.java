@@ -95,7 +95,6 @@ public class HardDrivesNode extends NodeImpl {
     synchronized void start() throws IOException {
         if(_hardDriveTemperatureNode==null) {
             _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this);
-            serverNode.serversNode.rootNode.initNode(_hardDriveTemperatureNode);
             _hardDriveTemperatureNode.start();
             serverNode.serversNode.rootNode.nodeAdded();
         }
@@ -105,7 +104,6 @@ public class HardDrivesNode extends NodeImpl {
         if(_hardDriveTemperatureNode!=null) {
             _hardDriveTemperatureNode.stop();
             serverNode.serversNode.rootNode.nodeRemoved();
-            serverNode.serversNode.rootNode.destroyNode(_hardDriveTemperatureNode);
             _hardDriveTemperatureNode = null;
         }
     }

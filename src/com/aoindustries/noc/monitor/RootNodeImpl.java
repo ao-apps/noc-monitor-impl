@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.lang.ObjectUtils;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.AlertLevelChange;
 import com.aoindustries.noc.monitor.common.MonitoringPoint;
@@ -74,12 +73,10 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
         final private Locale locale;
         final private AOServConnector connector;
-        final private MonitorContext context;
 
-        private RootNodeCacheKey(Locale locale, AOServConnector connector, MonitorContext context) {
+        private RootNodeCacheKey(Locale locale, AOServConnector connector) {
             this.locale = locale;
             this.connector = connector;
-            this.context = context;
         }
 
         @Override
@@ -90,7 +87,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             return
                 locale.equals(other.locale)
                 && connector.equals(other.connector)
-                && ObjectUtils.equals(context, other.context)
             ;
         }
         
@@ -99,7 +95,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             return
                 locale.hashCode()
                 ^ (connector.hashCode()*7)
-                ^ (context==null ? 0 : context.hashCode())*11
             ;
         }
     }
@@ -116,15 +111,14 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     static RootNodeImpl getRootNode(
         Locale locale,
         AOServConnector connector,
-        MonitoringPoint monitoringPoint,
-        MonitorContext context
+        MonitoringPoint monitoringPoint
     ) {
-        RootNodeCacheKey key = new RootNodeCacheKey(locale, connector, context);
+        RootNodeCacheKey key = new RootNodeCacheKey(locale, connector);
         synchronized(rootNodeCache) {
             RootNodeImpl rootNode = rootNodeCache.get(key);
             if(rootNode==null) {
                 if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
-                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, monitoringPoint, context);
+                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, monitoringPoint);
                 rootNodeCache.put(key, newRootNode);
                 rootNode = newRootNode;
 
@@ -135,7 +129,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                         public void run() {
                             if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
                             try {
-                                newRootNode.initNode(newRootNode); // Never destroyed
                                 newRootNode.start();
                             } catch(ThreadDeath TD) {
                                 throw TD;
@@ -156,32 +149,16 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     final Locale locale;
     final AOServConnector conn;
     final MonitoringPoint monitoringPoint;
-    private final MonitorContext context;
 
     volatile private OtherDevicesNode otherDevicesNode;
     volatile private PhysicalServersNode physicalServersNode;
     volatile private VirtualServersNode virtualServersNode;
     volatile private SignupsNode signupsNode;
 
-    private RootNodeImpl(Locale locale, AOServConnector conn, MonitoringPoint monitoringPoint, MonitorContext context) {
+    private RootNodeImpl(Locale locale, AOServConnector conn, MonitoringPoint monitoringPoint) {
         this.locale = locale;
         this.conn = conn;
         this.monitoringPoint = monitoringPoint;
-        this.context = context;
-    }
-
-    /**
-     * Calls context, if set.
-     */
-    void initNode(Node node) {
-        if(context!=null) context.initNode(node);
-    }
-
-    /**
-     * Calls context, if set.
-     */
-    void destroyNode(Node node) {
-        if(context!=null) context.destroyNode(node);
     }
 
     @Override
@@ -271,28 +248,24 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     synchronized private void start() throws IOException, SQLException {
         if(otherDevicesNode==null) {
             otherDevicesNode = new OtherDevicesNode(this);
-            initNode(otherDevicesNode);
             otherDevicesNode.start();
             nodeAdded();
         }
 
         if(physicalServersNode==null) {
             physicalServersNode = new PhysicalServersNode(this);
-            initNode(physicalServersNode);
             physicalServersNode.start();
             nodeAdded();
         }
 
         if(virtualServersNode==null) {
             virtualServersNode = new VirtualServersNode(this);
-            initNode(virtualServersNode);
             virtualServersNode.start();
             nodeAdded();
         }
 
         if(signupsNode==null) {
             signupsNode = new SignupsNode(this);
-            initNode(signupsNode);
             signupsNode.start();
             nodeAdded();
         }

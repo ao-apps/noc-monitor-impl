@@ -210,7 +210,6 @@ public class ServerNode extends NodeImpl {
         serversNode.rootNode.conn.getServers().addTableListener(tableListener, 100);
         if(_backupsNode==null) {
             _backupsNode = new BackupsNode(this);
-            serversNode.rootNode.initNode(_backupsNode);
             _backupsNode.start();
             serversNode.rootNode.nodeAdded();
         }
@@ -237,61 +236,51 @@ public class ServerNode extends NodeImpl {
         if(_timeNode!=null) {
             _timeNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_timeNode);
             _timeNode = null;
         }
         if(_memoryNode!=null) {
             _memoryNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_memoryNode);
             _memoryNode = null;
         }
         if(_loadAverageNode!=null) {
             _loadAverageNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_loadAverageNode);
             _loadAverageNode = null;
         }
         if(_filesystemsNode!=null) {
             _filesystemsNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_filesystemsNode);
             _filesystemsNode = null;
         }
         if(_upsNode!=null) {
             _upsNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_upsNode);
             _upsNode = null;
         }
         if(_raidNode!=null) {
             _raidNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_raidNode);
             _raidNode = null;
         }
         if(_hardDrivesNode!=null) {
             _hardDrivesNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_hardDrivesNode);
             _hardDrivesNode = null;
         }
         if(_mysqlServersNode!=null) {
             _mysqlServersNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_mysqlServersNode);
             _mysqlServersNode = null;
         }
         if(_netDevicesNode!=null) {
             _netDevicesNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_netDevicesNode);
             _netDevicesNode = null;
         }
         if(_backupsNode!=null) {
             _backupsNode.stop();
             serversNode.rootNode.nodeRemoved();
-            serversNode.rootNode.destroyNode(_backupsNode);
             _backupsNode = null;
         }
     }
@@ -299,7 +288,6 @@ public class ServerNode extends NodeImpl {
     synchronized private void verifyNetDevices() throws IOException, SQLException {
         if(_netDevicesNode==null) {
             _netDevicesNode = new NetDevicesNode(this, _server);
-            serversNode.rootNode.initNode(_netDevicesNode);
             _netDevicesNode.start();
             serversNode.rootNode.nodeAdded();
         }
@@ -312,7 +300,6 @@ public class ServerNode extends NodeImpl {
             // Has MySQL server
             if(_mysqlServersNode==null) {
                 _mysqlServersNode = new MySQLServersNode(this, aoServer);
-                serversNode.rootNode.initNode(_mysqlServersNode);
                 _mysqlServersNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -321,7 +308,6 @@ public class ServerNode extends NodeImpl {
             if(_mysqlServersNode!=null) {
                 _mysqlServersNode.stop();
                 serversNode.rootNode.nodeRemoved();
-                serversNode.rootNode.destroyNode(_mysqlServersNode);
                 _mysqlServersNode = null;
             }
         }
@@ -341,7 +327,6 @@ public class ServerNode extends NodeImpl {
             // Has hddtemp monitoring
             if(_hardDrivesNode==null) {
                 _hardDrivesNode = new HardDrivesNode(this, aoServer);
-                serversNode.rootNode.initNode(_hardDrivesNode);
                 _hardDrivesNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -350,7 +335,6 @@ public class ServerNode extends NodeImpl {
             if(_hardDrivesNode!=null) {
                 _hardDrivesNode.stop();
                 serversNode.rootNode.nodeRemoved();
-                serversNode.rootNode.destroyNode(_hardDrivesNode);
                 _hardDrivesNode = null;
             }
         }
@@ -363,14 +347,12 @@ public class ServerNode extends NodeImpl {
             if(_raidNode!=null) {
                 _raidNode.stop();
                 serversNode.rootNode.nodeRemoved();
-                serversNode.rootNode.destroyNode(_raidNode);
                 _raidNode = null;
             }
         } else {
             // Has raid monitoring
             if(_raidNode==null) {
                 _raidNode = new RaidNode(this, aoServer);
-                serversNode.rootNode.initNode(_raidNode);
                 _raidNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -389,14 +371,12 @@ public class ServerNode extends NodeImpl {
             if(_upsNode!=null) {
                 _upsNode.stop();
                 serversNode.rootNode.nodeRemoved();
-                serversNode.rootNode.destroyNode(_upsNode);
                 _upsNode = null;
             }
         } else {
             // Has UPS monitoring
             if(_upsNode==null) {
                 _upsNode = new UpsNode(this, aoServer);
-                serversNode.rootNode.initNode(_upsNode);
                 _upsNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -410,14 +390,12 @@ public class ServerNode extends NodeImpl {
             if(_filesystemsNode!=null) {
                 _filesystemsNode.stop();
                 serversNode.rootNode.nodeRemoved();
-                serversNode.rootNode.destroyNode(_filesystemsNode);
                 _filesystemsNode = null;
             }
         } else {
             // Has filesystem monitoring
             if(_filesystemsNode==null) {
                 _filesystemsNode = new FilesystemsNode(this, aoServer);
-                serversNode.rootNode.initNode(_filesystemsNode);
                 _filesystemsNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -431,14 +409,12 @@ public class ServerNode extends NodeImpl {
             if(_loadAverageNode!=null) {
                 _loadAverageNode.stop();
                 serversNode.rootNode.nodeRemoved();
-                serversNode.rootNode.destroyNode(_loadAverageNode);
                 _loadAverageNode = null;
             }
         } else {
             // Has load monitoring
             if(_loadAverageNode==null) {
                 _loadAverageNode = new LoadAverageNode(this, aoServer);
-                serversNode.rootNode.initNode(_loadAverageNode);
                 _loadAverageNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -452,14 +428,12 @@ public class ServerNode extends NodeImpl {
             if(_memoryNode!=null) {
                 _memoryNode.stop();
                 serversNode.rootNode.nodeRemoved();
-                serversNode.rootNode.destroyNode(_memoryNode);
                 _memoryNode = null;
             }
         } else {
             // Has memory monitoring
             if(_memoryNode==null) {
                 _memoryNode = new MemoryNode(this, aoServer);
-                serversNode.rootNode.initNode(_memoryNode);
                 _memoryNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -473,14 +447,12 @@ public class ServerNode extends NodeImpl {
             if(_timeNode!=null) {
                 _timeNode.stop();
                 serversNode.rootNode.nodeRemoved();
-                serversNode.rootNode.destroyNode(_timeNode);
                 _timeNode = null;
             }
         } else {
             // Has time monitoring
             if(_timeNode==null) {
                 _timeNode = new TimeNode(this, aoServer);
-                serversNode.rootNode.initNode(_timeNode);
                 _timeNode.start();
                 serversNode.rootNode.nodeAdded();
             }

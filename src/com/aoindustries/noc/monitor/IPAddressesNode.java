@@ -117,7 +117,6 @@ public class IPAddressesNode extends NodeImpl {
             for(IPAddressNode ipAddressNode : ipAddressNodes) {
                 ipAddressNode.stop();
                 rootNode.nodeRemoved();
-                rootNode.destroyNode(ipAddressNode);
             }
             ipAddressNodes.clear();
         }
@@ -138,7 +137,6 @@ public class IPAddressesNode extends NodeImpl {
                     ipAddressNode.stop();
                     ipAddressNodeIter.remove();
                     rootNode.nodeRemoved();
-                    rootNode.destroyNode(ipAddressNode);
                 }
             }
             // Add new ones
@@ -148,7 +146,6 @@ public class IPAddressesNode extends NodeImpl {
                 if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
                     // Insert into proper index
                     IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress);
-                    rootNode.initNode(ipAddressNode);
                     ipAddressNodes.add(c, ipAddressNode);
                     ipAddressNode.start();
                     rootNode.nodeAdded();

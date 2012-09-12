@@ -131,7 +131,6 @@ public class NetDeviceNode extends NodeImpl {
             ) {
                 if(_netDeviceBitRateNode==null) {
                     _netDeviceBitRateNode = new NetDeviceBitRateNode(this);
-                    rootNode.initNode(_netDeviceBitRateNode);
                     _netDeviceBitRateNode.start();
                     rootNode.nodeAdded();
                 }
@@ -144,7 +143,6 @@ public class NetDeviceNode extends NodeImpl {
             ) {
                 if(_netDeviceBondingNode==null) {
                     _netDeviceBondingNode = new NetDeviceBondingNode(this);
-                    rootNode.initNode(_netDeviceBondingNode);
                     _netDeviceBondingNode.start();
                     rootNode.nodeAdded();
                 }
@@ -153,7 +151,6 @@ public class NetDeviceNode extends NodeImpl {
 
         if(_ipAddressesNode==null) {
             _ipAddressesNode = new IPAddressesNode(this);
-            rootNode.initNode(_ipAddressesNode);
             _ipAddressesNode.start();
             rootNode.nodeAdded();
         }
@@ -164,21 +161,18 @@ public class NetDeviceNode extends NodeImpl {
         if(_ipAddressesNode!=null) {
             _ipAddressesNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(_ipAddressesNode);
             _ipAddressesNode = null;
         }
 
         if(_netDeviceBondingNode!=null) {
             _netDeviceBondingNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(_netDeviceBondingNode);
             _netDeviceBondingNode = null;
         }
 
         if(_netDeviceBitRateNode!=null) {
             _netDeviceBitRateNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(_netDeviceBitRateNode);
             _netDeviceBitRateNode = null;
         }
     }

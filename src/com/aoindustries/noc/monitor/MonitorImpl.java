@@ -125,20 +125,15 @@ public class MonitorImpl implements Monitor {
     private static final long serialVersionUID = 2L;
 
     final private MonitoringPoint monitoringPoint;
-    private volatile MonitorContext context;
 
     public MonitorImpl(MonitoringPoint monitoringPoint) {
         this.monitoringPoint = monitoringPoint;
-    }
-
-    public void setMonitorContext(MonitorContext context) {
-        this.context = context;
     }
 
     @Override
     public RootNode login(Locale locale, String username, String password) throws IOException, SQLException {
         AOServConnector connector=AOServConnector.getConnector(username, password, logger);
         connector.testConnect();
-        return RootNodeImpl.getRootNode(locale, connector, monitoringPoint, context);
+        return RootNodeImpl.getRootNode(locale, connector, monitoringPoint);
     }
 }

@@ -146,14 +146,12 @@ public class IPAddressNode extends NodeImpl {
         if(isPingable) {
             if(pingNode==null) {
                 pingNode = new PingNode(this);
-                rootNode.initNode(pingNode);
                 pingNode.start();
                 rootNode.nodeAdded();
             }
         }
         if(netBindsNode==null) {
             netBindsNode = new NetBindsNode(this);
-            rootNode.initNode(netBindsNode);
             netBindsNode.start();
             rootNode.nodeAdded();
         }
@@ -164,7 +162,6 @@ public class IPAddressNode extends NodeImpl {
             // Skip private IP addresses
             if(!IPAddress.isPrivate(ip)) {
                 reverseDnsNode = new ReverseDnsNode(this);
-                rootNode.initNode(reverseDnsNode);
                 reverseDnsNode.start();
                 rootNode.nodeAdded();
             }
@@ -176,7 +173,6 @@ public class IPAddressNode extends NodeImpl {
             // Skip private IP addresses
             if(!IPAddress.isPrivate(ip)) {
                 blacklistsNode = new BlacklistsNode(this);
-                rootNode.initNode(blacklistsNode);
                 blacklistsNode.start();
                 rootNode.nodeAdded();
             }
@@ -189,28 +185,24 @@ public class IPAddressNode extends NodeImpl {
         if(blacklistsNode!=null) {
             blacklistsNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(blacklistsNode);
             blacklistsNode = null;
         }
 
         if(reverseDnsNode!=null) {
             reverseDnsNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(reverseDnsNode);
             reverseDnsNode = null;
         }
 
         if(netBindsNode!=null) {
             netBindsNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(netBindsNode);
             netBindsNode = null;
         }
 
         if(pingNode!=null) {
             pingNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(pingNode);
             pingNode = null;
         }
     }

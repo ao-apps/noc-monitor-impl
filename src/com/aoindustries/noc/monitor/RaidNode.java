@@ -119,7 +119,6 @@ public class RaidNode extends NodeImpl {
         ) {
             if(_threeWareRaidNode==null) {
                 _threeWareRaidNode = new ThreeWareRaidNode(this);
-                serverNode.serversNode.rootNode.initNode(_threeWareRaidNode);
                 _threeWareRaidNode.start();
                 serverNode.serversNode.rootNode.nodeAdded();
             }
@@ -127,7 +126,6 @@ public class RaidNode extends NodeImpl {
         // Any machine may have MD RAID (at least until all services run in Xen outers)
         if(_mdRaidNode==null) {
             _mdRaidNode = new MdRaidNode(this);
-            serverNode.serversNode.rootNode.initNode(_mdRaidNode);
             _mdRaidNode.start();
             serverNode.serversNode.rootNode.nodeAdded();
         }
@@ -138,7 +136,6 @@ public class RaidNode extends NodeImpl {
         ) {
             if(_drbdNode==null) {
                 _drbdNode = new DrbdNode(this);
-                serverNode.serversNode.rootNode.initNode(_drbdNode);
                 _drbdNode.start();
                 serverNode.serversNode.rootNode.nodeAdded();
             }
@@ -149,19 +146,16 @@ public class RaidNode extends NodeImpl {
         if(_threeWareRaidNode!=null) {
             _threeWareRaidNode.stop();
             serverNode.serversNode.rootNode.nodeRemoved();
-            serverNode.serversNode.rootNode.destroyNode(_threeWareRaidNode);
             _threeWareRaidNode = null;
         }
         if(_mdRaidNode!=null) {
             _mdRaidNode.stop();
             serverNode.serversNode.rootNode.nodeRemoved();
-            serverNode.serversNode.rootNode.destroyNode(_mdRaidNode);
             _mdRaidNode = null;
         }
         if(_drbdNode!=null) {
             _drbdNode.stop();
             serverNode.serversNode.rootNode.nodeRemoved();
-            serverNode.serversNode.rootNode.destroyNode(_drbdNode);
             _drbdNode = null;
         }
     }

@@ -119,7 +119,6 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
     synchronized void start() throws IOException {
         if(mysqlCheckTablesNode==null) {
             mysqlCheckTablesNode = new MySQLCheckTablesNode(this);
-            mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.initNode(mysqlCheckTablesNode);
             mysqlCheckTablesNode.start();
             mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
         }
@@ -132,7 +131,6 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
         if(mysqlCheckTablesNode!=null) {
             mysqlCheckTablesNode.stop();
             mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
-            mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.destroyNode(mysqlCheckTablesNode);
             mysqlCheckTablesNode = null;
         }
     }

@@ -107,7 +107,6 @@ abstract public class ServersNode extends NodeImpl {
             for(ServerNode serverNode : serverNodes) {
                 serverNode.stop();
                 rootNode.nodeRemoved();
-                rootNode.destroyNode(serverNode);
             }
             serverNodes.clear();
         }
@@ -131,7 +130,6 @@ abstract public class ServersNode extends NodeImpl {
                         serverNode.stop();
                         serverNodeIter.remove();
                         rootNode.nodeRemoved();
-                        rootNode.destroyNode(serverNode);
                     }
                 }
                 // Add new ones
@@ -140,7 +138,6 @@ abstract public class ServersNode extends NodeImpl {
                     if(c>=serverNodes.size() || !server.equals(serverNodes.get(c).getServer())) {
                         // Insert into proper index
                         ServerNode serverNode = new ServerNode(this, server);
-                        rootNode.initNode(serverNode);
                         serverNodes.add(c, serverNode);
                         serverNode.start();
                         rootNode.nodeAdded();

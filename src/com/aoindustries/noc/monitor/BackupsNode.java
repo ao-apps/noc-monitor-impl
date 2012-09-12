@@ -141,7 +141,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 backupNode.removeTableResultListener(this);
                 backupNode.stop();
                 serverNode.serversNode.rootNode.nodeRemoved();
-                serverNode.serversNode.rootNode.destroyNode(backupNode);
             }
             backupNodes.clear();
         }
@@ -238,7 +237,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                     backupNode.stop();
                     backupNodeIter.remove();
                     serverNode.serversNode.rootNode.nodeRemoved();
-                    serverNode.serversNode.rootNode.destroyNode(backupNode);
                 }
             }
             // Add new ones
@@ -247,7 +245,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 if(c>=backupNodes.size() || !failoverFileReplication.equals(backupNodes.get(c).getFailoverFileReplication())) {
                     // Insert into proper index
                     BackupNode backupNode = new BackupNode(this, failoverFileReplication);
-                    serverNode.serversNode.rootNode.initNode(backupNode);
                     backupNodes.add(c, backupNode);
                     backupNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();

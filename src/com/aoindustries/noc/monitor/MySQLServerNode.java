@@ -129,7 +129,6 @@ public class MySQLServerNode extends NodeImpl {
         verifyFailoverMySQLReplications();
         if(_mysqlDatabasesNode==null) {
             _mysqlDatabasesNode = new MySQLDatabasesNode(this);
-            rootNode.initNode(_mysqlDatabasesNode);
             _mysqlDatabasesNode.start();
             rootNode.nodeAdded();
         }
@@ -140,14 +139,12 @@ public class MySQLServerNode extends NodeImpl {
         if(_mysqlSlavesNode!=null) {
             _mysqlSlavesNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(_mysqlSlavesNode);
             _mysqlSlavesNode = null;
         }
 
         if(_mysqlDatabasesNode!=null) {
             _mysqlDatabasesNode.stop();
             rootNode.nodeRemoved();
-            rootNode.destroyNode(_mysqlDatabasesNode);
             _mysqlDatabasesNode = null;
         }
     }
@@ -157,7 +154,6 @@ public class MySQLServerNode extends NodeImpl {
         if(!failoverMySQLReplications.isEmpty()) {
             if(_mysqlSlavesNode==null) {
                 _mysqlSlavesNode = new MySQLSlavesNode(this);
-                _mysqlServersNode.serverNode.serversNode.rootNode.initNode(_mysqlSlavesNode);
                 _mysqlSlavesNode.start();
                 _mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
             }
@@ -165,7 +161,6 @@ public class MySQLServerNode extends NodeImpl {
             if(_mysqlSlavesNode!=null) {
                 _mysqlSlavesNode.stop();
                 _mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
-                _mysqlServersNode.serverNode.serversNode.rootNode.destroyNode(_mysqlSlavesNode);
                 _mysqlSlavesNode = null;
             }
         }
