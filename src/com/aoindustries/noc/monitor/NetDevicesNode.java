@@ -122,6 +122,7 @@ public class NetDevicesNode extends NodeImpl {
             for(NetDeviceNode netDeviceNode : netDeviceNodes) {
                 netDeviceNode.stop();
                 serverNode.serversNode.rootNode.nodeRemoved();
+                serverNode.serversNode.rootNode.destroyNode(netDeviceNode);
             }
             netDeviceNodes.clear();
         }
@@ -139,6 +140,7 @@ public class NetDevicesNode extends NodeImpl {
                     netDeviceNode.stop();
                     netDeviceNodeIter.remove();
                     serverNode.serversNode.rootNode.nodeRemoved();
+                    serverNode.serversNode.rootNode.destroyNode(netDeviceNode);
                 }
             }
             // Add new ones
@@ -147,6 +149,7 @@ public class NetDevicesNode extends NodeImpl {
                 if(c>=netDeviceNodes.size() || !netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
                     // Insert into proper index
                     NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice);
+                    serverNode.serversNode.rootNode.initNode(netDeviceNode);
                     netDeviceNodes.add(c, netDeviceNode);
                     netDeviceNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();

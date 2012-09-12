@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.lang.ObjectUtils;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.AlertLevelChange;
 import com.aoindustries.noc.monitor.common.MonitoringPoint;
@@ -55,7 +56,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     public static final Random random = new Random();
 
     /**
-     * One thread pool is shared by all instances, and it is never
+     * One thread pool is shared by all instances, and it is never disposed.
      */
     public final static ExecutorService executorService = ExecutorService.newInstance();
 
@@ -73,10 +74,12 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
         final private Locale locale;
         final private AOServConnector connector;
+        final private MonitorContext context;
 
-        private RootNodeCacheKey(Locale locale, AOServConnector connector) {
+        private RootNodeCacheKey(Locale locale, AOServConnector connector, MonitorContext context) {
             this.locale = locale;
             this.connector = connector;
+            this.context = context;
         }
 
         @Override
@@ -87,9 +90,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             return
                 locale.equals(other.locale)
                 && connector.equals(other.connector)
-                //&& port==other.port
-                //&& csf.equals(other.csf)
-                //&& ssf.equals(other.ssf)
+                && ObjectUtils.equals(context, other.context)
             ;
         }
         
@@ -98,26 +99,35 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             return
                 locale.hashCode()
                 ^ (connector.hashCode()*7)
-                //^ (port*11)
-                //^ (csf.hashCode()*13)
-                //^ (ssf.hashCode()*17)
+                ^ (context==null ? 0 : context.hashCode())*11
             ;
         }
     }
 
     private static final Map<RootNodeCacheKey, RootNodeImpl> rootNodeCache = new HashMap<RootNodeCacheKey, RootNodeImpl>();
 
+    /**
+     * @param locale
+     * @param connector
+     * @param monitoringPoint
+     * @param context optional
+     * @return
+     */
     static RootNodeImpl getRootNode(
         Locale locale,
         AOServConnector connector,
-        MonitoringPoint monitoringPoint
+        MonitoringPoint monitoringPoint,
+        MonitorContext context
     ) {
-        RootNodeCacheKey key = new RootNodeCacheKey(locale, connector);
+        RootNodeCacheKey key = new RootNodeCacheKey(locale, connector, context);
         synchronized(rootNodeCache) {
             RootNodeImpl rootNode = rootNodeCache.get(key);
             if(rootNode==null) {
                 if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
-                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, monitoringPoint);
+                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, monitoringPoint, context);
+                rootNodeCache.put(key, newRootNode);
+                rootNode = newRootNode;
+
                 // Start as a background task
                 executorService.submitUnbounded(
                     new Runnable() {
@@ -125,6 +135,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                         public void run() {
                             if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
                             try {
+                                newRootNode.initNode(newRootNode); // Never destroyed
                                 newRootNode.start();
                             } catch(ThreadDeath TD) {
                                 throw TD;
@@ -135,8 +146,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                         }
                     }
                 );
-                rootNodeCache.put(key, newRootNode);
-                rootNode = newRootNode;
             } else {
                 if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Reusing existing rootNode");
             }
@@ -147,16 +156,32 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     final Locale locale;
     final AOServConnector conn;
     final MonitoringPoint monitoringPoint;
+    private final MonitorContext context;
 
     volatile private OtherDevicesNode otherDevicesNode;
     volatile private PhysicalServersNode physicalServersNode;
     volatile private VirtualServersNode virtualServersNode;
     volatile private SignupsNode signupsNode;
 
-    private RootNodeImpl(Locale locale, AOServConnector conn, MonitoringPoint monitoringPoint) {
+    private RootNodeImpl(Locale locale, AOServConnector conn, MonitoringPoint monitoringPoint, MonitorContext context) {
         this.locale = locale;
         this.conn = conn;
         this.monitoringPoint = monitoringPoint;
+        this.context = context;
+    }
+
+    /**
+     * Calls context, if set.
+     */
+    void initNode(Node node) {
+        if(context!=null) context.initNode(node);
+    }
+
+    /**
+     * Calls context, if set.
+     */
+    void destroyNode(Node node) {
+        if(context!=null) context.destroyNode(node);
     }
 
     @Override
@@ -246,24 +271,28 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     synchronized private void start() throws IOException, SQLException {
         if(otherDevicesNode==null) {
             otherDevicesNode = new OtherDevicesNode(this);
+            initNode(otherDevicesNode);
             otherDevicesNode.start();
             nodeAdded();
         }
 
         if(physicalServersNode==null) {
             physicalServersNode = new PhysicalServersNode(this);
+            initNode(physicalServersNode);
             physicalServersNode.start();
             nodeAdded();
         }
 
         if(virtualServersNode==null) {
             virtualServersNode = new VirtualServersNode(this);
+            initNode(virtualServersNode);
             virtualServersNode.start();
             nodeAdded();
         }
 
         if(signupsNode==null) {
             signupsNode = new SignupsNode(this);
+            initNode(signupsNode);
             signupsNode.start();
             nodeAdded();
         }

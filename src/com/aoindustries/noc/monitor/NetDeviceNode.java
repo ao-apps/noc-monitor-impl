@@ -131,6 +131,7 @@ public class NetDeviceNode extends NodeImpl {
             ) {
                 if(_netDeviceBitRateNode==null) {
                     _netDeviceBitRateNode = new NetDeviceBitRateNode(this);
+                    rootNode.initNode(_netDeviceBitRateNode);
                     _netDeviceBitRateNode.start();
                     rootNode.nodeAdded();
                 }
@@ -143,6 +144,7 @@ public class NetDeviceNode extends NodeImpl {
             ) {
                 if(_netDeviceBondingNode==null) {
                     _netDeviceBondingNode = new NetDeviceBondingNode(this);
+                    rootNode.initNode(_netDeviceBondingNode);
                     _netDeviceBondingNode.start();
                     rootNode.nodeAdded();
                 }
@@ -151,6 +153,7 @@ public class NetDeviceNode extends NodeImpl {
 
         if(_ipAddressesNode==null) {
             _ipAddressesNode = new IPAddressesNode(this);
+            rootNode.initNode(_ipAddressesNode);
             _ipAddressesNode.start();
             rootNode.nodeAdded();
         }
@@ -160,20 +163,23 @@ public class NetDeviceNode extends NodeImpl {
         final RootNodeImpl rootNode = _netDevicesNode.serverNode.serversNode.rootNode;
         if(_ipAddressesNode!=null) {
             _ipAddressesNode.stop();
-            _ipAddressesNode = null;
             rootNode.nodeRemoved();
+            rootNode.destroyNode(_ipAddressesNode);
+            _ipAddressesNode = null;
         }
 
         if(_netDeviceBondingNode!=null) {
             _netDeviceBondingNode.stop();
-            _netDeviceBondingNode = null;
             rootNode.nodeRemoved();
+            rootNode.destroyNode(_netDeviceBondingNode);
+            _netDeviceBondingNode = null;
         }
 
         if(_netDeviceBitRateNode!=null) {
             _netDeviceBitRateNode.stop();
-            _netDeviceBitRateNode = null;
             rootNode.nodeRemoved();
+            rootNode.destroyNode(_netDeviceBitRateNode);
+            _netDeviceBitRateNode = null;
         }
     }
 

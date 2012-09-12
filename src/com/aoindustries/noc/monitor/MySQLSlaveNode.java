@@ -130,11 +130,13 @@ public class MySQLSlaveNode extends NodeImpl {
         RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode;
         if(_mysqlSlaveStatusNode==null) {
             _mysqlSlaveStatusNode = new MySQLSlaveStatusNode(this);
+            rootNode.initNode(_mysqlSlaveStatusNode);
             _mysqlSlaveStatusNode.start();
             rootNode.nodeAdded();
         }
         if(_mysqlDatabasesNode==null) {
             _mysqlDatabasesNode = new MySQLDatabasesNode(this);
+            rootNode.initNode(_mysqlDatabasesNode);
             _mysqlDatabasesNode.start();
             rootNode.nodeAdded();
         }
@@ -144,14 +146,16 @@ public class MySQLSlaveNode extends NodeImpl {
         RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode;
         if(_mysqlSlaveStatusNode!=null) {
             _mysqlSlaveStatusNode.stop();
-            _mysqlSlaveStatusNode = null;
             rootNode.nodeRemoved();
+            rootNode.destroyNode(_mysqlSlaveStatusNode);
+            _mysqlSlaveStatusNode = null;
         }
 
         if(_mysqlDatabasesNode!=null) {
             _mysqlDatabasesNode.stop();
-            _mysqlDatabasesNode = null;
             rootNode.nodeRemoved();
+            rootNode.destroyNode(_mysqlDatabasesNode);
+            _mysqlDatabasesNode = null;
         }
     }
 

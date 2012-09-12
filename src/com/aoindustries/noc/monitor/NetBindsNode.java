@@ -128,6 +128,7 @@ public class NetBindsNode extends NodeImpl {
             for(NetBindNode netBindNode : netBindNodes) {
                 netBindNode.stop();
                 rootNode.nodeRemoved();
+                rootNode.destroyNode(netBindNode);
             }
             netBindNodes.clear();
         }
@@ -284,6 +285,7 @@ public class NetBindsNode extends NodeImpl {
                     netBindNode.stop();
                     netBindNodeIter.remove();
                     rootNode.nodeRemoved();
+                    rootNode.destroyNode(netBindNode);
                 }
             }
             // Add new ones
@@ -292,6 +294,7 @@ public class NetBindsNode extends NodeImpl {
                 if(c>=netBindNodes.size() || !netMonitorSetting.equals(netBindNodes.get(c).getNetMonitorSetting())) {
                     // Insert into proper index
                     NetBindNode netBindNode = new NetBindNode(this, netMonitorSetting);
+                    rootNode.initNode(netBindNode);
                     netBindNodes.add(c, netBindNode);
                     netBindNode.start();
                     rootNode.nodeAdded();

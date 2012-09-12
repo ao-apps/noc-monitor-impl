@@ -122,6 +122,7 @@ public class MySQLDatabasesNode extends NodeImpl {
             for(MySQLDatabaseNode mysqlDatabaseNode : mysqlDatabaseNodes) {
                 mysqlDatabaseNode.stop();
                 mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+                mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.destroyNode(mysqlDatabaseNode);
             }
             mysqlDatabaseNodes.clear();
         }
@@ -139,6 +140,7 @@ public class MySQLDatabasesNode extends NodeImpl {
                     mysqlDatabaseNode.stop();
                     mysqlDatabaseNodeIter.remove();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+                    mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.destroyNode(mysqlDatabaseNode);
                 }
             }
             // Add new ones
@@ -147,6 +149,7 @@ public class MySQLDatabasesNode extends NodeImpl {
                 if(c>=mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
                     // Insert into proper index
                     MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null);
+                    mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.initNode(mysqlDatabaseNode);
                     mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
                     mysqlDatabaseNode.start();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();

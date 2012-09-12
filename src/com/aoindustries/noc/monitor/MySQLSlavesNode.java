@@ -117,6 +117,7 @@ public class MySQLSlavesNode extends NodeImpl {
             for(MySQLSlaveNode mysqlSlaveNode : mysqlSlaveNodes) {
                 mysqlSlaveNode.stop();
                 mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+                mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.destroyNode(mysqlSlaveNode);
             }
             mysqlSlaveNodes.clear();
         }
@@ -134,6 +135,7 @@ public class MySQLSlavesNode extends NodeImpl {
                     mysqlSlaveNode.stop();
                     mysqlSlaveNodeIter.remove();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+                    mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.destroyNode(mysqlSlaveNode);
                 }
             }
             // Add new ones
@@ -142,6 +144,7 @@ public class MySQLSlavesNode extends NodeImpl {
                 if(c>=mysqlSlaveNodes.size() || !mysqlReplication.equals(mysqlSlaveNodes.get(c).getFailoverMySQLReplication())) {
                     // Insert into proper index
                     MySQLSlaveNode mysqlSlaveNode = new MySQLSlaveNode(this, mysqlReplication);
+                    mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.initNode(mysqlSlaveNode);
                     mysqlSlaveNodes.add(c, mysqlSlaveNode);
                     mysqlSlaveNode.start();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();

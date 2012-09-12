@@ -122,6 +122,7 @@ public class MySQLServersNode extends NodeImpl {
             for(MySQLServerNode mysqlServerNode : mysqlServerNodes) {
                 mysqlServerNode.stop();
                 serverNode.serversNode.rootNode.nodeRemoved();
+                serverNode.serversNode.rootNode.destroyNode(mysqlServerNode);
             }
             mysqlServerNodes.clear();
         }
@@ -139,6 +140,7 @@ public class MySQLServersNode extends NodeImpl {
                     mysqlServerNode.stop();
                     mysqlServerNodeIter.remove();
                     serverNode.serversNode.rootNode.nodeRemoved();
+                    serverNode.serversNode.rootNode.destroyNode(mysqlServerNode);
                 }
             }
             // Add new ones
@@ -147,6 +149,7 @@ public class MySQLServersNode extends NodeImpl {
                 if(c>=mysqlServerNodes.size() || !mysqlServer.equals(mysqlServerNodes.get(c).getMySQLServer())) {
                     // Insert into proper index
                     MySQLServerNode mysqlServerNode = new MySQLServerNode(this, mysqlServer);
+                    serverNode.serversNode.rootNode.initNode(mysqlServerNode);
                     mysqlServerNodes.add(c, mysqlServerNode);
                     mysqlServerNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();
