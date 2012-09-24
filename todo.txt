@@ -1,0 +1,11 @@
+add RMI exports of monitor and all nodes to noc-monitor-server
+mode-specific getParent
+decouple all listeners into queues that maintain correct ordering
+add retry loop in MonitorServer.main
+threadlocale in monitorserver
+
+remove all unicastexport from non-rmi packages
+
+remove all @version
+
+follow same accessor pattern for app resources as other projects
