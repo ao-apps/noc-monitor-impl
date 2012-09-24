@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,7 +51,7 @@ public class HardDrivesNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the list.
      */
     @Override
-    public List<? extends Node> getChildren() {
+    public List<? extends NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(1);
         HardDrivesTemperatureNode hardDriveTemperatureNode = this._hardDriveTemperatureNode;
         if(hardDriveTemperatureNode!=null) children.add(hardDriveTemperatureNode);

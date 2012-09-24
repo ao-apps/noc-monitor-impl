@@ -6,7 +6,6 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.noc.monitor.common.SingleResult;
 import com.aoindustries.noc.monitor.common.SingleResultListener;
 import com.aoindustries.noc.monitor.common.SingleResultNode;
@@ -52,7 +51,7 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
     }
 
     @Override
-    final public List<? extends Node> getChildren() {
+    final public List<? extends NodeImpl> getChildren() {
         return Collections.emptyList();
     }
 

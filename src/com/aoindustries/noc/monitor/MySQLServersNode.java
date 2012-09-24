@@ -9,7 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
@@ -57,7 +56,7 @@ public class MySQLServersNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends Node> getChildren() {
+    public List<? extends NodeImpl> getChildren() {
         synchronized(mysqlServerNodes) {
             return Collections.unmodifiableList(new ArrayList<MySQLServerNode>(mysqlServerNodes));
         }

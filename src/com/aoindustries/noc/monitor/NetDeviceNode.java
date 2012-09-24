@@ -9,7 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.NetDeviceID;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -58,7 +57,7 @@ public class NetDeviceNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends Node> getChildren() {
+    public List<? extends NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(3);
 
         NetDeviceBitRateNode netDeviceBitRateNode = this._netDeviceBitRateNode;

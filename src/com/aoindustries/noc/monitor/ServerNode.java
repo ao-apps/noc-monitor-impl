@@ -12,7 +12,6 @@ import com.aoindustries.aoserv.client.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
@@ -75,7 +74,7 @@ public class ServerNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends Node> getChildren() {
+    public List<? extends NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(9);
         BackupsNode backupsNode = this._backupsNode;
         if(backupsNode!=null) children.add(backupsNode);

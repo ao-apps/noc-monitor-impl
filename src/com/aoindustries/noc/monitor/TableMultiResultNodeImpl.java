@@ -6,7 +6,6 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.noc.monitor.common.TableMultiResult;
 import com.aoindustries.noc.monitor.common.TableMultiResultListener;
 import com.aoindustries.noc.monitor.common.TableMultiResultNode;
@@ -52,7 +51,7 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
     }
 
     @Override
-    final public List<? extends Node> getChildren() {
+    final public List<? extends NodeImpl> getChildren() {
         return Collections.emptyList();
     }
 

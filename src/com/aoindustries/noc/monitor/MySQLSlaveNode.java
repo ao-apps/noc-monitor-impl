@@ -12,7 +12,6 @@ import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -76,7 +75,7 @@ public class MySQLSlaveNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends Node> getChildren() {
+    public List<? extends NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(2);
 
         MySQLSlaveStatusNode mysqlSlaveStatusNode = this._mysqlSlaveStatusNode;

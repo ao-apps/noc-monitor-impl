@@ -9,7 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -67,7 +66,7 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends Node> getChildren() {
+    public List<? extends NodeImpl> getChildren() {
         MySQLCheckTablesNode myMysqlCheckTablesNode = this.mysqlCheckTablesNode;
         if(myMysqlCheckTablesNode!=null) {
             return Collections.singletonList(myMysqlCheckTablesNode);

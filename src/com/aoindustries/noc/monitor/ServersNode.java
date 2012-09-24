@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
@@ -50,7 +49,7 @@ abstract public class ServersNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    final public List<? extends Node> getChildren() {
+    final public List<? extends NodeImpl> getChildren() {
         synchronized(serverNodes) {
             return Collections.unmodifiableList(new ArrayList<ServerNode>(serverNodes));
         }

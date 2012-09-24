@@ -10,7 +10,6 @@ import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.AlertLevelChange;
 import com.aoindustries.noc.monitor.common.MonitoringPoint;
-import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.noc.monitor.common.NodeSnapshot;
 import com.aoindustries.noc.monitor.common.RootNode;
 import com.aoindustries.noc.monitor.common.TreeListener;
@@ -172,7 +171,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     }
 
     @Override
-    public List<? extends Node> getChildren() {
+    public List<? extends NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(4);
 
         OtherDevicesNode localOtherDevicesNode = this.otherDevicesNode;
