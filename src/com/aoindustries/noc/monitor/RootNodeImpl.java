@@ -520,7 +520,38 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     @Override
     public NodeSnapshot getSnapshot() throws RemoteException {
-        return new NodeSnapshot(null, this);
+        return wrapNode(this);
+    }
+
+    /**
+     * Recursively wraps the nodes in a snapshot.
+     */
+    private static NodeSnapshot wrapNode(NodeImpl node) throws RemoteException {
+        List<NodeSnapshot> newChildren;
+        {
+            List<? extends NodeImpl> children = node.getChildren();
+            int size = children.size();
+            if(size==0) {
+                newChildren = Collections.emptyList();
+            } else if(size==1) {
+                newChildren = Collections.singletonList(wrapNode(children.get(0)));
+            } else {
+                newChildren = new ArrayList<NodeSnapshot>(size);
+                for(NodeImpl child : children) {
+                    newChildren.add(wrapNode(child));
+                }
+            }
+        }
+        return new NodeSnapshot(
+            node,
+            newChildren,
+            node.getAlertLevel(),
+            node.getAlertMessage(),
+            node.getAllowsChildren(),
+            node.getId(),
+            node.getLabel(),
+            node.getUuid()
+        );
     }
 
     @Override
