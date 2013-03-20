@@ -1,3 +1,5 @@
+monitor router connection tracking capacity allocated
+
 add RMI exports of monitor and all nodes to noc-monitor-server
 mode-specific getParent
 decouple all listeners into queues that maintain correct ordering
