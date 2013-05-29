@@ -14,6 +14,7 @@ import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.aoserv.client.ServerFarm;
 import com.aoindustries.aoserv.client.VirtualDisk;
 import com.aoindustries.aoserv.client.VirtualServer;
+import com.aoindustries.aoserv.client.validator.AccountingCode;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
 import com.aoindustries.aoserv.cluster.Dom0;
@@ -183,7 +184,7 @@ public class AOServClusterBuilder {
         Map<String,AOServer.LvmReport> lvmReports,
         boolean useTarget
     ) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-        final String rootAccounting = conn.getBusinesses().getRootAccounting();
+        final AccountingCode rootAccounting = conn.getBusinesses().getRootAccounting();
 
         Cluster cluster = new Cluster(serverFarm.getName());
 
@@ -193,7 +194,7 @@ public class AOServClusterBuilder {
                 Server server = aoServer.getServer();
                 if(server.getServerFarm().equals(serverFarm)) {
                     PhysicalServer physicalServer = server.getPhysicalServer();
-                    String hostname = aoServer.getHostname();
+                    String hostname = aoServer.getHostname().toString();
                     cluster = cluster.addDom0(
                         hostname,
                         /*rack,*/
@@ -267,7 +268,7 @@ public class AOServClusterBuilder {
                 if(virtualServer!=null) {
                     // Must always be in the package with the same name as the root business
                     String packageName = server.getPackage().getName();
-                    if(!packageName.equals(rootAccounting)) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
+                    if(!packageName.equals(rootAccounting.toString())) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
                     String hostname = server.getName();
                     cluster = cluster.addDomU(
                         hostname,
@@ -355,7 +356,7 @@ public class AOServClusterBuilder {
         for(final AOServer aoServer : aoServers) {
             if(isEnabledDom0(aoServer)) {
                 futures.put(
-                    aoServer.getHostname(),
+                    aoServer.getHostname().toString(),
                     RootNodeImpl.executorService.submitUnbounded(
                         new Callable<List<AOServer.DrbdReport>>() {
                             @Override
@@ -391,7 +392,7 @@ public class AOServClusterBuilder {
         for(final AOServer aoServer : aoServers) {
             if(isEnabledDom0(aoServer)) {
                 futures.put(
-                    aoServer.getHostname(),
+                    aoServer.getHostname().toString(),
                     RootNodeImpl.executorService.submitUnbounded(
                         new Callable<AOServer.LvmReport>() {
                             @Override
@@ -427,7 +428,7 @@ public class AOServClusterBuilder {
         for(final AOServer aoServer : aoServers) {
             if(isEnabledDom0(aoServer)) {
                 futures.put(
-                    aoServer.getHostname(),
+                    aoServer.getHostname().toString(),
                     RootNodeImpl.executorService.submitUnbounded(
                         new Callable<Map<String,String>>() {
                             @Override
@@ -461,7 +462,7 @@ public class AOServClusterBuilder {
         Map<String,List<AOServer.DrbdReport>> drbdReports,
         Map<String,AOServer.LvmReport> lvmReports
     ) throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
-        final String rootAccounting = conn.getBusinesses().getRootAccounting();
+        final AccountingCode rootAccounting = conn.getBusinesses().getRootAccounting();
 
         ClusterConfiguration clusterConfiguration = new ClusterConfiguration(cluster);
 

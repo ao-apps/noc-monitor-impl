@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012 by AO Industries, Inc.,
+ * Copyright 2009-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,7 +8,7 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
-import com.aoindustries.aoserv.client.SchemaType;
+import com.aoindustries.aoserv.client.validator.DomainName;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.NanoTimeSpan;
@@ -98,7 +98,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
         @Override
         final public int compareTo(BlacklistLookup o) {
-            return SchemaType.compareHostnames(getBaseName(), o.getBaseName());
+            return DomainName.compareLabels(getBaseName(), o.getBaseName());
         }
 
         abstract String getBaseName();
@@ -132,9 +132,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
         RblBlacklist(String basename, AlertLevel maxAlertLevel) {
             this.basename = basename;
             this.maxAlertLevel = maxAlertLevel;
-            String ip = ipAddress.getExternalIpAddress();
-            if(ip==null) ip = ipAddress.getIPAddress();
-            int bits = IPAddress.getIntForIPAddress(ip);
+            com.aoindustries.aoserv.client.validator.InetAddress ip = ipAddress.getExternalIpAddress();
+            if(ip==null) ip = ipAddress.getInetAddress();
+            if(ip.isIPv6()) throw new UnsupportedOperationException("IPv6 not yet implemented");
+            int bits = IPAddress.getIntForIPAddress(ip.toString());
             this.query =
                 new StringBuilder(16+basename.length())
                 .append(bits&255)
@@ -285,7 +286,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             AOServer aoServer = ipAddress.getNetDevice().getServer().getAOServer();
             if(aoServer==null) throw new SQLException(ipAddress+": AOServer not found");
             String addressIp = address.getHostAddress();
-            String statusLine = aoServer.checkSmtpBlacklist(ipAddress.getIPAddress(), addressIp);
+            String statusLine = aoServer.checkSmtpBlacklist(ipAddress.getInetAddress(), addressIp);
             // Return results
             long endNanos = System.nanoTime();
             AlertLevel alertLevel;
@@ -844,16 +845,16 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
             new RblBlacklist("dnsbl.zetabl.org"),
             new RblBlacklist("hostkarma.junkemailfilter.com")
         };
-        String ip = ipAddress.getIPAddress();
+        //InetAddress ip = ipAddress.getInetAddress();
         boolean checkSmtpBlacklist =
-            !"64.62.174.125".equals(ip)
-            && !"64.62.174.189".equals(ip)
-            && !"64.62.174.253".equals(ip)
-            && !"64.71.144.125".equals(ip)
-            && !"66.160.183.125".equals(ip)
-            && !"66.160.183.189".equals(ip)
-            && !"66.160.183.253".equals(ip)
-            && ipAddress.getNetDevice().getServer().getAOServer()!=null
+            //!"64.62.174.125".equals(ip)
+            //&& !"64.62.174.189".equals(ip)
+            //&& !"64.62.174.253".equals(ip)
+            //&& !"64.71.144.125".equals(ip)
+            //&& !"66.160.183.125".equals(ip)
+            //&& !"66.160.183.189".equals(ip)
+            //&& !"66.160.183.253".equals(ip)
+            ipAddress.getNetDevice().getServer().getAOServer()!=null
         ;
         lookups = new ArrayList<BlacklistLookup>(checkSmtpBlacklist ? rblBlacklists.length+4 : rblBlacklists.length);
         Set<String> basenames = new HashSet<String>(rblBlacklists.length*4/3+1);

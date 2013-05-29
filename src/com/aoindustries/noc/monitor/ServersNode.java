@@ -49,7 +49,7 @@ abstract public class ServersNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    final public List<? extends NodeImpl> getChildren() {
+    final public List<ServerNode> getChildren() {
         synchronized(serverNodes) {
             return Collections.unmodifiableList(new ArrayList<ServerNode>(serverNodes));
         }

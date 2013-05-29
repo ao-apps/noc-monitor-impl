@@ -125,12 +125,12 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
         for(SignupRequest request : conn.getSignupRequests()) {
             tableData.add(request.getPackageDefinition().getBusiness().getAccounting());
             tableData.add(request.getPkey());
-            tableData.add(new TimeWithTimeZone(request.getTime()));
+            tableData.add(new TimeWithTimeZone(request.getTime().getTime()));
             tableData.add(request.getIpAddress());
             BusinessAdministrator completedBy = request.getCompletedBy();
             tableData.add(completedBy==null ? null : completedBy.getUsername().getUsername());
-            long completedTime = request.getCompletedTime();
-            tableData.add(completedTime==-1 ? null : new TimeWithTimeZone(completedTime));
+            Timestamp completedTime = request.getCompletedTime();
+            tableData.add(completedTime==null ? null : new TimeWithTimeZone(completedTime.getTime()));
         }
         return tableData;
     }

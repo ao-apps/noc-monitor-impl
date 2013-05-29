@@ -66,7 +66,7 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<MySQLCheckTablesNode> getChildren() {
         MySQLCheckTablesNode myMysqlCheckTablesNode = this.mysqlCheckTablesNode;
         if(myMysqlCheckTablesNode!=null) {
             return Collections.singletonList(myMysqlCheckTablesNode);

@@ -167,8 +167,8 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                         if(lastRaidLevel==1) {
                                             if(upCount==1 && downCount==0) {
                                                 // xen917-4.fc.aoindustries.com has a bad drive we don't fix, this is normal for it
-                                                if(aoServer.getHostname().equals("xen917-4.fc.aoindustries.com")) alertLevel = AlertLevel.NONE;
-                                                else alertLevel = AlertLevel.MEDIUM;
+                                                /*if(aoServer.getHostname().toString().equals("xen917-4.fc.aoindustries.com")) alertLevel = AlertLevel.NONE;
+                                                else*/ alertLevel = AlertLevel.MEDIUM;
                                             }
                                             else if(downCount==0) alertLevel = AlertLevel.NONE;
                                             else if(upCount>=3) alertLevel = AlertLevel.LOW;

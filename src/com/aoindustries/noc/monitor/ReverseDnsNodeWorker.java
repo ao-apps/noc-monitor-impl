@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
+import com.aoindustries.aoserv.client.validator.InetAddress;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.NanoTimeSpan;
@@ -96,12 +97,12 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
     @Override
     protected List<ReverseDnsQueryResult> getQueryResult(Locale locale) throws Exception {
         IPAddress currentIPAddress = ipAddress.getTable().get(ipAddress.getKey());
-        String ip = currentIPAddress.getExternalIpAddress();
-        if(ip==null) ip = currentIPAddress.getIPAddress();
+        InetAddress ip = currentIPAddress.getExternalIpAddress();
+        if(ip==null) ip = currentIPAddress.getInetAddress();
         ArrayList<ReverseDnsQueryResult> results = new ArrayList<ReverseDnsQueryResult>(2);
         // Reverse DNS
         //String ptrQuery = IPAddress.getReverseDnsQuery(ip);
-        Name ptrQuery = ReverseMap.fromAddress(ip);
+        Name ptrQuery = ReverseMap.fromAddress(ip.toString());
         long ptrStartNanos = System.nanoTime();
         Lookup ptrLookup = new Lookup(ptrQuery, Type.PTR);
         ptrLookup.run();
@@ -113,7 +114,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
             if(ptrRecords.length==0) {
                 results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No PTR records found", AlertLevel.LOW));
             } else {
-                String expectedHostname = currentIPAddress.getHostname();
+                String expectedHostname = currentIPAddress.getHostname().toString();
                 if(!expectedHostname.endsWith(".")) expectedHostname = expectedHostname+'.';
                 StringBuilder SB = new StringBuilder();
                 boolean expectedHostnameFound = false;
@@ -157,7 +158,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
                                 ARecord aRecord = (ARecord)rec;
                                 String aIp = aRecord.getAddress().getHostAddress();
                                 SB.append(aIp);
-                                if(ip.equals(aIp)) ipFound = true;
+                                if(ip.toString().equals(aIp)) ipFound = true;
                             }
                             String aMessage;
                             AlertLevel aAlertLevel;

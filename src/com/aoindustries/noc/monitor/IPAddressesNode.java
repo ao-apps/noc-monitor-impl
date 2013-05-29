@@ -50,7 +50,7 @@ public class IPAddressesNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<IPAddressNode> getChildren() {
         synchronized(ipAddressNodes) {
             return Collections.unmodifiableList(new ArrayList<IPAddressNode>(ipAddressNodes));
         }

@@ -72,7 +72,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<BackupNode> getChildren() {
         synchronized(backupNodes) {
             return Collections.unmodifiableList(new ArrayList<BackupNode>(backupNodes));
         }

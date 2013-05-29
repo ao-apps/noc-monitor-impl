@@ -171,7 +171,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     }
 
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(4);
 
         OtherDevicesNode localOtherDevicesNode = this.otherDevicesNode;

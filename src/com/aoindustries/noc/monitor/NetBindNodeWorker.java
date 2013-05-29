@@ -10,6 +10,7 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.Server;
+import com.aoindustries.aoserv.client.validator.InetAddress;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.NetBindResult;
@@ -74,14 +75,14 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
         NetBind netBind = netMonitorSetting.getNetBind();
         NetBind currentNetBind = netBind.getTable().get(netBind.getKey());
         // If loopback or private IP, make the monitoring request through the master->daemon channel
-        String ipAddress = netMonitorSetting.getIpAddress();
-        if(IPAddress.isPrivate(ipAddress) || IPAddress.LOOPBACK_IP.equals(ipAddress)) {
+        InetAddress ipAddress = netMonitorSetting.getIpAddress();
+        if(ipAddress.isUniqueLocal() || ipAddress.isLooback()) {
             Server server = netMonitorSetting.getServer();
             AOServer aoServer = server.getAOServer();
             if(aoServer==null) throw new IllegalArgumentException(accessor.getMessage(/*locale,*/ "NetBindNodeWorker.server.notAOServer", server));
             portMonitor = new AOServDaemonPortMonitor(
                 aoServer,
-                netMonitorSetting.getIpAddress(),
+                ipAddress,
                 netMonitorSetting.getPort(),
                 netMonitorSetting.getNetProtocol(),
                 currentNetBind.getAppProtocol().getProtocol(),
@@ -89,7 +90,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
             );
         } else {
             portMonitor = PortMonitor.getPortMonitor(
-                netMonitorSetting.getIpAddress(),
+                ipAddress,
                 netMonitorSetting.getPort(),
                 netMonitorSetting.getNetProtocol(),
                 currentNetBind.getAppProtocol().getProtocol(),

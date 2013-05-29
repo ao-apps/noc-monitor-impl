@@ -56,7 +56,7 @@ public class NetBindsNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<NetBindNode> getChildren() {
         synchronized(netBindNodes) {
             return Collections.unmodifiableList(new ArrayList<NetBindNode>(netBindNodes));
         }
@@ -155,6 +155,7 @@ public class NetBindsNode extends NodeImpl {
             int diff = server.compareTo(o.server);
             if(diff!=0) return diff;
             // IP
+			diff = ipAddress.compareTo(o.ipAddress);
             if(diff!=0) return diff;
             // port
             if(port<o.port) return -1;

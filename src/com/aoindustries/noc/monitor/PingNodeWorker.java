@@ -39,9 +39,9 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
     private static final Map<String, PingNodeWorker> workerCache = new HashMap<String,PingNodeWorker>();
     static PingNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, IPAddress ipAddress) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
-        String ip = ipAddress.getIPAddress();
-        String externalIp = ipAddress.getExternalIpAddress();
-        String pingAddress = externalIp==null ? ip : externalIp;
+        com.aoindustries.aoserv.client.validator.InetAddress ip = ipAddress.getInetAddress();
+        com.aoindustries.aoserv.client.validator.InetAddress externalIp = ipAddress.getExternalIpAddress();
+        com.aoindustries.aoserv.client.validator.InetAddress pingAddress = externalIp==null ? ip : externalIp;
         synchronized(workerCache) {
             PingNodeWorker worker = workerCache.get(path);
             if(worker==null) {
@@ -57,9 +57,9 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
     /**
      * The most recent timer task
      */
-    final private String ipAddress;
+    final private com.aoindustries.aoserv.client.validator.InetAddress ipAddress;
 
-    private PingNodeWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, String ipAddress) throws IOException {
+    private PingNodeWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, com.aoindustries.aoserv.client.validator.InetAddress ipAddress) throws IOException {
         super(monitoringPoint, new File(persistenceDirectory, "pings"), new PingResultSerializer(monitoringPoint));
         this.ipAddress = ipAddress;
     }
@@ -76,7 +76,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 
     @Override
     protected Object getSample(Locale locale) throws Exception {
-        final InetAddress inetAddress = InetAddress.getByName(ipAddress);
+        final InetAddress inetAddress = InetAddress.getByName(ipAddress.toString());
         boolean timeout = !inetAddress.isReachable(TIMEOUT);
         if(timeout) throw new TimeoutException(accessor.getMessage(/*locale,*/ "PingNodeWorker.error.timeout"));
         return SAMPLE;

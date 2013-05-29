@@ -55,7 +55,7 @@ public class RaidNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>();
         ThreeWareRaidNode threeWareRaidNode = this._threeWareRaidNode;
         if(threeWareRaidNode!=null) children.add(threeWareRaidNode);

@@ -56,7 +56,7 @@ public class MySQLServersNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<MySQLServerNode> getChildren() {
         synchronized(mysqlServerNodes) {
             return Collections.unmodifiableList(new ArrayList<MySQLServerNode>(mysqlServerNodes));
         }

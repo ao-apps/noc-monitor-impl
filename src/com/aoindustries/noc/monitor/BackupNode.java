@@ -40,7 +40,7 @@ public class BackupNode extends TableResultNodeImpl {
         this.id = this.label = accessor.getMessage(
             //rootNode.locale,
             "BackupNode.label",
-            backupPartition==null ? "null" : backupPartition.getAOServer().getHostname(),
+            backupPartition==null ? "null" : backupPartition.getAOServer().getHostname().toString(),
             backupPartition==null ? "null" : backupPartition.getPath()
         );
     }

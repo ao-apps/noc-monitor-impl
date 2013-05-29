@@ -49,7 +49,7 @@ public class MySQLSlavesNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<MySQLSlaveNode> getChildren() {
         synchronized(mysqlSlaveNodes) {
             return Collections.unmodifiableList(new ArrayList<MySQLSlaveNode>(mysqlSlaveNodes));
         }

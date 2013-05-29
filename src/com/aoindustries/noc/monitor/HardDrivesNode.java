@@ -51,8 +51,8 @@ public class HardDrivesNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the list.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
-        List<NodeImpl> children = new ArrayList<NodeImpl>(1);
+    public List<HardDrivesTemperatureNode> getChildren() {
+        List<HardDrivesTemperatureNode> children = new ArrayList<HardDrivesTemperatureNode>(1);
         HardDrivesTemperatureNode hardDriveTemperatureNode = this._hardDriveTemperatureNode;
         if(hardDriveTemperatureNode!=null) children.add(hardDriveTemperatureNode);
         return Collections.unmodifiableList(children);

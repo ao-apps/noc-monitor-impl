@@ -17,6 +17,7 @@ import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -163,9 +164,9 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
             int lineNum = 0;
             for(FailoverFileLog failoverFileLog : failoverFileLogs) {
                 lineNum++;
-                long startTime = failoverFileLog.getStartTime();
-                tableData.add(new TimeWithTimeZone(startTime, timeZone));
-                tableData.add(StringUtility.getTimeLengthString(failoverFileLog.getEndTime() - startTime));
+                Timestamp startTime = failoverFileLog.getStartTime();
+                tableData.add(new TimeWithTimeZone(startTime.getTime(), timeZone));
+                tableData.add(StringUtility.getTimeLengthString(failoverFileLog.getEndTime().getTime() - startTime.getTime()));
                 tableData.add(failoverFileLog.getScanned());
                 tableData.add(failoverFileLog.getUpdated());
                 tableData.add(StringUtility.getApproximateSize(failoverFileLog.getBytes()));

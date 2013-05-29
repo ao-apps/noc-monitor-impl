@@ -57,7 +57,7 @@ public class NetDeviceNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(3);
 
         NetDeviceBitRateNode netDeviceBitRateNode = this._netDeviceBitRateNode;

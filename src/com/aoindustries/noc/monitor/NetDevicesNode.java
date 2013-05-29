@@ -56,7 +56,7 @@ public class NetDevicesNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<NetDeviceNode> getChildren() {
         synchronized(netDeviceNodes) {
             return Collections.unmodifiableList(new ArrayList<NetDeviceNode>(netDeviceNodes));
         }

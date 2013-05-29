@@ -246,7 +246,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
         // Check for disk space percent
         {
             // Ignore on www1.fc.lnxhosting.ca:/var/backup (until they use AO-based backup code)
-            String hostname = aoServer.getHostname();
+            String hostname = aoServer.getHostname().toString();
             String mountpoint = tableData.get(index).toString();
             if(
                 !hostname.equals("www1.fc.lnxhosting.ca")

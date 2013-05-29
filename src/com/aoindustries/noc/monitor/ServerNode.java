@@ -74,7 +74,7 @@ public class ServerNode extends NodeImpl {
      * For thread safety and encapsulation, returns an unmodifiable copy of the array.
      */
     @Override
-    public List<? extends NodeImpl> getChildren() {
+    public List<NodeImpl> getChildren() {
         List<NodeImpl> children = new ArrayList<NodeImpl>(9);
         BackupsNode backupsNode = this._backupsNode;
         if(backupsNode!=null) children.add(backupsNode);
