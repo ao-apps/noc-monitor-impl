@@ -26,8 +26,6 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
     private static final Logger logger = Logger.getLogger(TableMultiResultNodeImpl.class.getName());
 
-    private static final long serialVersionUID = 1L;
-
     final RootNodeImpl rootNode;
     final NodeImpl parent;
     final TableMultiResultNodeWorker<?,R> worker;

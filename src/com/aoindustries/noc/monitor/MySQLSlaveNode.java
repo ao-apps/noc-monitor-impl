@@ -27,8 +27,6 @@ import java.util.List;
  */
 public class MySQLSlaveNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final MySQLSlavesNode mysqlSlavesNode;
     private final FailoverMySQLReplication _mysqlReplication;
     private final String id;

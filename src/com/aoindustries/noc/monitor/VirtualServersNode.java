@@ -18,8 +18,6 @@ import java.sql.SQLException;
  */
 public class VirtualServersNode extends ServersNode {
 
-    private static final long serialVersionUID = 1L;
-
     VirtualServersNode(RootNodeImpl rootNode) {
         super(rootNode);
     }

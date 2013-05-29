@@ -22,8 +22,6 @@ import java.util.List;
  */
 public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult> {
 
-    private static final long serialVersionUID = 1L;
-
     private final AOServer _aoServer;
 
     LoadAverageNode(ServerNode serverNode, AOServer aoServer) throws IOException {

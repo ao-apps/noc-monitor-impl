@@ -22,8 +22,6 @@ import java.util.UUID;
  */
 public abstract class NodeImpl implements Node {
 
-    private static final long serialVersionUID = 1L;
-
     private final UUID uuid;
 
     NodeImpl() {

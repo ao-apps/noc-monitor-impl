@@ -23,8 +23,6 @@ import java.util.List;
  */
 public class NetDeviceNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final NetDevicesNode _netDevicesNode;
     private final NetDevice _netDevice;
     private final String _label;

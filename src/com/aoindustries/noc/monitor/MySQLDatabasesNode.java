@@ -26,8 +26,6 @@ import java.util.List;
  */
 public class MySQLDatabasesNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final MySQLServerNode mysqlServerNode;
     final MySQLSlaveNode mysqlSlaveNode;
     private final List<MySQLDatabaseNode> mysqlDatabaseNodes = new ArrayList<MySQLDatabaseNode>();

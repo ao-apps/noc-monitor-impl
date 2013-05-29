@@ -16,8 +16,6 @@ import java.io.IOException;
  */
 public class SignupsNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     SignupsNode(RootNodeImpl rootNode) throws IOException {
         super(
             rootNode,

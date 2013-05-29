@@ -27,8 +27,6 @@ import java.util.List;
  */
 public class NetDevicesNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final ServerNode serverNode;
     private final Server server;
     private final List<NetDeviceNode> netDeviceNodes = new ArrayList<NetDeviceNode>();

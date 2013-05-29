@@ -20,8 +20,6 @@ import java.util.List;
  */
 public class MySQLSlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicationResult> {
 
-    private static final long serialVersionUID = 1L;
-
     MySQLSlaveStatusNode(MySQLSlaveNode mysqlSlaveNode) throws IOException, SQLException {
         super(
             mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,

@@ -42,8 +42,6 @@ import java.util.logging.Logger;
  */
 public class RootNodeImpl extends NodeImpl implements RootNode {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
     private static final boolean DEBUG = false;

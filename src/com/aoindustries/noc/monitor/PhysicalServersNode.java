@@ -19,8 +19,6 @@ import java.sql.SQLException;
  */
 public class PhysicalServersNode extends ServersNode {
 
-    private static final long serialVersionUID = 1L;
-
     PhysicalServersNode(RootNodeImpl rootNode) {
         super(rootNode);
     }

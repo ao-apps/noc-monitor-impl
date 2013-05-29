@@ -33,8 +33,6 @@ import java.util.List;
  */
 public class NetBindsNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final IPAddressNode ipAddressNode;
     private final List<NetBindNode> netBindNodes = new ArrayList<NetBindNode>();
 

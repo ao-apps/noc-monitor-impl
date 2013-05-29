@@ -27,8 +27,6 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 
     private static final Logger logger = Logger.getLogger(TableResultNodeImpl.class.getName());
 
-    private static final long serialVersionUID = 1L;
-
     final RootNodeImpl rootNode;
     final NodeImpl parent;
     final TableResultNodeWorker<?,?> worker;

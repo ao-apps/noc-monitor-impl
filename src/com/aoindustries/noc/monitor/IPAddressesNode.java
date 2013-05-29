@@ -27,8 +27,6 @@ import java.util.List;
  */
 public class IPAddressesNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final NetDeviceNode netDeviceNode;
     private final List<IPAddressNode> ipAddressNodes = new ArrayList<IPAddressNode>();
 

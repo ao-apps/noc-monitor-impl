@@ -20,8 +20,6 @@ import java.util.List;
  */
 public class UpsNode extends TableMultiResultNodeImpl<UpsResult> {
 
-    private static final long serialVersionUID = 1L;
-
     private final AOServer _aoServer;
 
     UpsNode(ServerNode serverNode, AOServer aoServer) throws IOException {

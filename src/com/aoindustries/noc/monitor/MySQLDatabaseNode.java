@@ -22,8 +22,6 @@ import java.util.List;
  */
 public class MySQLDatabaseNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final MySQLDatabaseNodeWorker databaseWorker;
     final MySQLDatabasesNode mysqlDatabasesNode;
     private final MySQLDatabase mysqlDatabase;

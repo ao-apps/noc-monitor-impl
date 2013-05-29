@@ -16,8 +16,6 @@ import java.io.IOException;
  */
 public class MySQLCheckTablesNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     MySQLCheckTablesNode(MySQLDatabaseNode mysqlDatabaseNode) throws IOException {
         super(
             mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,

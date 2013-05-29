@@ -18,8 +18,6 @@ import java.sql.SQLException;
  */
 public class ReverseDnsNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     private final IPAddress ipAddress;
     
     ReverseDnsNode(IPAddressNode ipAddressNode) throws IOException, SQLException {

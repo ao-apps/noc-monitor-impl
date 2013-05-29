@@ -18,8 +18,6 @@ import java.util.List;
  */
 public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
-    private static final long serialVersionUID = 1L;
-
     private final AOServer _aoServer;
 
     MemoryNode(ServerNode serverNode, AOServer aoServer) throws IOException {

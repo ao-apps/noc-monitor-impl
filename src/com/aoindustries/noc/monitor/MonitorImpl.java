@@ -122,8 +122,6 @@ public class MonitorImpl implements Monitor {
 
     private static final Logger logger = Logger.getLogger(MonitorImpl.class.getName());
 
-    private static final long serialVersionUID = 2L;
-
     final private MonitoringPoint monitoringPoint;
 
     public MonitorImpl(MonitoringPoint monitoringPoint) {

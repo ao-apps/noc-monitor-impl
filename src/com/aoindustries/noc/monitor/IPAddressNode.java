@@ -23,8 +23,6 @@ import java.util.List;
  */
 public class IPAddressNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final IPAddressesNode ipAddressesNode;
     private final IPAddress ipAddress;
     private final String id;

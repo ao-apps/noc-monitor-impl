@@ -16,8 +16,6 @@ import java.io.IOException;
  */
 public class NetDeviceBondingNode extends SingleResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     NetDeviceBondingNode(NetDeviceNode netDeviceNode) throws IOException {
         super(
             netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode,

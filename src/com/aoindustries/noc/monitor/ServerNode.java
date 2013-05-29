@@ -29,8 +29,6 @@ import java.util.List;
  */
 public class ServerNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final ServersNode serversNode;
     private final Server _server;
     private final int _pack;

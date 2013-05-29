@@ -23,8 +23,6 @@ import java.util.List;
  */
 public class RaidNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final ServerNode serverNode;
     private final AOServer aoServer;
 

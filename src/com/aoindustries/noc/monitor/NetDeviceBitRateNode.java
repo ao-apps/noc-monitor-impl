@@ -17,8 +17,6 @@ import java.util.List;
  */
 public class NetDeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRateResult> {
 
-    private static final long serialVersionUID = 1L;
-
     NetDeviceBitRateNode(NetDeviceNode netDeviceNode) throws IOException {
         super(
             netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode,

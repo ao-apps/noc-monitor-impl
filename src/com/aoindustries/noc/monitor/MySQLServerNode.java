@@ -26,8 +26,6 @@ import java.util.List;
  */
 public class MySQLServerNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final MySQLServersNode _mysqlServersNode;
     private final MySQLServer _mysqlServer;
     private final String _label;

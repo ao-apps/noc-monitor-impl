@@ -18,8 +18,6 @@ import java.util.List;
  */
 public class PingNode extends TableMultiResultNodeImpl<PingResult> {
 
-    private static final long serialVersionUID = 1L;
-
     private final IPAddressNode ipAddressNode;
 
     PingNode(IPAddressNode ipAddressNode) throws IOException {

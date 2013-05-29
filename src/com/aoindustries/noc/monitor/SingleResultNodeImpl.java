@@ -26,8 +26,6 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 
     private static final Logger logger = Logger.getLogger(SingleResultNodeImpl.class.getName());
 
-    private static final long serialVersionUID = 1L;
-
     protected final RootNodeImpl rootNode;
     protected final NodeImpl parent;
     private final SingleResultNodeWorker worker;

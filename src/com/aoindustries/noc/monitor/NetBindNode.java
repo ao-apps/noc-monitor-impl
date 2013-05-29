@@ -20,8 +20,6 @@ import java.util.List;
  */
 public class NetBindNode extends TableMultiResultNodeImpl<NetBindResult> {
 
-    private static final long serialVersionUID = 1L;
-
     private final NetBindsNode.NetMonitorSetting netMonitorSetting;
     private final String id;
     private final String label;

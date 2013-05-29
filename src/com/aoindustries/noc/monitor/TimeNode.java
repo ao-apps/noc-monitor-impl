@@ -18,8 +18,6 @@ import java.util.List;
  */
 public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
 
-    private static final long serialVersionUID = 1L;
-
     private final AOServer _aoServer;
 
     TimeNode(ServerNode serverNode, AOServer aoServer) throws IOException {

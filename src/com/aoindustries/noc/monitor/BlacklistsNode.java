@@ -18,8 +18,6 @@ import java.sql.SQLException;
  */
 public class BlacklistsNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     private final IPAddress ipAddress;
     
     BlacklistsNode(IPAddressNode ipAddressNode) throws IOException, SQLException {

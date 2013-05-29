@@ -16,8 +16,6 @@ import java.io.IOException;
  */
 public class MdRaidNode extends SingleResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     MdRaidNode(RaidNode raidNode) throws IOException {
         super(
             raidNode.serverNode.serversNode.rootNode,

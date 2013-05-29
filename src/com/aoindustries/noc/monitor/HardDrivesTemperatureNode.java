@@ -16,8 +16,6 @@ import java.io.IOException;
  */
 public class HardDrivesTemperatureNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode) throws IOException {
         super(
             hardDrivesNode.serverNode.serversNode.rootNode,
