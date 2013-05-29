@@ -291,7 +291,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 for(int c=0;c<failoverFileReplications.size();c++) {
                     FailoverFileReplication failoverFileReplication = failoverFileReplications.get(c);
                     BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
-                    tableData.add(backupPartition==null ? "null" : backupPartition.getAOServer().getHostname());
+                    tableData.add(backupPartition==null ? "null" : backupPartition.getAOServer().getHostname().toString());
                     tableData.add(backupPartition==null ? "null" : backupPartition.getPath());
                     StringBuilder times = new StringBuilder();
                     for(FailoverFileSchedule ffs : failoverFileReplication.getFailoverFileSchedules()) {

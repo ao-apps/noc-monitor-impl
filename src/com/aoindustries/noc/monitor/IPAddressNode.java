@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
+import com.aoindustries.aoserv.client.validator.InetAddress;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
 import java.io.IOException;
@@ -38,16 +39,19 @@ public class IPAddressNode extends NodeImpl {
     IPAddressNode(IPAddressesNode ipAddressesNode, IPAddress ipAddress) throws SQLException, IOException {
         this.ipAddressesNode = ipAddressesNode;
         this.ipAddress = ipAddress;
-        String ip = ipAddress.getIPAddress();
-        String externalIp = ipAddress.getExternalIpAddress();
-        this.id = ip;
-        this.label = (externalIp==null ? ip : (ip+'@'+externalIp)) + '/' + ipAddress.getHostname();
+        InetAddress ip = ipAddress.getInetAddress();
+        InetAddress externalIp = ipAddress.getExternalIpAddress();
+        this.id = ip.toString();
+        this.label =
+            (externalIp==null ? ip.toString() : (ip.toString()+"@"+externalIp.toString()))
+            + "/" + ipAddress.getHostname()
+        ;
         // Private IPs and loopback IPs are not externally pingable
         this.isPingable =
             ipAddress.isPingMonitorEnabled()
             && (
-                (externalIp!=null && !IPAddress.isPrivate(externalIp))
-                || !ipAddress.isPrivate()
+                (externalIp!=null && !(externalIp.isUniqueLocal() || externalIp.isLooback()))
+                || !(ip.isUniqueLocal() || ip.isLooback())
             ) && !ipAddress.getNetDevice().getNetDeviceID().isLoopback()
         ;
     }
@@ -156,10 +160,10 @@ public class IPAddressNode extends NodeImpl {
         }
         // Skip loopback device
         if(reverseDnsNode==null && !ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback()) {
-            String ip = ipAddress.getExternalIpAddress();
-            if(ip==null) ip = ipAddress.getIPAddress();
+            InetAddress ip = ipAddress.getExternalIpAddress();
+            if(ip==null) ip = ipAddress.getInetAddress();
             // Skip private IP addresses
-            if(!IPAddress.isPrivate(ip)) {
+            if(!(ip.isUniqueLocal() || ip.isLooback())) {
                 reverseDnsNode = new ReverseDnsNode(this);
                 reverseDnsNode.start();
                 rootNode.nodeAdded();
@@ -167,10 +171,10 @@ public class IPAddressNode extends NodeImpl {
         }
         // Skip loopback device
         if(blacklistsNode==null && !ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback()) {
-            String ip = ipAddress.getExternalIpAddress();
-            if(ip==null) ip = ipAddress.getIPAddress();
+            InetAddress ip = ipAddress.getExternalIpAddress();
+            if(ip==null) ip = ipAddress.getInetAddress();
             // Skip private IP addresses
-            if(!IPAddress.isPrivate(ip)) {
+            if(!(ip.isUniqueLocal() || ip.isLooback())) {
                 blacklistsNode = new BlacklistsNode(this);
                 blacklistsNode.start();
                 rootNode.nodeAdded();
@@ -207,7 +211,7 @@ public class IPAddressNode extends NodeImpl {
     }
 
     File getPersistenceDirectory() throws IOException {
-        File dir = new File(ipAddressesNode.getPersistenceDirectory(), ipAddress.getIPAddress());
+        File dir = new File(ipAddressesNode.getPersistenceDirectory(), ipAddress.getInetAddress().toString());
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(

@@ -11,6 +11,7 @@ import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.Server;
+import com.aoindustries.aoserv.client.validator.InetAddress;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
@@ -136,11 +137,11 @@ public class NetBindsNode extends NodeImpl {
 
         private final Server server;
         private final NetBind netBind;
-        private final String ipAddress;
+        private final InetAddress ipAddress;
         private final int port;
         private final String netProtocol;
 
-        private NetMonitorSetting(Server server, NetBind netBind, String ipAddress, int port, String netProtocol) {
+        private NetMonitorSetting(Server server, NetBind netBind, InetAddress ipAddress, int port, String netProtocol) {
             this.server = server;
             this.netBind = netBind;
             this.ipAddress = ipAddress;
@@ -154,7 +155,6 @@ public class NetBindsNode extends NodeImpl {
             int diff = server.compareTo(o.server);
             if(diff!=0) return diff;
             // IP
-            diff = IPAddress.getIntForIPAddress(ipAddress) - IPAddress.getIntForIPAddress(o.ipAddress);
             if(diff!=0) return diff;
             // port
             if(port<o.port) return -1;
@@ -202,7 +202,7 @@ public class NetBindsNode extends NodeImpl {
         /**
          * @return the ipAddress
          */
-        String getIpAddress() {
+        InetAddress getIpAddress() {
             return ipAddress;
         }
 
@@ -243,7 +243,7 @@ public class NetBindsNode extends NodeImpl {
         if(wildcard==null) wildcardNetBinds = Collections.emptyList();
         else wildcardNetBinds = server.getNetBinds(wildcard);
 
-        String ipAddressString = ipAddress.getIPAddress();
+        InetAddress inetAddress = ipAddress.getInetAddress();
         List<NetMonitorSetting> netMonitorSettings = new ArrayList<NetMonitorSetting>(directNetBinds.size() + wildcardNetBinds.size());
         for(NetBind netBind : directNetBinds) {
             if(netBind.isMonitoringEnabled()) {
@@ -251,7 +251,7 @@ public class NetBindsNode extends NodeImpl {
                     new NetMonitorSetting(
                         server,
                         netBind,
-                        ipAddressString,
+                        inetAddress,
                         netBind.getPort().getPort(),
                         netBind.getNetProtocol().getProtocol()
                     )
@@ -264,7 +264,7 @@ public class NetBindsNode extends NodeImpl {
                     new NetMonitorSetting(
                         server,
                         netBind,
-                        ipAddressString,
+                        inetAddress,
                         netBind.getPort().getPort(),
                         netBind.getNetProtocol().getProtocol()
                     )

@@ -11,6 +11,7 @@ import com.aoindustries.aoserv.client.BackupPartition;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
+import com.aoindustries.aoserv.client.validator.DomainName;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
 import java.io.IOException;
@@ -45,14 +46,14 @@ public class MySQLSlaveNode extends NodeImpl {
             AOServer aoServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
             MySQLServer mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
             BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
-            String hostname = bp.getAOServer().getHostname();
-            this.id = hostname;
+            DomainName hostname = bp.getAOServer().getHostname();
+            this.id = hostname.toString();
             this._label = hostname+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
         } else {
             // ao_server-based
             MySQLServer mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
-            String hostname = mysqlReplication.getAOServer().getHostname();
-            this.id = hostname;
+            DomainName hostname = mysqlReplication.getAOServer().getHostname();
+            this.id = hostname.toString();
             this._label = hostname+":/var/lib/mysql/"+mysqlServer.getName();
         }
     }
