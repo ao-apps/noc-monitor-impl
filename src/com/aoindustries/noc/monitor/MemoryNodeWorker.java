@@ -10,7 +10,6 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.ApproximateDisplayExactSize;
 import com.aoindustries.noc.monitor.common.MemoryResult;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
@@ -39,12 +38,12 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
      * One unique worker is made per persistence directory (and should match aoServer exactly)
      */
     private static final Map<String, MemoryNodeWorker> workerCache = new HashMap<String,MemoryNodeWorker>();
-    static MemoryNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, AOServer aoServer) throws IOException {
+    static MemoryNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             MemoryNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MemoryNodeWorker(monitoringPoint, persistenceDirectory, aoServer);
+                worker = new MemoryNodeWorker(persistenceDirectory, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
@@ -56,8 +55,8 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private MemoryNodeWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, AOServer aoServer) throws IOException {
-        super(monitoringPoint, new File(persistenceDirectory, "meminfo"), new MemoryResultSerializer(monitoringPoint));
+    private MemoryNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+        super(new File(persistenceDirectory, "meminfo"), new MemoryResultSerializer());
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -137,13 +136,12 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 
     @Override
     protected MemoryResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new MemoryResult(monitoringPoint, time, latency, alertLevel, error);
+        return new MemoryResult(time, latency, alertLevel, error);
     }
 
     @Override
     protected MemoryResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<ApproximateDisplayExactSize> sample) {
         return new MemoryResult(
-            monitoringPoint,
             time,
             latency,
             alertLevel,

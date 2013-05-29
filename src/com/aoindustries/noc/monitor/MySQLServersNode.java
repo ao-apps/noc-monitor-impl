@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012 by AO Industries, Inc.,
+ * Copyright 2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -14,11 +14,15 @@ import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 /**
  * The node for all MySQLServers on one AOServer.
@@ -33,7 +37,8 @@ public class MySQLServersNode extends NodeImpl {
     private final AOServer aoServer;
     private final List<MySQLServerNode> mysqlServerNodes = new ArrayList<MySQLServerNode>();
 
-    MySQLServersNode(ServerNode serverNode, AOServer aoServer) {
+    MySQLServersNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
         this.serverNode = serverNode;
         this.aoServer = aoServer;
     }
@@ -86,11 +91,6 @@ public class MySQLServersNode extends NodeImpl {
     }
 
     @Override
-    public String getId() {
-        return "mysql_servers";
-    }
-
-    @Override
     public String getLabel() {
         return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "MySQLServersNode.label");
     }
@@ -127,6 +127,8 @@ public class MySQLServersNode extends NodeImpl {
     }
 
     private void verifyMySQLServers() throws IOException, SQLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         List<MySQLServer> mysqlServers = aoServer.getMySQLServers();
         synchronized(mysqlServerNodes) {
             // Remove old ones
@@ -145,7 +147,7 @@ public class MySQLServersNode extends NodeImpl {
                 MySQLServer mysqlServer = mysqlServers.get(c);
                 if(c>=mysqlServerNodes.size() || !mysqlServer.equals(mysqlServerNodes.get(c).getMySQLServer())) {
                     // Insert into proper index
-                    MySQLServerNode mysqlServerNode = new MySQLServerNode(this, mysqlServer);
+                    MySQLServerNode mysqlServerNode = new MySQLServerNode(this, mysqlServer, port, csf, ssf);
                     mysqlServerNodes.add(c, mysqlServerNode);
                     mysqlServerNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();

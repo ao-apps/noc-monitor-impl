@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -11,6 +11,9 @@ import com.aoindustries.aoserv.client.OperatingSystemVersion;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,8 +26,6 @@ import java.util.List;
  */
 public class RaidNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final ServerNode serverNode;
     private final AOServer aoServer;
 
@@ -32,7 +33,8 @@ public class RaidNode extends NodeImpl {
     volatile private MdRaidNode _mdRaidNode;
     volatile private DrbdNode _drbdNode;
 
-    RaidNode(ServerNode serverNode, AOServer aoServer) {
+    RaidNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
         this.serverNode = serverNode;
         this.aoServer = aoServer;
     }
@@ -100,11 +102,6 @@ public class RaidNode extends NodeImpl {
     }
 
     @Override
-    public String getId() {
-        return "raid";
-    }
-
-    @Override
     public String getLabel() {
         return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "RaidNode.label");
     }
@@ -117,14 +114,14 @@ public class RaidNode extends NodeImpl {
             || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
         ) {
             if(_threeWareRaidNode==null) {
-                _threeWareRaidNode = new ThreeWareRaidNode(this);
+                _threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
                 _threeWareRaidNode.start();
                 serverNode.serversNode.rootNode.nodeAdded();
             }
         }
         // Any machine may have MD RAID (at least until all services run in Xen outers)
         if(_mdRaidNode==null) {
-            _mdRaidNode = new MdRaidNode(this);
+            _mdRaidNode = new MdRaidNode(this, port, csf, ssf);
             _mdRaidNode.start();
             serverNode.serversNode.rootNode.nodeAdded();
         }
@@ -134,7 +131,7 @@ public class RaidNode extends NodeImpl {
             || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
         ) {
             if(_drbdNode==null) {
-                _drbdNode = new DrbdNode(this);
+                _drbdNode = new DrbdNode(this, port, csf, ssf);
                 _drbdNode.start();
                 serverNode.serversNode.rootNode.nodeAdded();
             }
@@ -144,18 +141,18 @@ public class RaidNode extends NodeImpl {
     synchronized void stop() {
         if(_threeWareRaidNode!=null) {
             _threeWareRaidNode.stop();
-            serverNode.serversNode.rootNode.nodeRemoved();
             _threeWareRaidNode = null;
+            serverNode.serversNode.rootNode.nodeRemoved();
         }
         if(_mdRaidNode!=null) {
             _mdRaidNode.stop();
-            serverNode.serversNode.rootNode.nodeRemoved();
             _mdRaidNode = null;
+            serverNode.serversNode.rootNode.nodeRemoved();
         }
         if(_drbdNode!=null) {
             _drbdNode.stop();
-            serverNode.serversNode.rootNode.nodeRemoved();
             _drbdNode = null;
+            serverNode.serversNode.rootNode.nodeRemoved();
         }
     }
 

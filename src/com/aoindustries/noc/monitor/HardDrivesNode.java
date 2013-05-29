@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -10,6 +10,9 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,14 +24,13 @@ import java.util.List;
  */
 public class HardDrivesNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
     final ServerNode serverNode;
     private final AOServer _aoServer;
 
     volatile private HardDrivesTemperatureNode _hardDriveTemperatureNode;
 
-    HardDrivesNode(ServerNode serverNode, AOServer aoServer) {
+    HardDrivesNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
         this.serverNode = serverNode;
         this._aoServer = aoServer;
     }
@@ -82,18 +84,13 @@ public class HardDrivesNode extends NodeImpl {
     }
 
     @Override
-    public String getId() {
-        return "hard_drives";
-    }
-
-    @Override
     public String getLabel() {
         return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "HardDrivesNode.label");
     }
     
     synchronized void start() throws IOException {
         if(_hardDriveTemperatureNode==null) {
-            _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this);
+            _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
             _hardDriveTemperatureNode.start();
             serverNode.serversNode.rootNode.nodeAdded();
         }
@@ -102,8 +99,8 @@ public class HardDrivesNode extends NodeImpl {
     synchronized void stop() {
         if(_hardDriveTemperatureNode!=null) {
             _hardDriveTemperatureNode.stop();
-            serverNode.serversNode.rootNode.nodeRemoved();
             _hardDriveTemperatureNode = null;
+            serverNode.serversNode.rootNode.nodeRemoved();
         }
     }
 

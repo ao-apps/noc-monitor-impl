@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -11,7 +11,6 @@ import com.aoindustries.aoserv.client.FailoverFileLog;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
 import com.aoindustries.util.StringUtility;
@@ -39,12 +38,12 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
      * One unique worker is made per persistence file (and should match the failoverFileReplication exactly)
      */
     private static final Map<String, BackupNodeWorker> workerCache = new HashMap<String,BackupNodeWorker>();
-    static BackupNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, FailoverFileReplication failoverFileReplication) throws IOException {
+    static BackupNodeWorker getWorker(File persistenceFile, FailoverFileReplication failoverFileReplication) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             BackupNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new BackupNodeWorker(monitoringPoint, persistenceFile, failoverFileReplication);
+                worker = new BackupNodeWorker(persistenceFile, failoverFileReplication);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.failoverFileReplication.equals(failoverFileReplication)) throw new AssertionError("worker.failoverFileReplication!=failoverFileReplication: "+worker.failoverFileReplication+"!="+failoverFileReplication);
@@ -56,8 +55,8 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private FailoverFileReplication failoverFileReplication;
 
-    BackupNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, FailoverFileReplication failoverFileReplication) {
-        super(monitoringPoint, persistenceFile);
+    BackupNodeWorker(File persistenceFile, FailoverFileReplication failoverFileReplication) {
+        super(persistenceFile);
         this.failoverFileReplication = failoverFileReplication;
     }
 

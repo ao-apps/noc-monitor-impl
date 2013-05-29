@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,16 +9,16 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.AlertLevelChange;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.NodeSnapshot;
 import com.aoindustries.noc.monitor.common.RootNode;
 import com.aoindustries.noc.monitor.common.TreeListener;
-import com.aoindustries.util.AoCollections;
 import com.aoindustries.util.ErrorPrinter;
 import com.aoindustries.util.concurrent.ExecutorService;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.SortedSet;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  * The top-level node has one child for each of the servers.
@@ -54,7 +54,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     public static final Random random = new Random();
 
     /**
-     * One thread pool is shared by all instances, and it is never disposed.
+     * One thread pool is shared by all instances, and it is never
      */
     public final static ExecutorService executorService = ExecutorService.newInstance();
 
@@ -72,10 +72,16 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
         final private Locale locale;
         final private AOServConnector connector;
+        final private int port;
+        final private RMIClientSocketFactory csf;
+        final private RMIServerSocketFactory ssf;
 
-        private RootNodeCacheKey(Locale locale, AOServConnector connector) {
+        private RootNodeCacheKey(Locale locale, AOServConnector connector, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) {
             this.locale = locale;
             this.connector = connector;
+            this.port = port;
+            this.csf = csf;
+            this.ssf = ssf;
         }
 
         @Override
@@ -86,6 +92,9 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             return
                 locale.equals(other.locale)
                 && connector.equals(other.connector)
+                && port==other.port
+                && csf.equals(other.csf)
+                && ssf.equals(other.ssf)
             ;
         }
         
@@ -94,33 +103,28 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
             return
                 locale.hashCode()
                 ^ (connector.hashCode()*7)
+                ^ (port*11)
+                ^ (csf.hashCode()*13)
+                ^ (ssf.hashCode()*17)
             ;
         }
     }
 
     private static final Map<RootNodeCacheKey, RootNodeImpl> rootNodeCache = new HashMap<RootNodeCacheKey, RootNodeImpl>();
 
-    /**
-     * @param locale
-     * @param connector
-     * @param monitoringPoint
-     * @param context optional
-     * @return
-     */
     static RootNodeImpl getRootNode(
         Locale locale,
         AOServConnector connector,
-        MonitoringPoint monitoringPoint
-    ) {
-        RootNodeCacheKey key = new RootNodeCacheKey(locale, connector);
+        int port,
+        RMIClientSocketFactory csf,
+        RMIServerSocketFactory ssf
+    ) throws RemoteException {
+        RootNodeCacheKey key = new RootNodeCacheKey(locale, connector, port, csf, ssf);
         synchronized(rootNodeCache) {
             RootNodeImpl rootNode = rootNodeCache.get(key);
             if(rootNode==null) {
                 if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
-                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, monitoringPoint);
-                rootNodeCache.put(key, newRootNode);
-                rootNode = newRootNode;
-
+                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, port, csf, ssf);
                 // Start as a background task
                 executorService.submitUnbounded(
                     new Runnable() {
@@ -138,6 +142,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
                         }
                     }
                 );
+                rootNodeCache.put(key, newRootNode);
+                rootNode = newRootNode;
             } else {
                 if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Reusing existing rootNode");
             }
@@ -147,17 +153,16 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     final Locale locale;
     final AOServConnector conn;
-    final MonitoringPoint monitoringPoint;
 
     volatile private OtherDevicesNode otherDevicesNode;
     volatile private PhysicalServersNode physicalServersNode;
     volatile private VirtualServersNode virtualServersNode;
     volatile private SignupsNode signupsNode;
 
-    private RootNodeImpl(Locale locale, AOServConnector conn, MonitoringPoint monitoringPoint) {
+    private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
         this.locale = locale;
         this.conn = conn;
-        this.monitoringPoint = monitoringPoint;
     }
 
     @Override
@@ -232,11 +237,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     }
 
     @Override
-    public String getId() {
-        return "root";
-    }
-
-    @Override
     public String getLabel() {
         return accessor.getMessage(/*locale,*/ "RootNode.label");
     }
@@ -245,26 +245,28 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
      * Starts the rootNode.
      */
     synchronized private void start() throws IOException, SQLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         if(otherDevicesNode==null) {
-            otherDevicesNode = new OtherDevicesNode(this);
+            otherDevicesNode = new OtherDevicesNode(this, port, csf, ssf);
             otherDevicesNode.start();
             nodeAdded();
         }
 
         if(physicalServersNode==null) {
-            physicalServersNode = new PhysicalServersNode(this);
+            physicalServersNode = new PhysicalServersNode(this, port, csf, ssf);
             physicalServersNode.start();
             nodeAdded();
         }
 
         if(virtualServersNode==null) {
-            virtualServersNode = new VirtualServersNode(this);
+            virtualServersNode = new VirtualServersNode(this, port, csf, ssf);
             virtualServersNode.start();
             nodeAdded();
         }
 
         if(signupsNode==null) {
-            signupsNode = new SignupsNode(this);
+            signupsNode = new SignupsNode(this, port, csf, ssf);
             signupsNode.start();
             nodeAdded();
         }
@@ -456,6 +458,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
      * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
      */
     void nodeAdded() {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         synchronized(treeListeners) {
             for(TreeListener treeListener : treeListeners) {
                 NodeAddedSignaler nodeAddedSignaler = nodeAddedSignalers.get(treeListener);
@@ -495,7 +499,9 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
      * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
      * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
      */
-    void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) {
+    void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         AlertLevelChange change = new AlertLevelChange(
             node,
             node.getFullPath(locale),
@@ -520,43 +526,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     @Override
     public NodeSnapshot getSnapshot() throws RemoteException {
-        return wrapNode(this);
-    }
-
-    /**
-     * Recursively wraps the nodes in a snapshot.
-     */
-    private static NodeSnapshot wrapNode(NodeImpl node) throws RemoteException {
-        List<NodeSnapshot> newChildren;
-        {
-            List<? extends NodeImpl> children = node.getChildren();
-            int size = children.size();
-            if(size==0) {
-                newChildren = Collections.emptyList();
-            } else if(size==1) {
-                newChildren = Collections.singletonList(wrapNode(children.get(0)));
-            } else {
-                newChildren = new ArrayList<NodeSnapshot>(size);
-                for(NodeImpl child : children) {
-                    newChildren.add(wrapNode(child));
-                }
-            }
-        }
-        return new NodeSnapshot(
-            node,
-            newChildren,
-            node.getAlertLevel(),
-            node.getAlertMessage(),
-            node.getAllowsChildren(),
-            node.getId(),
-            node.getLabel(),
-            node.getUuid()
-        );
-    }
-
-    @Override
-    public SortedSet<MonitoringPoint> getMonitoringPoints() {
-        return AoCollections.singletonSortedSet(monitoringPoint);
+        return new NodeSnapshot(null, this);
     }
 
     /**

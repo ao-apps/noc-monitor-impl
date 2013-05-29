@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.io.IOException;
@@ -29,12 +28,12 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<AOServer.DrbdReport>,Str
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
     private static final Map<String, DrbdNodeWorker> workerCache = new HashMap<String,DrbdNodeWorker>();
-    static DrbdNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServer aoServer) throws IOException {
+    static DrbdNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             DrbdNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new DrbdNodeWorker(monitoringPoint, persistenceFile, aoServer);
+                worker = new DrbdNodeWorker(persistenceFile, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
@@ -46,8 +45,8 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<AOServer.DrbdReport>,Str
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private AOServer aoServer;
 
-    DrbdNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServer aoServer) {
-        super(monitoringPoint, persistenceFile);
+    DrbdNodeWorker(File persistenceFile, AOServer aoServer) {
+        super(persistenceFile);
         this.aoServer = aoServer;
     }
 

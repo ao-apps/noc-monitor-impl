@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -13,11 +13,15 @@ import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 /**
  * The top-level node has one child for each of the servers.
@@ -31,7 +35,8 @@ abstract public class ServersNode extends NodeImpl {
     private final List<ServerNode> serverNodes = new ArrayList<ServerNode>();
     private boolean stopped = false;
 
-    ServersNode(RootNodeImpl rootNode) {
+    ServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
         this.rootNode = rootNode;
     }
 
@@ -112,6 +117,8 @@ abstract public class ServersNode extends NodeImpl {
     }
 
     private void verifyServers() throws IOException, SQLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         // Get all the servers that have monitoring enabled
         List<Server> allServers = rootNode.conn.getServers().getRows();
         List<Server> servers = new ArrayList<Server>(allServers.size());
@@ -136,7 +143,7 @@ abstract public class ServersNode extends NodeImpl {
                     Server server = servers.get(c);
                     if(c>=serverNodes.size() || !server.equals(serverNodes.get(c).getServer())) {
                         // Insert into proper index
-                        ServerNode serverNode = new ServerNode(this, server);
+                        ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
                         serverNodes.add(c, serverNode);
                         serverNode.start();
                         rootNode.nodeAdded();

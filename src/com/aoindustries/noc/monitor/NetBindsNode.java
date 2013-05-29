@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -18,11 +18,15 @@ import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 /**
  * The node per NetBind.
@@ -38,7 +42,9 @@ public class NetBindsNode extends NodeImpl {
     final IPAddressNode ipAddressNode;
     private final List<NetBindNode> netBindNodes = new ArrayList<NetBindNode>();
 
-    NetBindsNode(IPAddressNode ipAddressNode) {
+    NetBindsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
+
         this.ipAddressNode = ipAddressNode;
     }
 
@@ -86,11 +92,6 @@ public class NetBindsNode extends NodeImpl {
     }
 
     @Override
-    public String getId() {
-        return "net_binds";
-    }
-
-    @Override
     public String getLabel() {
         return accessor.getMessage(/*ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "NetBindsNode.label");
     }
@@ -109,7 +110,7 @@ public class NetBindsNode extends NodeImpl {
     };
 
     void start() throws IOException, SQLException {
-        AOServConnector conn = ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode.conn;
+        AOServConnector conn = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn;
         synchronized(netBindNodes) {
             conn.getIpAddresses().addTableListener(tableListener, 100);
             conn.getNetBinds().addTableListener(tableListener, 100);
@@ -119,7 +120,7 @@ public class NetBindsNode extends NodeImpl {
     }
 
     void stop() {
-        RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode;
+        RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
         AOServConnector conn = rootNode.conn;
         synchronized(netBindNodes) {
             conn.getIpAddresses().removeTableListener(tableListener);
@@ -222,8 +223,10 @@ public class NetBindsNode extends NodeImpl {
         }
     }
 
-    private void verifyNetBinds() throws IOException, SQLException {
-        final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode;
+    private void verifyNetBinds() throws RemoteException, IOException, SQLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+        final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
 
         // The list of net binds is:
         //     The binds directly on the IP address plus the wildcard binds
@@ -244,7 +247,7 @@ public class NetBindsNode extends NodeImpl {
         if(wildcard==null) wildcardNetBinds = Collections.emptyList();
         else wildcardNetBinds = server.getNetBinds(wildcard);
 
-        InetAddress inetAddress = ipAddress.getInetAddress();
+        InetAddress inetaddress = ipAddress.getInetAddress();
         List<NetMonitorSetting> netMonitorSettings = new ArrayList<NetMonitorSetting>(directNetBinds.size() + wildcardNetBinds.size());
         for(NetBind netBind : directNetBinds) {
             if(netBind.isMonitoringEnabled()) {
@@ -252,7 +255,7 @@ public class NetBindsNode extends NodeImpl {
                     new NetMonitorSetting(
                         server,
                         netBind,
-                        inetAddress,
+                        inetaddress,
                         netBind.getPort().getPort(),
                         netBind.getNetProtocol().getProtocol()
                     )
@@ -265,7 +268,7 @@ public class NetBindsNode extends NodeImpl {
                     new NetMonitorSetting(
                         server,
                         netBind,
-                        inetAddress,
+                        inetaddress,
                         netBind.getPort().getPort(),
                         netBind.getNetProtocol().getProtocol()
                     )
@@ -291,7 +294,7 @@ public class NetBindsNode extends NodeImpl {
                 NetMonitorSetting netMonitorSetting = netMonitorSettings.get(c);
                 if(c>=netBindNodes.size() || !netMonitorSetting.equals(netBindNodes.get(c).getNetMonitorSetting())) {
                     // Insert into proper index
-                    NetBindNode netBindNode = new NetBindNode(this, netMonitorSetting);
+                    NetBindNode netBindNode = new NetBindNode(this, netMonitorSetting, port, csf, ssf);
                     netBindNodes.add(c, netBindNode);
                     netBindNode.start();
                     rootNode.nodeAdded();

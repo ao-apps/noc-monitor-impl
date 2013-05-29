@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
@@ -33,12 +32,12 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
      * One unique worker is made per persistence directory (and should match the net device exactly)
      */
     private static final Map<String, NetDeviceBitRateNodeWorker> workerCache = new HashMap<String,NetDeviceBitRateNodeWorker>();
-    static NetDeviceBitRateNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, NetDevice netDevice) throws IOException {
+    static NetDeviceBitRateNodeWorker getWorker(File persistenceDirectory, NetDevice netDevice) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             NetDeviceBitRateNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new NetDeviceBitRateNodeWorker(monitoringPoint, persistenceDirectory, netDevice);
+                worker = new NetDeviceBitRateNodeWorker(persistenceDirectory, netDevice);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._netDevice.equals(netDevice)) throw new AssertionError("worker.netDevice!=netDevice: "+worker._netDevice+"!="+netDevice);
@@ -51,8 +50,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
     final private NetDevice _netDevice;
     private NetDevice _currentNetDevice;
 
-    private NetDeviceBitRateNodeWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, NetDevice netDevice) throws IOException {
-        super(monitoringPoint, new File(persistenceDirectory, "bit_rate"), new NetDeviceBitRateResultSerializer(monitoringPoint));
+    private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice netDevice) throws IOException {
+        super(new File(persistenceDirectory, "bit_rate"), new NetDeviceBitRateResultSerializer());
         this._netDevice = _currentNetDevice = netDevice;
     }
 
@@ -114,8 +113,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
                 long timeDiff = thisStatsTime - lastStatsTime;
                 txBitsPerSecond = (thisTxBytes - lastTxBytes)*8000 / timeDiff;
                 rxBitsPerSecond = (thisRxBytes - lastRxBytes)*8000 / timeDiff;
-                txPacketsPerSecond = (thisTxPackets - lastTxPackets)*1000 / timeDiff;
-                rxPacketsPerSecond = (thisRxPackets - lastRxPackets)*1000 / timeDiff;
+                txPacketsPerSecond = (thisTxPackets - lastTxPackets)*8000 / timeDiff;
+                rxPacketsPerSecond = (thisRxPackets - lastRxPackets)*8000 / timeDiff;
             }
             // Display the alert thresholds
             List<Object> sample = new ArrayList<Object>(8);
@@ -219,13 +218,12 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 
     @Override
     protected NetDeviceBitRateResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new NetDeviceBitRateResult(monitoringPoint, time, latency, alertLevel, error);
+        return new NetDeviceBitRateResult(time, latency, alertLevel, error);
     }
 
     @Override
     protected NetDeviceBitRateResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<Object> sample) {
         return new NetDeviceBitRateResult(
-            monitoringPoint,
             time,
             latency,
             alertLevel,

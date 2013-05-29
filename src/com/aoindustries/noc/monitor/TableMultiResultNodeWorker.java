@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TableMultiResult;
 import com.aoindustries.util.persistent.PersistentCollections;
 import com.aoindustries.util.persistent.ProtectionLevel;
@@ -26,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  * The workers for table multi-results node.
@@ -54,8 +54,6 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
     private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
-    final protected MonitoringPoint monitoringPoint;
-
     /**
      * The most recent timer task
      */
@@ -69,8 +67,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
     final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl<R>>();
 
-    TableMultiResultNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, Serializer<R> serializer) throws IOException {
-        this.monitoringPoint = monitoringPoint;
+    TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
         this.results = new PersistentLinkedList<R>(
             PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
             //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
@@ -144,7 +141,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
             }
         );
         try {
-            return future.get(getFutureTimeout(), getFutureTimeoutUnit());
+            return future.get(5, TimeUnit.MINUTES);
         } catch(InterruptedException err) {
             cancel(future);
             throw err;
@@ -156,6 +153,8 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
     @Override
     final public void run() {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         boolean lastSuccessful = false;
         synchronized(timerTaskLock) {if(timerTask==null) return;}
         try {
@@ -299,6 +298,8 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
      * Notifies all of the listeners.
      */
     private void tableMultiResultAdded(R result) {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         synchronized(tableMultiResultNodeImpls) {
             for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                 tableMultiResultNodeImpl.tableMultiResultAdded(result);
@@ -310,6 +311,8 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
      * Notifies all of the listeners.
      */
     private void tableMultiResultRemoved(R result) {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         synchronized(tableMultiResultNodeImpls) {
             for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
                 tableMultiResultNodeImpl.tableMultiResultRemoved(result);
@@ -371,21 +374,5 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
      */
     protected boolean useFutureTimeout() {
         return true;
-    }
-
-    /**
-     * The default future timeout is 5 minutes.
-     */
-    protected long getFutureTimeout() {
-        return 5;
-    }
-
-    /**
-     * The default future timeout unit is MINUTES.
-     *
-     * @see  TimeUnit#MINUTES
-     */
-    protected TimeUnit getFutureTimeoutUnit() {
-        return TimeUnit.MINUTES;
     }
 }

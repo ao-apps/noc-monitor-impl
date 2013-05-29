@@ -7,12 +7,10 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.aoserv.client.validator.InetAddress;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.NetBindResult;
 import com.aoindustries.noc.monitor.portmon.PortMonitor;
 import com.aoindustries.util.ErrorPrinter;
@@ -34,13 +32,13 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
      * One unique worker is made per persistence file (and should match the NetMonitorSetting)
      */
     private static final Map<String, NetBindNodeWorker> workerCache = new HashMap<String,NetBindNodeWorker>();
-    static NetBindNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+    static NetBindNodeWorker getWorker(File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
         try {
             String path = persistenceFile.getCanonicalPath();
             synchronized(workerCache) {
                 NetBindNodeWorker worker = workerCache.get(path);
                 if(worker==null) {
-                    worker = new NetBindNodeWorker(monitoringPoint, persistenceFile, netMonitorSetting);
+                    worker = new NetBindNodeWorker(persistenceFile, netMonitorSetting);
                     workerCache.put(path, worker);
                 } else {
                     if(!worker.netMonitorSetting.equals(netMonitorSetting)) throw new AssertionError("worker.netMonitorSetting!=netMonitorSetting: "+worker.netMonitorSetting+"!="+netMonitorSetting);
@@ -59,8 +57,8 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
     final private NetBindsNode.NetMonitorSetting netMonitorSetting;
     private volatile PortMonitor portMonitor;
 
-    private NetBindNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
-        super(monitoringPoint, persistenceFile, new NetBindResultSerializer(monitoringPoint));
+    private NetBindNodeWorker(File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+        super(persistenceFile, new NetBindResultSerializer());
         this.netMonitorSetting = netMonitorSetting;
     }
 
@@ -117,11 +115,11 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 
     @Override
     protected NetBindResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new NetBindResult(monitoringPoint, time, latency, alertLevel, error, null);
+        return new NetBindResult(time, latency, alertLevel, error, null);
     }
 
     @Override
     protected NetBindResult newSampleResult(long time, long latency, AlertLevel alertLevel, String sample) {
-        return new NetBindResult(monitoringPoint, time, latency, alertLevel, null, sample);
+        return new NetBindResult(time, latency, alertLevel, null, sample);
     }
 }

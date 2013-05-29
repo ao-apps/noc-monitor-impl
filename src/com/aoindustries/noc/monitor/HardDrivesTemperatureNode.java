@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,6 +8,8 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 
 /**
  * The node for the hard drive temperature monitoring.
@@ -16,23 +18,18 @@ import java.io.IOException;
  */
 public class HardDrivesTemperatureNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
-
-    HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode) throws IOException {
+    HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
         super(
             hardDrivesNode.serverNode.serversNode.rootNode,
             hardDrivesNode,
             HardDrivesTemperatureNodeWorker.getWorker(
-                hardDrivesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
                 hardDrivesNode.getAOServer()
-            )
+            ),
+            port,
+            csf,
+            ssf
         );
-    }
-
-    @Override
-    public String getId() {
-        return "hard_drives";
     }
 
     @Override

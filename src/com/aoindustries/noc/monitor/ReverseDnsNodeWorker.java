@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012 by AO Industries, Inc.,
+ * Copyright 2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,7 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.validator.InetAddress;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.NanoTimeSpan;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -45,7 +44,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
         final String message;
         final AlertLevel alertLevel;
 
-        public ReverseDnsQueryResult(String query, long latency, String result, String message, AlertLevel alertLevel) {
+        ReverseDnsQueryResult(String query, long latency, String result, String message, AlertLevel alertLevel) {
             this.query = query;
             this.latency = latency;
             this.result = result;
@@ -58,12 +57,12 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
      * One unique worker is made per persistence file (and should match the ipAddress exactly)
      */
     private static final Map<String, ReverseDnsNodeWorker> workerCache = new HashMap<String,ReverseDnsNodeWorker>();
-    static ReverseDnsNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+    static ReverseDnsNodeWorker getWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             ReverseDnsNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new ReverseDnsNodeWorker(monitoringPoint, persistenceFile, ipAddress);
+                worker = new ReverseDnsNodeWorker(persistenceFile, ipAddress);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.ipAddress.equals(ipAddress)) throw new AssertionError("worker.ipAddress!=ipAddress: "+worker.ipAddress+"!="+ipAddress);
@@ -74,8 +73,8 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 
     final private IPAddress ipAddress;
 
-    ReverseDnsNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
-        super(monitoringPoint, persistenceFile);
+    ReverseDnsNodeWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+        super(persistenceFile);
         this.ipAddress = ipAddress;
     }
 

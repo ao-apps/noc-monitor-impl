@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -14,11 +14,15 @@ import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 /**
  * The node per server.
@@ -33,7 +37,8 @@ public class NetDevicesNode extends NodeImpl {
     private final Server server;
     private final List<NetDeviceNode> netDeviceNodes = new ArrayList<NetDeviceNode>();
 
-    NetDevicesNode(ServerNode serverNode, Server server) {
+    NetDevicesNode(ServerNode serverNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
         this.serverNode = serverNode;
         this.server = server;
     }
@@ -86,11 +91,6 @@ public class NetDevicesNode extends NodeImpl {
     }
 
     @Override
-    public String getId() {
-        return "net_devices";
-    }
-
-    @Override
     public String getLabel() {
         return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "NetDevicesNode.label");
     }
@@ -127,6 +127,8 @@ public class NetDevicesNode extends NodeImpl {
     }
 
     private void verifyNetDevices() throws IOException, SQLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         List<NetDevice> netDevices = server.getNetDevices();
         synchronized(netDeviceNodes) {
             // Remove old ones
@@ -145,7 +147,7 @@ public class NetDevicesNode extends NodeImpl {
                 NetDevice netDevice = netDevices.get(c);
                 if(c>=netDeviceNodes.size() || !netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
                     // Insert into proper index
-                    NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice);
+                    NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice, port, csf, ssf);
                     netDeviceNodes.add(c, netDeviceNode);
                     netDeviceNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();

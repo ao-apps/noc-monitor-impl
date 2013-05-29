@@ -1,16 +1,18 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.NetDevice;
+import com.aoindustries.aoserv.client.NetDeviceID;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.SingleResult;
 import com.aoindustries.util.StringUtility;
+import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -30,12 +32,12 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
      * One unique worker is made per persistence file (and should match the net device exactly)
      */
     private static final Map<String, NetDeviceBondingNodeWorker> workerCache = new HashMap<String,NetDeviceBondingNodeWorker>();
-    static NetDeviceBondingNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, NetDevice netDevice) throws IOException {
+    static NetDeviceBondingNodeWorker getWorker(File persistenceFile, NetDevice netDevice) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             NetDeviceBondingNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new NetDeviceBondingNodeWorker(monitoringPoint, persistenceFile, netDevice);
+                worker = new NetDeviceBondingNodeWorker(persistenceFile, netDevice);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.netDevice.equals(netDevice)) throw new AssertionError("worker.netDevice!=netDevice: "+worker.netDevice+"!="+netDevice);
@@ -47,8 +49,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private NetDevice netDevice;
 
-    private NetDeviceBondingNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, NetDevice netDevice) {
-        super(monitoringPoint, persistenceFile);
+    private NetDeviceBondingNodeWorker(File persistenceFile, NetDevice netDevice) {
+        super(persistenceFile);
         this.netDevice = netDevice;
     }
 

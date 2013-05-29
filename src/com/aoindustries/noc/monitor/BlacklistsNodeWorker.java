@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013 by AO Industries, Inc.,
+ * Copyright 2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -10,7 +10,6 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.validator.DomainName;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.NanoTimeSpan;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
@@ -132,10 +131,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
         RblBlacklist(String basename, AlertLevel maxAlertLevel) {
             this.basename = basename;
             this.maxAlertLevel = maxAlertLevel;
-            com.aoindustries.aoserv.client.validator.InetAddress ip = ipAddress.getExternalIpAddress();
-            if(ip==null) ip = ipAddress.getInetAddress();
-            if(ip.isIPv6()) throw new UnsupportedOperationException("IPv6 not yet implemented");
-            int bits = IPAddress.getIntForIPAddress(ip.toString());
+			com.aoindustries.aoserv.client.validator.InetAddress ip = ipAddress.getExternalIpAddress();
+			if(ip==null) ip = ipAddress.getInetAddress();
+			if(ip.isIPv6()) throw new UnsupportedOperationException("IPv6 not yet implemented");
+			int bits = IPAddress.getIntForIPAddress(ip.toString());
             this.query =
                 new StringBuilder(16+basename.length())
                 .append(bits&255)
@@ -305,12 +304,12 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
      * One unique worker is made per persistence file (and should match the ipAddress exactly)
      */
     private static final Map<String, BlacklistsNodeWorker> workerCache = new HashMap<String,BlacklistsNodeWorker>();
-    static BlacklistsNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+    static BlacklistsNodeWorker getWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             BlacklistsNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new BlacklistsNodeWorker(monitoringPoint, persistenceFile, ipAddress);
+                worker = new BlacklistsNodeWorker(persistenceFile, ipAddress);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.ipAddress.equals(ipAddress)) throw new AssertionError("worker.ipAddress!=ipAddress: "+worker.ipAddress+"!="+ipAddress);
@@ -323,8 +322,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
     final private IPAddress ipAddress;
     final private List<BlacklistLookup> lookups;
 
-    BlacklistsNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
-        super(monitoringPoint, persistenceFile);
+    BlacklistsNodeWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+        super(persistenceFile);
         this.ipAddress = ipAddress;
         // Build the list of lookups
         RblBlacklist[] rblBlacklists = {

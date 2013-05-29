@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012 by AO Industries, Inc.,
+ * Copyright 2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -11,10 +11,12 @@ import com.aoindustries.aoserv.client.BackupPartition;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
-import com.aoindustries.aoserv.client.validator.DomainName;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,13 +33,13 @@ public class MySQLSlaveNode extends NodeImpl {
 
     final MySQLSlavesNode mysqlSlavesNode;
     private final FailoverMySQLReplication _mysqlReplication;
-    private final String id;
     private final String _label;
 
     volatile private MySQLSlaveStatusNode _mysqlSlaveStatusNode;
     volatile private MySQLDatabasesNode _mysqlDatabasesNode;
 
-    MySQLSlaveNode(MySQLSlavesNode mysqlSlavesNode, FailoverMySQLReplication mysqlReplication) throws IOException, SQLException {
+    MySQLSlaveNode(MySQLSlavesNode mysqlSlavesNode, FailoverMySQLReplication mysqlReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
+        super(port, csf, ssf);
         this.mysqlSlavesNode = mysqlSlavesNode;
         this._mysqlReplication = mysqlReplication;
         FailoverFileReplication replication = mysqlReplication.getFailoverFileReplication();
@@ -46,15 +48,11 @@ public class MySQLSlaveNode extends NodeImpl {
             AOServer aoServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
             MySQLServer mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
             BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
-            DomainName hostname = bp.getAOServer().getHostname();
-            this.id = hostname.toString();
-            this._label = hostname+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
+            this._label = bp.getAOServer().getHostname()+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
         } else {
             // ao_server-based
             MySQLServer mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
-            DomainName hostname = mysqlReplication.getAOServer().getHostname();
-            this.id = hostname.toString();
-            this._label = hostname+":/var/lib/mysql/"+mysqlServer.getName();
+            this._label = mysqlReplication.getAOServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
         }
     }
 
@@ -117,11 +115,6 @@ public class MySQLSlaveNode extends NodeImpl {
     }
 
     @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
     public String getLabel() {
         return _label;
     }
@@ -129,12 +122,12 @@ public class MySQLSlaveNode extends NodeImpl {
     synchronized void start() throws IOException, SQLException {
         RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode;
         if(_mysqlSlaveStatusNode==null) {
-            _mysqlSlaveStatusNode = new MySQLSlaveStatusNode(this);
+            _mysqlSlaveStatusNode = new MySQLSlaveStatusNode(this, port, csf, ssf);
             _mysqlSlaveStatusNode.start();
             rootNode.nodeAdded();
         }
         if(_mysqlDatabasesNode==null) {
-            _mysqlDatabasesNode = new MySQLDatabasesNode(this);
+            _mysqlDatabasesNode = new MySQLDatabasesNode(this, port, csf, ssf);
             _mysqlDatabasesNode.start();
             rootNode.nodeAdded();
         }
@@ -144,14 +137,14 @@ public class MySQLSlaveNode extends NodeImpl {
         RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode;
         if(_mysqlSlaveStatusNode!=null) {
             _mysqlSlaveStatusNode.stop();
-            rootNode.nodeRemoved();
             _mysqlSlaveStatusNode = null;
+            rootNode.nodeRemoved();
         }
 
         if(_mysqlDatabasesNode!=null) {
             _mysqlDatabasesNode.stop();
-            rootNode.nodeRemoved();
             _mysqlDatabasesNode = null;
+            rootNode.nodeRemoved();
         }
     }
 

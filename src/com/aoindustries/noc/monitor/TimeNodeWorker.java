@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TimeResult;
 import com.aoindustries.noc.monitor.common.TimeSpan;
 import java.io.File;
@@ -40,12 +39,12 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
      * One unique worker is made per persistence directory (and should match aoServer exactly)
      */
     private static final Map<String, TimeNodeWorker> workerCache = new HashMap<String,TimeNodeWorker>();
-    static TimeNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, AOServer aoServer) throws IOException {
+    static TimeNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             TimeNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new TimeNodeWorker(monitoringPoint, persistenceDirectory, aoServer);
+                worker = new TimeNodeWorker(persistenceDirectory, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
@@ -57,8 +56,8 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private TimeNodeWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, AOServer aoServer) throws IOException {
-        super(monitoringPoint, new File(persistenceDirectory, "time"), new TimeResultSerializer(monitoringPoint));
+    private TimeNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+        super(new File(persistenceDirectory, "time"), new TimeResultSerializer());
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -107,11 +106,11 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
 
     @Override
     protected TimeResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new TimeResult(monitoringPoint, time, latency, alertLevel, error);
+        return new TimeResult(time, latency, alertLevel, error);
     }
 
     @Override
     protected TimeResult newSampleResult(long time, long latency, AlertLevel alertLevel, TimeSpan sample) {
-        return new TimeResult(monitoringPoint, time, latency, alertLevel, sample.getTimeSpan());
+        return new TimeResult(time, latency, alertLevel, sample.getTimeSpan());
     }
 }

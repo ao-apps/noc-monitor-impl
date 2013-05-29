@@ -10,12 +10,15 @@ import com.aoindustries.noc.monitor.common.TableMultiResult;
 import com.aoindustries.noc.monitor.common.TableMultiResultListener;
 import com.aoindustries.noc.monitor.common.TableMultiResultNode;
 import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  * The node for table results.
@@ -34,7 +37,8 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
     final private List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<TableMultiResultListener<? super R>>();
 
-    TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?,R> worker) {
+    TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?,R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
         this.rootNode = rootNode;
         this.parent = parent;
         this.worker = worker;
@@ -81,7 +85,9 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
     /**
      * Called by the worker when the alert level changes.
      */
-    final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String newAlertMessage) {
+    final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String newAlertMessage) throws RemoteException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         rootNode.nodeAlertLevelChanged(
             this,
             oldAlertLevel,
@@ -116,6 +122,8 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
      * Notifies all of the listeners.
      */
     final void tableMultiResultAdded(R tableMultiResult) {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         synchronized(tableMultiResultListeners) {
             Iterator<TableMultiResultListener<? super R>> I = tableMultiResultListeners.iterator();
             while(I.hasNext()) {
@@ -134,6 +142,8 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
      * Notifies all of the listeners.
      */
     final void tableMultiResultRemoved(R tableMultiResult) {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         synchronized(tableMultiResultListeners) {
             Iterator<TableMultiResultListener<? super R>> I = tableMultiResultListeners.iterator();
             while(I.hasNext()) {

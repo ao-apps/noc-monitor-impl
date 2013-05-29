@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,26 +8,30 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
-import com.aoindustries.util.WrappedException;
 import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
-import java.util.UUID;
 
 /**
  * One in the list of nodes that form the systems tree.
  *
  * @author  AO Industries, Inc.
  */
-public abstract class NodeImpl implements Node {
+public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 
-    private static final long serialVersionUID = 1L;
+    final protected int port;
+    final protected RMIClientSocketFactory csf;
+    final protected RMIServerSocketFactory ssf;
 
-    private final UUID uuid;
-
-    NodeImpl() {
-        uuid = UUID.randomUUID();
+    NodeImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
+        this.port = port;
+        this.csf = csf;
+        this.ssf = ssf;
     }
 
     @Override
@@ -43,48 +47,27 @@ public abstract class NodeImpl implements Node {
     abstract public String getAlertMessage();
     
     @Override
-    abstract public boolean getAllowsChildren();
-
-    @Override
-    abstract public String getId();
-
-    @Override
     abstract public String getLabel();
-
+    
     @Override
-    final public UUID getUuid() {
-        return uuid;
-    }
-
+    abstract public boolean getAllowsChildren();
+    
+    /**
+     * The default toString is the label.
+     */
     @Override
-    final public boolean equals(Object obj) {
-        if(!(obj instanceof Node)) return false;
-        Node other = (Node)obj;
-        try {
-            return uuid.equals(other.getUuid());
-        } catch(RemoteException err) {
-            throw new WrappedException(err);
-        }
-    }
-
-    @Override
-    final public int hashCode() {
-        return uuid.hashCode();
-    }
-
-    @Override
-    final public String toString() {
+    public String toString() {
         return getLabel();
     }
-
+    
     /**
      * Gets the full path to the node.
      */
-    String getFullPath(Locale locale) {
+    String getFullPath(Locale locale) throws RemoteException {
         String pathSeparator = accessor.getMessage(/*locale,*/ "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
         final StringBuilder fullPath = new StringBuilder();
-        Stack<NodeImpl> path = new Stack<NodeImpl>();
-        NodeImpl parent = this;
+        Stack<Node> path = new Stack<Node>();
+        Node parent = this;
         while(parent.getParent()!=null) {
             path.push(parent);
             parent = parent.getParent();

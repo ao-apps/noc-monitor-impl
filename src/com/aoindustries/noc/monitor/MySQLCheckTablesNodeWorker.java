@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012 by AO Industries, Inc.,
+ * Copyright 2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -10,7 +10,6 @@ import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeSpan;
 import java.io.File;
@@ -33,12 +32,12 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
      * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
      */
     private static final Map<String, MySQLCheckTablesNodeWorker> workerCache = new HashMap<String,MySQLCheckTablesNodeWorker>();
-    static MySQLCheckTablesNodeWorker getWorker(MonitoringPoint monitoringPoint, MySQLDatabaseNode databaseNode, File persistenceFile) throws IOException {
+    static MySQLCheckTablesNodeWorker getWorker(MySQLDatabaseNode databaseNode, File persistenceFile) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             MySQLCheckTablesNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MySQLCheckTablesNodeWorker(monitoringPoint, databaseNode, persistenceFile);
+                worker = new MySQLCheckTablesNodeWorker(databaseNode, persistenceFile);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.databaseNode.getMySQLDatabase().equals(databaseNode.getMySQLDatabase())) throw new AssertionError("worker.mysqlDatabase!=mysqlDatabase: "+worker.databaseNode.getMySQLDatabase()+"!="+databaseNode.getMySQLDatabase());
@@ -50,8 +49,8 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private MySQLDatabaseNode databaseNode;
 
-    MySQLCheckTablesNodeWorker(MonitoringPoint monitoringPoint, MySQLDatabaseNode databaseNode, File persistenceFile) {
-        super(monitoringPoint, persistenceFile);
+    MySQLCheckTablesNodeWorker(MySQLDatabaseNode databaseNode, File persistenceFile) {
+        super(persistenceFile);
         this.databaseNode = databaseNode;
     }
 

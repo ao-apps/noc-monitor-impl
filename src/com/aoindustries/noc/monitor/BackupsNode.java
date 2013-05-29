@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -22,6 +22,8 @@ import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  * The node per server.
@@ -54,7 +57,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
     final private List<TableResultListener> tableResultListeners = new ArrayList<TableResultListener>();
 
-    BackupsNode(ServerNode serverNode) {
+    BackupsNode(ServerNode serverNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(port, csf, ssf);
         this.serverNode = serverNode;
     }
 
@@ -99,11 +103,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
     @Override
     public String getAlertMessage() {
         return null;
-    }
-
-    @Override
-    public String getId() {
-        return "backups";
     }
 
     @Override
@@ -160,6 +159,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
     }
 
     private void verifyBackups() throws IOException, SQLException {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         final long startTime = System.currentTimeMillis();
         final long startNanos = System.nanoTime();
 
@@ -243,7 +244,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 FailoverFileReplication failoverFileReplication = failoverFileReplications.get(c);
                 if(c>=backupNodes.size() || !failoverFileReplication.equals(backupNodes.get(c).getFailoverFileReplication())) {
                     // Insert into proper index
-                    BackupNode backupNode = new BackupNode(this, failoverFileReplication);
+                    BackupNode backupNode = new BackupNode(this, failoverFileReplication, port, csf, ssf);
                     backupNodes.add(c, backupNode);
                     backupNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();
@@ -255,7 +256,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             long latency = System.nanoTime() - startNanos;
             if(failoverFileReplications.isEmpty()) {
                 newResult = new TableResult(
-                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     true,
@@ -267,7 +267,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 );
             } else if(missingMobBackup) {
                 newResult = new TableResult(
-                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     true,
@@ -291,7 +290,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 for(int c=0;c<failoverFileReplications.size();c++) {
                     FailoverFileReplication failoverFileReplication = failoverFileReplications.get(c);
                     BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
-                    tableData.add(backupPartition==null ? "null" : backupPartition.getAOServer().getHostname().toString());
+                    tableData.add(backupPartition==null ? "null" : backupPartition.getAOServer().getHostname());
                     tableData.add(backupPartition==null ? "null" : backupPartition.getPath());
                     StringBuilder times = new StringBuilder();
                     for(FailoverFileSchedule ffs : failoverFileReplication.getFailoverFileSchedules()) {
@@ -328,7 +327,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                     }
                 }
                 newResult = new TableResult(
-                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     false,
@@ -386,6 +384,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
      * Notifies all of the listeners.
      */
     private void notifyTableResultUpdated(TableResult tableResult) {
+        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
         synchronized(tableResultListeners) {
             Iterator<TableResultListener> I = tableResultListeners.iterator();
             while(I.hasNext()) {

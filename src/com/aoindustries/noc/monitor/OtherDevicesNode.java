@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2009 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -10,6 +10,9 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 
 /**
@@ -19,23 +22,14 @@ import java.sql.SQLException;
  */
 public class OtherDevicesNode extends ServersNode {
 
-    private static final long serialVersionUID = 1L;
-
-    OtherDevicesNode(RootNodeImpl rootNode) {
-        super(rootNode);
+    OtherDevicesNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+        super(rootNode, port, csf, ssf);
     }
-
-    @Override
-    public String getId() {
-        return "other_devices";
-    }
-
     @Override
     public String getLabel() {
         return accessor.getMessage(/*rootNode.locale,*/ "OtherDevicesNode.label");
     }
 
-    @Override
     boolean includeServer(Server server) throws SQLException, IOException {
         PhysicalServer physicalServer = server.getPhysicalServer();
         AOServer aoServer = server.getAOServer();

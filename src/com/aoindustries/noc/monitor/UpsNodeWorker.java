@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TimeSpan;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import java.io.File;
@@ -60,12 +59,12 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
      * One unique worker is made per persistence directory (and should match aoServer exactly)
      */
     private static final Map<String, UpsNodeWorker> workerCache = new HashMap<String,UpsNodeWorker>();
-    static UpsNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, AOServer aoServer) throws IOException {
+    static UpsNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
             UpsNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new UpsNodeWorker(monitoringPoint, persistenceDirectory, aoServer);
+                worker = new UpsNodeWorker(persistenceDirectory, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
@@ -77,8 +76,8 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
     final private AOServer _aoServer;
     private AOServer currentAOServer;
 
-    private UpsNodeWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, AOServer aoServer) throws IOException {
-        super(monitoringPoint, new File(persistenceDirectory, "ups"), new UpsResultSerializer(monitoringPoint));
+    private UpsNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+        super(new File(persistenceDirectory, "ups"), new UpsResultSerializer());
         this._aoServer = currentAOServer = aoServer;
     }
 
@@ -264,27 +263,11 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 
     @Override
     protected UpsResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new UpsResult(monitoringPoint, time, latency, alertLevel, error);
+        return new UpsResult(time, latency, alertLevel, error);
     }
 
     @Override
     protected UpsResult newSampleResult(long time, long latency, AlertLevel alertLevel, UpsStatus sample) {
-        return sample.getResult(monitoringPoint, time, latency, alertLevel);
-    }
-
-    /**
-     * Check once a minute.
-     */
-    @Override
-    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-        return 60000;
-    }
-
-    /**
-     * Shorter timeout of one minute.
-     */
-    @Override
-    protected long getFutureTimeout() {
-        return 1;
+        return sample.getResult(time, latency, alertLevel);
     }
 }

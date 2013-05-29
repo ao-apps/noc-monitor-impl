@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.PingResult;
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +36,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
      * One unique worker is made per persistence directory (and should match the IP address exactly)
      */
     private static final Map<String, PingNodeWorker> workerCache = new HashMap<String,PingNodeWorker>();
-    static PingNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, IPAddress ipAddress) throws IOException {
+    static PingNodeWorker getWorker(File persistenceDirectory, IPAddress ipAddress) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         com.aoindustries.aoserv.client.validator.InetAddress ip = ipAddress.getInetAddress();
         com.aoindustries.aoserv.client.validator.InetAddress externalIp = ipAddress.getExternalIpAddress();
@@ -45,7 +44,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
         synchronized(workerCache) {
             PingNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new PingNodeWorker(monitoringPoint, persistenceDirectory, pingAddress);
+                worker = new PingNodeWorker(persistenceDirectory, pingAddress);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.ipAddress.equals(pingAddress)) throw new AssertionError("worker.ipAddress!=pingAddress: "+worker.ipAddress+"!="+pingAddress);
@@ -59,8 +58,8 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
      */
     final private com.aoindustries.aoserv.client.validator.InetAddress ipAddress;
 
-    private PingNodeWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, com.aoindustries.aoserv.client.validator.InetAddress ipAddress) throws IOException {
-        super(monitoringPoint, new File(persistenceDirectory, "pings"), new PingResultSerializer(monitoringPoint));
+    private PingNodeWorker(File persistenceDirectory, com.aoindustries.aoserv.client.validator.InetAddress ipAddress) throws IOException {
+        super(new File(persistenceDirectory, "pings"), new PingResultSerializer());
         this.ipAddress = ipAddress;
     }
 
@@ -148,11 +147,11 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 
     @Override
     protected PingResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new PingResult(monitoringPoint, time, latency, alertLevel, error);
+        return new PingResult(time, latency, alertLevel, error);
     }
 
     @Override
     protected PingResult newSampleResult(long time, long latency, AlertLevel alertLevel, Object sample) {
-        return new PingResult(monitoringPoint, time, latency, alertLevel);
+        return new PingResult(time, latency, alertLevel);
     }
 }
