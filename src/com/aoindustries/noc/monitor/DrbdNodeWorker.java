@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
+import com.aoindustries.aoserv.client.AOServer.DrbdReport;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -22,7 +23,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class DrbdNodeWorker extends TableResultNodeWorker<List<AOServer.DrbdReport>,String> {
+class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,String> {
 
     /**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
@@ -93,14 +94,14 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<AOServer.DrbdReport>,Str
     }
 
     @Override
-    protected List<AOServer.DrbdReport> getQueryResult(Locale locale) throws Exception {
+    protected List<DrbdReport> getQueryResult(Locale locale) throws Exception {
         return aoServer.getDrbdReport();
     }
 
     @Override
-    protected List<String> getTableData(List<AOServer.DrbdReport> reports, Locale locale) throws Exception {
+    protected List<String> getTableData(List<DrbdReport> reports, Locale locale) throws Exception {
         List<String> tableData = new ArrayList<String>(reports.size()*5);
-        for(AOServer.DrbdReport report : reports) {
+        for(DrbdReport report : reports) {
             tableData.add(report.getDevice());
             tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
             tableData.add(report.getConnectionState().toString());
@@ -111,17 +112,17 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<AOServer.DrbdReport>,Str
     }
 
     @Override
-    protected List<AlertLevel> getAlertLevels(List<AOServer.DrbdReport> reports) {
+    protected List<AlertLevel> getAlertLevels(List<DrbdReport> reports) {
         List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(reports.size());
-        for(AOServer.DrbdReport report : reports) {
+        for(DrbdReport report : reports) {
             AlertLevel alertLevel;
             if(
-                report.getConnectionState()!=AOServer.DrbdReport.ConnectionState.Connected
-                || report.getLocalDiskState()!=AOServer.DrbdReport.DiskState.UpToDate
-                || report.getRemoteDiskState()!=AOServer.DrbdReport.DiskState.UpToDate
+                report.getConnectionState()!=DrbdReport.ConnectionState.Connected
+                || report.getLocalDiskState()!=DrbdReport.DiskState.UpToDate
+                || report.getRemoteDiskState()!=DrbdReport.DiskState.UpToDate
                 || !(
-                    (report.getLocalRole()==AOServer.DrbdReport.Role.Primary && report.getRemoteRole()==AOServer.DrbdReport.Role.Secondary)
-                    || (report.getLocalRole()==AOServer.DrbdReport.Role.Secondary && report.getRemoteRole()==AOServer.DrbdReport.Role.Primary)
+                    (report.getLocalRole()==DrbdReport.Role.Primary && report.getRemoteRole()==DrbdReport.Role.Secondary)
+                    || (report.getLocalRole()==DrbdReport.Role.Secondary && report.getRemoteRole()==DrbdReport.Role.Primary)
                 )
             ) {
                 alertLevel = AlertLevel.HIGH;
