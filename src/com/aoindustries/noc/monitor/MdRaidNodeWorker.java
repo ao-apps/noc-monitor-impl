@@ -25,7 +25,14 @@ import java.util.Map;
  */
 class MdRaidNodeWorker extends SingleResultNodeWorker {
 
-    /**
+	private enum RaidLevel {
+		LINEAR,
+		RAID1,
+		RAID5,
+		RAID6
+	}
+
+	/**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
     private static final Map<String, MdRaidNodeWorker> workerCache = new HashMap<String,MdRaidNodeWorker>();
@@ -88,7 +95,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
         }
         String report = result.getReport();
         List<String> lines = StringUtility.splitLines(report);
-        int lastRaidLevel = -1;
+        RaidLevel lastRaidLevel = null;
         AlertLevel highestAlertLevel = AlertLevel.NONE;
         String highestAlertMessage = "";
         for(String line : lines) {
@@ -102,9 +109,10 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
             ) {
                 if(line.indexOf(':')!=-1) {
                     // Must contain raid type
-                    if(line.indexOf(" raid1 ")!=-1) lastRaidLevel = 1;
-                    else if(line.indexOf(" raid5 ")!=-1) lastRaidLevel = 5;
-                    else if(line.indexOf(" raid6 ")!=-1) lastRaidLevel = 6;
+                    if(line.indexOf(" linear ")!=-1) lastRaidLevel = RaidLevel.LINEAR;
+					else if(line.indexOf(" raid1 ") != -1) lastRaidLevel = RaidLevel.RAID1;
+                    else if(line.indexOf(" raid5 ")!=-1) lastRaidLevel = RaidLevel.RAID5;
+                    else if(line.indexOf(" raid6 ")!=-1) lastRaidLevel = RaidLevel.RAID6;
                     else {
                         return new AlertLevelAndMessage(
                             AlertLevel.CRITICAL,
@@ -163,7 +171,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                         // Get the current alert level
                                         final AlertLevel alertLevel;
                                         final String alertMessage;
-                                        if(lastRaidLevel==1) {
+                                        if(lastRaidLevel==RaidLevel.RAID1) {
                                             if(upCount==1 && downCount==0) {
                                                 // xen917-4.fc.aoindustries.com has a bad drive we don't fix, this is normal for it
                                                 /*if(aoServer.getHostname().toString().equals("xen917-4.fc.aoindustries.com")) alertLevel = AlertLevel.NONE;
@@ -181,7 +189,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                                 upCount,
                                                 downCount
                                             );
-                                        } else if(lastRaidLevel==5) {
+                                        } else if(lastRaidLevel==RaidLevel.RAID5) {
                                             if(downCount==0) alertLevel = AlertLevel.NONE;
                                             else if(downCount==1) alertLevel = AlertLevel.HIGH;
                                             else if(downCount>=2) alertLevel = AlertLevel.CRITICAL;
@@ -192,7 +200,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                                 upCount,
                                                 downCount
                                             );
-                                        } else if(lastRaidLevel==6) {
+                                        } else if(lastRaidLevel==RaidLevel.RAID6) {
                                             if(downCount==0) alertLevel = AlertLevel.NONE;
                                             else if(downCount==1) alertLevel = AlertLevel.MEDIUM;
                                             else if(downCount==2) alertLevel = AlertLevel.HIGH;
