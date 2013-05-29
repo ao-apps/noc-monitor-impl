@@ -28,6 +28,12 @@ import java.util.Map;
  */
 class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,NetDeviceBitRateResult> {
 
+	/**
+	 * The number of bytes overhead for each Ethernet frame, including interframe gap, assuming no VLAN
+	 * tag.
+	 */
+	private static final int ETHERNET_FRAME_OVERHEAD = 38;
+
     /**
      * One unique worker is made per persistence directory (and should match the net device exactly)
      */
@@ -111,10 +117,12 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
                 throw new Exception("Device counters reset");
             } else {
                 long timeDiff = thisStatsTime - lastStatsTime;
-                txBitsPerSecond = (thisTxBytes - lastTxBytes)*8000 / timeDiff;
-                rxBitsPerSecond = (thisRxBytes - lastRxBytes)*8000 / timeDiff;
-                txPacketsPerSecond = (thisTxPackets - lastTxPackets)*8000 / timeDiff;
-                rxPacketsPerSecond = (thisRxPackets - lastRxPackets)*8000 / timeDiff;
+				long txNumPackets = thisTxPackets - lastTxPackets;
+				long rxNumPackets = thisRxPackets - lastRxPackets;
+                txPacketsPerSecond = txNumPackets*1000 / timeDiff;
+                rxPacketsPerSecond = rxNumPackets*1000 / timeDiff;
+                txBitsPerSecond = (thisTxBytes - lastTxBytes + ETHERNET_FRAME_OVERHEAD * txNumPackets)*8000 / timeDiff;
+                rxBitsPerSecond = (thisRxBytes - lastRxBytes + ETHERNET_FRAME_OVERHEAD * rxNumPackets)*8000 / timeDiff;
             }
             // Display the alert thresholds
             List<Object> sample = new ArrayList<Object>(8);
