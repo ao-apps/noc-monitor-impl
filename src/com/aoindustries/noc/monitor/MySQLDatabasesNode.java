@@ -8,21 +8,16 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.SwingUtilities;
 
 /**
  * The node for all MySQLDatabases on one MySQLServer.
@@ -37,14 +32,12 @@ public class MySQLDatabasesNode extends NodeImpl {
     final MySQLSlaveNode mysqlSlaveNode;
     private final List<MySQLDatabaseNode> mysqlDatabaseNodes = new ArrayList<MySQLDatabaseNode>();
 
-    MySQLDatabasesNode(MySQLServerNode mysqlServerNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+    MySQLDatabasesNode(MySQLServerNode mysqlServerNode) {
         this.mysqlServerNode = mysqlServerNode;
         this.mysqlSlaveNode = null;
     }
 
-    MySQLDatabasesNode(MySQLSlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+    MySQLDatabasesNode(MySQLSlaveNode mysqlSlaveNode) {
         this.mysqlServerNode = mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode;
         this.mysqlSlaveNode = mysqlSlaveNode;
     }
@@ -93,6 +86,11 @@ public class MySQLDatabasesNode extends NodeImpl {
     }
 
     @Override
+    public String getId() {
+        return "mysql_databases";
+    }
+
+    @Override
     public String getLabel() {
         return accessor.getMessage(/*mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,*/ "MySQLDatabasesNode.label");
     }
@@ -129,8 +127,6 @@ public class MySQLDatabasesNode extends NodeImpl {
     }
 
     private void verifyMySQLDatabases() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         List<MySQLDatabase> mysqlDatabases = mysqlServerNode.getMySQLServer().getMySQLDatabases();
         synchronized(mysqlDatabaseNodes) {
             // Remove old ones
@@ -149,7 +145,7 @@ public class MySQLDatabasesNode extends NodeImpl {
                 MySQLDatabase mysqlDatabase = mysqlDatabases.get(c);
                 if(c>=mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
                     // Insert into proper index
-                    MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null, port, csf, ssf);
+                    MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null);
                     mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
                     mysqlDatabaseNode.start();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();

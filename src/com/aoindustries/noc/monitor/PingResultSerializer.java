@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.io.CompressedDataInputStream;
 import com.aoindustries.io.CompressedDataOutputStream;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.PingResult;
 import com.aoindustries.util.persistent.BufferedSerializer;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +21,12 @@ import java.io.InputStream;
 public class PingResultSerializer extends BufferedSerializer<PingResult> {
 
     private static final int VERSION = 1;
+
+    private final MonitoringPoint monitoringPoint;
+
+    public PingResultSerializer(MonitoringPoint monitoringPoint) {
+        this.monitoringPoint = monitoringPoint;
+    }
 
     @Override
     protected void serialize(PingResult value, ByteArrayOutputStream buffer) throws IOException {
@@ -45,8 +52,8 @@ public class PingResultSerializer extends BufferedSerializer<PingResult> {
                 long latency = in.readLong();
                 AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
                 String error = in.readNullUTF();
-                if(error!=null) return new PingResult(time, latency, alertLevel, error);
-                return new PingResult(time, latency, alertLevel);
+                if(error!=null) return new PingResult(monitoringPoint, time, latency, alertLevel, error);
+                return new PingResult(monitoringPoint, time, latency, alertLevel);
             } else throw new IOException("Unsupported object version: "+version);
         } finally {
             in.close();

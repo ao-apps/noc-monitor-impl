@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
@@ -46,12 +47,12 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
     private static final Map<String, HardDrivesTemperatureNodeWorker> workerCache = new HashMap<String,HardDrivesTemperatureNodeWorker>();
-    static HardDrivesTemperatureNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+    static HardDrivesTemperatureNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             HardDrivesTemperatureNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new HardDrivesTemperatureNodeWorker(persistenceFile, aoServer);
+                worker = new HardDrivesTemperatureNodeWorker(monitoringPoint, persistenceFile, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
@@ -63,8 +64,8 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private AOServer aoServer;
 
-    HardDrivesTemperatureNodeWorker(File persistenceFile, AOServer aoServer) {
-        super(persistenceFile);
+    HardDrivesTemperatureNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServer aoServer) {
+        super(monitoringPoint, persistenceFile);
         this.aoServer = aoServer;
     }
 

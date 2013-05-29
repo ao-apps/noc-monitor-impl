@@ -9,6 +9,7 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
 import java.io.File;
 import java.io.IOException;
@@ -28,13 +29,13 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>
      * One unique worker is made per persistence directory (and should match mysqlReplication exactly)
      */
     private static final Map<String, MySQLSlaveStatusNodeWorker> workerCache = new HashMap<String,MySQLSlaveStatusNodeWorker>();
-    static MySQLSlaveStatusNodeWorker getWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) throws IOException {
+    static MySQLSlaveStatusNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceDirectory, FailoverMySQLReplication mysqlReplication) throws IOException {
         File persistenceFile = new File(persistenceDirectory, "slave_status");
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             MySQLSlaveStatusNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MySQLSlaveStatusNodeWorker(persistenceFile, mysqlReplication);
+                worker = new MySQLSlaveStatusNodeWorker(monitoringPoint, persistenceFile, mysqlReplication);
                 workerCache.put(path, worker);
             } else {
                 if(!worker._mysqlReplication.equals(mysqlReplication)) throw new AssertionError("worker.mysqlReplication!=mysqlReplication: "+worker._mysqlReplication+"!="+mysqlReplication);
@@ -46,8 +47,8 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>
     final private FailoverMySQLReplication _mysqlReplication;
     private FailoverMySQLReplication currentFailoverMySQLReplication;
 
-    private MySQLSlaveStatusNodeWorker(File persistenceFile, FailoverMySQLReplication mysqlReplication) throws IOException {
-        super(persistenceFile, new MySQLReplicationResultSerializer());
+    private MySQLSlaveStatusNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, FailoverMySQLReplication mysqlReplication) throws IOException {
+        super(monitoringPoint, persistenceFile, new MySQLReplicationResultSerializer(monitoringPoint));
         this._mysqlReplication = currentFailoverMySQLReplication = mysqlReplication;
     }
 
@@ -198,12 +199,13 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>
 
     @Override
     protected MySQLReplicationResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new MySQLReplicationResult(time, latency, alertLevel, error);
+        return new MySQLReplicationResult(monitoringPoint, time, latency, alertLevel, error);
     }
 
     @Override
     protected MySQLReplicationResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<String> sample) {
         return new MySQLReplicationResult(
+            monitoringPoint,
             time,
             latency,
             alertLevel,

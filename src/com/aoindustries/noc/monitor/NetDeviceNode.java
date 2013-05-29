@@ -11,14 +11,10 @@ import com.aoindustries.aoserv.client.NetDeviceID;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.SwingUtilities;
 
 /**
  * The node per server.
@@ -29,7 +25,7 @@ public class NetDeviceNode extends NodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    final NetDevicesNode _networkDevicesNode;
+    final NetDevicesNode _netDevicesNode;
     private final NetDevice _netDevice;
     private final String _label;
 
@@ -37,18 +33,15 @@ public class NetDeviceNode extends NodeImpl {
     volatile private NetDeviceBondingNode _netDeviceBondingNode;
     volatile private IPAddressesNode _ipAddressesNode;
 
-    NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice netDevice, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
-        super(port, csf, ssf);
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
-        this._networkDevicesNode = networkDevicesNode;
+    NetDeviceNode(NetDevicesNode netDevicesNode, NetDevice netDevice) throws SQLException, IOException {
+        this._netDevicesNode = netDevicesNode;
         this._netDevice = netDevice;
         this._label = netDevice.getNetDeviceID().getName();
     }
 
     @Override
     public NetDevicesNode getParent() {
-        return _networkDevicesNode;
+        return _netDevicesNode;
     }
     
     public NetDevice getNetDevice() {
@@ -115,14 +108,19 @@ public class NetDeviceNode extends NodeImpl {
     }
 
     @Override
+    public String getId() {
+        return _label;
+    }
+
+    @Override
     public String getLabel() {
         return _label;
     }
 
     synchronized void start() throws IOException, SQLException {
-        final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
+        final RootNodeImpl rootNode = _netDevicesNode.serverNode.serversNode.rootNode;
         // bit rate and network bonding monitoring only supported for AOServer
-        if(_networkDevicesNode.getServer().getAOServer()!=null) {
+        if(_netDevicesNode.getServer().getAOServer()!=null) {
             NetDeviceID netDeviceID = _netDevice.getNetDeviceID();
             if(
                 // bit rate for non-loopback devices
@@ -131,7 +129,7 @@ public class NetDeviceNode extends NodeImpl {
                 && !netDeviceID.getName().equals(NetDeviceID.BMC)
             ) {
                 if(_netDeviceBitRateNode==null) {
-                    _netDeviceBitRateNode = new NetDeviceBitRateNode(this, port, csf, ssf);
+                    _netDeviceBitRateNode = new NetDeviceBitRateNode(this);
                     _netDeviceBitRateNode.start();
                     rootNode.nodeAdded();
                 }
@@ -143,7 +141,7 @@ public class NetDeviceNode extends NodeImpl {
                 || _label.equals(NetDeviceID.BOND2)
             ) {
                 if(_netDeviceBondingNode==null) {
-                    _netDeviceBondingNode = new NetDeviceBondingNode(this, port, csf, ssf);
+                    _netDeviceBondingNode = new NetDeviceBondingNode(this);
                     _netDeviceBondingNode.start();
                     rootNode.nodeAdded();
                 }
@@ -151,35 +149,35 @@ public class NetDeviceNode extends NodeImpl {
         }
 
         if(_ipAddressesNode==null) {
-            _ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
+            _ipAddressesNode = new IPAddressesNode(this);
             _ipAddressesNode.start();
             rootNode.nodeAdded();
         }
     }
 
     synchronized void stop() {
-        final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
+        final RootNodeImpl rootNode = _netDevicesNode.serverNode.serversNode.rootNode;
         if(_ipAddressesNode!=null) {
             _ipAddressesNode.stop();
-            _ipAddressesNode = null;
             rootNode.nodeRemoved();
+            _ipAddressesNode = null;
         }
 
         if(_netDeviceBondingNode!=null) {
             _netDeviceBondingNode.stop();
-            _netDeviceBondingNode = null;
             rootNode.nodeRemoved();
+            _netDeviceBondingNode = null;
         }
 
         if(_netDeviceBitRateNode!=null) {
             _netDeviceBitRateNode.stop();
-            _netDeviceBitRateNode = null;
             rootNode.nodeRemoved();
+            _netDeviceBitRateNode = null;
         }
     }
 
     File getPersistenceDirectory() throws IOException {
-        File dir = new File(_networkDevicesNode.getPersistenceDirectory(), _label);
+        File dir = new File(_netDevicesNode.getPersistenceDirectory(), _label);
         if(!dir.exists()) {
             if(!dir.mkdir()) {
                 throw new IOException(

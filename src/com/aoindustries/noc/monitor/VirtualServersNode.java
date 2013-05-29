@@ -9,9 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.Server;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 
 /**
@@ -21,8 +18,15 @@ import java.sql.SQLException;
  */
 public class VirtualServersNode extends ServersNode {
 
-    VirtualServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(rootNode, port, csf, ssf);
+    private static final long serialVersionUID = 1L;
+
+    VirtualServersNode(RootNodeImpl rootNode) {
+        super(rootNode);
+    }
+
+    @Override
+    public String getId() {
+        return "virtual_servers";
     }
 
     @Override
@@ -30,6 +34,7 @@ public class VirtualServersNode extends ServersNode {
         return accessor.getMessage(/*rootNode.locale,*/ "VirtualServersNode.label");
     }
 
+    @Override
     boolean includeServer(Server server) throws SQLException, IOException {
         AOServer aoServer = server.getAOServer();
         return

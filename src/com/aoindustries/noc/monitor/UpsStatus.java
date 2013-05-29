@@ -5,10 +5,11 @@
  */
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TimeSpan;
 import com.aoindustries.noc.monitor.common.UpsResult;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.util.StringUtility;
 import java.text.ParseException;
 
@@ -289,8 +290,9 @@ class UpsStatus {
         return itemp;
     }
 
-    UpsResult getResult(long time, long latency, AlertLevel alertLevel) {
+    UpsResult getResult(MonitoringPoint monitoringPoint, long time, long latency, AlertLevel alertLevel) {
         return new UpsResult(
+            monitoringPoint,
             time,
             latency,
             alertLevel,

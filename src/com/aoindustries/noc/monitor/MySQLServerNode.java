@@ -14,14 +14,10 @@ import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.SwingUtilities;
 
 /**
  * The node per MySQL server.
@@ -39,10 +35,7 @@ public class MySQLServerNode extends NodeImpl {
     volatile private MySQLSlavesNode _mysqlSlavesNode;
     volatile private MySQLDatabasesNode _mysqlDatabasesNode;
 
-    MySQLServerNode(MySQLServersNode mysqlServersNode, MySQLServer mysqlServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
-        super(port, csf, ssf);
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
+    MySQLServerNode(MySQLServersNode mysqlServersNode, MySQLServer mysqlServer) {
         this._mysqlServersNode = mysqlServersNode;
         this._mysqlServer = mysqlServer;
         this._label = mysqlServer.getName();
@@ -107,6 +100,11 @@ public class MySQLServerNode extends NodeImpl {
     }
 
     @Override
+    public String getId() {
+        return _label;
+    }
+
+    @Override
     public String getLabel() {
         return _label;
     }
@@ -129,7 +127,7 @@ public class MySQLServerNode extends NodeImpl {
         rootNode.conn.getFailoverMySQLReplications().addTableListener(tableListener, 100);
         verifyFailoverMySQLReplications();
         if(_mysqlDatabasesNode==null) {
-            _mysqlDatabasesNode = new MySQLDatabasesNode(this, port, csf, ssf);
+            _mysqlDatabasesNode = new MySQLDatabasesNode(this);
             _mysqlDatabasesNode.start();
             rootNode.nodeAdded();
         }
@@ -139,32 +137,30 @@ public class MySQLServerNode extends NodeImpl {
         RootNodeImpl rootNode = _mysqlServersNode.serverNode.serversNode.rootNode;
         if(_mysqlSlavesNode!=null) {
             _mysqlSlavesNode.stop();
-            _mysqlSlavesNode = null;
             rootNode.nodeRemoved();
+            _mysqlSlavesNode = null;
         }
 
         if(_mysqlDatabasesNode!=null) {
             _mysqlDatabasesNode.stop();
-            _mysqlDatabasesNode = null;
             rootNode.nodeRemoved();
+            _mysqlDatabasesNode = null;
         }
     }
 
     synchronized private void verifyFailoverMySQLReplications() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         List<FailoverMySQLReplication> failoverMySQLReplications = _mysqlServer.getFailoverMySQLReplications();
         if(!failoverMySQLReplications.isEmpty()) {
             if(_mysqlSlavesNode==null) {
-                _mysqlSlavesNode = new MySQLSlavesNode(this, port, csf, ssf);
+                _mysqlSlavesNode = new MySQLSlavesNode(this);
                 _mysqlSlavesNode.start();
                 _mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
             }
         } else {
             if(_mysqlSlavesNode!=null) {
                 _mysqlSlavesNode.stop();
-                _mysqlSlavesNode = null;
                 _mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+                _mysqlSlavesNode = null;
             }
         }
     }

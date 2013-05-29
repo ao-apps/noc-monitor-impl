@@ -9,6 +9,7 @@ import com.aoindustries.io.CompressedDataInputStream;
 import com.aoindustries.io.CompressedDataOutputStream;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.LoadAverageResult;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.util.persistent.BufferedSerializer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,6 +21,12 @@ import java.io.InputStream;
 public class LoadAverageResultSerializer extends BufferedSerializer<LoadAverageResult> {
 
     private static final int VERSION = 1;
+
+    private final MonitoringPoint monitoringPoint;
+
+    public LoadAverageResultSerializer(MonitoringPoint monitoringPoint) {
+        this.monitoringPoint = monitoringPoint;
+    }
 
     @Override
     protected void serialize(LoadAverageResult value, ByteArrayOutputStream buffer) throws IOException {
@@ -58,8 +65,9 @@ public class LoadAverageResultSerializer extends BufferedSerializer<LoadAverageR
                 long latency = in.readLong();
                 AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
                 String error = in.readNullUTF();
-                if(error!=null) return new LoadAverageResult(time, latency, alertLevel, error);
+                if(error!=null) return new LoadAverageResult(monitoringPoint, time, latency, alertLevel, error);
                 return new LoadAverageResult(
+                    monitoringPoint,
                     time,
                     latency,
                     alertLevel,

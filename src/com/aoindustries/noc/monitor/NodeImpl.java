@@ -8,30 +8,26 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
+import com.aoindustries.util.WrappedException;
 import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
+import java.util.UUID;
 
 /**
  * One in the list of nodes that form the systems tree.
  *
  * @author  AO Industries, Inc.
  */
-public abstract class NodeImpl extends UnicastRemoteObject implements Node {
+public abstract class NodeImpl implements Node {
 
-    final protected int port;
-    final protected RMIClientSocketFactory csf;
-    final protected RMIServerSocketFactory ssf;
+    private static final long serialVersionUID = 1L;
 
-    NodeImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
-        this.port = port;
-        this.csf = csf;
-        this.ssf = ssf;
+    private final UUID uuid;
+
+    NodeImpl() {
+        uuid = UUID.randomUUID();
     }
 
     @Override
@@ -47,27 +43,48 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
     abstract public String getAlertMessage();
     
     @Override
-    abstract public String getLabel();
-    
-    @Override
     abstract public boolean getAllowsChildren();
-    
-    /**
-     * The default toString is the label.
-     */
+
     @Override
-    public String toString() {
+    abstract public String getId();
+
+    @Override
+    abstract public String getLabel();
+
+    @Override
+    final public UUID getUuid() {
+        return uuid;
+    }
+
+    @Override
+    final public boolean equals(Object obj) {
+        if(!(obj instanceof Node)) return false;
+        Node other = (Node)obj;
+        try {
+            return uuid.equals(other.getUuid());
+        } catch(RemoteException err) {
+            throw new WrappedException(err);
+        }
+    }
+
+    @Override
+    final public int hashCode() {
+        return uuid.hashCode();
+    }
+
+    @Override
+    final public String toString() {
         return getLabel();
     }
-    
+
     /**
      * Gets the full path to the node.
      */
-    String getFullPath(Locale locale) throws RemoteException {
+    String getFullPath(Locale locale) {
         String pathSeparator = accessor.getMessage(/*locale,*/ "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
         final StringBuilder fullPath = new StringBuilder();
-        Stack<Node> path = new Stack<Node>();
-        Node parent = this;
+        Stack<NodeImpl> path = new Stack<NodeImpl>();
+        NodeImpl parent = this;
         while(parent.getParent()!=null) {
             path.push(parent);
             parent = parent.getParent();

@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.SingleResult;
 import java.io.File;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 /**
  * The workers for single results node.
@@ -29,6 +29,8 @@ import javax.swing.SwingUtilities;
 abstract class SingleResultNodeWorker implements Runnable {
 
     private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
+
+    final protected MonitoringPoint monitoringPoint;
 
     /**
      * The most recent timer task
@@ -44,7 +46,8 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     final protected File persistenceFile;
 
-    SingleResultNodeWorker(File persistenceFile) {
+    SingleResultNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile) {
+        this.monitoringPoint = monitoringPoint;
         this.persistenceFile = persistenceFile;
     }
 
@@ -105,8 +108,6 @@ abstract class SingleResultNodeWorker implements Runnable {
 
     @Override
     final public void run() {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         boolean lastSuccessful = false;
         synchronized(timerTaskLock) {if(timerTask==null) return;}
         try {
@@ -133,6 +134,7 @@ abstract class SingleResultNodeWorker implements Runnable {
             synchronized(timerTaskLock) {if(timerTask==null) return;}
 
             SingleResult result = new SingleResult(
+                monitoringPoint,
                 startMillis,
                 pingNanos,
                 error,
@@ -215,8 +217,6 @@ abstract class SingleResultNodeWorker implements Runnable {
      * Notifies all of the listeners.
      */
     private void singleResultUpdated(SingleResult singleResult) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         synchronized(singleResultNodeImpls) {
             for(SingleResultNodeImpl singleResultNodeImpl : singleResultNodeImpls) {
                 singleResultNodeImpl.singleResultUpdated(singleResult);

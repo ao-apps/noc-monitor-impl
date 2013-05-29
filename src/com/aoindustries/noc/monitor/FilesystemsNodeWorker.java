@@ -10,6 +10,7 @@ import com.Ostermiller.util.CSVParse;
 import com.Ostermiller.util.CSVParser;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.MonitoringPoint;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.util.StringUtility;
 import java.io.CharArrayReader;
@@ -36,12 +37,12 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
     private static final Map<String, FilesystemsNodeWorker> workerCache = new HashMap<String,FilesystemsNodeWorker>();
-    static FilesystemsNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+    static FilesystemsNodeWorker getWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
             FilesystemsNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new FilesystemsNodeWorker(persistenceFile, aoServer);
+                worker = new FilesystemsNodeWorker(monitoringPoint, persistenceFile, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
@@ -53,8 +54,8 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private AOServer aoServer;
 
-    FilesystemsNodeWorker(File persistenceFile, AOServer aoServer) {
-        super(persistenceFile);
+    FilesystemsNodeWorker(MonitoringPoint monitoringPoint, File persistenceFile, AOServer aoServer) {
+        super(monitoringPoint, persistenceFile);
         this.aoServer = aoServer;
     }
 

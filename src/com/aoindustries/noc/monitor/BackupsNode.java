@@ -22,8 +22,6 @@ import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 /**
  * The node per server.
@@ -57,8 +54,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
     final private List<TableResultListener> tableResultListeners = new ArrayList<TableResultListener>();
 
-    BackupsNode(ServerNode serverNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+    BackupsNode(ServerNode serverNode) {
         this.serverNode = serverNode;
     }
 
@@ -103,6 +99,11 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
     @Override
     public String getAlertMessage() {
         return null;
+    }
+
+    @Override
+    public String getId() {
+        return "backups";
     }
 
     @Override
@@ -159,8 +160,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
     }
 
     private void verifyBackups() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         final long startTime = System.currentTimeMillis();
         final long startNanos = System.nanoTime();
 
@@ -244,7 +243,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 FailoverFileReplication failoverFileReplication = failoverFileReplications.get(c);
                 if(c>=backupNodes.size() || !failoverFileReplication.equals(backupNodes.get(c).getFailoverFileReplication())) {
                     // Insert into proper index
-                    BackupNode backupNode = new BackupNode(this, failoverFileReplication, port, csf, ssf);
+                    BackupNode backupNode = new BackupNode(this, failoverFileReplication);
                     backupNodes.add(c, backupNode);
                     backupNode.start();
                     serverNode.serversNode.rootNode.nodeAdded();
@@ -256,6 +255,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             long latency = System.nanoTime() - startNanos;
             if(failoverFileReplications.isEmpty()) {
                 newResult = new TableResult(
+                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     true,
@@ -267,6 +267,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                 );
             } else if(missingMobBackup) {
                 newResult = new TableResult(
+                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     true,
@@ -327,6 +328,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
                     }
                 }
                 newResult = new TableResult(
+                    serverNode.serversNode.rootNode.monitoringPoint,
                     startTime,
                     latency,
                     false,
@@ -384,8 +386,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
      * Notifies all of the listeners.
      */
     private void notifyTableResultUpdated(TableResult tableResult) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         synchronized(tableResultListeners) {
             Iterator<TableResultListener> I = tableResultListeners.iterator();
             while(I.hasNext()) {

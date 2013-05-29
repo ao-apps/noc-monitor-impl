@@ -13,15 +13,11 @@ import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.SwingUtilities;
 
 /**
  * The node for all FailoverMySQLReplications on one MySQLServer.
@@ -35,8 +31,7 @@ public class MySQLSlavesNode extends NodeImpl {
     final MySQLServerNode mysqlServerNode;
     private final List<MySQLSlaveNode> mysqlSlaveNodes = new ArrayList<MySQLSlaveNode>();
 
-    MySQLSlavesNode(MySQLServerNode mysqlServerNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+    MySQLSlavesNode(MySQLServerNode mysqlServerNode) {
         this.mysqlServerNode = mysqlServerNode;
     }
 
@@ -84,6 +79,11 @@ public class MySQLSlavesNode extends NodeImpl {
     }
 
     @Override
+    public String getId() {
+        return "slaves";
+    }
+
+    @Override
     public String getLabel() {
         return accessor.getMessage(/*mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,*/ "MySQLSlavesNode.label");
     }
@@ -122,8 +122,6 @@ public class MySQLSlavesNode extends NodeImpl {
     }
 
     private void verifyMySQLSlaves() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         List<FailoverMySQLReplication> mysqlReplications = mysqlServerNode.getMySQLServer().getFailoverMySQLReplications();
         synchronized(mysqlSlaveNodes) {
             // Remove old ones
@@ -142,7 +140,7 @@ public class MySQLSlavesNode extends NodeImpl {
                 FailoverMySQLReplication mysqlReplication = mysqlReplications.get(c);
                 if(c>=mysqlSlaveNodes.size() || !mysqlReplication.equals(mysqlSlaveNodes.get(c).getFailoverMySQLReplication())) {
                     // Insert into proper index
-                    MySQLSlaveNode mysqlSlaveNode = new MySQLSlaveNode(this, mysqlReplication, port, csf, ssf);
+                    MySQLSlaveNode mysqlSlaveNode = new MySQLSlaveNode(this, mysqlReplication);
                     mysqlSlaveNodes.add(c, mysqlSlaveNode);
                     mysqlSlaveNode.start();
                     mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();

@@ -9,8 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 
 /**
@@ -24,19 +22,22 @@ public class BlacklistsNode extends TableResultNodeImpl {
 
     private final IPAddress ipAddress;
     
-    BlacklistsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    BlacklistsNode(IPAddressNode ipAddressNode) throws IOException, SQLException {
         super(
-            ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+            ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode,
             ipAddressNode,
             BlacklistsNodeWorker.getWorker(
+                ipAddressNode.ipAddressesNode.netDeviceNode._netDevicesNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(ipAddressNode.getPersistenceDirectory(), "blacklists"),
                 ipAddressNode.getIPAddress()
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
         this.ipAddress = ipAddressNode.getIPAddress();
+    }
+
+    @Override
+    public String getId() {
+        return "blacklists";
     }
 
     @Override

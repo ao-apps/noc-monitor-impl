@@ -9,11 +9,8 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -34,18 +31,16 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
     private final String _label;
     volatile private MySQLCheckTablesNode mysqlCheckTablesNode;
 
-    MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
         super(
             mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
             mysqlDatabasesNode,
             MySQLDatabaseNodeWorker.getWorker(
+                mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.monitoringPoint,
                 new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName()+".show_full_tables"),
                 mysqlDatabase,
                 mysqlSlave
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
         this.databaseWorker = (MySQLDatabaseNodeWorker)worker;
         this.mysqlDatabasesNode = mysqlDatabasesNode;
@@ -94,6 +89,11 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
     }
 
     @Override
+    public String getId() {
+        return _label;
+    }
+
+    @Override
     public String getLabel() {
         return _label;
     }
@@ -117,7 +117,7 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
     @Override
     synchronized void start() throws IOException {
         if(mysqlCheckTablesNode==null) {
-            mysqlCheckTablesNode = new MySQLCheckTablesNode(this, port, csf, ssf);
+            mysqlCheckTablesNode = new MySQLCheckTablesNode(this);
             mysqlCheckTablesNode.start();
             mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
         }
@@ -129,8 +129,8 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
         super.stop();
         if(mysqlCheckTablesNode!=null) {
             mysqlCheckTablesNode.stop();
-            mysqlCheckTablesNode = null;
             mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+            mysqlCheckTablesNode = null;
         }
     }
 }

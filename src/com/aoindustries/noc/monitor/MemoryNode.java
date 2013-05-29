@@ -9,8 +9,6 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.MemoryResult;
 import java.io.IOException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,19 +22,22 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
     private final AOServer _aoServer;
 
-    MemoryNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    MemoryNode(ServerNode serverNode, AOServer aoServer) throws IOException {
         super(
             serverNode.serversNode.rootNode,
             serverNode,
             MemoryNodeWorker.getWorker(
+                serverNode.serversNode.rootNode.monitoringPoint,
                 serverNode.getPersistenceDirectory(),
                 aoServer
-            ),
-            port,
-            csf,
-            ssf
+            )
         );
         this._aoServer = aoServer;
+    }
+
+    @Override
+    public String getId() {
+        return "memory";
     }
 
     @Override

@@ -10,15 +10,12 @@ import com.aoindustries.noc.monitor.common.SingleResult;
 import com.aoindustries.noc.monitor.common.SingleResultListener;
 import com.aoindustries.noc.monitor.common.SingleResultNode;
 import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 /**
  * The node for single results.
@@ -29,14 +26,15 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 
     private static final Logger logger = Logger.getLogger(SingleResultNodeImpl.class.getName());
 
+    private static final long serialVersionUID = 1L;
+
     protected final RootNodeImpl rootNode;
     protected final NodeImpl parent;
     private final SingleResultNodeWorker worker;
 
     final private List<SingleResultListener> singleResultListeners = new ArrayList<SingleResultListener>();
 
-    SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+    SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultNodeWorker worker) {
         this.rootNode = rootNode;
         this.parent = parent;
         this.worker = worker;
@@ -83,9 +81,7 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
     /**
      * Called by the worker when the alert level changes.
      */
-    final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, SingleResult result) throws RemoteException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
+    final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, SingleResult result) {
         rootNode.nodeAlertLevelChanged(
             this,
             oldAlertLevel,
@@ -120,8 +116,6 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
      * Notifies all of the listeners.
      */
     final void singleResultUpdated(SingleResult singleResult) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         synchronized(singleResultListeners) {
             Iterator<SingleResultListener> I = singleResultListeners.iterator();
             while(I.hasNext()) {

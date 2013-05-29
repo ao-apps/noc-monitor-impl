@@ -10,9 +10,6 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 
 /**
@@ -22,8 +19,15 @@ import java.sql.SQLException;
  */
 public class PhysicalServersNode extends ServersNode {
 
-    PhysicalServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(rootNode, port, csf, ssf);
+    private static final long serialVersionUID = 1L;
+
+    PhysicalServersNode(RootNodeImpl rootNode) {
+        super(rootNode);
+    }
+
+    @Override
+    public String getId() {
+        return "physical_servers";
     }
 
     @Override
@@ -31,6 +35,7 @@ public class PhysicalServersNode extends ServersNode {
         return accessor.getMessage(/*rootNode.locale,*/ "PhysicalServersNode.label");
     }
 
+    @Override
     boolean includeServer(Server server) throws SQLException, IOException {
         PhysicalServer physicalServer = server.getPhysicalServer();
         AOServer aoServer = server.getAOServer();

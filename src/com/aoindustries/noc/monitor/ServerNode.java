@@ -17,14 +17,10 @@ import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.SwingUtilities;
 
 /**
  * The node per server.
@@ -52,8 +48,7 @@ public class ServerNode extends NodeImpl {
     volatile private MemoryNode _memoryNode;
     volatile private TimeNode _timeNode;
 
-    ServerNode(ServersNode serversNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
-        super(port, csf, ssf);
+    ServerNode(ServersNode serversNode, Server server) {
         this.serversNode = serversNode;
         this._server = server;
         this._pack = server.getPackageId();
@@ -173,6 +168,11 @@ public class ServerNode extends NodeImpl {
     }
 
     @Override
+    public String getId() {
+        return _label;
+    }
+
+    @Override
     public String getLabel() {
         return _label;
     }
@@ -208,7 +208,7 @@ public class ServerNode extends NodeImpl {
         serversNode.rootNode.conn.getPhysicalServers().addTableListener(tableListener, 100);
         serversNode.rootNode.conn.getServers().addTableListener(tableListener, 100);
         if(_backupsNode==null) {
-            _backupsNode = new BackupsNode(this, port, csf, ssf);
+            _backupsNode = new BackupsNode(this);
             _backupsNode.start();
             serversNode.rootNode.nodeAdded();
         }
@@ -234,75 +234,71 @@ public class ServerNode extends NodeImpl {
         serversNode.rootNode.conn.getServers().removeTableListener(tableListener);
         if(_timeNode!=null) {
             _timeNode.stop();
-            _timeNode = null;
             serversNode.rootNode.nodeRemoved();
+            _timeNode = null;
         }
         if(_memoryNode!=null) {
             _memoryNode.stop();
-            _memoryNode = null;
             serversNode.rootNode.nodeRemoved();
+            _memoryNode = null;
         }
         if(_loadAverageNode!=null) {
             _loadAverageNode.stop();
-            _loadAverageNode = null;
             serversNode.rootNode.nodeRemoved();
+            _loadAverageNode = null;
         }
         if(_filesystemsNode!=null) {
             _filesystemsNode.stop();
-            _filesystemsNode = null;
             serversNode.rootNode.nodeRemoved();
+            _filesystemsNode = null;
         }
         if(_upsNode!=null) {
             _upsNode.stop();
-            _upsNode = null;
             serversNode.rootNode.nodeRemoved();
+            _upsNode = null;
         }
         if(_raidNode!=null) {
             _raidNode.stop();
-            _raidNode = null;
             serversNode.rootNode.nodeRemoved();
+            _raidNode = null;
         }
         if(_hardDrivesNode!=null) {
             _hardDrivesNode.stop();
-            _hardDrivesNode = null;
             serversNode.rootNode.nodeRemoved();
+            _hardDrivesNode = null;
         }
         if(_mysqlServersNode!=null) {
             _mysqlServersNode.stop();
-            _mysqlServersNode = null;
             serversNode.rootNode.nodeRemoved();
+            _mysqlServersNode = null;
         }
         if(_netDevicesNode!=null) {
             _netDevicesNode.stop();
-            _netDevicesNode = null;
             serversNode.rootNode.nodeRemoved();
+            _netDevicesNode = null;
         }
         if(_backupsNode!=null) {
             _backupsNode.stop();
-            _backupsNode = null;
             serversNode.rootNode.nodeRemoved();
+            _backupsNode = null;
         }
     }
 
     synchronized private void verifyNetDevices() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         if(_netDevicesNode==null) {
-            _netDevicesNode = new NetDevicesNode(this, _server, port, csf, ssf);
+            _netDevicesNode = new NetDevicesNode(this, _server);
             _netDevicesNode.start();
             serversNode.rootNode.nodeAdded();
         }
     }
 
     synchronized private void verifyMySQLServers() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         AOServer aoServer = _server.getAOServer();
         List<MySQLServer> mysqlServers = aoServer==null ? null : aoServer.getMySQLServers();
         if(mysqlServers!=null && !mysqlServers.isEmpty()) {
             // Has MySQL server
             if(_mysqlServersNode==null) {
-                _mysqlServersNode = new MySQLServersNode(this, aoServer, port, csf, ssf);
+                _mysqlServersNode = new MySQLServersNode(this, aoServer);
                 _mysqlServersNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -310,15 +306,13 @@ public class ServerNode extends NodeImpl {
             // No MySQL server
             if(_mysqlServersNode!=null) {
                 _mysqlServersNode.stop();
-                _mysqlServersNode = null;
                 serversNode.rootNode.nodeRemoved();
+                _mysqlServersNode = null;
             }
         }
     }
 
     synchronized private void verifyHardDrives() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         AOServer aoServer = _server.getAOServer();
         OperatingSystemVersion osvObj = _server.getOperatingSystemVersion();
         int osv = osvObj==null ? -1 : osvObj.getPkey();
@@ -331,7 +325,7 @@ public class ServerNode extends NodeImpl {
         ) {
             // Has hddtemp monitoring
             if(_hardDrivesNode==null) {
-                _hardDrivesNode = new HardDrivesNode(this, aoServer, port, csf, ssf);
+                _hardDrivesNode = new HardDrivesNode(this, aoServer);
                 _hardDrivesNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -339,27 +333,25 @@ public class ServerNode extends NodeImpl {
             // No hddtemp monitoring
             if(_hardDrivesNode!=null) {
                 _hardDrivesNode.stop();
-                _hardDrivesNode = null;
                 serversNode.rootNode.nodeRemoved();
+                _hardDrivesNode = null;
             }
         }
     }
 
     synchronized private void verifyRaid() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
             // No raid monitoring
             if(_raidNode!=null) {
                 _raidNode.stop();
-                _raidNode = null;
                 serversNode.rootNode.nodeRemoved();
+                _raidNode = null;
             }
         } else {
             // Has raid monitoring
             if(_raidNode==null) {
-                _raidNode = new RaidNode(this, aoServer, port, csf, ssf);
+                _raidNode = new RaidNode(this, aoServer);
                 _raidNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -367,8 +359,6 @@ public class ServerNode extends NodeImpl {
     }
 
     synchronized private void verifyUps() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         AOServer aoServer = _server.getAOServer();
         PhysicalServer physicalServer = _server.getPhysicalServer();
         if(
@@ -379,13 +369,13 @@ public class ServerNode extends NodeImpl {
             // No UPS monitoring
             if(_upsNode!=null) {
                 _upsNode.stop();
-                _upsNode = null;
                 serversNode.rootNode.nodeRemoved();
+                _upsNode = null;
             }
         } else {
             // Has UPS monitoring
             if(_upsNode==null) {
-                _upsNode = new UpsNode(this, aoServer, port, csf, ssf);
+                _upsNode = new UpsNode(this, aoServer);
                 _upsNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -393,20 +383,18 @@ public class ServerNode extends NodeImpl {
     }
 
     synchronized private void verifyFilesystems() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
             // No filesystem monitoring
             if(_filesystemsNode!=null) {
                 _filesystemsNode.stop();
-                _filesystemsNode = null;
                 serversNode.rootNode.nodeRemoved();
+                _filesystemsNode = null;
             }
         } else {
             // Has filesystem monitoring
             if(_filesystemsNode==null) {
-                _filesystemsNode = new FilesystemsNode(this, aoServer, port, csf, ssf);
+                _filesystemsNode = new FilesystemsNode(this, aoServer);
                 _filesystemsNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -414,20 +402,18 @@ public class ServerNode extends NodeImpl {
     }
 
     synchronized private void verifyLoadAverage() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
             // No load monitoring
             if(_loadAverageNode!=null) {
                 _loadAverageNode.stop();
-                _loadAverageNode = null;
                 serversNode.rootNode.nodeRemoved();
+                _loadAverageNode = null;
             }
         } else {
             // Has load monitoring
             if(_loadAverageNode==null) {
-                _loadAverageNode = new LoadAverageNode(this, aoServer, port, csf, ssf);
+                _loadAverageNode = new LoadAverageNode(this, aoServer);
                 _loadAverageNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -435,20 +421,18 @@ public class ServerNode extends NodeImpl {
     }
 
     synchronized private void verifyMemory() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         AOServer aoServer = _server.getAOServer();
         if(aoServer==null) {
             // No memory monitoring
             if(_memoryNode!=null) {
                 _memoryNode.stop();
-                _memoryNode = null;
                 serversNode.rootNode.nodeRemoved();
+                _memoryNode = null;
             }
         } else {
             // Has memory monitoring
             if(_memoryNode==null) {
-                _memoryNode = new MemoryNode(this, aoServer, port, csf, ssf);
+                _memoryNode = new MemoryNode(this, aoServer);
                 _memoryNode.start();
                 serversNode.rootNode.nodeAdded();
             }
@@ -456,20 +440,18 @@ public class ServerNode extends NodeImpl {
     }
 
     synchronized private void verifyTime() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
         AOServer aoServer = _server.getAOServer();
         if(aoServer == null) {
             // No time monitoring
             if(_timeNode!=null) {
                 _timeNode.stop();
-                _timeNode = null;
                 serversNode.rootNode.nodeRemoved();
+                _timeNode = null;
             }
         } else {
             // Has time monitoring
             if(_timeNode==null) {
-                _timeNode = new TimeNode(this, aoServer, port, csf, ssf);
+                _timeNode = new TimeNode(this, aoServer);
                 _timeNode.start();
                 serversNode.rootNode.nodeAdded();
             }
