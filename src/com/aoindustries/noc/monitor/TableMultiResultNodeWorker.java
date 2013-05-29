@@ -141,7 +141,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
             }
         );
         try {
-            return future.get(5, TimeUnit.MINUTES);
+            return future.get(getFutureTimeout(), getFutureTimeoutUnit());
         } catch(InterruptedException err) {
             cancel(future);
             throw err;
@@ -374,5 +374,21 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
      */
     protected boolean useFutureTimeout() {
         return true;
+    }
+
+    /**
+     * The default future timeout is 5 minutes.
+     */
+    protected long getFutureTimeout() {
+        return 5;
+    }
+
+    /**
+     * The default future timeout unit is MINUTES.
+     *
+     * @see  TimeUnit#MINUTES
+     */
+    protected TimeUnit getFutureTimeoutUnit() {
+        return TimeUnit.MINUTES;
     }
 }
