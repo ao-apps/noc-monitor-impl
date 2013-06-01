@@ -129,7 +129,15 @@ public class NetDevicesNode extends NodeImpl {
     private void verifyNetDevices() throws IOException, SQLException {
         assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-        List<NetDevice> netDevices = server.getNetDevices();
+		// Filter only those that are enabled
+        List<NetDevice> netDevices;
+		{
+			List<NetDevice> allNetDevices = server.getNetDevices();
+			netDevices = new ArrayList<NetDevice>(allNetDevices.size());
+			for(NetDevice netDevice : allNetDevices) {
+				if(netDevice.isMonitoringEnabled()) netDevices.add(netDevice);
+			}
+		}
         synchronized(netDeviceNodes) {
             // Remove old ones
             Iterator<NetDeviceNode> netDeviceNodeIter = netDeviceNodes.iterator();
