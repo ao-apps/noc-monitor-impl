@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
  */
 import com.aoindustries.io.AOPool;
 import com.aoindustries.sql.Database;
+import com.aoindustries.util.PropertiesUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -29,16 +30,7 @@ public class WebSiteDatabase extends Database {
     private static Properties props;
 
     private static String getProperty(String name) throws IOException {
-        if (props == null) {
-            Properties newProps = new Properties();
-            InputStream in = WebSiteDatabase.class.getResourceAsStream("WebSiteDatabase.properties");
-            try {
-                newProps.load(in);
-            } finally {
-                in.close();
-            }
-            props = newProps;
-        }
+        if (props == null) props = PropertiesUtils.loadFromResource(WebSiteDatabase.class, "WebSiteDatabase.properties");
         return props.getProperty(name);
     }
 
