@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012 by AO Industries, Inc.,
+ * Copyright 2009-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -72,16 +72,21 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
         // Get the latest netBind for the appProtocol and monitoring parameters
         NetBind netBind = netMonitorSetting.getNetBind();
         NetBind currentNetBind = netBind.getTable().get(netBind.getKey());
+		int netPort = netMonitorSetting.getPort();
         // If loopback or private IP, make the monitoring request through the master->daemon channel
         InetAddress ipAddress = netMonitorSetting.getIpAddress();
-        if(ipAddress.isUniqueLocal() || ipAddress.isLooback()) {
+        if(
+			ipAddress.isUniqueLocal()
+			|| ipAddress.isLooback()
+			|| netPort==25 // Port 25 cannot be monitored directly from several networks
+		) {
             Server server = netMonitorSetting.getServer();
             AOServer aoServer = server.getAOServer();
             if(aoServer==null) throw new IllegalArgumentException(accessor.getMessage(/*locale,*/ "NetBindNodeWorker.server.notAOServer", server));
             portMonitor = new AOServDaemonPortMonitor(
                 aoServer,
                 ipAddress,
-                netMonitorSetting.getPort(),
+                netPort,
                 netMonitorSetting.getNetProtocol(),
                 currentNetBind.getAppProtocol().getProtocol(),
                 currentNetBind.getMonitoringParameters()

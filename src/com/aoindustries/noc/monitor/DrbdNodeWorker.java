@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -115,10 +115,14 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,String> {
     protected List<AlertLevel> getAlertLevels(List<DrbdReport> reports) {
         List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(reports.size());
         for(DrbdReport report : reports) {
+			DrbdReport.ConnectionState connectionState = report.getConnectionState();
             AlertLevel alertLevel;
             if(
-                report.getConnectionState()!=DrbdReport.ConnectionState.Connected
-                || report.getLocalDiskState()!=DrbdReport.DiskState.UpToDate
+                (
+					connectionState!=DrbdReport.ConnectionState.Connected
+					&& connectionState!=DrbdReport.ConnectionState.VerifyS
+					&& connectionState!=DrbdReport.ConnectionState.VerifyT
+				) || report.getLocalDiskState()!=DrbdReport.DiskState.UpToDate
                 || report.getRemoteDiskState()!=DrbdReport.DiskState.UpToDate
                 || !(
                     (report.getLocalRole()==DrbdReport.Role.Primary && report.getRemoteRole()==DrbdReport.Role.Secondary)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -29,10 +29,11 @@ import java.util.Map;
 class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,NetDeviceBitRateResult> {
 
 	/**
-	 * The number of bytes overhead for each Ethernet frame, including interframe gap, assuming no VLAN
-	 * tag.
+	 * The number of bytes overhead for each Ethernet frame, including interframe gap, assuming no VLAN tag.
+	 *
+	 * Preamble + Start of frame + CRC + Interframe gap
 	 */
-	private static final int ETHERNET_FRAME_OVERHEAD = 38;
+	private static final int FRAME_ADDITIONAL_BYTES = 7 + 1 + 4 + 12;
 
     /**
      * One unique worker is made per persistence directory (and should match the net device exactly)
@@ -121,8 +122,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 				long rxNumPackets = thisRxPackets - lastRxPackets;
                 txPacketsPerSecond = txNumPackets*1000 / timeDiff;
                 rxPacketsPerSecond = rxNumPackets*1000 / timeDiff;
-                txBitsPerSecond = (thisTxBytes - lastTxBytes + ETHERNET_FRAME_OVERHEAD * txNumPackets)*8000 / timeDiff;
-                rxBitsPerSecond = (thisRxBytes - lastRxBytes + ETHERNET_FRAME_OVERHEAD * rxNumPackets)*8000 / timeDiff;
+                txBitsPerSecond = (thisTxBytes - lastTxBytes + FRAME_ADDITIONAL_BYTES * txNumPackets)*8000 / timeDiff;
+                rxBitsPerSecond = (thisRxBytes - lastRxBytes + FRAME_ADDITIONAL_BYTES * rxNumPackets)*8000 / timeDiff;
             }
             // Display the alert thresholds
             List<Object> sample = new ArrayList<Object>(8);

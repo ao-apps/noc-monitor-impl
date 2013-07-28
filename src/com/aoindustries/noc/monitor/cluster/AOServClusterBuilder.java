@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -26,6 +26,7 @@ import com.aoindustries.aoserv.cluster.PhysicalVolumeConfiguration;
 import com.aoindustries.aoserv.cluster.ProcessorArchitecture;
 import com.aoindustries.aoserv.cluster.ProcessorType;
 import com.aoindustries.noc.monitor.RootNodeImpl;
+import com.aoindustries.util.concurrent.ConcurrentUtils;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -110,8 +111,8 @@ public class AOServClusterBuilder {
         if(osvObj==null) return false;
         int osv = osvObj.getPkey();
         if(
-            osv!=OperatingSystemVersion.CENTOS_5DOM0_I686
-            && osv!=OperatingSystemVersion.CENTOS_5DOM0_X86_64
+            osv!=OperatingSystemVersion.CENTOS_5_DOM0_I686
+            && osv!=OperatingSystemVersion.CENTOS_5_DOM0_X86_64
         ) return false;
         // This should be a physical server and not a virtual server
         PhysicalServer physicalServer = server.getPhysicalServer();
@@ -164,11 +165,12 @@ public class AOServClusterBuilder {
         }
 
         // Package the results
-        SortedSet<Cluster> clusters = new TreeSet<Cluster>();
-        for(Future<Cluster> future : futures) {
-            clusters.add(future.get());
-        }
-        return Collections.unmodifiableSortedSet(clusters);
+		return Collections.unmodifiableSortedSet(
+			ConcurrentUtils.getAll(
+				futures,
+				new TreeSet<Cluster>()
+			)
+		);
     }
 
     /**
@@ -336,11 +338,12 @@ public class AOServClusterBuilder {
         }
 
         // Package the results
-        SortedSet<ClusterConfiguration> clusterConfigurations = new TreeSet<ClusterConfiguration>();
-        for(Future<ClusterConfiguration> future : futures) {
-            clusterConfigurations.add(future.get());
-        }
-        return Collections.unmodifiableSortedSet(clusterConfigurations);
+        return Collections.unmodifiableSortedSet(
+			ConcurrentUtils.getAll(
+				futures,
+				new TreeSet<ClusterConfiguration>()
+			)
+		);
     }
 
     /**
@@ -368,16 +371,9 @@ public class AOServClusterBuilder {
                 );
             }
         }
-        Map<String,List<AOServer.DrbdReport>> drbdReports = new HashMap<String,List<AOServer.DrbdReport>>(futures.size()*4/3+1);
 
         // Get and parse the results, also perform sanity checks
-        for(Map.Entry<String,Future<List<AOServer.DrbdReport>>> entry : futures.entrySet()) {
-            drbdReports.put(
-                entry.getKey(),
-                entry.getValue().get()
-            );
-        }
-        return Collections.unmodifiableMap(drbdReports);
+        return Collections.unmodifiableMap(ConcurrentUtils.getAll(futures));
     }
 
     /**
@@ -404,16 +400,9 @@ public class AOServClusterBuilder {
                 );
             }
         }
-        Map<String,AOServer.LvmReport> lvmReports = new HashMap<String,AOServer.LvmReport>(futures.size()*4/3+1);
 
         // Get and parse the results, also perform sanity checks
-        for(Map.Entry<String,Future<AOServer.LvmReport>> entry : futures.entrySet()) {
-            lvmReports.put(
-                entry.getKey(),
-                entry.getValue().get()
-            );
-        }
-        return Collections.unmodifiableMap(lvmReports);
+        return Collections.unmodifiableMap(ConcurrentUtils.getAll(futures));
     }
 
     /**
@@ -440,16 +429,9 @@ public class AOServClusterBuilder {
                 );
             }
         }
-        Map<String,Map<String,String>> reports = new HashMap<String,Map<String,String>>(futures.size()*4/3+1);
 
         // Get and parse the results, also perform sanity checks
-        for(Map.Entry<String,Future<Map<String,String>>> entry : futures.entrySet()) {
-            reports.put(
-                entry.getKey(),
-                entry.getValue().get()
-            );
-        }
-        return reports;
+        return Collections.unmodifiableMap(ConcurrentUtils.getAll(futures));
     }
 
     /**

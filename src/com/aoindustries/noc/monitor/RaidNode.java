@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -25,6 +25,8 @@ import java.util.List;
  * @author  AO Industries, Inc.
  */
 public class RaidNode extends NodeImpl {
+
+	private static final long serialVersionUID = 1L;
 
     final ServerNode serverNode;
     private final AOServer aoServer;
@@ -110,8 +112,8 @@ public class RaidNode extends NodeImpl {
         // We only have 3ware cards in xen outers
         int osv = aoServer.getServer().getOperatingSystemVersion().getPkey();
         if(
-            osv==OperatingSystemVersion.CENTOS_5DOM0_I686
-            || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
+            osv==OperatingSystemVersion.CENTOS_5_DOM0_I686
+            || osv==OperatingSystemVersion.CENTOS_5_DOM0_X86_64
         ) {
             if(_threeWareRaidNode==null) {
                 _threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
@@ -127,8 +129,8 @@ public class RaidNode extends NodeImpl {
         }
         // We only run DRBD in xen outers
         if(
-            osv==OperatingSystemVersion.CENTOS_5DOM0_I686
-            || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
+            osv==OperatingSystemVersion.CENTOS_5_DOM0_I686
+            || osv==OperatingSystemVersion.CENTOS_5_DOM0_X86_64
         ) {
             if(_drbdNode==null) {
                 _drbdNode = new DrbdNode(this, port, csf, ssf);

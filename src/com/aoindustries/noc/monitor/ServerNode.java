@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -325,8 +325,8 @@ public class ServerNode extends NodeImpl {
         if(
             aoServer!=null
             && (
-                osv==OperatingSystemVersion.CENTOS_5DOM0_I686
-                || osv==OperatingSystemVersion.CENTOS_5DOM0_X86_64
+                osv==OperatingSystemVersion.CENTOS_5_DOM0_I686
+                || osv==OperatingSystemVersion.CENTOS_5_DOM0_X86_64
             )
         ) {
             // Has hddtemp monitoring
