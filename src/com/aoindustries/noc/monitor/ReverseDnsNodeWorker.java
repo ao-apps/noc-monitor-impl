@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,8 +9,8 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.validator.InetAddress;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.NanoTimeSpan;
 import com.aoindustries.noc.monitor.common.TableResult;
+import com.aoindustries.sql.NanoInterval;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -182,7 +182,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
         List<Object> tableData = new ArrayList<Object>(results.size()*4);
         for(ReverseDnsQueryResult result : results) {
             tableData.add(result.query);
-            tableData.add(new NanoTimeSpan(result.latency));
+            tableData.add(new NanoInterval(result.latency));
             tableData.add(result.result);
             tableData.add(result.message);
         }

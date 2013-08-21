@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -10,9 +10,9 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.validator.DomainName;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.NanoTimeSpan;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
+import com.aoindustries.sql.NanoInterval;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -986,7 +986,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
         for(BlacklistQueryResult result : queryResult) {
             tableData.add(result.basename);
             tableData.add(new TimeWithTimeZone(result.queryTime));
-            tableData.add(new NanoTimeSpan(result.latency));
+            tableData.add(new NanoInterval(result.latency));
             tableData.add(result.query);
             tableData.add(result.result);
         }

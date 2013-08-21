@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,7 +9,7 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TimeResult;
-import com.aoindustries.noc.monitor.common.TimeSpan;
+import com.aoindustries.sql.MilliInterval;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -33,7 +33,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
+class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult> {
 
     /**
      * One unique worker is made per persistence directory (and should match aoServer exactly)
@@ -67,7 +67,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
     }
 
     @Override
-    protected TimeSpan getSample(Locale locale) throws Exception {
+    protected MilliInterval getSample(Locale locale) throws Exception {
         // Get the latest limits
         currentAOServer = _aoServer.getTable().get(_aoServer.getKey());
 
@@ -79,7 +79,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
         long skew = systemTime - (requestTime + latency/2000000);
         if(lRemainder >= 1000000) skew--;
 
-        return new TimeSpan(skew);
+        return new MilliInterval(skew);
     }
 
     private static AlertLevel getAlertLevel(long skew) {
@@ -91,8 +91,8 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
     }
 
     @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TimeSpan sample, Iterable<? extends TimeResult> previousResults) throws Exception {
-        final long currentSkew = sample.getTimeSpan();
+    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, MilliInterval sample, Iterable<? extends TimeResult> previousResults) throws Exception {
+        final long currentSkew = sample.getIntervalMillis();
 
         return new AlertLevelAndMessage(
             getAlertLevel(currentSkew),
@@ -110,7 +110,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<TimeSpan,TimeResult> {
     }
 
     @Override
-    protected TimeResult newSampleResult(long time, long latency, AlertLevel alertLevel, TimeSpan sample) {
-        return new TimeResult(time, latency, alertLevel, sample.getTimeSpan());
+    protected TimeResult newSampleResult(long time, long latency, AlertLevel alertLevel, MilliInterval sample) {
+        return new TimeResult(time, latency, alertLevel, sample.getIntervalMillis());
     }
 }

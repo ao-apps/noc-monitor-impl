@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 by AO Industries, Inc.,
+ * Copyright 2012-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,8 +8,8 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.TimeSpan;
 import com.aoindustries.noc.monitor.common.UpsResult;
+import com.aoindustries.sql.MilliInterval;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,15 +41,15 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 
     private static final float LOW_BATTV_TOLERANCE = 2;
 
-    private static final TimeSpan CRITICAL_TONBATT = new TimeSpan(4L * 60L * 1000L);
-    private static final TimeSpan HIGH_TONBATT     = new TimeSpan(3L * 60L * 1000L);
-    private static final TimeSpan MEDIUM_TONBATT   = new TimeSpan(2L * 60L * 1000L);
-    private static final TimeSpan LOW_TONBATT      = new TimeSpan(1L * 60L * 1000L);
+    private static final MilliInterval CRITICAL_TONBATT = new MilliInterval(4L * 60L * 1000L);
+    private static final MilliInterval HIGH_TONBATT     = new MilliInterval(3L * 60L * 1000L);
+    private static final MilliInterval MEDIUM_TONBATT   = new MilliInterval(2L * 60L * 1000L);
+    private static final MilliInterval LOW_TONBATT      = new MilliInterval(1L * 60L * 1000L);
 
-    private static final TimeSpan CRITICAL_TIMELEFT = new TimeSpan(10L * 60L * 1000L);
-    private static final TimeSpan HIGH_TIMELEFT     = new TimeSpan(12L * 60L * 1000L);
-    private static final TimeSpan MEDIUM_TIMELEFT   = new TimeSpan(14L * 60L * 1000L);
-    private static final TimeSpan LOW_TIMELEFT      = new TimeSpan(16L * 60L * 1000L);
+    private static final MilliInterval CRITICAL_TIMELEFT = new MilliInterval(10L * 60L * 1000L);
+    private static final MilliInterval HIGH_TIMELEFT     = new MilliInterval(12L * 60L * 1000L);
+    private static final MilliInterval MEDIUM_TIMELEFT   = new MilliInterval(14L * 60L * 1000L);
+    private static final MilliInterval LOW_TIMELEFT      = new MilliInterval(16L * 60L * 1000L);
 
     // http://nam-en.apc.com/app/answers/detail/a_id/8301/~/what-is-the-expected-life-of-my-apc-ups-battery%3F
     private static final float LOW_ITEMP = 20;
@@ -217,7 +217,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
         }
         // TONBATT
         {
-            TimeSpan tonbatt = sample.getTonbatt();
+            MilliInterval tonbatt = sample.getTonbatt();
             if(tonbatt!=null) {
                 if(tonbatt.compareTo(CRITICAL_TONBATT)>0) {
                     highest = highest.escalate(AlertLevel.CRITICAL, accessor.getMessage("UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, CRITICAL_TONBATT));
@@ -232,7 +232,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
         }
         // TIMELEFT
         {
-            TimeSpan timeleft = sample.getTimeleft();
+            MilliInterval timeleft = sample.getTimeleft();
             if(timeleft!=null) {
                 if(timeleft.compareTo(CRITICAL_TIMELEFT)<0) {
                     highest = highest.escalate(AlertLevel.CRITICAL, accessor.getMessage("UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, CRITICAL_TIMELEFT));

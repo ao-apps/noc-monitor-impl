@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 by AO Industries, Inc.,
+ * Copyright 2012-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,8 +8,8 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.io.CompressedDataInputStream;
 import com.aoindustries.io.CompressedDataOutputStream;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.TimeSpan;
 import com.aoindustries.noc.monitor.common.UpsResult;
+import com.aoindustries.sql.MilliInterval;
 import com.aoindustries.util.persistent.BufferedSerializer;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -24,13 +24,13 @@ public class UpsResultSerializer extends BufferedSerializer<UpsResult> {
 
     private static final int VERSION = 1;
 
-    private static void writeTimeSpan(TimeSpan value, DataOutput out) throws IOException {
-        out.writeLong(value==null ? Long.MIN_VALUE : value.getTimeSpan());
+    private static void writeTimeSpan(MilliInterval value, DataOutput out) throws IOException {
+        out.writeLong(value==null ? Long.MIN_VALUE : value.getIntervalMillis());
     }
 
-    private static TimeSpan readTimeSpan(DataInput in) throws IOException {
+    private static MilliInterval readTimeSpan(DataInput in) throws IOException {
         long value = in.readLong();
-        return value==Long.MIN_VALUE ? null : new TimeSpan(value);
+        return value==Long.MIN_VALUE ? null : new MilliInterval(value);
     }
 
     @Override

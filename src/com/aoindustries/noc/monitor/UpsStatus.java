@@ -1,14 +1,14 @@
 /*
- * Copyright 2012 by AO Industries, Inc.,
+ * Copyright 2012-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.TimeSpan;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import com.aoindustries.sql.MilliInterval;
 import com.aoindustries.util.StringUtility;
 import java.text.ParseException;
 
@@ -45,14 +45,14 @@ class UpsStatus {
         return value.length()==0 ? -1 : Integer.parseInt(value);
     }
 
-    private static TimeSpan parseTimeSpan(String value) {
+    private static MilliInterval parseTimeSpan(String value) {
         if(value==null) return null;
         if(
             value.endsWith(" Minutes")
             || value.endsWith(" minutes")
         ) {
             value = value.substring(0, value.length()-8).trim();
-            return new TimeSpan(
+            return new MilliInterval(
                 (long)(
                     Float.parseFloat(value)
                     * 60L
@@ -65,7 +65,7 @@ class UpsStatus {
             || value.endsWith(" seconds")
         ) {
             value = value.substring(0, value.length()-8).trim();
-            return new TimeSpan(
+            return new MilliInterval(
                 (long)(
                     Float.parseFloat(value)
                     * 1000L
@@ -102,8 +102,8 @@ class UpsStatus {
     private final int extbatts;
     private final int badbatts;
     // Runtime
-    private final TimeSpan tonbatt;
-    private final TimeSpan timeleft;
+    private final MilliInterval tonbatt;
+    private final MilliInterval timeleft;
     private final float itemp;
 
     UpsStatus(String upsStatus) throws ParseException {
@@ -122,8 +122,8 @@ class UpsStatus {
         float _nombattv = Float.NaN;
         int _extbatts = -1;
         int _badbatts = -1;
-        TimeSpan _tonbatt = null;
-        TimeSpan _timeleft = null;
+        MilliInterval _tonbatt = null;
+        MilliInterval _timeleft = null;
         float _itemp = Float.NaN;
 
         // Parse the status
@@ -271,14 +271,14 @@ class UpsStatus {
     /**
      * @see  UpsResult#getTonbatt()
      */
-    TimeSpan getTonbatt() {
+    MilliInterval getTonbatt() {
         return tonbatt;
     }
 
     /**
      * @see  UpsResult#getTimeleft()
      */
-    TimeSpan getTimeleft() {
+    MilliInterval getTimeleft() {
         return timeleft;
     }
 

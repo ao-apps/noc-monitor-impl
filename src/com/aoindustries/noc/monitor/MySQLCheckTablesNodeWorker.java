@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -11,7 +11,7 @@ import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
-import com.aoindustries.noc.monitor.common.TimeSpan;
+import com.aoindustries.sql.MilliInterval;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -117,7 +117,7 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
             String table = checkTableResult.getTable();
             tableData.add(table);
             tableData.add(tables.get(table));
-            tableData.add(new TimeSpan(checkTableResult.getDuration()));
+            tableData.add(new MilliInterval(checkTableResult.getDuration()));
             tableData.add(checkTableResult.getMsgType());
             tableData.add(checkTableResult.getMsgText());
         }
