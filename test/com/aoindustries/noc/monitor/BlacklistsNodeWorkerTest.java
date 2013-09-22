@@ -1,12 +1,10 @@
-package com.aoindustries.noc.monitor;
-
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
-import java.util.HashSet;
-import java.util.Set;
+package com.aoindustries.noc.monitor;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

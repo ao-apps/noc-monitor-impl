@@ -1,18 +1,15 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.NetDevice;
-import com.aoindustries.aoserv.client.NetDeviceID;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
 import com.aoindustries.util.StringUtility;
-import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;

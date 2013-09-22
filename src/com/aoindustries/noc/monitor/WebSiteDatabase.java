@@ -1,15 +1,14 @@
-package com.aoindustries.noc.monitor;
-
 /*
- * Copyright 2000-2009 by AO Industries, Inc.,
+ * Copyright 2000-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
+package com.aoindustries.noc.monitor;
+
 import com.aoindustries.io.AOPool;
 import com.aoindustries.sql.Database;
 import com.aoindustries.util.PropertiesUtils;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Logger;
 

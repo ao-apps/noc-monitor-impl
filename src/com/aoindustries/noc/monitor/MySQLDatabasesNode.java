@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,7 +8,6 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
 import com.aoindustries.util.WrappedException;

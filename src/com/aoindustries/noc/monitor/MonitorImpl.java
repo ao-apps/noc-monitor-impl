@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2013 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -118,6 +118,8 @@ import java.util.logging.Logger;
  * UPS Monitor:
  *      battery calibration once a year or when load is increased
  *      Perhaps just as a procedure - how to schedule in NOC interface?
+ *
+ * Open Resolvers: http://openresolverproject.org/
  *
  * @author  AO Industries, Inc.
  */
