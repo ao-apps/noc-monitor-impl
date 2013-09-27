@@ -114,8 +114,8 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
         int lineNum = 0;
         for(String line : lines) {
             lineNum++;
-            String[] values = StringUtility.splitString(line, ':');
-            if(values.length!=3) {
+            List<String> values = StringUtility.splitString(line, ':');
+            if(values.size()!=3) {
                 throw new ParseException(
                     accessor.getMessage(
                         //locale,
@@ -125,8 +125,8 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
                     lineNum
                 );
             }
-            for(int c=0,len=values.length; c<len; c++) {
-                tableData.add(values[c].trim());
+            for(int c=0,len=values.size(); c<len; c++) {
+                tableData.add(values.get(c).trim());
             }
         }
         return tableData;

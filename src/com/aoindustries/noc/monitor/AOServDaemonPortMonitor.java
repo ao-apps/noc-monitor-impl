@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
  */
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.validator.InetAddress;
+import com.aoindustries.net.HttpParameters;
 import com.aoindustries.noc.monitor.portmon.PortMonitor;
 import java.util.Map;
 
@@ -22,9 +23,9 @@ public class AOServDaemonPortMonitor extends PortMonitor {
     private final AOServer aoServer;
     private final String netProtocol;
     private final String appProtocol;
-    private final Map<String,String> monitoringParameters;
+    private final HttpParameters monitoringParameters;
 
-    public AOServDaemonPortMonitor(AOServer aoServer, InetAddress ipAddress, int port, String netProtocol, String appProtocol, Map<String,String> monitoringParameters) {
+    public AOServDaemonPortMonitor(AOServer aoServer, InetAddress ipAddress, int port, String netProtocol, String appProtocol, HttpParameters monitoringParameters) {
         super(ipAddress, port);
         this.aoServer = aoServer;
         this.netProtocol = netProtocol;
