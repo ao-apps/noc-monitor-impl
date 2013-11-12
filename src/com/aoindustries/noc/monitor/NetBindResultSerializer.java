@@ -29,6 +29,11 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
 
     private static final int VERSION = 2;
 
+	/**
+	 * Commonly used strings are written as an index into this array.
+	 * Only add new items to the end of this array.
+	 * If items must be removed, then VERSION must be incremented and code must perform necessary adjustments when reading objects.
+	 */
     private static final String[] commonResults = {
         "Connected successfully",
         "SSH-2.0-OpenSSH_4.3",
@@ -38,7 +43,8 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
         "Login successful.",
         "User logged in",
         "Mailbox locked and ready",
-        "[IN-USE] Unable to lock maildrop: Mailbox is locked by POP server"
+        "[IN-USE] Unable to lock maildrop: Mailbox is locked by POP server",
+		"SSH-2.0-OpenSSH_5.3"
     };
     private static final Map<String,Integer> commonResultsMap = new HashMap<String,Integer>(commonResults.length*4/3+1);
     static {
