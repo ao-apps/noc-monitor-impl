@@ -74,13 +74,25 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
     protected List<Object> getQueryResult(Locale locale) throws Exception {
         MySQLDatabase mysqlDatabase = databaseNode.getMySQLDatabase();
         FailoverMySQLReplication mysqlSlave = databaseNode.getMySQLSlave();
-        // Don't check any table on MySQL 5.1 information_schema database
+
+		// Don't check any table on MySQL 5.1+ information_schema database
         if(mysqlDatabase.getName().equals(MySQLDatabase.INFORMATION_SCHEMA)) {
             String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
-            if(version.startsWith(MySQLServer.VERSION_5_1_PREFIX)) return Collections.emptyList();
+            if(
+				version.startsWith(MySQLServer.VERSION_5_1_PREFIX)
+				|| version.startsWith(MySQLServer.VERSION_5_6_PREFIX)
+			) return Collections.emptyList();
         }
 
-        List<MySQLDatabase.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
+		// Don't check any table on MySQL 5.6+ performance_schema database
+        if(mysqlDatabase.getName().equals(MySQLDatabase.PERFORMANCE_SCHEMA)) {
+            String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
+            if(
+				version.startsWith(MySQLServer.VERSION_5_6_PREFIX)
+			) return Collections.emptyList();
+        }
+
+		List<MySQLDatabase.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
         if(lastTableStatuses.isEmpty()) return Collections.emptyList();
         // Build the set of table names and types
         List<String> tableNames = new ArrayList<String>(lastTableStatuses.size());
