@@ -104,12 +104,13 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
                 && engine!=MySQLDatabase.Engine.HEAP
                 && engine!=MySQLDatabase.Engine.InnoDB
                 && engine!=MySQLDatabase.Engine.MEMORY
+                && engine!=MySQLDatabase.Engine.PERFORMANCE_SCHEMA
                 && !(engine==null && "VIEW".equals(lastTableStatus.getComment()))
             ) {
                 String name = lastTableStatus.getName();
                 if(
                     // Skip the four expected non-checkable tables in information_schema
-                    !mysqlDatabase.getName().equals("information_schema")
+                    !mysqlDatabase.getName().equals(MySQLDatabase.INFORMATION_SCHEMA)
                     || (
                         !name.equals("COLUMNS")
                         && !name.equals("ROUTINES")
