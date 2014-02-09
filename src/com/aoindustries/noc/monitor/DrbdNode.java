@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.sql.SQLException;
 
 /**
  * The node for the DRBD monitoring.
@@ -20,7 +21,7 @@ public class DrbdNode extends TableResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
         super(
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
