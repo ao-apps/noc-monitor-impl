@@ -32,7 +32,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	private static final int NUM_COLS = 6;
 
 	private static final int
-		LOW_DAYS = 14,
+		LOW_DAYS = 15,
 		MEDIUM_DAYS = 21,
 		HIGH_DAYS = 28
 	;
@@ -159,20 +159,26 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
             ) {
                 alertLevel = AlertLevel.HIGH;
             } else {
-				// Check the time since last verified
-				Long lastVerified = report.getLastVerified();
-				if(lastVerified == null) {
-					// Never verified
-	                alertLevel = AlertLevel.HIGH;
+				// Only check the verified time on the primary side
+				if(report.getLocalRole()==DrbdReport.Role.Primary && report.getRemoteRole()==DrbdReport.Role.Secondary) {
+					// Check the time since last verified
+					Long lastVerified = report.getLastVerified();
+					if(lastVerified == null) {
+						// Never verified
+						alertLevel = AlertLevel.HIGH;
+					} else {
+						long daysSince = TimeUnit.DAYS.convert(
+							Math.abs(currentTime - lastVerified),
+							TimeUnit.MILLISECONDS
+						);
+						if     (daysSince >= HIGH_DAYS)   alertLevel = AlertLevel.HIGH;
+						else if(daysSince >= MEDIUM_DAYS) alertLevel = AlertLevel.MEDIUM;
+						else if(daysSince >= LOW_DAYS)    alertLevel = AlertLevel.LOW;
+						else                              alertLevel = AlertLevel.NONE;
+					}
 				} else {
-					long daysSince = TimeUnit.DAYS.convert(
-						Math.abs(currentTime - lastVerified),
-						TimeUnit.MILLISECONDS
-					);
-					if     (daysSince >= HIGH_DAYS)   alertLevel = AlertLevel.HIGH;
-					else if(daysSince >= MEDIUM_DAYS) alertLevel = AlertLevel.MEDIUM;
-					else if(daysSince >= LOW_DAYS)    alertLevel = AlertLevel.LOW;
-					else                              alertLevel = AlertLevel.NONE;
+					// Not primary, no alerts
+					alertLevel = AlertLevel.NONE;
 				}
             }
             alertLevels.add(alertLevel);
