@@ -33,6 +33,7 @@ public class RaidNode extends NodeImpl {
 
     volatile private ThreeWareRaidNode _threeWareRaidNode;
     volatile private MdStatNode _mdStatNode;
+    volatile private MdMismatchNode _mdMismatchNode;
     volatile private DrbdNode _drbdNode;
 
     RaidNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -65,6 +66,8 @@ public class RaidNode extends NodeImpl {
         if(threeWareRaidNode!=null) children.add(threeWareRaidNode);
         MdStatNode mdStatNode = this._mdStatNode;
         if(mdStatNode!=null) children.add(mdStatNode);
+        MdMismatchNode mdMismatchNode = this._mdMismatchNode;
+        if(mdMismatchNode!=null) children.add(mdMismatchNode);
         DrbdNode drbdNode = this._drbdNode;
         if(drbdNode!=null) children.add(drbdNode);
         return Collections.unmodifiableList(children);
@@ -86,6 +89,11 @@ public class RaidNode extends NodeImpl {
         if(mdStatNode!=null) {
             AlertLevel mdStatNodeLevel = mdStatNode.getAlertLevel();
             if(mdStatNodeLevel.compareTo(level)>0) level = mdStatNodeLevel;
+        }
+        MdMismatchNode mdMismatchNode = this._mdMismatchNode;
+        if(mdMismatchNode!=null) {
+            AlertLevel mdMismatchNodeLevel = mdMismatchNode.getAlertLevel();
+            if(mdMismatchNodeLevel.compareTo(level)>0) level = mdMismatchNodeLevel;
         }
         DrbdNode drbdNode = this._drbdNode;
         if(drbdNode!=null) {
@@ -127,6 +135,11 @@ public class RaidNode extends NodeImpl {
             _mdStatNode.start();
             serverNode.serversNode.rootNode.nodeAdded();
         }
+        if(_mdMismatchNode==null) {
+            _mdMismatchNode = new MdMismatchNode(this, port, csf, ssf);
+            _mdMismatchNode.start();
+            serverNode.serversNode.rootNode.nodeAdded();
+        }
         // We only run DRBD in xen outers
         if(
             osv==OperatingSystemVersion.CENTOS_5_DOM0_I686
@@ -149,6 +162,11 @@ public class RaidNode extends NodeImpl {
         if(_mdStatNode!=null) {
             _mdStatNode.stop();
             _mdStatNode = null;
+            serverNode.serversNode.rootNode.nodeRemoved();
+        }
+        if(_mdMismatchNode!=null) {
+            _mdMismatchNode.stop();
+            _mdMismatchNode = null;
             serverNode.serversNode.rootNode.nodeRemoved();
         }
         if(_drbdNode!=null) {

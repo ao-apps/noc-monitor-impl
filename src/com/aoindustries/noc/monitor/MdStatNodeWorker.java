@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,11 +19,11 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The workers for 3ware RAID.
+ * The workers for watching /proc/mdstat.
  *
  * @author  AO Industries, Inc.
  */
-class MdRaidNodeWorker extends SingleResultNodeWorker {
+class MdStatNodeWorker extends SingleResultNodeWorker {
 
 	private enum RaidLevel {
 		LINEAR,
@@ -35,13 +35,13 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
 	/**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
-    private static final Map<String, MdRaidNodeWorker> workerCache = new HashMap<String,MdRaidNodeWorker>();
-    static MdRaidNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+    private static final Map<String, MdStatNodeWorker> workerCache = new HashMap<String,MdStatNodeWorker>();
+    static MdStatNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
-            MdRaidNodeWorker worker = workerCache.get(path);
+            MdStatNodeWorker worker = workerCache.get(path);
             if(worker==null) {
-                worker = new MdRaidNodeWorker(persistenceFile, aoServer);
+                worker = new MdStatNodeWorker(persistenceFile, aoServer);
                 workerCache.put(path, worker);
             } else {
                 if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
@@ -53,14 +53,14 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
     // Will use whichever connector first created this worker, even if other accounts connect later.
     final private AOServer aoServer;
 
-    MdRaidNodeWorker(File persistenceFile, AOServer aoServer) {
+    MdStatNodeWorker(File persistenceFile, AOServer aoServer) {
         super(persistenceFile);
         this.aoServer = aoServer;
     }
 
     @Override
     protected String getReport() throws IOException, SQLException {
-        return aoServer.getMdRaidReport();
+        return aoServer.getMdStatReport();
     }
 
     /**
@@ -88,7 +88,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                 AlertLevel.CRITICAL,
                 accessor.getMessage(
                     //locale,
-                    "MdRaidNode.alertMessage.error",
+                    "MdStatNode.alertMessage.error",
                     result.getError()
                 )
             );
@@ -118,7 +118,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                             AlertLevel.CRITICAL,
                             accessor.getMessage(
                                 //locale,
-                                "MdRaidNode.alertMessage.noRaidType",
+                                "MdStatNode.alertMessage.noRaidType",
                                 line
                             )
                         );
@@ -137,7 +137,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                             highestAlertLevel = AlertLevel.LOW;
                             highestAlertMessage = accessor.getMessage(
                                 //locale,
-                                "MdRaidNode.alertMessage.resync",
+                                "MdStatNode.alertMessage.resync",
                                 line.trim()
                             );
                         }
@@ -162,7 +162,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                                     AlertLevel.CRITICAL,
                                                     accessor.getMessage(
                                                         //locale,
-                                                        "MdRaidNode.alertMessage.invalidCharacter",
+                                                        "MdStatNode.alertMessage.invalidCharacter",
                                                         ch
                                                     )
                                                 );
@@ -185,7 +185,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                             else throw new AssertionError("upCount should have already matched");
                                             alertMessage = accessor.getMessage(
                                                 //locale,
-                                                "MdRaidNode.alertMessage.raid1",
+                                                "MdStatNode.alertMessage.raid1",
                                                 upCount,
                                                 downCount
                                             );
@@ -196,7 +196,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                             else throw new AssertionError("downCount should have already matched");
                                             alertMessage = accessor.getMessage(
                                                 //locale,
-                                                "MdRaidNode.alertMessage.raid5",
+                                                "MdStatNode.alertMessage.raid5",
                                                 upCount,
                                                 downCount
                                             );
@@ -208,7 +208,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                             else throw new AssertionError("downCount should have already matched");
                                             alertMessage = accessor.getMessage(
                                                 //locale,
-                                                "MdRaidNode.alertMessage.raid6",
+                                                "MdStatNode.alertMessage.raid6",
                                                 upCount,
                                                 downCount
                                             );
@@ -217,7 +217,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                                 AlertLevel.CRITICAL,
                                                 accessor.getMessage(
                                                     //locale,
-                                                    "MdRaidNode.alertMessage.unexpectedRaidLevel",
+                                                    "MdStatNode.alertMessage.unexpectedRaidLevel",
                                                     lastRaidLevel
                                                 )
                                             );
@@ -231,7 +231,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                             AlertLevel.CRITICAL,
                                             accessor.getMessage(
                                                 //locale,
-                                                "MdRaidNode.alertMessage.unableToFindCharacter",
+                                                "MdStatNode.alertMessage.unableToFindCharacter",
                                                 ']',
                                                 line
                                             )
@@ -242,7 +242,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                         AlertLevel.CRITICAL,
                                         accessor.getMessage(
                                             //locale,
-                                            "MdRaidNode.alertMessage.unableToFindCharacter",
+                                            "MdStatNode.alertMessage.unableToFindCharacter",
                                             '[',
                                             line
                                         )
@@ -253,7 +253,7 @@ class MdRaidNodeWorker extends SingleResultNodeWorker {
                                     AlertLevel.CRITICAL,
                                     accessor.getMessage(
                                         //locale,
-                                        "MdRaidNode.alertMessage.unableToFindCharacter",
+                                        "MdStatNode.alertMessage.unableToFindCharacter",
                                         ']',
                                         line
                                     )

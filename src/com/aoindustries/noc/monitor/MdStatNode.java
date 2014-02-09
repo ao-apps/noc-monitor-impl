@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -16,15 +16,15 @@ import java.rmi.server.RMIServerSocketFactory;
  *
  * @author  AO Industries, Inc.
  */
-public class MdRaidNode extends SingleResultNodeImpl {
+public class MdStatNode extends SingleResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    MdRaidNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    MdStatNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
         super(
             raidNode.serverNode.serversNode.rootNode,
             raidNode,
-            MdRaidNodeWorker.getWorker(
+            MdStatNodeWorker.getWorker(
                 new File(raidNode.getPersistenceDirectory(), "mdstat"),
                 raidNode.getAOServer()
             ),
@@ -35,6 +35,6 @@ public class MdRaidNode extends SingleResultNodeImpl {
     }
 
     public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "MdRaidNode.label");
+        return accessor.getMessage(/*rootNode.locale,*/ "MdStatNode.label");
     }
 }
