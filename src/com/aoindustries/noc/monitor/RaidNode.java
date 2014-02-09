@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 by AO Industries, Inc.,
+ * Copyright 2008-2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -32,7 +32,7 @@ public class RaidNode extends NodeImpl {
     private final AOServer aoServer;
 
     volatile private ThreeWareRaidNode _threeWareRaidNode;
-    volatile private MdRaidNode _mdRaidNode;
+    volatile private MdStatNode _mdStatNode;
     volatile private DrbdNode _drbdNode;
 
     RaidNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -63,8 +63,8 @@ public class RaidNode extends NodeImpl {
         List<NodeImpl> children = new ArrayList<NodeImpl>();
         ThreeWareRaidNode threeWareRaidNode = this._threeWareRaidNode;
         if(threeWareRaidNode!=null) children.add(threeWareRaidNode);
-        MdRaidNode mdRaidNode = this._mdRaidNode;
-        if(mdRaidNode!=null) children.add(mdRaidNode);
+        MdStatNode mdStatNode = this._mdStatNode;
+        if(mdStatNode!=null) children.add(mdStatNode);
         DrbdNode drbdNode = this._drbdNode;
         if(drbdNode!=null) children.add(drbdNode);
         return Collections.unmodifiableList(children);
@@ -82,10 +82,10 @@ public class RaidNode extends NodeImpl {
             AlertLevel threeWareRaidNodeLevel = threeWareRaidNode.getAlertLevel();
             if(threeWareRaidNodeLevel.compareTo(level)>0) level = threeWareRaidNodeLevel;
         }
-        MdRaidNode mdRaidNode = this._mdRaidNode;
-        if(mdRaidNode!=null) {
-            AlertLevel mdRaidNodeLevel = mdRaidNode.getAlertLevel();
-            if(mdRaidNodeLevel.compareTo(level)>0) level = mdRaidNodeLevel;
+        MdStatNode mdStatNode = this._mdStatNode;
+        if(mdStatNode!=null) {
+            AlertLevel mdStatNodeLevel = mdStatNode.getAlertLevel();
+            if(mdStatNodeLevel.compareTo(level)>0) level = mdStatNodeLevel;
         }
         DrbdNode drbdNode = this._drbdNode;
         if(drbdNode!=null) {
@@ -122,9 +122,9 @@ public class RaidNode extends NodeImpl {
             }
         }
         // Any machine may have MD RAID (at least until all services run in Xen outers)
-        if(_mdRaidNode==null) {
-            _mdRaidNode = new MdRaidNode(this, port, csf, ssf);
-            _mdRaidNode.start();
+        if(_mdStatNode==null) {
+            _mdStatNode = new MdStatNode(this, port, csf, ssf);
+            _mdStatNode.start();
             serverNode.serversNode.rootNode.nodeAdded();
         }
         // We only run DRBD in xen outers
@@ -146,9 +146,9 @@ public class RaidNode extends NodeImpl {
             _threeWareRaidNode = null;
             serverNode.serversNode.rootNode.nodeRemoved();
         }
-        if(_mdRaidNode!=null) {
-            _mdRaidNode.stop();
-            _mdRaidNode = null;
+        if(_mdStatNode!=null) {
+            _mdStatNode.stop();
+            _mdStatNode = null;
             serverNode.serversNode.rootNode.nodeRemoved();
         }
         if(_drbdNode!=null) {
