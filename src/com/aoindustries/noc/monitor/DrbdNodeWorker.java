@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2014 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -159,8 +159,11 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
             ) {
                 alertLevel = AlertLevel.HIGH;
             } else {
-				// Only check the verified time on the primary side
-				if(report.getLocalRole()==DrbdReport.Role.Primary && report.getRemoteRole()==DrbdReport.Role.Secondary) {
+				// Only check the verified time when primary on at last one side
+				if(
+					report.getLocalRole()==DrbdReport.Role.Primary
+					|| report.getRemoteRole()==DrbdReport.Role.Primary
+				) {
 					// Check the time since last verified
 					Long lastVerified = report.getLastVerified();
 					if(lastVerified == null) {
@@ -177,7 +180,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 						else                              alertLevel = AlertLevel.NONE;
 					}
 				} else {
-					// Not primary, no alerts
+					// Secondary/Secondary not verified, no alerts
 					alertLevel = AlertLevel.NONE;
 				}
             }
