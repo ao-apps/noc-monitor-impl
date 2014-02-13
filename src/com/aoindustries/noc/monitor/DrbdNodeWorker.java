@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  */
 class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 
-	private static final int NUM_COLS = 6;
+	private static final int NUM_COLS = 7;
 
 	private static final int
 		LOW_DAYS = 15,
@@ -94,7 +94,8 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 					String dstate = (String)tableData.get(index + 3);
 					String roles = (String)tableData.get(index + 4);
 					TimeWithTimeZone lastVerified = (TimeWithTimeZone)tableData.get(index + 5);
-                    highestAlertMessage = device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified;
+					Long outOfSync = (Long)tableData.get(index + 6);
+                    highestAlertMessage = device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync;
                 }
             }
         }
@@ -115,6 +116,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
         columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.ds"));
         columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.roles"));
         columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.lastVerified"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.outOfSync"));
         return columnHeaders;
     }
 
@@ -134,6 +136,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
             tableData.add(report.getLocalRole()+"/"+report.getRemoteRole());
 			Long lastVerified = report.getLastVerified();
             tableData.add(lastVerified==null ? null : new TimeWithTimeZone(lastVerified, timeZone));
+			tableData.add(report.getOutOfSync());
         }
         return tableData;
     }
@@ -143,47 +146,52 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 		final long currentTime = System.currentTimeMillis();
         List<AlertLevel> alertLevels = new ArrayList<>(reports.size());
         for(DrbdReport report : reports) {
-			DrbdReport.ConnectionState connectionState = report.getConnectionState();
-            final AlertLevel alertLevel;
-            if(
-                (
-					connectionState!=DrbdReport.ConnectionState.Connected
-					&& connectionState!=DrbdReport.ConnectionState.VerifyS
-					&& connectionState!=DrbdReport.ConnectionState.VerifyT
-				) || report.getLocalDiskState()!=DrbdReport.DiskState.UpToDate
-                || report.getRemoteDiskState()!=DrbdReport.DiskState.UpToDate
-                || !(
-                    (report.getLocalRole()==DrbdReport.Role.Primary && report.getRemoteRole()==DrbdReport.Role.Secondary)
-                    || (report.getLocalRole()==DrbdReport.Role.Secondary && report.getRemoteRole()==DrbdReport.Role.Primary)
-                )
-            ) {
-                alertLevel = AlertLevel.HIGH;
-            } else {
-				// Only check the verified time when primary on at last one side
+			final AlertLevel alertLevel;
+			// High alert if any out of sync
+			if(report.getOutOfSync() != 0) {
+				alertLevel = AlertLevel.HIGH;
+			} else {
+				DrbdReport.ConnectionState connectionState = report.getConnectionState();
 				if(
-					report.getLocalRole()==DrbdReport.Role.Primary
-					|| report.getRemoteRole()==DrbdReport.Role.Primary
+					(
+						connectionState!=DrbdReport.ConnectionState.Connected
+						&& connectionState!=DrbdReport.ConnectionState.VerifyS
+						&& connectionState!=DrbdReport.ConnectionState.VerifyT
+					) || report.getLocalDiskState()!=DrbdReport.DiskState.UpToDate
+					|| report.getRemoteDiskState()!=DrbdReport.DiskState.UpToDate
+					|| !(
+						(report.getLocalRole()==DrbdReport.Role.Primary && report.getRemoteRole()==DrbdReport.Role.Secondary)
+						|| (report.getLocalRole()==DrbdReport.Role.Secondary && report.getRemoteRole()==DrbdReport.Role.Primary)
+					)
 				) {
-					// Check the time since last verified
-					Long lastVerified = report.getLastVerified();
-					if(lastVerified == null) {
-						// Never verified
-						alertLevel = AlertLevel.HIGH;
-					} else {
-						long daysSince = TimeUnit.DAYS.convert(
-							Math.abs(currentTime - lastVerified),
-							TimeUnit.MILLISECONDS
-						);
-						if     (daysSince >= HIGH_DAYS)   alertLevel = AlertLevel.HIGH;
-						else if(daysSince >= MEDIUM_DAYS) alertLevel = AlertLevel.MEDIUM;
-						else if(daysSince >= LOW_DAYS)    alertLevel = AlertLevel.LOW;
-						else                              alertLevel = AlertLevel.NONE;
-					}
+					alertLevel = AlertLevel.HIGH;
 				} else {
-					// Secondary/Secondary not verified, no alerts
-					alertLevel = AlertLevel.NONE;
+					// Only check the verified time when primary on at last one side
+					if(
+						report.getLocalRole()==DrbdReport.Role.Primary
+						|| report.getRemoteRole()==DrbdReport.Role.Primary
+					) {
+						// Check the time since last verified
+						Long lastVerified = report.getLastVerified();
+						if(lastVerified == null) {
+							// Never verified
+							alertLevel = AlertLevel.HIGH;
+						} else {
+							long daysSince = TimeUnit.DAYS.convert(
+								Math.abs(currentTime - lastVerified),
+								TimeUnit.MILLISECONDS
+							);
+							if     (daysSince >= HIGH_DAYS)   alertLevel = AlertLevel.HIGH;
+							else if(daysSince >= MEDIUM_DAYS) alertLevel = AlertLevel.MEDIUM;
+							else if(daysSince >= LOW_DAYS)    alertLevel = AlertLevel.LOW;
+							else                              alertLevel = AlertLevel.NONE;
+						}
+					} else {
+						// Secondary/Secondary not verified, no alerts
+						alertLevel = AlertLevel.NONE;
+					}
 				}
-            }
+			}
             alertLevels.add(alertLevel);
         }
         return alertLevels;
