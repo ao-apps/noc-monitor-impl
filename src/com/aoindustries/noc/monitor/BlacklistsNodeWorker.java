@@ -1190,6 +1190,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		} else {
 			for(int index=0,len=tableData.size();index<len;index+=5) {
 				AlertLevel alertLevel = result.getAlertLevels().get(index/5);
+				// Too many queries time-out: if alert level is "Unknown", treat as "Low"
+				if(alertLevel == AlertLevel.UNKNOWN) alertLevel = AlertLevel.LOW;
 				if(alertLevel.compareTo(highestAlertLevel)>0) {
 					highestAlertLevel = alertLevel;
 					Object resultValue = tableData.get(index+4);
@@ -1198,7 +1200,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			}
 		}
 		// Do not allow higher than MEDIUM, even if individual rows are higher
-		if(highestAlertLevel.compareTo(AlertLevel.MEDIUM)>0) highestAlertLevel=AlertLevel.MEDIUM;
+		// if(highestAlertLevel.compareTo(AlertLevel.MEDIUM)>0) highestAlertLevel=AlertLevel.MEDIUM;
 		return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
 	}
 
