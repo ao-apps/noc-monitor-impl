@@ -162,6 +162,8 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 					|| !(
 						(report.getLocalRole()==DrbdReport.Role.Primary && report.getRemoteRole()==DrbdReport.Role.Secondary)
 						|| (report.getLocalRole()==DrbdReport.Role.Secondary && report.getRemoteRole()==DrbdReport.Role.Primary)
+						// Secondary/Secondary occurs when a virtual server is shutdown
+						|| (report.getLocalRole()==DrbdReport.Role.Secondary && report.getRemoteRole()==DrbdReport.Role.Secondary)
 					)
 				) {
 					alertLevel = AlertLevel.HIGH;
