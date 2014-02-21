@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.aoserv.client.DNSType;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.validator.InetAddress;
@@ -111,7 +112,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
         } else {
             Record[] ptrRecords = ptrLookup.getAnswers();
             if(ptrRecords.length==0) {
-                results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No PTR records found", AlertLevel.LOW));
+                results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + DNSType.PTR +" records found", AlertLevel.LOW));
             } else {
                 String expectedHostname = currentIPAddress.getHostname().toString();
                 if(!expectedHostname.endsWith(".")) expectedHostname = expectedHostname+'.';
