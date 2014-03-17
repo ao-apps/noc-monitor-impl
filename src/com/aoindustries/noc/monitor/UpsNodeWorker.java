@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 by AO Industries, Inc.,
+ * Copyright 2012, 2013, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -52,13 +52,14 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
     private static final MilliInterval LOW_TIMELEFT      = new MilliInterval(16L * 60L * 1000L);
 
     // http://nam-en.apc.com/app/answers/detail/a_id/8301/~/what-is-the-expected-life-of-my-apc-ups-battery%3F
+	// now http://forums.apc.com/message/6778
     private static final float LOW_ITEMP = 20;
-    private static final float HIGH_ITEMP = 30;
+    private static final float HIGH_ITEMP = 35; // Was 30 for a long time, but ups907 jumped from 28.5 to 32.4 in mid March 2014.
 
     /**
      * One unique worker is made per persistence directory (and should match aoServer exactly)
      */
-    private static final Map<String, UpsNodeWorker> workerCache = new HashMap<String,UpsNodeWorker>();
+    private static final Map<String, UpsNodeWorker> workerCache = new HashMap<>();
     static UpsNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
         String path = persistenceDirectory.getCanonicalPath();
         synchronized(workerCache) {
@@ -74,11 +75,10 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
     }
 
     final private AOServer _aoServer;
-    private AOServer currentAOServer;
 
     private UpsNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
         super(new File(persistenceDirectory, "ups"), new UpsResultSerializer());
-        this._aoServer = currentAOServer = aoServer;
+        this._aoServer = aoServer;
     }
 
     /**
