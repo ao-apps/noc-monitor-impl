@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -21,7 +21,6 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -42,527 +41,499 @@ import javax.swing.SwingUtilities;
  */
 public class RootNodeImpl extends NodeImpl implements RootNode {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
-    private static final boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 
-    /**
-     * Shared random number generator.
-     */
-    public static final Random random = new Random();
+	/**
+	 * Shared random number generator.
+	 */
+	public static final Random random = new Random();
 
-    /**
-     * One thread pool is shared by all instances, and it is never
-     */
-    public final static ExecutorService executorService = ExecutorService.newInstance();
+	/**
+	 * One thread pool is shared by all instances, and it is never
+	 */
+	public final static ExecutorService executorService = ExecutorService.newInstance();
 
-    /**
-     * Schedules a task to be performed in the future.  It will be performed in a background thread via the ExecutorService.
-     */
-    public static Future<?> schedule(Runnable task, long delay) {
-        return executorService.submitUnbounded(task, delay);
-    }
+	/**
+	 * Schedules a task to be performed in the future.  It will be performed in a background thread via the ExecutorService.
+	 */
+	public static Future<?> schedule(Runnable task, long delay) {
+		return executorService.submitUnbounded(task, delay);
+	}
 
-    /**
-     * Each root node is stored on a per locale, username, password basis.
-     */
-    private static class RootNodeCacheKey {
+	/**
+	 * Each root node is stored on a per locale, username, password basis.
+	 */
+	private static class RootNodeCacheKey {
 
-        final private Locale locale;
-        final private AOServConnector connector;
-        final private int port;
-        final private RMIClientSocketFactory csf;
-        final private RMIServerSocketFactory ssf;
+		final private Locale locale;
+		final private AOServConnector connector;
+		final private int port;
+		final private RMIClientSocketFactory csf;
+		final private RMIServerSocketFactory ssf;
 
-        private RootNodeCacheKey(Locale locale, AOServConnector connector, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) {
-            this.locale = locale;
-            this.connector = connector;
-            this.port = port;
-            this.csf = csf;
-            this.ssf = ssf;
-        }
+		private RootNodeCacheKey(Locale locale, AOServConnector connector, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) {
+			this.locale = locale;
+			this.connector = connector;
+			this.port = port;
+			this.csf = csf;
+			this.ssf = ssf;
+		}
 
-        @Override
-        public boolean equals(Object O) {
-            if(O==null) return false;
-            if(!(O instanceof RootNodeCacheKey)) return false;
-            RootNodeCacheKey other = (RootNodeCacheKey)O;
-            return
-                locale.equals(other.locale)
-                && connector.equals(other.connector)
-                && port==other.port
-                && csf.equals(other.csf)
-                && ssf.equals(other.ssf)
-            ;
-        }
-        
-        @Override
-        public int hashCode() {
-            return
-                locale.hashCode()
-                ^ (connector.hashCode()*7)
-                ^ (port*11)
-                ^ (csf.hashCode()*13)
-                ^ (ssf.hashCode()*17)
-            ;
-        }
-    }
+		@Override
+		public boolean equals(Object O) {
+			if(O==null) return false;
+			if(!(O instanceof RootNodeCacheKey)) return false;
+			RootNodeCacheKey other = (RootNodeCacheKey)O;
+			return
+				locale.equals(other.locale)
+				&& connector.equals(other.connector)
+				&& port==other.port
+				&& csf.equals(other.csf)
+				&& ssf.equals(other.ssf)
+			;
+		}
 
-    private static final Map<RootNodeCacheKey, RootNodeImpl> rootNodeCache = new HashMap<RootNodeCacheKey, RootNodeImpl>();
+		@Override
+		public int hashCode() {
+			return
+				locale.hashCode()
+				^ (connector.hashCode()*7)
+				^ (port*11)
+				^ (csf.hashCode()*13)
+				^ (ssf.hashCode()*17)
+			;
+		}
+	}
 
-    static RootNodeImpl getRootNode(
-        Locale locale,
-        AOServConnector connector,
-        int port,
-        RMIClientSocketFactory csf,
-        RMIServerSocketFactory ssf
-    ) throws RemoteException {
-        RootNodeCacheKey key = new RootNodeCacheKey(locale, connector, port, csf, ssf);
-        synchronized(rootNodeCache) {
-            RootNodeImpl rootNode = rootNodeCache.get(key);
-            if(rootNode==null) {
-                if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
-                final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, port, csf, ssf);
-                // Start as a background task
-                executorService.submitUnbounded(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
-                            try {
-                                newRootNode.start();
-                            } catch(ThreadDeath TD) {
-                                throw TD;
-                            } catch(Throwable err) {
-                                ErrorPrinter.printStackTraces(err);
-                                logger.log(Level.SEVERE, null, err);
-                            }
-                        }
-                    }
-                );
-                rootNodeCache.put(key, newRootNode);
-                rootNode = newRootNode;
-            } else {
-                if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Reusing existing rootNode");
-            }
-            return rootNode;
-        }
-    }
+	private static final Map<RootNodeCacheKey, RootNodeImpl> rootNodeCache = new HashMap<>();
 
-    final Locale locale;
-    final AOServConnector conn;
+	static RootNodeImpl getRootNode(
+		Locale locale,
+		AOServConnector connector,
+		int port,
+		RMIClientSocketFactory csf,
+		RMIServerSocketFactory ssf
+	) throws RemoteException {
+		RootNodeCacheKey key = new RootNodeCacheKey(locale, connector, port, csf, ssf);
+		synchronized(rootNodeCache) {
+			RootNodeImpl rootNode = rootNodeCache.get(key);
+			if(rootNode==null) {
+				if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
+				final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, port, csf, ssf);
+				// Start as a background task
+				executorService.submitUnbounded(
+					new Runnable() {
+						@Override
+						public void run() {
+							if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
+							try {
+								newRootNode.start();
+							} catch(ThreadDeath TD) {
+								throw TD;
+							} catch(Throwable err) {
+								ErrorPrinter.printStackTraces(err);
+								logger.log(Level.SEVERE, null, err);
+							}
+						}
+					}
+				);
+				rootNodeCache.put(key, newRootNode);
+				rootNode = newRootNode;
+			} else {
+				if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Reusing existing rootNode");
+			}
+			return rootNode;
+		}
+	}
 
-    volatile private OtherDevicesNode otherDevicesNode;
-    volatile private PhysicalServersNode physicalServersNode;
-    volatile private VirtualServersNode virtualServersNode;
-    volatile private SignupsNode signupsNode;
+	final Locale locale;
+	final AOServConnector conn;
 
-    private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
-        this.locale = locale;
-        this.conn = conn;
-    }
+	volatile private OtherDevicesNode otherDevicesNode;
+	volatile private PhysicalServersNode physicalServersNode;
+	volatile private VirtualServersNode virtualServersNode;
+	volatile private SignupsNode signupsNode;
 
-    @Override
-    public NodeImpl getParent() {
-        return null;
-    }
+	private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(port, csf, ssf);
+		this.locale = locale;
+		this.conn = conn;
+	}
 
-    @Override
-    public boolean getAllowsChildren() {
-        return true;
-    }
+	@Override
+	public NodeImpl getParent() {
+		return null;
+	}
 
-    @Override
-    public List<NodeImpl> getChildren() {
-        List<NodeImpl> children = new ArrayList<NodeImpl>(4);
+	@Override
+	public boolean getAllowsChildren() {
+		return true;
+	}
 
-        OtherDevicesNode localOtherDevicesNode = this.otherDevicesNode;
-        if(localOtherDevicesNode!=null) children.add(localOtherDevicesNode);
+	@Override
+	public List<NodeImpl> getChildren() {
+		return getSnapshot(
+			this.otherDevicesNode,
+			this.physicalServersNode,
+			this.virtualServersNode,
+			this.signupsNode
+		);
+	}
 
-        PhysicalServersNode localPhysicalServersNode = this.physicalServersNode;
-        if(localPhysicalServersNode!=null) children.add(localPhysicalServersNode);
+	/**
+	 * The alert level is equal to the highest alert level of its children.
+	 */
+	@Override
+	public AlertLevel getAlertLevel() {
+		return constrainAlertLevel(
+			AlertLevelUtils.getMaxAlertLevel(
+				this.otherDevicesNode,
+				this.physicalServersNode,
+				this.virtualServersNode,
+				this.signupsNode
+			)
+		);
+	}
 
-        VirtualServersNode localVirtualServersNode = this.virtualServersNode;
-        if(localVirtualServersNode!=null) children.add(localVirtualServersNode);
+	/**
+	 * No alert messages.
+	 */
+	@Override
+	public String getAlertMessage() {
+		return null;
+	}
 
-        SignupsNode localSignupsNode = this.signupsNode;
-        if(localSignupsNode!=null) children.add(localSignupsNode);
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*locale,*/ "RootNode.label");
+	}
 
-        return Collections.unmodifiableList(children);
-    }
+	/**
+	 * Starts the rootNode.
+	 */
+	synchronized private void start() throws IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-    /**
-     * The alert level is equal to the highest alert level of its children.
-     */
-    @Override
-    public AlertLevel getAlertLevel() {
-        AlertLevel level = AlertLevel.NONE;
+		if(otherDevicesNode==null) {
+			otherDevicesNode = new OtherDevicesNode(this, port, csf, ssf);
+			otherDevicesNode.start();
+			nodeAdded();
+		}
 
-        OtherDevicesNode localOtherDevicesNode = this.otherDevicesNode;
-        if(localOtherDevicesNode!=null) {
-            AlertLevel otherDevicesNodeLevel = localOtherDevicesNode.getAlertLevel();
-            if(otherDevicesNodeLevel.compareTo(level)>0) level = otherDevicesNodeLevel;
-        }
+		if(physicalServersNode==null) {
+			physicalServersNode = new PhysicalServersNode(this, port, csf, ssf);
+			physicalServersNode.start();
+			nodeAdded();
+		}
 
-        PhysicalServersNode localPhysicalServersNode = this.physicalServersNode;
-        if(localPhysicalServersNode!=null) {
-            AlertLevel physicalServersNodeLevel = localPhysicalServersNode.getAlertLevel();
-            if(physicalServersNodeLevel.compareTo(level)>0) level = physicalServersNodeLevel;
-        }
+		if(virtualServersNode==null) {
+			virtualServersNode = new VirtualServersNode(this, port, csf, ssf);
+			virtualServersNode.start();
+			nodeAdded();
+		}
 
-        VirtualServersNode localVirtualServersNode = this.virtualServersNode;
-        if(localVirtualServersNode!=null) {
-            AlertLevel virtualServersNodeLevel = localVirtualServersNode.getAlertLevel();
-            if(virtualServersNodeLevel.compareTo(level)>0) level = virtualServersNodeLevel;
-        }
+		if(signupsNode==null) {
+			signupsNode = new SignupsNode(this, port, csf, ssf);
+			signupsNode.start();
+			nodeAdded();
+		}
+	}
 
-        SignupsNode localSignupsNode = this.signupsNode;
-        if(localSignupsNode!=null) {
-            AlertLevel signupsNodeLevel = localSignupsNode.getAlertLevel();
-            if(signupsNodeLevel.compareTo(level)>0) level = signupsNodeLevel;
-        }
+	final private List<TreeListener> treeListeners = new ArrayList<>();
+	// Synchronized on treeListeners
+	final private Map<TreeListener,NodeAddedSignaler> nodeAddedSignalers = new HashMap<>();
+	final private Map<TreeListener,NodeRemovedSignaler> nodeRemovedSignalers = new HashMap<>();
+	final private Map<TreeListener,NodeAlertLevelChangedSignaler> nodeAlertLevelChangedSignalers = new HashMap<>();
 
-        return level;
-    }
-    
-    /**
-     * No alert messages.
-     */
-    @Override
-    public String getAlertMessage() {
-        return null;
-    }
+	@Override
+	public void addTreeListener(TreeListener treeListener) {
+		synchronized(treeListeners) {
+			treeListeners.add(treeListener);
+		}
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*locale,*/ "RootNode.label");
-    }
+	@Override
+	public void removeTreeListener(TreeListener treeListener) {
+		int foundCount = 0;
+		synchronized(treeListeners) {
+			for(int c=treeListeners.size()-1;c>=0;c--) {
+				if(treeListeners.get(c)==treeListener) {
+					treeListeners.remove(c);
+					foundCount++;
+				}
+			}
+		}
+		if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
+	}
 
-    /**
-     * Starts the rootNode.
-     */
-    synchronized private void start() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	private class NodeAddedSignaler implements Runnable {
 
-        if(otherDevicesNode==null) {
-            otherDevicesNode = new OtherDevicesNode(this, port, csf, ssf);
-            otherDevicesNode.start();
-            nodeAdded();
-        }
+		final private TreeListener treeListener;
 
-        if(physicalServersNode==null) {
-            physicalServersNode = new PhysicalServersNode(this, port, csf, ssf);
-            physicalServersNode.start();
-            nodeAdded();
-        }
+		private long lastCounterSent = 0;
+		private long currentCounter = 0;
 
-        if(virtualServersNode==null) {
-            virtualServersNode = new VirtualServersNode(this, port, csf, ssf);
-            virtualServersNode.start();
-            nodeAdded();
-        }
+		NodeAddedSignaler(TreeListener treeListener) {
+			this.treeListener = treeListener;
+		}
 
-        if(signupsNode==null) {
-            signupsNode = new SignupsNode(this, port, csf, ssf);
-            signupsNode.start();
-            nodeAdded();
-        }
-    }
+		void nodeAdded() {
+			synchronized(treeListeners) {
+				currentCounter++;
+			}
+		}
 
-    final private List<TreeListener> treeListeners = new ArrayList<TreeListener>();
-    // Synchronized on treeListeners
-    final private Map<TreeListener,NodeAddedSignaler> nodeAddedSignalers = new HashMap<TreeListener,NodeAddedSignaler>();
-    final private Map<TreeListener,NodeRemovedSignaler> nodeRemovedSignalers = new HashMap<TreeListener,NodeRemovedSignaler>();
-    final private Map<TreeListener,NodeAlertLevelChangedSignaler> nodeAlertLevelChangedSignalers = new HashMap<TreeListener,NodeAlertLevelChangedSignaler>();
+		@Override
+		public void run() {
+			boolean removed = false;
+			try {
+				while(true) {
+					long sendingCounter;
+					synchronized(treeListeners) {
+						if(lastCounterSent<currentCounter) {
+							nodeAddedSignalers.remove(treeListener);
+							removed = true;
+							break;
+						}
+						sendingCounter = currentCounter;
+					}
+					treeListener.nodeAdded();
+					synchronized(treeListeners) {
+						lastCounterSent = sendingCounter;
+					}
+					try {
+						Thread.sleep(250);
+					} catch(InterruptedException err) {
+						logger.log(Level.WARNING, null, err);
+					}
+				}
+			} catch(RemoteException err) {
+				removeTreeListener(treeListener);
+				logger.log(Level.SEVERE, null, err);
+			} finally {
+				synchronized(treeListeners) {
+					if(!removed) nodeAddedSignalers.remove(treeListener);
+				}
+			}
+		}
+	}
 
-    @Override
-    public void addTreeListener(TreeListener treeListener) {
-        synchronized(treeListeners) {
-            treeListeners.add(treeListener);
-        }
-    }
+	private class NodeRemovedSignaler implements Runnable {
 
-    @Override
-    public void removeTreeListener(TreeListener treeListener) {
-        int foundCount = 0;
-        synchronized(treeListeners) {
-            for(int c=treeListeners.size()-1;c>=0;c--) {
-                if(treeListeners.get(c)==treeListener) {
-                    treeListeners.remove(c);
-                    foundCount++;
-                }
-            }
-        }
-        if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
-    }
+		final private TreeListener treeListener;
 
-    private class NodeAddedSignaler implements Runnable {
+		private long lastCounterSent = 0;
+		private long currentCounter = 0;
 
-        final private TreeListener treeListener;
+		NodeRemovedSignaler(TreeListener treeListener) {
+			this.treeListener = treeListener;
+		}
 
-        private long lastCounterSent = 0;
-        private long currentCounter = 0;
+		void nodeRemoved() {
+			synchronized(treeListeners) {
+				currentCounter++;
+			}
+		}
 
-        NodeAddedSignaler(TreeListener treeListener) {
-            this.treeListener = treeListener;
-        }
-        
-        void nodeAdded() {
-            synchronized(treeListeners) {
-                currentCounter++;
-            }
-        }
+		@Override
+		public void run() {
+			boolean removed = false;
+			try {
+				while(true) {
+					long sendingCounter;
+					synchronized(treeListeners) {
+						if(lastCounterSent<currentCounter) {
+							nodeRemovedSignalers.remove(treeListener);
+							removed = true;
+							break;
+						}
+						sendingCounter = currentCounter;
+					}
+					treeListener.nodeRemoved();
+					synchronized(treeListeners) {
+						lastCounterSent = sendingCounter;
+					}
+					try {
+						Thread.sleep(250);
+					} catch(InterruptedException err) {
+						logger.log(Level.WARNING, null, err);
+					}
+				}
+			} catch(RemoteException err) {
+				removeTreeListener(treeListener);
+				logger.log(Level.SEVERE, null, err);
+			} finally {
+				synchronized(treeListeners) {
+					if(!removed) nodeRemovedSignalers.remove(treeListener);
+				}
+			}
+		}
+	}
 
-        @Override
-        public void run() {
-            boolean removed = false;
-            try {
-                while(true) {
-                    long sendingCounter;
-                    synchronized(treeListeners) {
-                        if(lastCounterSent<currentCounter) {
-                            nodeAddedSignalers.remove(treeListener);
-                            removed = true;
-                            break;
-                        }
-                        sendingCounter = currentCounter;
-                    }
-                    treeListener.nodeAdded();
-                    synchronized(treeListeners) {
-                        lastCounterSent = sendingCounter;
-                    }
-                    try {
-                        Thread.sleep(250);
-                    } catch(InterruptedException err) {
-                        logger.log(Level.WARNING, null, err);
-                    }
-                }
-            } catch(RemoteException err) {
-                removeTreeListener(treeListener);
-                logger.log(Level.SEVERE, null, err);
-            } finally {
-                synchronized(treeListeners) {
-                    if(!removed) nodeAddedSignalers.remove(treeListener);
-                }
-            }
-        }
-    }
+	private class NodeAlertLevelChangedSignaler implements Runnable {
 
-    private class NodeRemovedSignaler implements Runnable {
+		final private TreeListener treeListener;
 
-        final private TreeListener treeListener;
+		private List<AlertLevelChange> queuedChanges;
 
-        private long lastCounterSent = 0;
-        private long currentCounter = 0;
+		NodeAlertLevelChangedSignaler(TreeListener treeListener) {
+			this.treeListener = treeListener;
+		}
 
-        NodeRemovedSignaler(TreeListener treeListener) {
-            this.treeListener = treeListener;
-        }
-        
-        void nodeRemoved() {
-            synchronized(treeListeners) {
-                currentCounter++;
-            }
-        }
+		void nodeAlertLevelChanged(AlertLevelChange change) {
+			synchronized(treeListeners) {
+				if(queuedChanges==null) queuedChanges = new ArrayList<>();
+				queuedChanges.add(change);
+			}
+		}
 
-        @Override
-        public void run() {
-            boolean removed = false;
-            try {
-                while(true) {
-                    long sendingCounter;
-                    synchronized(treeListeners) {
-                        if(lastCounterSent<currentCounter) {
-                            nodeRemovedSignalers.remove(treeListener);
-                            removed = true;
-                            break;
-                        }
-                        sendingCounter = currentCounter;
-                    }
-                    treeListener.nodeRemoved();
-                    synchronized(treeListeners) {
-                        lastCounterSent = sendingCounter;
-                    }
-                    try {
-                        Thread.sleep(250);
-                    } catch(InterruptedException err) {
-                        logger.log(Level.WARNING, null, err);
-                    }
-                }
-            } catch(RemoteException err) {
-                removeTreeListener(treeListener);
-                logger.log(Level.SEVERE, null, err);
-            } finally {
-                synchronized(treeListeners) {
-                    if(!removed) nodeRemovedSignalers.remove(treeListener);
-                }
-            }
-        }
-    }
+		@Override
+		public void run() {
+			boolean removed = false;
+			try {
+				while(true) {
+					List<AlertLevelChange> changes;
+					synchronized(treeListeners) {
+						if(queuedChanges==null) {
+							nodeAlertLevelChangedSignalers.remove(treeListener);
+							removed = true;
+							break;
+						}
+						changes = queuedChanges;
+						queuedChanges = null;
+					}
+					treeListener.nodeAlertLevelChanged(changes);
+					try {
+						Thread.sleep(250);
+					} catch(InterruptedException err) {
+						logger.log(Level.WARNING, null, err);
+					}
+				}
+			} catch(RemoteException err) {
+				removeTreeListener(treeListener);
+				logger.log(Level.SEVERE, null, err);
+			} finally {
+				synchronized(treeListeners) {
+					if(!removed) nodeAlertLevelChangedSignalers.remove(treeListener);
+				}
+			}
+		}
+	}
 
-    private class NodeAlertLevelChangedSignaler implements Runnable {
+	/**
+	 * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
+	 * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
+	 */
+	void nodeAdded() {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-        final private TreeListener treeListener;
+		synchronized(treeListeners) {
+			for(TreeListener treeListener : treeListeners) {
+				NodeAddedSignaler nodeAddedSignaler = nodeAddedSignalers.get(treeListener);
+				if(nodeAddedSignaler==null) {
+					nodeAddedSignaler = new NodeAddedSignaler(treeListener);
+					nodeAddedSignalers.put(treeListener, nodeAddedSignaler);
+					nodeAddedSignaler.nodeAdded();
+					executorService.submitUnbounded(nodeAddedSignaler);
+				} else {
+					nodeAddedSignaler.nodeAdded();
+				}
+			}
+		}
+	}
 
-        private List<AlertLevelChange> queuedChanges;
+	/**
+	 * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
+	 * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
+	 */
+	void nodeRemoved() {
+		synchronized(treeListeners) {
+			for(TreeListener treeListener : treeListeners) {
+				NodeRemovedSignaler nodeRemovedSignaler = nodeRemovedSignalers.get(treeListener);
+				if(nodeRemovedSignaler==null) {
+					nodeRemovedSignaler = new NodeRemovedSignaler(treeListener);
+					nodeRemovedSignalers.put(treeListener, nodeRemovedSignaler);
+					nodeRemovedSignaler.nodeRemoved();
+					executorService.submitUnbounded(nodeRemovedSignaler);
+				} else {
+					nodeRemovedSignaler.nodeRemoved();
+				}
+			}
+		}
+	}
 
-        NodeAlertLevelChangedSignaler(TreeListener treeListener) {
-            this.treeListener = treeListener;
-        }
-        
-        void nodeAlertLevelChanged(AlertLevelChange change) {
-            synchronized(treeListeners) {
-                if(queuedChanges==null) queuedChanges = new ArrayList<AlertLevelChange>();
-                queuedChanges.add(change);
-            }
-        }
+	/**
+	 * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
+	 * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
+	 */
+	void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-        @Override
-        public void run() {
-            boolean removed = false;
-            try {
-                while(true) {
-                    List<AlertLevelChange> changes;
-                    synchronized(treeListeners) {
-                        if(queuedChanges==null) {
-                            nodeAlertLevelChangedSignalers.remove(treeListener);
-                            removed = true;
-                            break;
-                        }
-                        changes = queuedChanges;
-                        queuedChanges = null;
-                    }
-                    treeListener.nodeAlertLevelChanged(changes);
-                    try {
-                        Thread.sleep(250);
-                    } catch(InterruptedException err) {
-                        logger.log(Level.WARNING, null, err);
-                    }
-                }
-            } catch(RemoteException err) {
-                removeTreeListener(treeListener);
-                logger.log(Level.SEVERE, null, err);
-            } finally {
-                synchronized(treeListeners) {
-                    if(!removed) nodeAlertLevelChangedSignalers.remove(treeListener);
-                }
-            }
-        }
-    }
+		AlertLevelChange change = new AlertLevelChange(
+			node,
+			node.getFullPath(locale),
+			oldAlertLevel,
+			newAlertLevel,
+			alertMessage
+		);
+		synchronized(treeListeners) {
+			for(TreeListener treeListener : treeListeners) {
+				NodeAlertLevelChangedSignaler nodeAlertLevelChangedSignaler = nodeAlertLevelChangedSignalers.get(treeListener);
+				if(nodeAlertLevelChangedSignaler==null) {
+					nodeAlertLevelChangedSignaler = new NodeAlertLevelChangedSignaler(treeListener);
+					nodeAlertLevelChangedSignalers.put(treeListener, nodeAlertLevelChangedSignaler);
+					nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
+					executorService.submitUnbounded(nodeAlertLevelChangedSignaler);
+				} else {
+					nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
+				}
+			}
+		}
+	}
 
-    /**
-     * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
-     * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
-     */
-    void nodeAdded() {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	@Override
+	public NodeSnapshot getSnapshot() throws RemoteException {
+		return new NodeSnapshot(null, this);
+	}
 
-        synchronized(treeListeners) {
-            for(TreeListener treeListener : treeListeners) {
-                NodeAddedSignaler nodeAddedSignaler = nodeAddedSignalers.get(treeListener);
-                if(nodeAddedSignaler==null) {
-                    nodeAddedSignaler = new NodeAddedSignaler(treeListener);
-                    nodeAddedSignalers.put(treeListener, nodeAddedSignaler);
-                    nodeAddedSignaler.nodeAdded();
-                    executorService.submitUnbounded(nodeAddedSignaler);
-                } else {
-                    nodeAddedSignaler.nodeAdded();
-                }
-            }
-        }
-    }
+	/**
+	 * Gets the top-level persistence directory.
+	 */
+	File getPersistenceDirectory() throws IOException {
+		File dir = new File("persistence");
+		if(!dir.exists()) {
+			if(!dir.mkdir()) {
+				throw new IOException(
+					accessor.getMessage(
+						//locale,
+						"error.mkdirFailed",
+						dir.getCanonicalPath()
+					)
+				);
+			}
+		}
+		return dir;
+	}
 
-    /**
-     * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
-     * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
-     */
-    void nodeRemoved() {
-        synchronized(treeListeners) {
-            for(TreeListener treeListener : treeListeners) {
-                NodeRemovedSignaler nodeRemovedSignaler = nodeRemovedSignalers.get(treeListener);
-                if(nodeRemovedSignaler==null) {
-                    nodeRemovedSignaler = new NodeRemovedSignaler(treeListener);
-                    nodeRemovedSignalers.put(treeListener, nodeRemovedSignaler);
-                    nodeRemovedSignaler.nodeRemoved();
-                    executorService.submitUnbounded(nodeRemovedSignaler);
-                } else {
-                    nodeRemovedSignaler.nodeRemoved();
-                }
-            }
-        }
-    }
-    
-    /**
-     * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
-     * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
-     */
-    void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	private static int lastStartupDelay5;
+	private static final Object lastStartupDelay5Lock = new Object();
+	static int getNextStartupDelayFiveMinutes() {
+		synchronized(lastStartupDelay5Lock) {
+			lastStartupDelay5 = (lastStartupDelay5+5037)%(5*60000);
+			return lastStartupDelay5;
+		}
+	}
 
-        AlertLevelChange change = new AlertLevelChange(
-            node,
-            node.getFullPath(locale),
-            oldAlertLevel,
-            newAlertLevel,
-            alertMessage
-        );
-        synchronized(treeListeners) {
-            for(TreeListener treeListener : treeListeners) {
-                NodeAlertLevelChangedSignaler nodeAlertLevelChangedSignaler = nodeAlertLevelChangedSignalers.get(treeListener);
-                if(nodeAlertLevelChangedSignaler==null) {
-                    nodeAlertLevelChangedSignaler = new NodeAlertLevelChangedSignaler(treeListener);
-                    nodeAlertLevelChangedSignalers.put(treeListener, nodeAlertLevelChangedSignaler);
-                    nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
-                    executorService.submitUnbounded(nodeAlertLevelChangedSignaler);
-                } else {
-                    nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
-                }
-            }
-        }
-    }
-
-    @Override
-    public NodeSnapshot getSnapshot() throws RemoteException {
-        return new NodeSnapshot(null, this);
-    }
-
-    /**
-     * Gets the top-level persistence directory.
-     */
-    File getPersistenceDirectory() throws IOException {
-        File dir = new File("persistence");
-        if(!dir.exists()) {
-            if(!dir.mkdir()) {
-                throw new IOException(
-                    accessor.getMessage(
-                        //locale,
-                        "error.mkdirFailed",
-                        dir.getCanonicalPath()
-                    )
-                );
-            }
-        }
-        return dir;
-    }
-
-    private static int lastStartupDelay5;
-    private static final Object lastStartupDelay5Lock = new Object();
-    static int getNextStartupDelayFiveMinutes() {
-        synchronized(lastStartupDelay5Lock) {
-            lastStartupDelay5 = (lastStartupDelay5+5037)%(5*60000);
-            return lastStartupDelay5;
-        }
-    }
-
-    private static int lastStartupDelay15;
-    private static final Object lastStartupDelay15Lock = new Object();
-    static int getNextStartupDelayFifteenMinutes() {
-        synchronized(lastStartupDelay15Lock) {
-            lastStartupDelay15= (lastStartupDelay15+15037)%(15*60000);
-            return lastStartupDelay15;
-        }
-    }
+	private static int lastStartupDelay15;
+	private static final Object lastStartupDelay15Lock = new Object();
+	static int getNextStartupDelayFifteenMinutes() {
+		synchronized(lastStartupDelay15Lock) {
+			lastStartupDelay15= (lastStartupDelay15+15037)%(15*60000);
+			return lastStartupDelay15;
+		}
+	}
 }

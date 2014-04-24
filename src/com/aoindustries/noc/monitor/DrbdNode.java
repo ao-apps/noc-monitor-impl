@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,24 +19,24 @@ import java.sql.SQLException;
  */
 public class DrbdNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
-        super(
-            raidNode.serverNode.serversNode.rootNode,
-            raidNode,
-            DrbdNodeWorker.getWorker(
-                new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
-                raidNode.getAOServer()
-            ),
-            port,
-            csf,
-            ssf
-        );
-    }
+	DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+		super(
+			raidNode.serverNode.serversNode.rootNode,
+			raidNode,
+			DrbdNodeWorker.getWorker(
+				new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
+				raidNode.getAOServer()
+			),
+			port,
+			csf,
+			ssf
+		);
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "DrbdNode.label");
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "DrbdNode.label");
+	}
 }

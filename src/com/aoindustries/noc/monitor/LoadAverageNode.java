@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -24,40 +24,40 @@ import java.util.List;
  */
 public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult> {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private final AOServer _aoServer;
+	private final AOServer _aoServer;
 
-    LoadAverageNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-        super(
-            serverNode.serversNode.rootNode,
-            serverNode,
-            LoadAverageNodeWorker.getWorker(
-                serverNode.getPersistenceDirectory(),
-                aoServer
-            ),
-            port,
-            csf,
-            ssf
-        );
-        this._aoServer = aoServer;
-    }
+	LoadAverageNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+		super(
+			serverNode.serversNode.rootNode,
+			serverNode,
+			LoadAverageNodeWorker.getWorker(
+				serverNode.getPersistenceDirectory(),
+				aoServer
+			),
+			port,
+			csf,
+			ssf
+		);
+		this._aoServer = aoServer;
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "LoadAverageNode.label");
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "LoadAverageNode.label");
+	}
 
-    @Override
-    public List<?> getColumnHeaders(/*Locale locale*/) {
-        List<String> headers = new ArrayList<String>(7);
-        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.oneMinute"));
-        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.fiveMinute"));
-        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.tenMinute"));
-        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.runningProcesses"));
-        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.totalProcesses"));
-        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.lastPID"));
-        headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.alertThresholds"));
-        return Collections.unmodifiableList(headers);
-    }
+	@Override
+	public List<?> getColumnHeaders(/*Locale locale*/) {
+		List<String> headers = new ArrayList<>(7);
+		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.oneMinute"));
+		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.fiveMinute"));
+		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.tenMinute"));
+		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.runningProcesses"));
+		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.totalProcesses"));
+		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.lastPID"));
+		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.alertThresholds"));
+		return Collections.unmodifiableList(headers);
+	}
 }

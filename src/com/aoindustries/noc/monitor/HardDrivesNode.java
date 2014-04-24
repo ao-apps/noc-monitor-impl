@@ -49,9 +49,6 @@ public class HardDrivesNode extends NodeImpl {
 		return true;
 	}
 
-	/**
-	 * For thread safety and encapsulation, returns an unmodifiable copy of the list.
-	 */
 	@Override
 	public List<HardDrivesTemperatureNode> getChildren() {
 		return getSnapshot(this._hardDriveTemperatureNode);

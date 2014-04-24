@@ -65,9 +65,6 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
 		return true;
 	}
 
-	/**
-	 * For thread safety and encapsulation, returns an unmodifiable copy of the array.
-	 */
 	@Override
 	public List<MySQLCheckTablesNode> getChildren() {
 		return getSnapshot(this.mysqlCheckTablesNode);

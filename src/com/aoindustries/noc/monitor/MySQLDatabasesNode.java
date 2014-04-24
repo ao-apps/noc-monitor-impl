@@ -57,9 +57,6 @@ public class MySQLDatabasesNode extends NodeImpl {
 		return true;
 	}
 
-	/**
-	 * For thread safety and encapsulation, returns an unmodifiable copy of the array.
-	 */
 	@Override
 	public List<MySQLDatabaseNode> getChildren() {
 		synchronized(mysqlDatabaseNodes) {

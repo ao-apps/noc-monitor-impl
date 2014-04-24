@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -27,134 +27,134 @@ import javax.swing.SwingUtilities;
  */
 abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> extends NodeImpl implements TableMultiResultNode<R> {
 
-    private static final Logger logger = Logger.getLogger(TableMultiResultNodeImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(TableMultiResultNodeImpl.class.getName());
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    final RootNodeImpl rootNode;
-    final NodeImpl parent;
-    final TableMultiResultNodeWorker<?,R> worker;
+	final RootNodeImpl rootNode;
+	final NodeImpl parent;
+	final TableMultiResultNodeWorker<?,R> worker;
 
-    final private List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<TableMultiResultListener<? super R>>();
+	final private List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<>();
 
-    TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?,R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
-        this.rootNode = rootNode;
-        this.parent = parent;
-        this.worker = worker;
-    }
+	TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?,R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(port, csf, ssf);
+		this.rootNode = rootNode;
+		this.parent = parent;
+		this.worker = worker;
+	}
 
-    @Override
-    final public NodeImpl getParent() {
-        return parent;
-    }
+	@Override
+	final public NodeImpl getParent() {
+		return parent;
+	}
 
-    @Override
-    final public boolean getAllowsChildren() {
-        return false;
-    }
+	@Override
+	final public boolean getAllowsChildren() {
+		return false;
+	}
 
-    @Override
-    final public List<? extends NodeImpl> getChildren() {
-        return Collections.emptyList();
-    }
+	@Override
+	final public List<? extends NodeImpl> getChildren() {
+		return Collections.emptyList();
+	}
 
-    @Override
-    final public AlertLevel getAlertLevel() {
-        return worker.getAlertLevel();
-    }
+	@Override
+	final public AlertLevel getAlertLevel() {
+		return constrainAlertLevel(worker.getAlertLevel());
+	}
 
-    @Override
-    final public String getAlertMessage() {
-        return worker.getAlertMessage();
-    }
+	@Override
+	final public String getAlertMessage() {
+		return worker.getAlertMessage();
+	}
 
-    final void start() {
-        worker.addTableMultiResultNodeImpl(this);
-    }
+	final void start() {
+		worker.addTableMultiResultNodeImpl(this);
+	}
 
-    final void stop() {
-        worker.removeTableMultiResultNodeImpl(this);
-    }
+	final void stop() {
+		worker.removeTableMultiResultNodeImpl(this);
+	}
 
-    @Override
-    final public List<? extends R> getResults() {
-        return worker.getResults();
-    }
+	@Override
+	final public List<? extends R> getResults() {
+		return worker.getResults();
+	}
 
-    /**
-     * Called by the worker when the alert level changes.
-     */
-    final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String newAlertMessage) throws RemoteException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	/**
+	 * Called by the worker when the alert level changes.
+	 */
+	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String newAlertMessage) throws RemoteException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-        rootNode.nodeAlertLevelChanged(
-            this,
-            oldAlertLevel,
-            newAlertLevel,
-            newAlertMessage
-        );
-    }
+		rootNode.nodeAlertLevelChanged(
+			this,
+			oldAlertLevel,
+			newAlertLevel,
+			newAlertMessage
+		);
+	}
 
-    @Override
-    final public void addTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
-        synchronized(tableMultiResultListeners) {
-            tableMultiResultListeners.add(tableMultiResultListener);
-        }
-    }
+	@Override
+	final public void addTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
+		synchronized(tableMultiResultListeners) {
+			tableMultiResultListeners.add(tableMultiResultListener);
+		}
+	}
 
-    // TODO: Remove only once, in case add and remove come in out of order with quick GUI changes?
-    @Override
-    final public void removeTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
-        int foundCount = 0;
-        synchronized(tableMultiResultListeners) {
-            for(int c=tableMultiResultListeners.size()-1;c>=0;c--) {
-                if(tableMultiResultListeners.get(c).equals(tableMultiResultListener)) {
-                    tableMultiResultListeners.remove(c);
-                    foundCount++;
-                }
-            }
-        }
-        if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
-    }
+	// TODO: Remove only once, in case add and remove come in out of order with quick GUI changes?
+	@Override
+	final public void removeTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
+		int foundCount = 0;
+		synchronized(tableMultiResultListeners) {
+			for(int c=tableMultiResultListeners.size()-1;c>=0;c--) {
+				if(tableMultiResultListeners.get(c).equals(tableMultiResultListener)) {
+					tableMultiResultListeners.remove(c);
+					foundCount++;
+				}
+			}
+		}
+		if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
+	}
 
-    /**
-     * Notifies all of the listeners.
-     */
-    final void tableMultiResultAdded(R tableMultiResult) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	/**
+	 * Notifies all of the listeners.
+	 */
+	final void tableMultiResultAdded(R tableMultiResult) {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-        synchronized(tableMultiResultListeners) {
-            Iterator<TableMultiResultListener<? super R>> I = tableMultiResultListeners.iterator();
-            while(I.hasNext()) {
-                TableMultiResultListener<? super R> tableMultiResultListener = I.next();
-                try {
-                    tableMultiResultListener.tableMultiResultAdded(tableMultiResult);
-                } catch(RemoteException err) {
-                    I.remove();
-                    logger.log(Level.SEVERE, null, err);
-                }
-            }
-        }
-    }
+		synchronized(tableMultiResultListeners) {
+			Iterator<TableMultiResultListener<? super R>> I = tableMultiResultListeners.iterator();
+			while(I.hasNext()) {
+				TableMultiResultListener<? super R> tableMultiResultListener = I.next();
+				try {
+					tableMultiResultListener.tableMultiResultAdded(tableMultiResult);
+				} catch(RemoteException err) {
+					I.remove();
+					logger.log(Level.SEVERE, null, err);
+				}
+			}
+		}
+	}
 
-    /**
-     * Notifies all of the listeners.
-     */
-    final void tableMultiResultRemoved(R tableMultiResult) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	/**
+	 * Notifies all of the listeners.
+	 */
+	final void tableMultiResultRemoved(R tableMultiResult) {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-        synchronized(tableMultiResultListeners) {
-            Iterator<TableMultiResultListener<? super R>> I = tableMultiResultListeners.iterator();
-            while(I.hasNext()) {
-                TableMultiResultListener<? super R> tableMultiResultListener = I.next();
-                try {
-                    tableMultiResultListener.tableMultiResultRemoved(tableMultiResult);
-                } catch(RemoteException err) {
-                    I.remove();
-                    logger.log(Level.SEVERE, null, err);
-                }
-            }
-        }
-    }
+		synchronized(tableMultiResultListeners) {
+			Iterator<TableMultiResultListener<? super R>> I = tableMultiResultListeners.iterator();
+			while(I.hasNext()) {
+				TableMultiResultListener<? super R> tableMultiResultListener = I.next();
+				try {
+					tableMultiResultListener.tableMultiResultRemoved(tableMultiResult);
+				} catch(RemoteException err) {
+					I.remove();
+					logger.log(Level.SEVERE, null, err);
+				}
+			}
+		}
+	}
 }

@@ -51,9 +51,6 @@ public class IPAddressesNode extends NodeImpl {
 		return true;
 	}
 
-	/**
-	 * For thread safety and encapsulation, returns an unmodifiable copy of the array.
-	 */
 	@Override
 	public List<IPAddressNode> getChildren() {
 		synchronized(ipAddressNodes) {

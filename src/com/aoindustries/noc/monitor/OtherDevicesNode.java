@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -22,24 +22,27 @@ import java.sql.SQLException;
  */
 public class OtherDevicesNode extends ServersNode {
 
-    OtherDevicesNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(rootNode, port, csf, ssf);
-    }
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "OtherDevicesNode.label");
-    }
+	private static final long serialVersionUID = 1L;
 
-    boolean includeServer(Server server) throws SQLException, IOException {
-        PhysicalServer physicalServer = server.getPhysicalServer();
-        AOServer aoServer = server.getAOServer();
-        return
-            // Is not a physical server
-            (physicalServer==null || physicalServer.getRam()==-1)
-            // Is not a Xen dom0
-            && server.getVirtualServer()==null
-            // Is not an ao-box in fail-over
-            && (aoServer==null || aoServer.getFailoverServer()==null)
-        ;
-    }
+	OtherDevicesNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(rootNode, port, csf, ssf);
+	}
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "OtherDevicesNode.label");
+	}
+
+	@Override
+	boolean includeServer(Server server) throws SQLException, IOException {
+		PhysicalServer physicalServer = server.getPhysicalServer();
+		AOServer aoServer = server.getAOServer();
+		return
+			// Is not a physical server
+			(physicalServer==null || physicalServer.getRam()==-1)
+			// Is not a Xen dom0
+			&& server.getVirtualServer()==null
+			// Is not an ao-box in fail-over
+			&& (aoServer==null || aoServer.getFailoverServer()==null)
+		;
+	}
 }

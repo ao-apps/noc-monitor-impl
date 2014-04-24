@@ -72,9 +72,6 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		return true;
 	}
 
-	/**
-	 * For thread safety and encapsulation, returns an unmodifiable copy of the array.
-	 */
 	@Override
 	public List<BackupNode> getChildren() {
 		synchronized(backupNodes) {

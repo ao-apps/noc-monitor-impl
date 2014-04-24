@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -27,112 +27,114 @@ import javax.swing.SwingUtilities;
  */
 abstract public class SingleResultNodeImpl extends NodeImpl implements SingleResultNode {
 
-    private static final Logger logger = Logger.getLogger(SingleResultNodeImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(SingleResultNodeImpl.class.getName());
 
-    protected final RootNodeImpl rootNode;
-    protected final NodeImpl parent;
-    private final SingleResultNodeWorker worker;
+	private static final long serialVersionUID = 1L;
 
-    final private List<SingleResultListener> singleResultListeners = new ArrayList<SingleResultListener>();
+	protected final RootNodeImpl rootNode;
+	protected final NodeImpl parent;
+	private final SingleResultNodeWorker worker;
 
-    SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
-        this.rootNode = rootNode;
-        this.parent = parent;
-        this.worker = worker;
-    }
+	final private List<SingleResultListener> singleResultListeners = new ArrayList<>();
 
-    @Override
-    final public NodeImpl getParent() {
-        return parent;
-    }
+	SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(port, csf, ssf);
+		this.rootNode = rootNode;
+		this.parent = parent;
+		this.worker = worker;
+	}
 
-    @Override
-    final public boolean getAllowsChildren() {
-        return false;
-    }
+	@Override
+	final public NodeImpl getParent() {
+		return parent;
+	}
 
-    @Override
-    final public List<? extends NodeImpl> getChildren() {
-        return Collections.emptyList();
-    }
+	@Override
+	final public boolean getAllowsChildren() {
+		return false;
+	}
 
-    @Override
-    final public AlertLevel getAlertLevel() {
-        return worker.getAlertLevel();
-    }
+	@Override
+	final public List<? extends NodeImpl> getChildren() {
+		return Collections.emptyList();
+	}
 
-    @Override
-    final public String getAlertMessage() {
-        return worker.getAlertMessage();
-    }
+	@Override
+	final public AlertLevel getAlertLevel() {
+		return constrainAlertLevel(worker.getAlertLevel());
+	}
 
-    final void start() {
-        worker.addSingleResultNodeImpl(this);
-    }
+	@Override
+	final public String getAlertMessage() {
+		return worker.getAlertMessage();
+	}
 
-    final void stop() {
-        worker.removeSingleResultNodeImpl(this);
-    }
+	final void start() {
+		worker.addSingleResultNodeImpl(this);
+	}
 
-    @Override
-    final public SingleResult getLastResult() {
-        return worker.getLastResult();
-    }
+	final void stop() {
+		worker.removeSingleResultNodeImpl(this);
+	}
 
-    /**
-     * Called by the worker when the alert level changes.
-     */
-    final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, SingleResult result) throws RemoteException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	@Override
+	final public SingleResult getLastResult() {
+		return worker.getLastResult();
+	}
 
-        rootNode.nodeAlertLevelChanged(
-            this,
-            oldAlertLevel,
-            newAlertLevel,
-            worker.getAlertLevelAndMessage(rootNode.locale, result).getAlertMessage()
-        );
-    }
+	/**
+	 * Called by the worker when the alert level changes.
+	 */
+	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, SingleResult result) throws RemoteException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-    @Override
-    final public void addSingleResultListener(SingleResultListener singleResultListener) {
-        synchronized(singleResultListeners) {
-            singleResultListeners.add(singleResultListener);
-        }
-    }
+		rootNode.nodeAlertLevelChanged(
+			this,
+			oldAlertLevel,
+			newAlertLevel,
+			worker.getAlertLevelAndMessage(rootNode.locale, result).getAlertMessage()
+		);
+	}
 
-    // TODO: Remove only once, in case add and remove come in out of order with quick GUI changes?
-    @Override
-    final public void removeSingleResultListener(SingleResultListener singleResultListener) {
-        int foundCount = 0;
-        synchronized(singleResultListeners) {
-            for(int c=singleResultListeners.size()-1;c>=0;c--) {
-                if(singleResultListeners.get(c).equals(singleResultListener)) {
-                    singleResultListeners.remove(c);
-                    foundCount++;
-                }
-            }
-        }
-        if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
-    }
+	@Override
+	final public void addSingleResultListener(SingleResultListener singleResultListener) {
+		synchronized(singleResultListeners) {
+			singleResultListeners.add(singleResultListener);
+		}
+	}
 
-    /**
-     * Notifies all of the listeners.
-     */
-    final void singleResultUpdated(SingleResult singleResult) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	// TODO: Remove only once, in case add and remove come in out of order with quick GUI changes?
+	@Override
+	final public void removeSingleResultListener(SingleResultListener singleResultListener) {
+		int foundCount = 0;
+		synchronized(singleResultListeners) {
+			for(int c=singleResultListeners.size()-1;c>=0;c--) {
+				if(singleResultListeners.get(c).equals(singleResultListener)) {
+					singleResultListeners.remove(c);
+					foundCount++;
+				}
+			}
+		}
+		if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
+	}
 
-        synchronized(singleResultListeners) {
-            Iterator<SingleResultListener> I = singleResultListeners.iterator();
-            while(I.hasNext()) {
-                SingleResultListener singleResultListener = I.next();
-                try {
-                    singleResultListener.singleResultUpdated(singleResult);
-                } catch(RemoteException err) {
-                    I.remove();
-                    logger.log(Level.SEVERE, null, err);
-                }
-            }
-        }
-    }
+	/**
+	 * Notifies all of the listeners.
+	 */
+	final void singleResultUpdated(SingleResult singleResult) {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		synchronized(singleResultListeners) {
+			Iterator<SingleResultListener> I = singleResultListeners.iterator();
+			while(I.hasNext()) {
+				SingleResultListener singleResultListener = I.next();
+				try {
+					singleResultListener.singleResultUpdated(singleResult);
+				} catch(RemoteException err) {
+					I.remove();
+					logger.log(Level.SEVERE, null, err);
+				}
+			}
+		}
+	}
 }
