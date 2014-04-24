@@ -90,8 +90,8 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
 		rootNode.nodeAlertLevelChanged(
 			this,
-			oldAlertLevel,
-			newAlertLevel,
+			constrainAlertLevel(oldAlertLevel),
+			constrainAlertLevel(newAlertLevel),
 			newAlertMessage
 		);
 	}

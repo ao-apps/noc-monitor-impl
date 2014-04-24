@@ -473,23 +473,25 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		AlertLevelChange change = new AlertLevelChange(
-			node,
-			node.getFullPath(locale),
-			oldAlertLevel,
-			newAlertLevel,
-			alertMessage
-		);
-		synchronized(treeListeners) {
-			for(TreeListener treeListener : treeListeners) {
-				NodeAlertLevelChangedSignaler nodeAlertLevelChangedSignaler = nodeAlertLevelChangedSignalers.get(treeListener);
-				if(nodeAlertLevelChangedSignaler==null) {
-					nodeAlertLevelChangedSignaler = new NodeAlertLevelChangedSignaler(treeListener);
-					nodeAlertLevelChangedSignalers.put(treeListener, nodeAlertLevelChangedSignaler);
-					nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
-					executorService.submitUnbounded(nodeAlertLevelChangedSignaler);
-				} else {
-					nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
+		if(oldAlertLevel != newAlertLevel) {
+			AlertLevelChange change = new AlertLevelChange(
+				node,
+				node.getFullPath(locale),
+				oldAlertLevel,
+				newAlertLevel,
+				alertMessage
+			);
+			synchronized(treeListeners) {
+				for(TreeListener treeListener : treeListeners) {
+					NodeAlertLevelChangedSignaler nodeAlertLevelChangedSignaler = nodeAlertLevelChangedSignalers.get(treeListener);
+					if(nodeAlertLevelChangedSignaler==null) {
+						nodeAlertLevelChangedSignaler = new NodeAlertLevelChangedSignaler(treeListener);
+						nodeAlertLevelChangedSignalers.put(treeListener, nodeAlertLevelChangedSignaler);
+						nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
+						executorService.submitUnbounded(nodeAlertLevelChangedSignaler);
+					} else {
+						nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
+					}
 				}
 			}
 		}

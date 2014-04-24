@@ -90,8 +90,8 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 
 		rootNode.nodeAlertLevelChanged(
 			this,
-			oldAlertLevel,
-			newAlertLevel,
+			constrainAlertLevel(oldAlertLevel),
+			constrainAlertLevel(newAlertLevel),
 			worker.getAlertLevelAndMessage(rootNode.locale, result).getAlertMessage()
 		);
 	}

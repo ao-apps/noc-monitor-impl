@@ -211,8 +211,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 			alertLevel = newAlertLevel;
 			serverNode.serversNode.rootNode.nodeAlertLevelChanged(
 				this,
-				oldAlertLevel,
-				newAlertLevel,
+				constrainAlertLevel(oldAlertLevel),
+				constrainAlertLevel(newAlertLevel),
 				newAlertLevelMessage
 			);
 		}

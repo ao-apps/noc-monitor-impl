@@ -34,11 +34,11 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 
 	final RootNodeImpl rootNode;
 	final NodeImpl parent;
-	final TableResultNodeWorker worker;
+	final TableResultNodeWorker<?,?> worker;
 
 	final private List<TableResultListener> tableResultListeners = new ArrayList<>();
 
-	TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?,?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.rootNode = rootNode;
 		this.parent = parent;
@@ -91,8 +91,8 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 
 		rootNode.nodeAlertLevelChanged(
 			this,
-			oldAlertLevel,
-			newAlertLevel,
+			constrainAlertLevel(oldAlertLevel),
+			constrainAlertLevel(newAlertLevel),
 			worker.getAlertLevelAndMessage(rootNode.locale, result).getAlertMessage()
 		);
 	}
