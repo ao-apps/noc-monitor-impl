@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,7 +19,6 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -31,144 +30,141 @@ import javax.swing.SwingUtilities;
  */
 public class IPAddressesNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    final NetDeviceNode netDeviceNode;
-    private final List<IPAddressNode> ipAddressNodes = new ArrayList<IPAddressNode>();
+	final NetDeviceNode netDeviceNode;
+	private final List<IPAddressNode> ipAddressNodes = new ArrayList<>();
 
-    IPAddressesNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
+	IPAddressesNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(port, csf, ssf);
 
-        this.netDeviceNode = netDeviceNode;
-    }
+		this.netDeviceNode = netDeviceNode;
+	}
 
-    @Override
-    public NetDeviceNode getParent() {
-        return netDeviceNode;
-    }
-    
-    @Override
-    public boolean getAllowsChildren() {
-        return true;
-    }
+	@Override
+	public NetDeviceNode getParent() {
+		return netDeviceNode;
+	}
 
-    /**
-     * For thread safety and encapsulation, returns an unmodifiable copy of the array.
-     */
-    @Override
-    public List<IPAddressNode> getChildren() {
-        synchronized(ipAddressNodes) {
-            return Collections.unmodifiableList(new ArrayList<IPAddressNode>(ipAddressNodes));
-        }
-    }
+	@Override
+	public boolean getAllowsChildren() {
+		return true;
+	}
 
-    /**
-     * The alert level is equal to the highest alert level of its children.
-     */
-    @Override
-    public AlertLevel getAlertLevel() {
-        AlertLevel level = AlertLevel.NONE;
-        synchronized(ipAddressNodes) {
-            for(NodeImpl ipAddressNode : ipAddressNodes) {
-                AlertLevel ipAddressNodeLevel = ipAddressNode.getAlertLevel();
-                if(ipAddressNodeLevel.compareTo(level)>0) level = ipAddressNodeLevel;
-            }
-        }
-        return level;
-    }
+	/**
+	 * For thread safety and encapsulation, returns an unmodifiable copy of the array.
+	 */
+	@Override
+	public List<IPAddressNode> getChildren() {
+		synchronized(ipAddressNodes) {
+			return getSnapshot(ipAddressNodes);
+		}
+	}
 
-    /**
-     * No alert messages.
-     */
-    @Override
-    public String getAlertMessage() {
-        return null;
-    }
+	/**
+	 * The alert level is equal to the highest alert level of its children.
+	 */
+	@Override
+	public AlertLevel getAlertLevel() {
+		AlertLevel level;
+		synchronized(ipAddressNodes) {
+			level = AlertLevelUtils.getMaxAlertLevel(
+				ipAddressNodes
+			);
+		}
+		return constrainAlertLevel(level);
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "IPAddressesNode.label");
-    }
-    
-    private TableListener tableListener = new TableListener() {
-        @Override
-        public void tableUpdated(Table<?> table) {
-            try {
-                verifyIPAddresses();
-            } catch(IOException err) {
-                throw new WrappedException(err);
-            } catch(SQLException err) {
-                throw new WrappedException(err);
-            }
-        }
-    };
+	/**
+	 * No alert messages.
+	 */
+	@Override
+	public String getAlertMessage() {
+		return null;
+	}
 
-    void start() throws IOException, SQLException {
-        synchronized(ipAddressNodes) {
-            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
-            verifyIPAddresses();
-        }
-    }
-    
-    void stop() {
-        synchronized(ipAddressNodes) {
-            RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
-            rootNode.conn.getIpAddresses().removeTableListener(tableListener);
-            for(IPAddressNode ipAddressNode : ipAddressNodes) {
-                ipAddressNode.stop();
-                rootNode.nodeRemoved();
-            }
-            ipAddressNodes.clear();
-        }
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "IPAddressesNode.label");
+	}
 
-    private void verifyIPAddresses() throws RemoteException, IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	private final TableListener tableListener = new TableListener() {
+		@Override
+		public void tableUpdated(Table<?> table) {
+			try {
+				verifyIPAddresses();
+			} catch(IOException | SQLException err) {
+				throw new WrappedException(err);
+			}
+		}
+	};
 
-        final RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+	void start() throws IOException, SQLException {
+		synchronized(ipAddressNodes) {
+			netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
+			verifyIPAddresses();
+		}
+	}
 
-        NetDevice netDevice = netDeviceNode.getNetDevice();
-        List<IPAddress> ipAddresses = netDevice.getIPAddresses();
-        synchronized(ipAddressNodes) {
-            // Remove old ones
-            Iterator<IPAddressNode> ipAddressNodeIter = ipAddressNodes.iterator();
-            while(ipAddressNodeIter.hasNext()) {
-                IPAddressNode ipAddressNode = ipAddressNodeIter.next();
-                IPAddress ipAddress = ipAddressNode.getIPAddress();
-                if(!ipAddresses.contains(ipAddress)) {
-                    ipAddressNode.stop();
-                    ipAddressNodeIter.remove();
-                    rootNode.nodeRemoved();
-                }
-            }
-            // Add new ones
-            for(int c=0;c<ipAddresses.size();c++) {
-                IPAddress ipAddress = ipAddresses.get(c);
-                assert !ipAddress.isWildcard() : "Wildcard IP address on NetDevice: "+netDevice;
-                if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
-                    // Insert into proper index
-                    IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
-                    ipAddressNodes.add(c, ipAddressNode);
-                    ipAddressNode.start();
-                    rootNode.nodeAdded();
-                }
-            }
-        }
-    }
+	void stop() {
+		synchronized(ipAddressNodes) {
+			RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+			rootNode.conn.getIpAddresses().removeTableListener(tableListener);
+			for(IPAddressNode ipAddressNode : ipAddressNodes) {
+				ipAddressNode.stop();
+				rootNode.nodeRemoved();
+			}
+			ipAddressNodes.clear();
+		}
+	}
 
-    File getPersistenceDirectory() throws IOException {
-        File dir = new File(netDeviceNode.getPersistenceDirectory(), "ip_addresses");
-        if(!dir.exists()) {
-            if(!dir.mkdir()) {
-                throw new IOException(
-                    accessor.getMessage(
-                        //netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
-                        "error.mkdirFailed",
-                        dir.getCanonicalPath()
-                    )
-                );
-            }
-        }
-        return dir;
-    }
+	private void verifyIPAddresses() throws RemoteException, IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		final RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+
+		NetDevice netDevice = netDeviceNode.getNetDevice();
+		List<IPAddress> ipAddresses = netDevice.getIPAddresses();
+		synchronized(ipAddressNodes) {
+			// Remove old ones
+			Iterator<IPAddressNode> ipAddressNodeIter = ipAddressNodes.iterator();
+			while(ipAddressNodeIter.hasNext()) {
+				IPAddressNode ipAddressNode = ipAddressNodeIter.next();
+				IPAddress ipAddress = ipAddressNode.getIPAddress();
+				if(!ipAddresses.contains(ipAddress)) {
+					ipAddressNode.stop();
+					ipAddressNodeIter.remove();
+					rootNode.nodeRemoved();
+				}
+			}
+			// Add new ones
+			for(int c=0;c<ipAddresses.size();c++) {
+				IPAddress ipAddress = ipAddresses.get(c);
+				assert !ipAddress.getInetAddress().isUnspecified() : "Unspecified IP address on NetDevice: "+netDevice;
+				if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
+					// Insert into proper index
+					IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
+					ipAddressNodes.add(c, ipAddressNode);
+					ipAddressNode.start();
+					rootNode.nodeAdded();
+				}
+			}
+		}
+	}
+
+	File getPersistenceDirectory() throws IOException {
+		File dir = new File(netDeviceNode.getPersistenceDirectory(), "ip_addresses");
+		if(!dir.exists()) {
+			if(!dir.mkdir()) {
+				throw new IOException(
+					accessor.getMessage(
+						//netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
+						"error.mkdirFailed",
+						dir.getCanonicalPath()
+					)
+				);
+			}
+		}
+		return dir;
+	}
 }

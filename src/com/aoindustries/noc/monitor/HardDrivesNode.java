@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,99 +22,95 @@ import java.util.List;
  */
 public class HardDrivesNode extends NodeImpl {
 
-    final ServerNode serverNode;
-    private final AOServer _aoServer;
+	private static final long serialVersionUID = 1L;
 
-    volatile private HardDrivesTemperatureNode _hardDriveTemperatureNode;
+	final ServerNode serverNode;
+	private final AOServer _aoServer;
 
-    HardDrivesNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
-        this.serverNode = serverNode;
-        this._aoServer = aoServer;
-    }
+	volatile private HardDrivesTemperatureNode _hardDriveTemperatureNode;
 
-    @Override
-    public ServerNode getParent() {
-        return serverNode;
-    }
+	HardDrivesNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(port, csf, ssf);
+		this.serverNode = serverNode;
+		this._aoServer = aoServer;
+	}
 
-    public AOServer getAOServer() {
-        return _aoServer;
-    }
+	@Override
+	public ServerNode getParent() {
+		return serverNode;
+	}
 
-    @Override
-    public boolean getAllowsChildren() {
-        return true;
-    }
+	public AOServer getAOServer() {
+		return _aoServer;
+	}
 
-    /**
-     * For thread safety and encapsulation, returns an unmodifiable copy of the list.
-     */
-    @Override
-    public List<HardDrivesTemperatureNode> getChildren() {
-        List<HardDrivesTemperatureNode> children = new ArrayList<HardDrivesTemperatureNode>(1);
-        HardDrivesTemperatureNode hardDriveTemperatureNode = this._hardDriveTemperatureNode;
-        if(hardDriveTemperatureNode!=null) children.add(hardDriveTemperatureNode);
-        return Collections.unmodifiableList(children);
-    }
+	@Override
+	public boolean getAllowsChildren() {
+		return true;
+	}
 
-    /**
-     * The alert level is equal to the highest alert level of its children.
-     */
-    @Override
-    public AlertLevel getAlertLevel() {
-        AlertLevel level = AlertLevel.NONE;
+	/**
+	 * For thread safety and encapsulation, returns an unmodifiable copy of the list.
+	 */
+	@Override
+	public List<HardDrivesTemperatureNode> getChildren() {
+		return getSnapshot(this._hardDriveTemperatureNode);
+	}
 
-        HardDrivesTemperatureNode hardDriveTemperatureNode = this._hardDriveTemperatureNode;
-        if(hardDriveTemperatureNode!=null) {
-            AlertLevel hardDriveTemperatureNodeLevel = hardDriveTemperatureNode.getAlertLevel();
-            if(hardDriveTemperatureNodeLevel.compareTo(level)>0) level = hardDriveTemperatureNodeLevel;
-        }
-        return level;
-    }
+	/**
+	 * The alert level is equal to the highest alert level of its children.
+	 */
+	@Override
+	public AlertLevel getAlertLevel() {
+		return constrainAlertLevel(
+			AlertLevelUtils.getMaxAlertLevel(
+				this._hardDriveTemperatureNode
+			)
+		);
+	}
 
-    /**
-     * No alert messages.
-     */
-    @Override
-    public String getAlertMessage() {
-        return null;
-    }
+	/**
+	 * No alert messages.
+	 */
+	@Override
+	public String getAlertMessage() {
+		return null;
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "HardDrivesNode.label");
-    }
-    
-    synchronized void start() throws IOException {
-        if(_hardDriveTemperatureNode==null) {
-            _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
-            _hardDriveTemperatureNode.start();
-            serverNode.serversNode.rootNode.nodeAdded();
-        }
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "HardDrivesNode.label");
+	}
 
-    synchronized void stop() {
-        if(_hardDriveTemperatureNode!=null) {
-            _hardDriveTemperatureNode.stop();
-            _hardDriveTemperatureNode = null;
-            serverNode.serversNode.rootNode.nodeRemoved();
-        }
-    }
+	synchronized void start() throws IOException {
+		if(_hardDriveTemperatureNode==null) {
+			_hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
+			_hardDriveTemperatureNode.start();
+			serverNode.serversNode.rootNode.nodeAdded();
+		}
+	}
 
-    File getPersistenceDirectory() throws IOException {
-        File dir = new File(serverNode.getPersistenceDirectory(), "hard_drives");
-        if(!dir.exists()) {
-            if(!dir.mkdir()) {
-                throw new IOException(
-                    accessor.getMessage(
-                        //serverNode.serversNode.rootNode.locale,
-                        "error.mkdirFailed",
-                        dir.getCanonicalPath()
-                    )
-                );
-            }
-        }
-        return dir;
-    }
+	synchronized void stop() {
+		if(_hardDriveTemperatureNode!=null) {
+			_hardDriveTemperatureNode.stop();
+			_hardDriveTemperatureNode = null;
+			serverNode.serversNode.rootNode.nodeRemoved();
+		}
+	}
+
+	File getPersistenceDirectory() throws IOException {
+		File dir = new File(serverNode.getPersistenceDirectory(), "hard_drives");
+		if(!dir.exists()) {
+			if(!dir.mkdir()) {
+				throw new IOException(
+					accessor.getMessage(
+						//serverNode.serversNode.rootNode.locale,
+						"error.mkdirFailed",
+						dir.getCanonicalPath()
+					)
+				);
+			}
+		}
+		return dir;
+	}
 }

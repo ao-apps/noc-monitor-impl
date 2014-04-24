@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,7 +19,6 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -31,152 +30,147 @@ import javax.swing.SwingUtilities;
  */
 public class NetDevicesNode extends NodeImpl {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    final ServerNode serverNode;
-    private final Server server;
-    private final List<NetDeviceNode> netDeviceNodes = new ArrayList<NetDeviceNode>();
+	final ServerNode serverNode;
+	private final Server server;
+	private final List<NetDeviceNode> netDeviceNodes = new ArrayList<>();
 
-    NetDevicesNode(ServerNode serverNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(port, csf, ssf);
-        this.serverNode = serverNode;
-        this.server = server;
-    }
+	NetDevicesNode(ServerNode serverNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(port, csf, ssf);
+		this.serverNode = serverNode;
+		this.server = server;
+	}
 
-    @Override
-    public ServerNode getParent() {
-        return serverNode;
-    }
-    
-    public Server getServer() {
-        return server;
-    }
+	@Override
+	public ServerNode getParent() {
+		return serverNode;
+	}
 
-    @Override
-    public boolean getAllowsChildren() {
-        return true;
-    }
+	public Server getServer() {
+		return server;
+	}
 
-    /**
-     * For thread safety and encapsulation, returns an unmodifiable copy of the array.
-     */
-    @Override
-    public List<NetDeviceNode> getChildren() {
-        synchronized(netDeviceNodes) {
-            return Collections.unmodifiableList(new ArrayList<NetDeviceNode>(netDeviceNodes));
-        }
-    }
+	@Override
+	public boolean getAllowsChildren() {
+		return true;
+	}
 
-    /**
-     * The alert level is equal to the highest alert level of its children.
-     */
-    @Override
-    public AlertLevel getAlertLevel() {
-        synchronized(netDeviceNodes) {
-            AlertLevel level = AlertLevel.NONE;
-            for(NodeImpl networkDeviceNode : netDeviceNodes) {
-                AlertLevel networkDeviceNodeLevel = networkDeviceNode.getAlertLevel();
-                if(networkDeviceNodeLevel.compareTo(level)>0) level = networkDeviceNodeLevel;
-            }
-            return level;
-        }
-    }
+	/**
+	 * For thread safety and encapsulation, returns an unmodifiable copy of the array.
+	 */
+	@Override
+	public List<NetDeviceNode> getChildren() {
+		synchronized(netDeviceNodes) {
+			return getSnapshot(netDeviceNodes);
+		}
+	}
 
-    /**
-     * No alert messages.
-     */
-    @Override
-    public String getAlertMessage() {
-        return null;
-    }
+	/**
+	 * The alert level is equal to the highest alert level of its children.
+	 */
+	@Override
+	public AlertLevel getAlertLevel() {
+		AlertLevel level;
+		synchronized(netDeviceNodes) {
+			level = AlertLevelUtils.getMaxAlertLevel(netDeviceNodes);
+		}
+		return constrainAlertLevel(level);
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "NetDevicesNode.label");
-    }
-    
-    private TableListener tableListener = new TableListener() {
-        @Override
-        public void tableUpdated(Table<?> table) {
-            try {
-                verifyNetDevices();
-            } catch(IOException err) {
-                throw new WrappedException(err);
-            } catch(SQLException err) {
-                throw new WrappedException(err);
-            }
-        }
-    };
+	/**
+	 * No alert messages.
+	 */
+	@Override
+	public String getAlertMessage() {
+		return null;
+	}
 
-    void start() throws IOException, SQLException {
-        synchronized(netDeviceNodes) {
-            serverNode.serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
-            verifyNetDevices();
-        }
-    }
-    
-    void stop() {
-        synchronized(netDeviceNodes) {
-            serverNode.serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
-            for(NetDeviceNode netDeviceNode : netDeviceNodes) {
-                netDeviceNode.stop();
-                serverNode.serversNode.rootNode.nodeRemoved();
-            }
-            netDeviceNodes.clear();
-        }
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "NetDevicesNode.label");
+	}
 
-    private void verifyNetDevices() throws IOException, SQLException {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	private final TableListener tableListener = new TableListener() {
+		@Override
+		public void tableUpdated(Table<?> table) {
+			try {
+				verifyNetDevices();
+			} catch(IOException | SQLException err) {
+				throw new WrappedException(err);
+			}
+		}
+	};
+
+	void start() throws IOException, SQLException {
+		synchronized(netDeviceNodes) {
+			serverNode.serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
+			verifyNetDevices();
+		}
+	}
+
+	void stop() {
+		synchronized(netDeviceNodes) {
+			serverNode.serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
+			for(NetDeviceNode netDeviceNode : netDeviceNodes) {
+				netDeviceNode.stop();
+				serverNode.serversNode.rootNode.nodeRemoved();
+			}
+			netDeviceNodes.clear();
+		}
+	}
+
+	private void verifyNetDevices() throws IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		// Filter only those that are enabled
-        List<NetDevice> netDevices;
+		List<NetDevice> netDevices;
 		{
 			List<NetDevice> allNetDevices = server.getNetDevices();
-			netDevices = new ArrayList<NetDevice>(allNetDevices.size());
+			netDevices = new ArrayList<>(allNetDevices.size());
 			for(NetDevice netDevice : allNetDevices) {
 				if(netDevice.isMonitoringEnabled()) netDevices.add(netDevice);
 			}
 		}
-        synchronized(netDeviceNodes) {
-            // Remove old ones
-            Iterator<NetDeviceNode> netDeviceNodeIter = netDeviceNodes.iterator();
-            while(netDeviceNodeIter.hasNext()) {
-                NetDeviceNode netDeviceNode = netDeviceNodeIter.next();
-                NetDevice netDevice = netDeviceNode.getNetDevice();
-                if(!netDevices.contains(netDevice)) {
-                    netDeviceNode.stop();
-                    netDeviceNodeIter.remove();
-                    serverNode.serversNode.rootNode.nodeRemoved();
-                }
-            }
-            // Add new ones
-            for(int c=0;c<netDevices.size();c++) {
-                NetDevice netDevice = netDevices.get(c);
-                if(c>=netDeviceNodes.size() || !netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
-                    // Insert into proper index
-                    NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice, port, csf, ssf);
-                    netDeviceNodes.add(c, netDeviceNode);
-                    netDeviceNode.start();
-                    serverNode.serversNode.rootNode.nodeAdded();
-                }
-            }
-        }
-    }
+		synchronized(netDeviceNodes) {
+			// Remove old ones
+			Iterator<NetDeviceNode> netDeviceNodeIter = netDeviceNodes.iterator();
+			while(netDeviceNodeIter.hasNext()) {
+				NetDeviceNode netDeviceNode = netDeviceNodeIter.next();
+				NetDevice netDevice = netDeviceNode.getNetDevice();
+				if(!netDevices.contains(netDevice)) {
+					netDeviceNode.stop();
+					netDeviceNodeIter.remove();
+					serverNode.serversNode.rootNode.nodeRemoved();
+				}
+			}
+			// Add new ones
+			for(int c=0;c<netDevices.size();c++) {
+				NetDevice netDevice = netDevices.get(c);
+				if(c>=netDeviceNodes.size() || !netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
+					// Insert into proper index
+					NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice, port, csf, ssf);
+					netDeviceNodes.add(c, netDeviceNode);
+					netDeviceNode.start();
+					serverNode.serversNode.rootNode.nodeAdded();
+				}
+			}
+		}
+	}
 
-    File getPersistenceDirectory() throws IOException {
-        File dir = new File(serverNode.getPersistenceDirectory(), "net_devices");
-        if(!dir.exists()) {
-            if(!dir.mkdir()) {
-                throw new IOException(
-                    accessor.getMessage(
-                        //serverNode.serversNode.rootNode.locale,
-                        "error.mkdirFailed",
-                        dir.getCanonicalPath()
-                    )
-                );
-            }
-        }
-        return dir;
-    }
+	File getPersistenceDirectory() throws IOException {
+		File dir = new File(serverNode.getPersistenceDirectory(), "net_devices");
+		if(!dir.exists()) {
+			if(!dir.mkdir()) {
+				throw new IOException(
+					accessor.getMessage(
+						//serverNode.serversNode.rootNode.locale,
+						"error.mkdirFailed",
+						dir.getCanonicalPath()
+					)
+				);
+			}
+		}
+		return dir;
+	}
 }
