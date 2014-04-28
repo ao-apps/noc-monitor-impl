@@ -53,7 +53,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	public static final Random random = new Random();
 
 	/**
-	 * One thread pool is shared by all instances, and it is never
+	 * One thread pool is shared by all components, and it is never disposed.
 	 */
 	public final static ExecutorService executorService = ExecutorService.newInstance();
 

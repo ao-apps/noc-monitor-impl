@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
  * Update in a single background thread across all workers, and handle recovery from unexpected
  * shutdown gracefully by inserting aggregate before removing samples, and detect on next aggregation.
  * Also, the linked list should always be sorted by time descending, confirm this on aggregation pass.
+ *
  * @author  AO Industries, Inc.
  */
 abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implements Runnable {
@@ -65,10 +66,10 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
     volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
     volatile private String alertMessage = null;
 
-    final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<TableMultiResultNodeImpl<R>>();
+    final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
 
     TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
-        this.results = new PersistentLinkedList<R>(
+        this.results = new PersistentLinkedList<>(
             PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
             //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
             /*
@@ -91,7 +92,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
         //System.out.println("DEBUG: getResults");
         //try {
             synchronized(results) {
-                return Collections.unmodifiableList(new ArrayList<R>(results));
+                return Collections.unmodifiableList(new ArrayList<>(results));
             }
         //} catch(RuntimeException err) {
         //    ErrorPrinter.printStackTraces(err);
