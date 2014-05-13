@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.io.FileUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -109,29 +110,7 @@ class BackgroundWriter {
                                     } finally {
                                         oout.close();
                                     }
-                                    // Try move over first (Linux)
-                                    if(!queueEntry.newPersistenceFile.renameTo(persistenceFile)) {
-                                        // Delete and rename (Windows)
-                                        if(!persistenceFile.delete()) {
-                                            throw new IOException(
-                                                accessor.getMessage(
-                                                    //Locale.getDefault(),
-                                                    "BackgroundWriter.error.unableToDelete",
-                                                    persistenceFile.getCanonicalPath()
-                                                )
-                                            );
-                                        }
-                                        if(!queueEntry.newPersistenceFile.renameTo(persistenceFile)) {
-                                            throw new IOException(
-                                                accessor.getMessage(
-                                                    //Locale.getDefault(),
-                                                    "BackgroundWriter.error.unableToRename",
-                                                    queueEntry.newPersistenceFile.getCanonicalPath(),
-                                                    persistenceFile.getCanonicalPath()
-                                                )
-                                            );
-                                        }
-                                    }
+									FileUtils.renameAllowNonAtomic(queueEntry.newPersistenceFile, persistenceFile);
                                 } catch(Exception err) {
                                     logger.log(Level.SEVERE, null, err);
                                 }
