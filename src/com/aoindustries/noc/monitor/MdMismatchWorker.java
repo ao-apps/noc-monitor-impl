@@ -25,10 +25,14 @@ import java.util.Map;
  */
 class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,String> {
 
-    /**
+	private static final int RAID1_HIGH_THRESHOLD = 2048;
+	private static final int RAID1_MEDIUM_THRESHOLD = 1024;
+	private static final int RAID1_LOW_THRESHOLD = 1;
+
+	/**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
-    private static final Map<String, MdMismatchWorker> workerCache = new HashMap<String,MdMismatchWorker>();
+    private static final Map<String, MdMismatchWorker> workerCache = new HashMap<>();
     static MdMismatchWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
@@ -67,12 +71,12 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
             for(
 				int index=0, len=tableData.size();
 				index < len;
-				index += 2
+				index += 3
 			) {
-                AlertLevel alertLevel = alertLevels.get(index / 2);
+                AlertLevel alertLevel = alertLevels.get(index / 3);
                 if(alertLevel.compareTo(highestAlertLevel)>0) {
                     highestAlertLevel = alertLevel;
-                    highestAlertMessage = tableData.get(index) + " " + tableData.get(index+1);
+                    highestAlertMessage = tableData.get(index) + " " + tableData.get(index+1) + " " + tableData.get(index+2);
                 }
             }
         }
@@ -81,13 +85,14 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 
     @Override
     protected int getColumns() {
-        return 2;
+        return 3;
     }
 
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
-        List<String> columnHeaders = new ArrayList<String>(2);
+        List<String> columnHeaders = new ArrayList<>(3);
         columnHeaders.add(accessor.getMessage(/*locale,*/ "MdMismatchWorker.columnHeader.device"));
+        columnHeaders.add(accessor.getMessage(/*locale,*/ "MdMismatchWorker.columnHeader.level"));
         columnHeaders.add(accessor.getMessage(/*locale,*/ "MdMismatchWorker.columnHeader.count"));
         return columnHeaders;
     }
@@ -99,9 +104,10 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 
     @Override
     protected List<String> getTableData(List<MdMismatchReport> reports, Locale locale) throws Exception {
-        List<String> tableData = new ArrayList<String>(reports.size() * 2);
+        List<String> tableData = new ArrayList<>(reports.size() * 3);
         for(MdMismatchReport report : reports) {
             tableData.add(report.getDevice());
+            tableData.add(report.getLevel().name());
             tableData.add(Long.toString(report.getCount()));
         }
         return tableData;
@@ -109,10 +115,26 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 
     @Override
     protected List<AlertLevel> getAlertLevels(List<MdMismatchReport> reports) {
-        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(reports.size());
+        List<AlertLevel> alertLevels = new ArrayList<>(reports.size());
         for(MdMismatchReport report : reports) {
 			long count = report.getCount();
-            AlertLevel alertLevel = count==0 ? AlertLevel.NONE : AlertLevel.HIGH;
+            final AlertLevel alertLevel;
+			if(count == 0) {
+				alertLevel = AlertLevel.NONE;
+			} else {
+				if(report.getLevel() == AOServer.RaidLevel.raid1) {
+					// Allow small amount of mismatch for RAID1 only
+					alertLevel =
+						count >= RAID1_HIGH_THRESHOLD ? AlertLevel.HIGH
+						: count >= RAID1_MEDIUM_THRESHOLD ? AlertLevel.MEDIUM
+						: count >= RAID1_LOW_THRESHOLD ? AlertLevel.LOW
+						: AlertLevel.NONE
+					;
+				} else {
+					// All other types allow no mismatch
+					alertLevel = AlertLevel.HIGH;
+				}
+			}
             alertLevels.add(alertLevel);
         }
         return alertLevels;
