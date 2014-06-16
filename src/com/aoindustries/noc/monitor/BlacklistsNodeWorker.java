@@ -1034,9 +1034,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			//&& !"66.160.183.125".equals(ip)
 			//&& !"66.160.183.189".equals(ip)
 			//&& !"66.160.183.253".equals(ip)
-			ipAddress.getNetDevice().getServer().getAOServer()!=null
+			ipAddress.getCheckBlacklistsOverSmtp()
+			&& ipAddress.getNetDevice().getServer().getAOServer()!=null
 		;
-		lookups = new ArrayList<>(checkSmtpBlacklist ? rblBlacklists.length+4 : rblBlacklists.length);
+		lookups = new ArrayList<>(checkSmtpBlacklist ? (rblBlacklists.length + 5) : rblBlacklists.length);
 		for(BlacklistLookup rblBlacklist : rblBlacklists) {
 			lookups.add(rblBlacklist);
 		}
