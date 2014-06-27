@@ -52,6 +52,8 @@ import org.xbill.DNS.Type;
  * TODO: yahoo, hotmail, gmail, aol?
  * TODO: How to check when rejected by domain name on sender address like done for NMW on att domains?
  *
+ * TODO: Possibly more at http://stopspam.org/rblcheck/index.php
+ *
  * @author  AO Industries, Inc.
  */
 class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWorker.BlacklistQueryResult>,Object> {
@@ -411,11 +413,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new RblBlacklist("dsbl.dnsbl.net.au"),
 			new RblBlacklist("duinv.aupads.org"),
 			new RblBlacklist("dul.dnsbl.sorbs.net"),
-			new RblBlacklist("dul.maps.vix.com"),
+			// Removed 2014-06-27: new RblBlacklist("dul.maps.vix.com"),
 			new RblBlacklist("dul.orca.bc.ca"),
 			new RblBlacklist("dul.ru"),
-			new RblBlacklist("dun.dnsrbl.net"),
-			new RblBlacklist("fl.chickenboner.biz"),
+			// Removed 2014-06-27: new RblBlacklist("dun.dnsrbl.net"),
+			// Removed 2014-06-27: new RblBlacklist("fl.chickenboner.biz"),
 			new RblBlacklist("forbidden.icm.edu.pl"),
 			new RblBlacklist("hil.habeas.com"),
 			new RblBlacklist("http.dnsbl.sorbs.net"),
@@ -451,7 +453,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Shutdown on 2009-11-11: new RblBlacklist("rbl.cluecentral.net"),
 			new RblBlacklist("rbl.efnetrbl.org"),
 			new RblBlacklist("rbl.jp"),
-			new RblBlacklist("rbl.maps.vix.com"),
+			// Removed 2014-06-27: new RblBlacklist("rbl.maps.vix.com"),
 			new RblBlacklist("rbl.schulte.org"),
 			new RblBlacklist("rbl.snark.net"),
 			new RblBlacklist("rbl.triumf.ca"),
@@ -472,7 +474,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new RblBlacklist("socks.dnsbl.sorbs.net"),
 			new RblBlacklist("sorbs.dnsbl.net.au"),
 			new RblBlacklist("spam.dnsbl.sorbs.net"),
-			new RblBlacklist("spam.dnsrbl.net"),
+			// Removed 2014-06-27: new RblBlacklist("spam.dnsrbl.net"),
 			new RblBlacklist("spam.olsentech.net"),
 			new RblBlacklist("spam.wytnij.to"),
 			new RblBlacklist("bl.spamcop.net"),
