@@ -40,6 +40,7 @@ import org.xbill.DNS.Lookup;
 import org.xbill.DNS.MXRecord;
 import org.xbill.DNS.Name;
 import org.xbill.DNS.Record;
+import org.xbill.DNS.Resolver;
 import org.xbill.DNS.Type;
 
 /**
@@ -58,9 +59,30 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	private static final Logger logger = Logger.getLogger(BlacklistsNodeWorker.class.getName());
 
 	/**
-	 * The query timeout in milliseconds.
+	 * The query timeout in milliseconds, allows for time in the queue waiting for resolver.
 	 */
 	private static final long TIMEOUT = 60L*1000L; // Was 15 minutes
+
+	/**
+	 * The resolver timeout in seconds.
+	 */
+	private static final int RESOLVER_TIMEOUT_SECONDS = 5;
+
+	/**
+	 * The number of milliseconds to wait before trying a timed-out lookup.
+	 * This does not apply to a queue time-out, only an actual loookup timeout.
+	 */
+	private static final long UNKNOWN_RETRY = 60L*60L*1000L; // Was 15 minutes
+
+	/**
+	 * The number of milliseconds to wait before looking up a previously good result.
+	 */
+	private static final long GOOD_RETRY = 24L*60L*60L*1000L;
+
+	/**
+	 * The number of milliseconds to wait before looking up a previously bad result.
+	 */
+	private static final long BAD_RETRY = 60L*60L*1000L;
 
 	/**
 	 * The maximum number of threads.
@@ -97,6 +119,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	static {
 		Cache inCache = Lookup.getDefaultCache(DClass.IN);
 		inCache.setMaxEntries(-1);
+		inCache.setMaxCache(300);
+		inCache.setMaxNCache(300);
+		Resolver resolver = Lookup.getDefaultResolver();
+		resolver.setTimeout(RESOLVER_TIMEOUT_SECONDS);
 		if(logger.isLoggable(Level.FINE)) {
 			logger.log(Level.FINE, "maxCache={0}", inCache.getMaxCache());
 			logger.log(Level.FINE, "maxEntries={0}", inCache.getMaxEntries());
@@ -464,7 +490,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new RblBlacklist("virus.rbl.jp"),
 			new RblBlacklist("web.dnsbl.sorbs.net"),
 			new RblBlacklist("whois.rfc-ignorant.org"),
-			new RblBlacklist("will-spam-for-food.eu.org"),
+			// Removed 2014-06-26: new RblBlacklist("will-spam-for-food.eu.org"),
 			new RblBlacklist("xbl.spamhaus.org"),
 			new RblBlacklist("zombie.dnsbl.sorbs.net"),
 			// </editor-fold>
@@ -1085,40 +1111,57 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		List<Long> startTimes = new ArrayList<>(lookups.size());
 		List<Long> startNanos = new ArrayList<>(lookups.size());
 		List<Future<BlacklistQueryResult>> futures = new ArrayList<>(lookups.size());
-		synchronized(queryResultCache) {
-			for(BlacklistLookup lookup : lookups) {
-				BlacklistQueryResult oldResult = queryResultCache.get(lookup.getBaseName());
-				long currentTime = System.currentTimeMillis();
-				boolean needNewQuery;
-				if(oldResult==null) {
-					needNewQuery = true;
-				} else {
-					long timeSince = currentTime - oldResult.queryTime;
-					if(timeSince<0) timeSince = -timeSince; // Handle system time reset
-					switch(oldResult.alertLevel) {
-						case UNKNOWN:
-							// Retry 15 minutes for those unknown
-							needNewQuery = timeSince>=15L*60L*1000L;
-							break;
-						case NONE:
-							// Retry 24 hours when no problem
-							needNewQuery = timeSince>=24L*60L*60L*1000L;
-							break;
-						default:
-							// All others, retry hourly
-							needNewQuery = timeSince>=60L*60L*1000L;
-					}
+		for(final BlacklistLookup lookup : lookups) {
+			final String baseName = lookup.getBaseName();
+			BlacklistQueryResult oldResult;
+			synchronized(queryResultCache) {
+				oldResult = queryResultCache.get(baseName);
+			}
+			final long currentTime = System.currentTimeMillis();
+			boolean needNewQuery;
+			if(oldResult==null) {
+				needNewQuery = true;
+			} else {
+				long timeSince = currentTime - oldResult.queryTime;
+				if(timeSince<0) timeSince = -timeSince; // Handle system time reset
+				switch(oldResult.alertLevel) {
+					case UNKNOWN:
+						// Retry for those unknown
+						needNewQuery = timeSince >= UNKNOWN_RETRY;
+						break;
+					case NONE:
+						// Retry when no problem
+						needNewQuery = timeSince >= GOOD_RETRY;
+						break;
+					default:
+						// All others, retry
+						needNewQuery = timeSince >= BAD_RETRY;
 				}
-				if(needNewQuery) {
-					startTimes.add(currentTime);
-					startNanos.add(System.nanoTime());
-					futures.add(executorService.submit(lookup));
-					Thread.sleep(TASK_DELAY);
-				} else {
-					startTimes.add(null);
-					startNanos.add(null);
-					futures.add(null);
-				}
+			}
+			if(needNewQuery) {
+				startTimes.add(currentTime);
+				startNanos.add(System.nanoTime());
+				futures.add(
+					executorService.submit(
+						new Callable<BlacklistQueryResult>() {
+							@Override
+							public BlacklistQueryResult call() throws Exception {
+								BlacklistQueryResult result = lookup.call();
+								// Remember result even if timed-out on queue, this is to try to not lose any progress.
+								// Time-outs are only cached here, never from a queue timeout
+								synchronized(queryResultCache) {
+									queryResultCache.put(baseName, result);
+								}
+								return result;
+							}
+						}
+					)
+				);
+				Thread.sleep(TASK_DELAY);
+			} else {
+				startTimes.add(null);
+				startNanos.add(null);
+				futures.add(null);
 			}
 		}
 
@@ -1130,7 +1173,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			BlacklistQueryResult result;
 			Future<BlacklistQueryResult> future = futures.get(c);
 			if(future==null) {
-				// Use previous cached value
+				// Use previously cached value
 				synchronized(queryResultCache) {
 					result = queryResultCache.get(baseName);
 				}
@@ -1138,21 +1181,28 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			} else {
 				long startTime = startTimes.get(c);
 				long startNano = startNanos.get(c);
+				long timeoutRemainingNanos = startNano + TIMEOUT * 1000000L - System.nanoTime();
+				if(timeoutRemainingNanos<0) timeoutRemainingNanos = 0L;
+				boolean cacheResult;
 				try {
-					long timeoutRemainingNanos = startNano + TIMEOUT * 1000000L - System.nanoTime();
-					if(timeoutRemainingNanos<0) timeoutRemainingNanos = 0L;
 					result = future.get(timeoutRemainingNanos, TimeUnit.NANOSECONDS);
+					cacheResult = true;
 				} catch(TimeoutException to) {
 					future.cancel(false);
-					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), "Timeout", AlertLevel.UNKNOWN);
+					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), "Timeout in queue, timeoutRemaining = " + new NanoInterval(timeoutRemainingNanos), AlertLevel.UNKNOWN);
+					// Queue timeouts are not cached
+					cacheResult = false;
 				} catch(ThreadDeath TD) {
 					throw TD;
 				} catch(InterruptedException | ExecutionException | RuntimeException e) {
 					future.cancel(false);
 					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), e.getMessage(), lookup.getMaxAlertLevel());
+					cacheResult = true;
 				}
-				synchronized(queryResultCache) {
-					queryResultCache.put(baseName, result);
+				if(cacheResult) {
+					synchronized(queryResultCache) {
+						queryResultCache.put(baseName, result);
+					}
 				}
 			}
 			results.add(result);
