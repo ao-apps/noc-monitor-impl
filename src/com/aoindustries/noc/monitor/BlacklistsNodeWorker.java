@@ -476,7 +476,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new RblBlacklist("spam.dnsbl.sorbs.net"),
 			// Removed 2014-06-27: new RblBlacklist("spam.dnsrbl.net"),
 			new RblBlacklist("spam.olsentech.net"),
-			new RblBlacklist("spam.wytnij.to"),
+			// Removed 2014-06-27: new RblBlacklist("spam.wytnij.to"),
 			new RblBlacklist("bl.spamcop.net"),
 			new RblBlacklist("spamguard.leadmon.net"),
 			new RblBlacklist("spamsites.dnsbl.net.au"),
