@@ -1075,6 +1075,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			lookups.add(new SmtpBlacklist("comcast.net",   AlertLevel.MEDIUM));
 			lookups.add(new SmtpBlacklist("pacbell.net",   AlertLevel.MEDIUM));
 			lookups.add(new SmtpBlacklist("sbcglobal.net", AlertLevel.MEDIUM));
+			lookups.add(new SmtpBlacklist("appriver.com",  AlertLevel.MEDIUM)); // List from trustsource.org
 		}
 		Collections.sort(lookups);
 	}
