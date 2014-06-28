@@ -36,6 +36,25 @@ public class IPAddressNode extends NodeImpl {
 		;
 	}
 
+	static boolean isPingable(IPAddressesNode ipAddressesNode, IPAddress ipAddress) throws SQLException, IOException {
+		// Private IPs and loopback IPs are not externally pingable
+		InetAddress ip = ipAddress.getInetAddress();
+		InetAddress externalIp = ipAddress.getExternalIpAddress();
+		return
+			// Must be allocated
+			ipAddressesNode.netDeviceNode != null
+			// Must have ping monitoring enabled
+			&& ipAddress.isPingMonitorEnabled()
+			// Must be publicly addressable
+			&& (
+				(externalIp!=null && !(externalIp.isUniqueLocal() || externalIp.isLooback()))
+				|| !(ip.isUniqueLocal() || ip.isLooback())
+			)
+			// Must not be on loopback device
+			&& !ipAddress.getNetDevice().getNetDeviceID().isLoopback()
+		;
+	}
+
 	final IPAddressesNode ipAddressesNode;
 	private final IPAddress ipAddress;
 	private final String label;
@@ -53,22 +72,7 @@ public class IPAddressNode extends NodeImpl {
 		this.ipAddressesNode = ipAddressesNode;
 		this.ipAddress = ipAddress;
 		this.label = getLabel(ipAddress);
-		// Private IPs and loopback IPs are not externally pingable
-		InetAddress ip = ipAddress.getInetAddress();
-		InetAddress externalIp = ipAddress.getExternalIpAddress();
-		this.isPingable =
-			// Must be allocated
-			ipAddressesNode.netDeviceNode != null
-			// Must have ping monitoring enabled
-			&& ipAddress.isPingMonitorEnabled()
-			// Must be publicly addressable
-			&& (
-				(externalIp!=null && !(externalIp.isUniqueLocal() || externalIp.isLooback()))
-				|| !(ip.isUniqueLocal() || ip.isLooback())
-			)
-			// Must not be on loopback device
-			&& !ipAddress.getNetDevice().getNetDeviceID().isLoopback()
-		;
+		this.isPingable = isPingable(ipAddressesNode, ipAddress);
 	}
 
 	@Override
@@ -121,6 +125,10 @@ public class IPAddressNode extends NodeImpl {
 	@Override
 	public String getLabel() {
 		return label;
+	}
+
+	boolean isPingable() {
+		return isPingable;
 	}
 
 	synchronized void start() throws RemoteException, IOException, SQLException {
