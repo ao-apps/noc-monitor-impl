@@ -27,6 +27,15 @@ public class IPAddressNode extends NodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
+	static String getLabel(IPAddress ipAddress) {
+		InetAddress ip = ipAddress.getInetAddress();
+		InetAddress externalIp = ipAddress.getExternalIpAddress();
+		return
+			(externalIp==null ? ip.toString() : (ip.toString()+"@"+externalIp.toString()))
+			+ "/" + ipAddress.getHostname()
+		;
+	}
+
 	final IPAddressesNode ipAddressesNode;
 	private final IPAddress ipAddress;
 	private final String label;
@@ -43,13 +52,10 @@ public class IPAddressNode extends NodeImpl {
 
 		this.ipAddressesNode = ipAddressesNode;
 		this.ipAddress = ipAddress;
+		this.label = getLabel(ipAddress);
+		// Private IPs and loopback IPs are not externally pingable
 		InetAddress ip = ipAddress.getInetAddress();
 		InetAddress externalIp = ipAddress.getExternalIpAddress();
-		this.label =
-			(externalIp==null ? ip.toString() : (ip.toString()+"@"+externalIp.toString()))
-			+ "/" + ipAddress.getHostname()
-		;
-		// Private IPs and loopback IPs are not externally pingable
 		this.isPingable =
 			// Must be allocated
 			ipAddressesNode.netDeviceNode != null

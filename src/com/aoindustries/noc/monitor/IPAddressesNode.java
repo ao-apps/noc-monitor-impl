@@ -157,8 +157,21 @@ public class IPAddressesNode extends NodeImpl {
 			Iterator<IPAddressNode> ipAddressNodeIter = ipAddressNodes.iterator();
 			while(ipAddressNodeIter.hasNext()) {
 				IPAddressNode ipAddressNode = ipAddressNodeIter.next();
-				IPAddress ipAddress = ipAddressNode.getIPAddress();
-				if(!ipAddresses.contains(ipAddress)) {
+				IPAddress oldIpAddress = ipAddressNode.getIPAddress();
+				// Find the any new version of the IP address matching this node
+				IPAddress newIpAddress = null;
+				for(IPAddress ipAddress : ipAddresses) {
+					if(ipAddress.equals(oldIpAddress)) {
+						newIpAddress = ipAddress;
+						break;
+					}
+				}
+				if(
+					// Node no longer exists
+					newIpAddress==null
+					// Node has a new label
+					|| !IPAddressNode.getLabel(newIpAddress).equals(ipAddressNode.getLabel())
+				) {
 					ipAddressNode.stop();
 					ipAddressNodeIter.remove();
 					rootNode.nodeRemoved();
