@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012 by AO Industries, Inc.,
+ * Copyright 2009-2012, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -29,7 +29,7 @@ public class NetBindNode extends TableMultiResultNodeImpl<NetBindResult> {
 
     NetBindNode(NetBindsNode netBindsNode, NetBindsNode.NetMonitorSetting netMonitorSetting, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, IOException, SQLException {
         super(
-            netBindsNode.ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+            netBindsNode.ipAddressNode.ipAddressesNode.rootNode,
             netBindsNode,
             NetBindNodeWorker.getWorker(
                 new File(netBindsNode.getPersistenceDirectory(), netMonitorSetting.getPort()+"_"+netMonitorSetting.getNetProtocol()),

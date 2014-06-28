@@ -1,12 +1,11 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.aoserv.client.IPAddress;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -22,11 +21,11 @@ public class ReverseDnsNode extends TableResultNodeImpl {
 
     private static final long serialVersionUID = 1L;
 
-    private final IPAddress ipAddress;
+    //private final IPAddress ipAddress;
     
     ReverseDnsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
         super(
-            ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+            ipAddressNode.ipAddressesNode.rootNode,
             ipAddressNode,
             ReverseDnsNodeWorker.getWorker(
                 new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
@@ -36,7 +35,7 @@ public class ReverseDnsNode extends TableResultNodeImpl {
             csf,
             ssf
         );
-        this.ipAddress = ipAddressNode.getIPAddress();
+        //this.ipAddress = ipAddressNode.getIPAddress();
     }
 
     @Override

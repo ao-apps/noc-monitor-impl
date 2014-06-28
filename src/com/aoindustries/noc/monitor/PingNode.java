@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -22,11 +22,11 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
 
     private static final long serialVersionUID = 1L;
 
-    private final IPAddressNode ipAddressNode;
+    //private final IPAddressNode ipAddressNode;
 
     PingNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
         super(
-            ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+            ipAddressNode.ipAddressesNode.rootNode,
             ipAddressNode,
             PingNodeWorker.getWorker(
                 ipAddressNode.getPersistenceDirectory(),
@@ -36,12 +36,12 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
             csf,
             ssf
         );
-        this.ipAddressNode = ipAddressNode;
+        //this.ipAddressNode = ipAddressNode;
     }
 
     @Override
     public String getLabel() {
-        return accessor.getMessage(/*ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "PingNode.label");
+        return accessor.getMessage(/*ipAddressNode.ipAddressesNode.rootNode.locale,*/ "PingNode.label");
     }
 
     @Override

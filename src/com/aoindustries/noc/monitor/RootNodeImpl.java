@@ -156,6 +156,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	volatile private OtherDevicesNode otherDevicesNode;
 	volatile private PhysicalServersNode physicalServersNode;
 	volatile private VirtualServersNode virtualServersNode;
+	volatile private UnallocatedNode unallocatedNode;
 	volatile private SignupsNode signupsNode;
 
 	private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -180,6 +181,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 			this.otherDevicesNode,
 			this.physicalServersNode,
 			this.virtualServersNode,
+			this.unallocatedNode,
 			this.signupsNode
 		);
 	}
@@ -194,6 +196,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 				this.otherDevicesNode,
 				this.physicalServersNode,
 				this.virtualServersNode,
+				this.unallocatedNode,
 				this.signupsNode
 			)
 		);
@@ -233,6 +236,12 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		if(virtualServersNode==null) {
 			virtualServersNode = new VirtualServersNode(this, port, csf, ssf);
 			virtualServersNode.start();
+			nodeAdded();
+		}
+
+		if(unallocatedNode==null) {
+			unallocatedNode = new UnallocatedNode(this, port, csf, ssf);
+			unallocatedNode.start();
 			nodeAdded();
 		}
 

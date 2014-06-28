@@ -87,7 +87,7 @@ public class NetBindsNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "NetBindsNode.label");
+		return accessor.getMessage(/*ipAddressNode.ipAddressesNode.rootNode.locale,*/ "NetBindsNode.label");
 	}
 
 	private final TableListener tableListener = new TableListener() {
@@ -102,7 +102,7 @@ public class NetBindsNode extends NodeImpl {
 	};
 
 	void start() throws IOException, SQLException {
-		AOServConnector conn = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn;
+		AOServConnector conn = ipAddressNode.ipAddressesNode.rootNode.conn;
 		synchronized(netBindNodes) {
 			conn.getIpAddresses().addTableListener(tableListener, 100);
 			conn.getNetBinds().addTableListener(tableListener, 100);
@@ -112,7 +112,7 @@ public class NetBindsNode extends NodeImpl {
 	}
 
 	void stop() {
-		RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+		RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
 		AOServConnector conn = rootNode.conn;
 		synchronized(netBindNodes) {
 			conn.getIpAddresses().removeTableListener(tableListener);
@@ -218,7 +218,7 @@ public class NetBindsNode extends NodeImpl {
 	private void verifyNetBinds() throws RemoteException, IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+		final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
 
 		// The list of net binds is:
 		//     The binds directly on the IP address plus the wildcard binds
@@ -301,7 +301,7 @@ public class NetBindsNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						/*ipAddressNode.ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/
+						/*ipAddressNode.ipAddressesNode.rootNode.locale,*/
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

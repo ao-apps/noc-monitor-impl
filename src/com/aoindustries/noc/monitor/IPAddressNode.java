@@ -51,11 +51,17 @@ public class IPAddressNode extends NodeImpl {
 		;
 		// Private IPs and loopback IPs are not externally pingable
 		this.isPingable =
-			ipAddress.isPingMonitorEnabled()
+			// Must be allocated
+			ipAddressesNode.netDeviceNode != null
+			// Must have ping monitoring enabled
+			&& ipAddress.isPingMonitorEnabled()
+			// Must be publicly addressable
 			&& (
 				(externalIp!=null && !(externalIp.isUniqueLocal() || externalIp.isLooback()))
 				|| !(ip.isUniqueLocal() || ip.isLooback())
-			) && !ipAddress.getNetDevice().getNetDeviceID().isLoopback()
+			)
+			// Must not be on loopback device
+			&& !ipAddress.getNetDevice().getNetDeviceID().isLoopback()
 		;
 	}
 
@@ -112,45 +118,47 @@ public class IPAddressNode extends NodeImpl {
 	}
 
 	synchronized void start() throws RemoteException, IOException, SQLException {
-		RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
-		if(isPingable) {
-			if(pingNode==null) {
-				pingNode = new PingNode(this, port, csf, ssf);
-				pingNode.start();
-				rootNode.nodeAdded();
-			}
+		RootNodeImpl rootNode = ipAddressesNode.rootNode;
+		if(isPingable && pingNode==null) {
+			pingNode = new PingNode(this, port, csf, ssf);
+			pingNode.start();
+			rootNode.nodeAdded();
 		}
-		if(netBindsNode==null) {
+		if(ipAddressesNode.netDeviceNode!=null && netBindsNode==null) {
 			netBindsNode = new NetBindsNode(this, port, csf, ssf);
 			netBindsNode.start();
 			rootNode.nodeAdded();
 		}
 		// Skip loopback device
-		if(reverseDnsNode==null && !ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback()) {
-			InetAddress ip = ipAddress.getExternalIpAddress();
-			if(ip==null) ip = ipAddress.getInetAddress();
-			// Skip private IP addresses
-			if(!(ip.isUniqueLocal() || ip.isLooback())) {
-				reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
-				reverseDnsNode.start();
-				rootNode.nodeAdded();
+		if(
+			ipAddressesNode.netDeviceNode == null
+			|| !ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback()
+		) {
+			if(reverseDnsNode==null) {
+				InetAddress ip = ipAddress.getExternalIpAddress();
+				if(ip==null) ip = ipAddress.getInetAddress();
+				// Skip private IP addresses
+				if(!(ip.isUniqueLocal() || ip.isLooback())) {
+					reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
+					reverseDnsNode.start();
+					rootNode.nodeAdded();
+				}
 			}
-		}
-		// Skip loopback device
-		if(blacklistsNode==null && !ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback()) {
-			InetAddress ip = ipAddress.getExternalIpAddress();
-			if(ip==null) ip = ipAddress.getInetAddress();
-			// Skip private IP addresses
-			if(!(ip.isUniqueLocal() || ip.isLooback())) {
-				blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
-				blacklistsNode.start();
-				rootNode.nodeAdded();
+			if(blacklistsNode==null) {
+				InetAddress ip = ipAddress.getExternalIpAddress();
+				if(ip==null) ip = ipAddress.getInetAddress();
+				// Skip private IP addresses
+				if(!(ip.isUniqueLocal() || ip.isLooback())) {
+					blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
+					blacklistsNode.start();
+					rootNode.nodeAdded();
+				}
 			}
 		}
 	}
 
 	synchronized void stop() {
-		RootNodeImpl rootNode = ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+		RootNodeImpl rootNode = ipAddressesNode.rootNode;
 
 		if(blacklistsNode!=null) {
 			blacklistsNode.stop();
@@ -183,7 +191,7 @@ public class IPAddressNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//ipAddressesNode.netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
+						//ipAddressesNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

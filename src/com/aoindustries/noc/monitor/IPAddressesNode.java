@@ -33,17 +33,32 @@ public class IPAddressesNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final NetDeviceNode netDeviceNode;
+	final UnallocatedNode unallocatedNode;
+	final RootNodeImpl rootNode;
+
 	private final List<IPAddressNode> ipAddressNodes = new ArrayList<>();
 
 	IPAddressesNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 
 		this.netDeviceNode = netDeviceNode;
+		this.unallocatedNode = null;
+		
+		this.rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
+	}
+
+	IPAddressesNode(UnallocatedNode unallocatedNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(port, csf, ssf);
+
+		this.netDeviceNode = null;
+		this.unallocatedNode = unallocatedNode;
+	
+		this.rootNode = unallocatedNode.rootNode;
 	}
 
 	@Override
-	public NetDeviceNode getParent() {
-		return netDeviceNode;
+	public NodeImpl getParent() {
+		return netDeviceNode!=null ? netDeviceNode : unallocatedNode;
 	}
 
 	@Override
@@ -82,7 +97,7 @@ public class IPAddressesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,*/ "IPAddressesNode.label");
+		return accessor.getMessage(/*rootNode.locale,*/ "IPAddressesNode.label");
 	}
 
 	private final TableListener tableListener = new TableListener() {
@@ -98,14 +113,13 @@ public class IPAddressesNode extends NodeImpl {
 
 	void start() throws IOException, SQLException {
 		synchronized(ipAddressNodes) {
-			netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
+			rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
 			verifyIPAddresses();
 		}
 	}
 
 	void stop() {
 		synchronized(ipAddressNodes) {
-			RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
 			rootNode.conn.getIpAddresses().removeTableListener(tableListener);
 			for(IPAddressNode ipAddressNode : ipAddressNodes) {
 				ipAddressNode.stop();
@@ -118,10 +132,26 @@ public class IPAddressesNode extends NodeImpl {
 	private void verifyIPAddresses() throws RemoteException, IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		final RootNodeImpl rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
-
-		NetDevice netDevice = netDeviceNode.getNetDevice();
-		List<IPAddress> ipAddresses = netDevice.getIPAddresses();
+		List<IPAddress> ipAddresses;
+		if(netDeviceNode != null) {
+			NetDevice netDevice = netDeviceNode.getNetDevice();
+			ipAddresses = netDevice.getIPAddresses();
+			for(IPAddress ipAddress : ipAddresses) {
+				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+netDevice);
+			}
+		} else {
+			// Find all unallocated IP addresses, except the unspecified
+			List<IPAddress> allIPs = rootNode.conn.getIpAddresses().getRows();
+			ipAddresses = new ArrayList<>(allIPs.size());
+			for(IPAddress ip : allIPs) {
+				if(
+					!ip.getInetAddress().isUnspecified()
+					&& ip.getNetDevice()==null
+				) {
+					ipAddresses.add(ip);
+				}
+			}
+		}
 		synchronized(ipAddressNodes) {
 			// Remove old ones
 			Iterator<IPAddressNode> ipAddressNodeIter = ipAddressNodes.iterator();
@@ -137,7 +167,6 @@ public class IPAddressesNode extends NodeImpl {
 			// Add new ones
 			for(int c=0;c<ipAddresses.size();c++) {
 				IPAddress ipAddress = ipAddresses.get(c);
-				assert !ipAddress.getInetAddress().isUnspecified() : "Unspecified IP address on NetDevice: "+netDevice;
 				if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
 					// Insert into proper index
 					IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
@@ -150,12 +179,17 @@ public class IPAddressesNode extends NodeImpl {
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(netDeviceNode.getPersistenceDirectory(), "ip_addresses");
+		File dir = new File(
+			netDeviceNode!=null
+				? netDeviceNode.getPersistenceDirectory()
+				: unallocatedNode.getPersistenceDirectory(),
+			"ip_addresses"
+		);
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode.locale,
+						//rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)
