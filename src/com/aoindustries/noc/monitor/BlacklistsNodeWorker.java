@@ -238,7 +238,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 					} else {
 						result = ip.intern();
 					}
-					alertLevel = maxAlertLevel;
+					alertLevel =
+						// list.quorum.to returns 127.0.0.0 for no listing
+						("list.quorum.to".equals(basename) && "127.0.0.0".equals(ip)) ? AlertLevel.NONE
+						: maxAlertLevel
+					;
 				}
 			}
 			return new BlacklistQueryResult(basename, startTime, System.nanoTime() - startNanos, query, result, alertLevel);
@@ -817,9 +821,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("l2.bbfh.ext.sorbs.net"),
 			new DnsBlacklist("l3.bbfh.ext.sorbs.net"),
 			new DnsBlacklist("l4.bbfh.ext.sorbs.net"),
-			new DnsBlacklist("bbm.2ch.net"),
-			new DnsBlacklist("niku.2ch.net"),
-			new DnsBlacklist("bbx.2ch.net"),
+			new DnsBlacklist("bbm.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
+			new DnsBlacklist("niku.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
+			new DnsBlacklist("bbx.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
 			// Removed 2014-02-09: new RblBlacklist("bl.deadbeef.com"),
 			// Removed 2014-02-09: new RblBlacklist("rbl.blakjak.net"),
 			new DnsBlacklist("netscan.rbl.blockedservers.com"),
@@ -982,8 +986,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Forward lookup: uribl.spameatingmonkey.net
 			// Forward lookup: urired.spameatingmonkey.net
 			// Removed 2014-02-09: new RblBlacklist("map.spam-rbl.com"),
-			new DnsBlacklist("singlebl.spamgrouper.com"),
-			new DnsBlacklist("netblockbl.spamgrouper.com"),
+			new DnsBlacklist("singlebl.spamgrouper.com", AlertLevel.NONE), // Very unprofessional
+			new DnsBlacklist("netblockbl.spamgrouper.com", AlertLevel.NONE), // Very unprofessional
 			new DnsBlacklist("all.spam-rbl.fr"),
 			new DnsBlacklist("bl.spamcannibal.org"),
 			new DnsBlacklist("dnsbl.spam-champuru.livedoor.com"),
