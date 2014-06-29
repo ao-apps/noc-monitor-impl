@@ -104,6 +104,12 @@ public class NetBindsNode extends NodeImpl {
 	void start() throws IOException, SQLException {
 		AOServConnector conn = ipAddressNode.ipAddressesNode.rootNode.conn;
 		synchronized(netBindNodes) {
+			conn.getHttpdJBossSites().addTableListener(tableListener, 100);
+			conn.getHttpdSharedTomcats().addTableListener(tableListener, 100);
+			conn.getHttpdSites().addTableListener(tableListener, 100);
+			conn.getHttpdTomcatSites().addTableListener(tableListener, 100);
+			conn.getHttpdTomcatStdSites().addTableListener(tableListener, 100);
+			conn.getHttpdWorkers().addTableListener(tableListener, 100);
 			conn.getIpAddresses().addTableListener(tableListener, 100);
 			conn.getNetBinds().addTableListener(tableListener, 100);
 			conn.getNetDevices().addTableListener(tableListener, 100);
@@ -115,6 +121,12 @@ public class NetBindsNode extends NodeImpl {
 		RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
 		AOServConnector conn = rootNode.conn;
 		synchronized(netBindNodes) {
+			conn.getHttpdJBossSites().removeTableListener(tableListener);
+			conn.getHttpdSharedTomcats().removeTableListener(tableListener);
+			conn.getHttpdSites().removeTableListener(tableListener);
+			conn.getHttpdTomcatSites().removeTableListener(tableListener);
+			conn.getHttpdTomcatStdSites().removeTableListener(tableListener);
+			conn.getHttpdWorkers().removeTableListener(tableListener);
 			conn.getIpAddresses().removeTableListener(tableListener);
 			conn.getNetBinds().removeTableListener(tableListener);
 			conn.getNetDevices().removeTableListener(tableListener);
@@ -242,7 +254,7 @@ public class NetBindsNode extends NodeImpl {
 		InetAddress inetaddress = ipAddress.getInetAddress();
 		List<NetMonitorSetting> netMonitorSettings = new ArrayList<>(directNetBinds.size() + wildcardNetBinds.size());
 		for(NetBind netBind : directNetBinds) {
-			if(netBind.isMonitoringEnabled()) {
+			if(netBind.isMonitoringEnabled() && !netBind.isDisabled()) {
 				netMonitorSettings.add(
 					new NetMonitorSetting(
 						server,
@@ -255,7 +267,7 @@ public class NetBindsNode extends NodeImpl {
 			}
 		}
 		for(NetBind netBind : wildcardNetBinds) {
-			if(netBind.isMonitoringEnabled()) {
+			if(netBind.isMonitoringEnabled() && !netBind.isDisabled()) {
 				netMonitorSettings.add(
 					new NetMonitorSetting(
 						server,
