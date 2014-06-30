@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -28,7 +28,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
     /**
      * One unique worker is made per persistence file (and should match the net device exactly)
      */
-    private static final Map<String, NetDeviceBondingNodeWorker> workerCache = new HashMap<String,NetDeviceBondingNodeWorker>();
+    private static final Map<String, NetDeviceBondingNodeWorker> workerCache = new HashMap<>();
     static NetDeviceBondingNodeWorker getWorker(File persistenceFile, NetDevice netDevice) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
@@ -56,7 +56,14 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
         return netDevice.getBondingReport();
     }
 
-    /**
+	private enum BondingMode {
+		ACTIVE_BACKUP,
+		ROUND_ROBIN,
+		XOR,
+		UNKNOWN
+	}
+
+	/**
      * Determines the alert level for the provided result.
      */
     @Override
@@ -65,7 +72,6 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
             return new AlertLevelAndMessage(
                 AlertLevel.CRITICAL,
                 accessor.getMessage(
-
                     //locale,
                     "NetDeviceBondingNode.alertMessage.error",
                     result.getError()
@@ -79,24 +85,164 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
         boolean skippedFirst = false;
         for(String line : lines) {
             if(line.startsWith("MII Status: ")) {
-                if(!skippedFirst) skippedFirst = true;
-                else {
+                if(!skippedFirst) {
+					skippedFirst = true;
+				} else {
                     if(line.equals("MII Status: up")) upCount++;
                     else downCount++;
                 }
-            }
+			}
         }
         AlertLevel alertLevel;
-        if(upCount==0) alertLevel = AlertLevel.CRITICAL;
-        else if(downCount!=0) alertLevel = AlertLevel.HIGH;
-        else alertLevel = AlertLevel.NONE;
-        String alertMessage = accessor.getMessage(
-            //locale,
-            "NetDeviceBondingNode.alertMessage.counts",
-            upCount,
-            downCount
-        );
-
+		String alertMessage = accessor.getMessage(
+			//locale,
+			"NetDeviceBondingNode.alertMessage.counts",
+			upCount,
+			downCount
+		);
+        if(upCount==0) {
+			alertLevel = AlertLevel.CRITICAL;
+		} else if(downCount!=0) {
+			alertLevel = AlertLevel.HIGH;
+		} else {
+			alertLevel = AlertLevel.NONE;
+			// Look for any non-duplex
+			for(String line : lines) {
+				if(line.startsWith("Duplex: ")) {
+                    if(!line.equals("Duplex: full")) {
+						alertLevel = AlertLevel.LOW;
+						alertMessage = accessor.getMessage(
+							//locale,
+							"NetDeviceBondingNode.alertMessage.notFullDuplex",
+							line
+						);
+						break;
+					}
+				}
+			}
+			// Find the bonding mode
+			BondingMode bondindMode = null;
+			for(String line : lines) {
+				if(line.startsWith("Bonding Mode: ")) {
+					if(line.equals("Bonding Mode: fault-tolerance (active-backup)")) {
+						bondindMode = BondingMode.ACTIVE_BACKUP;
+					} else if(line.equals("Bonding Mode: load balancing (round-robin)")) {
+						bondindMode = BondingMode.ROUND_ROBIN;
+					} else if(line.equals("Bonding Mode: load balancing (xor)")) {
+						bondindMode = BondingMode.XOR;
+					} else {
+						bondindMode = BondingMode.UNKNOWN;
+						alertLevel = AlertLevel.HIGH;
+						alertMessage = accessor.getMessage(
+							//locale,
+							"NetDeviceBondingNode.alertMessage.unexpectedBondingMode",
+							line
+						);
+					}
+					break;
+				}
+			}
+			if(bondindMode == null) {
+				alertLevel = AlertLevel.HIGH;
+				alertMessage = accessor.getMessage(
+					//locale,
+					"NetDeviceBondingNode.alertMessage.noBondingMode"
+				);
+			} else if(bondindMode == BondingMode.ACTIVE_BACKUP) {
+				// Look for any mismatched speed
+				for(String line : lines) {
+					if(line.startsWith("Speed: ")) {
+						long bps;
+						switch (line) {
+							case "Speed: 10000 Mbps":
+								bps = 10000000000L;
+								break;
+							case "Speed: 1000 Mbps":
+								bps = 1000000000L;
+								break;
+							case "Speed: 100 Mbps":
+								bps = 100000000L;
+								break;
+							default:
+								bps = -1L;
+								break;
+						}
+						if(bps == -1L) {
+							alertLevel = AlertLevel.HIGH;
+							alertMessage = accessor.getMessage(
+								//locale,
+								"NetDeviceBondingNode.alertMessage.unknownSpeed",
+								line
+							);
+							break;
+						}
+						long maxBitRate = netDevice.getMaxBitRate();
+						if(maxBitRate!=-1 && bps != maxBitRate) {
+							alertLevel = AlertLevel.HIGH;
+							alertMessage = accessor.getMessage(
+								//locale,
+								"NetDeviceBondingNode.alertMessage.speedMismatch",
+								maxBitRate,
+								bps
+							);
+							break;
+						}
+					}
+				}
+			} else if(
+				bondindMode == BondingMode.ROUND_ROBIN
+				|| bondindMode == BondingMode.XOR
+			) {
+				// Get the sum of all speeds found
+				long totalBps = 0;
+				for(String line : lines) {
+					if(line.startsWith("Speed: ")) {
+						long bps;
+						switch (line) {
+							case "Speed: 10000 Mbps":
+								bps = 10000000000L;
+								break;
+							case "Speed: 1000 Mbps":
+								bps = 1000000000L;
+								break;
+							case "Speed: 100 Mbps":
+								bps = 100000000L;
+								break;
+							default:
+								bps = -1L;
+								break;
+						}
+						if(bps == -1L) {
+							alertLevel = AlertLevel.HIGH;
+							alertMessage = accessor.getMessage(
+								//locale,
+								"NetDeviceBondingNode.alertMessage.unknownSpeed",
+								line
+							);
+							break;
+						} else {
+							totalBps += bps;
+						}
+					}
+				}
+				if(alertLevel.compareTo(AlertLevel.HIGH) < 0 ) {
+					long maxBitRate = netDevice.getMaxBitRate();
+					if(maxBitRate!=-1 && totalBps != maxBitRate) {
+						alertLevel = AlertLevel.HIGH;
+						alertMessage = accessor.getMessage(
+							//locale,
+							"NetDeviceBondingNode.alertMessage.speedMismatch",
+							maxBitRate,
+							totalBps
+						);
+					}
+				}
+			} else if(bondindMode == BondingMode.UNKNOWN) {
+				// alertLevel and alertMessage set above
+			} else {
+				throw new AssertionError();
+			}
+		}
         return new AlertLevelAndMessage(alertLevel, alertMessage);
     }
 }
