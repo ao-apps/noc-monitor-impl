@@ -44,7 +44,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
     }
 
     // Will use whichever connector first created this worker, even if other accounts connect later.
-    final private NetDevice netDevice;
+    volatile private NetDevice netDevice;
 
     private NetDeviceBondingNodeWorker(File persistenceFile, NetDevice netDevice) {
         super(persistenceFile);
@@ -53,6 +53,10 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 
     @Override
     protected String getReport() throws IOException, SQLException {
+		// Get a new version of the NetDevice object
+		NetDevice newNetDevice = netDevice.getTable().get(netDevice.getKey());
+		if(newNetDevice!=null) netDevice = newNetDevice;
+		// Get report from server
         return netDevice.getBondingReport();
     }
 
@@ -124,20 +128,24 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 			BondingMode bondindMode = null;
 			for(String line : lines) {
 				if(line.startsWith("Bonding Mode: ")) {
-					if(line.equals("Bonding Mode: fault-tolerance (active-backup)")) {
-						bondindMode = BondingMode.ACTIVE_BACKUP;
-					} else if(line.equals("Bonding Mode: load balancing (round-robin)")) {
-						bondindMode = BondingMode.ROUND_ROBIN;
-					} else if(line.equals("Bonding Mode: load balancing (xor)")) {
-						bondindMode = BondingMode.XOR;
-					} else {
-						bondindMode = BondingMode.UNKNOWN;
-						alertLevel = AlertLevel.HIGH;
-						alertMessage = accessor.getMessage(
-							//locale,
-							"NetDeviceBondingNode.alertMessage.unexpectedBondingMode",
-							line
-						);
+					switch (line) {
+						case "Bonding Mode: fault-tolerance (active-backup)":
+							bondindMode = BondingMode.ACTIVE_BACKUP;
+							break;
+						case "Bonding Mode: load balancing (round-robin)":
+							bondindMode = BondingMode.ROUND_ROBIN;
+							break;
+						case "Bonding Mode: load balancing (xor)":
+							bondindMode = BondingMode.XOR;
+							break;
+						default:
+							bondindMode = BondingMode.UNKNOWN;
+							alertLevel = AlertLevel.HIGH;
+							alertMessage = accessor.getMessage(
+								//locale,
+								"NetDeviceBondingNode.alertMessage.unexpectedBondingMode",
+								line
+							);	break;
 					}
 					break;
 				}
