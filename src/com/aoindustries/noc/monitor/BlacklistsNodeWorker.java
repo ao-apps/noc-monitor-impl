@@ -205,7 +205,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 						break;
 					case "timed out":
 						result = "Timeout";
-						alertLevel = AlertLevel.UNKNOWN;
+						alertLevel = AlertLevel.NONE; // Was UNKNOWN
 						break;
 					default:
 						result = "A lookup failed: "+errorString;
@@ -625,7 +625,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("smtp.dnsbl.sorbs.net"),
 			new DnsBlacklist("socks.dnsbl.sorbs.net"),
 			new DnsBlacklist("sorbs.dnsbl.net.au"),
-			new DnsBlacklist("spam.abuse.ch"),
+			// Removed 2014-07-14, Timeout and SERVFAIL only: new DnsBlacklist("spam.abuse.ch"),
 			new DnsBlacklist("spam.dnsbl.sorbs.net"),
 			new DnsBlacklist("spam.olsentech.net"),
 			new DnsBlacklist("spam.pedantic.org"),
@@ -787,7 +787,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("combined.abuse.ch"),
 			// Removed 2014-02-09: new RblBlacklist("dnsbl.abuse.ch"),
 			new DnsBlacklist("drone.abuse.ch"),
-			new DnsBlacklist("spam.abuse.ch"),
+			// Removed 2014-07-14, Timeout and SERVFAIL only: new DnsBlacklist("spam.abuse.ch"),
 			new DnsBlacklist("httpbl.abuse.ch"),
 			// Forward lookup: uribl.zeustracker.abuse.ch
 			new DnsBlacklist("ipbl.zeustracker.abuse.ch"),
@@ -1040,8 +1040,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Forward lookup: multi.uribl.com
 			// Forward lookup: red.uribl.com
 			// Removed 2014-02-09: new RblBlacklist("ubl.lashback.com"),
-			new DnsBlacklist("free.v4bl.org"),
-			new DnsBlacklist("ip.v4bl.org"),
+			// Removed 2014-07-02 pending successful test delist requests: new DnsBlacklist("free.v4bl.org"),
+			// Removed 2014-07-02 pending successful test delist requests: new DnsBlacklist("ip.v4bl.org"),
 			new DnsBlacklist("virbl.dnsbl.bit.nl"),
 			new DnsBlacklist("dnsbl.webequipped.com"),
 			new DnsBlacklist("blacklist.woody.ch"),
