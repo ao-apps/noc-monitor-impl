@@ -101,20 +101,22 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 
     @Override
     protected List<Object> getQueryResult(Locale locale) throws Exception {
-        final List<Object> tableData = new ArrayList<Object>();
         // Add the old signup forms
-        WebSiteDatabase database = WebSiteDatabase.getDatabase();
-        database.executeQuery(
-            new ResultSetHandler() {
+        final List<Object> tableData = WebSiteDatabase.getDatabase().executeQuery(
+            new ResultSetHandler<List<Object>>() {
                 @Override
-                public void handleResultSet(ResultSet result) throws SQLException {
-                    tableData.add("aoweb");
-                    tableData.add(result.getInt("pkey"));
-                    tableData.add(new TimeWithTimeZone(result.getTimestamp("time").getTime()));
-                    tableData.add(result.getString("ip_address"));
-                    tableData.add(result.getString("completed_by"));
-                    Timestamp completedTime = result.getTimestamp("completed_time");
-                    tableData.add(completedTime==null ? null : new TimeWithTimeZone(completedTime.getTime()));
+                public List<Object> handleResultSet(ResultSet results) throws SQLException {
+					List<Object> tableData = new ArrayList<>();
+					while(results.next()) {
+						tableData.add("aoweb");
+						tableData.add(results.getInt("pkey"));
+						tableData.add(new TimeWithTimeZone(results.getTimestamp("time").getTime()));
+						tableData.add(results.getString("ip_address"));
+						tableData.add(results.getString("completed_by"));
+						Timestamp completedTime = results.getTimestamp("completed_time");
+	                    tableData.add(completedTime==null ? null : new TimeWithTimeZone(completedTime.getTime()));
+					}
+					return tableData;
                 }
             },
             "select * from signup_requests order by time"
