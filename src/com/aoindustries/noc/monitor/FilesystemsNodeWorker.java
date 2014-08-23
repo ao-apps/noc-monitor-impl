@@ -95,7 +95,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
-        List<String> columnHeaders = new ArrayList<String>(12);
+        List<String> columnHeaders = new ArrayList<>(12);
         columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.mountpoint"));
         columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.device"));
         columnHeaders.add(accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.columnHeader.bytes"));
@@ -143,7 +143,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
             ) throw new IOException("First line is not the expected column labels");
 
             // Read the report, line-by-line
-            List<String> tableData = new ArrayList<String>(90); // Most servers don't have more than 6 filesystems
+            List<String> tableData = new ArrayList<>(90); // Most servers don't have more than 6 filesystems
             while((line=csvParser.getLine())!=null) {
                 if(line.length!=15) throw new IOException("line.length!=15: "+line.length);
                 tableData.add(line[0]); // mountpoint
