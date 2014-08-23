@@ -35,7 +35,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
     /**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
-    private static final Map<String, FilesystemsNodeWorker> workerCache = new HashMap<String,FilesystemsNodeWorker>();
+    private static final Map<String, FilesystemsNodeWorker> workerCache = new HashMap<>();
     static FilesystemsNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
@@ -176,7 +176,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
     @Override
     protected List<AlertLevel> getAlertLevels(List<String> tableData) {
         Locale locale = Locale.getDefault();
-        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/12);
+        List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/12);
         for(int index=0,len=tableData.size();index<len;index+=12) {
             try {
                 AlertLevelAndMessage alam = getAlertLevelAndMessage(locale, tableData, index);
@@ -275,33 +275,39 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
         // Make sure extmaxmount is -1
         if(highestAlertLevel.compareTo(AlertLevel.LOW)<0) {
             String extmaxmount = tableData.get(index+10).toString();
-            if("ext3".equals(fstype)) {
-                if(!"-1".equals(extmaxmount)) {
-                    highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extmaxmount.ext3", extmaxmount);
-                }
-            } else if("ext2".equals(fstype)) {
-                if("-1".equals(extmaxmount)) {
-                    highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extmaxmount.ext2", extmaxmount);
-                }
-            }
+			switch (fstype) {
+				case "ext3":
+					if(!"-1".equals(extmaxmount)) {
+						highestAlertLevel = AlertLevel.LOW;
+						highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extmaxmount.ext3", extmaxmount);
+					}
+					break;
+				case "ext2":
+					if("-1".equals(extmaxmount)) {
+						highestAlertLevel = AlertLevel.LOW;
+						highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extmaxmount.ext2", extmaxmount);
+					}
+					break;
+			}
         }
         
         // Make sure extchkint is 0
         if(highestAlertLevel.compareTo(AlertLevel.LOW)<0) {
             String extchkint = tableData.get(index+11).toString();
-            if("ext3".equals(fstype)) {
-                if(!"0 (<none>)".equals(extchkint)) {
-                    highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extchkint.ext3", extchkint);
-                }
-            } else if("ext2".equals(fstype)) {
-                if("0 (<none>)".equals(extchkint)) {
-                    highestAlertLevel = AlertLevel.LOW;
-                    highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extchkint.ext2", extchkint);
-                }
-            }
+			switch (fstype) {
+				case "ext3":
+					if(!"0 (<none>)".equals(extchkint)) {
+						highestAlertLevel = AlertLevel.LOW;
+						highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extchkint.ext3", extchkint);
+					}
+					break;
+				case "ext2":
+					if("0 (<none>)".equals(extchkint)) {
+						highestAlertLevel = AlertLevel.LOW;
+						highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.extchkint.ext2", extchkint);
+					}
+					break;
+			}
         }
 
         return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
