@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  * watchdog to detect failure between RMI client and server
  *     handle failed RMI
  * 3ware, verify last battery test interval, test at least once a year
- *     same for LSI
+ *     same for LSI (PDList look for Media Error Count: non-zero)
  * Monitor all syslog stuff for errors, split to separate logs for error, warning, info.  errors and higher to one file to monitor.
  *     watch for SMART status (May 20 04:42:31 xen907-5 smartd[3454]: Device: /dev/hde, 1 Offline uncorrectable sectors) in /var/log/messages
  *         smartd -q onecheck?
