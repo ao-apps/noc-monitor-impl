@@ -20,10 +20,13 @@ import java.util.logging.Logger;
 /**
  * The main starting point for the monitor.
  *
- * TODO: Watch slave databases just like original databases (show table status, check table fast quick, ...)
+ * TODO: Monitor PDU load levels
  *
- * TODO:
- *     Add warning about total power allocation per rack if max power known
+ * TODO: Fan speed, CPU voltages, system/CPU temps (BMC) (Hardware Sensors)
+ *
+ * TODO: ECC reports
+ *
+ * TODO: Managed switches
  *
  * TODO:
  *     Group servers by cluster and then by rack, can add power warning on rack node itself
