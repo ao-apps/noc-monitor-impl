@@ -37,6 +37,8 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 		HIGH_DAYS = 28
 	;
 
+	private static final int OUT_OF_SYNC_HIGH_THRESHOLD = 512;
+
 	/**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
@@ -148,8 +150,13 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
         for(DrbdReport report : reports) {
 			final AlertLevel alertLevel;
 			// High alert if any out of sync
-			if(report.getOutOfSync() != 0) {
-				alertLevel = AlertLevel.HIGH;
+			long outOfSync = report.getOutOfSync();
+			if(outOfSync != 0) {
+				if(outOfSync >= OUT_OF_SYNC_HIGH_THRESHOLD) {
+					alertLevel = AlertLevel.HIGH;
+				} else {
+					alertLevel = AlertLevel.MEDIUM;
+				}
 			} else {
 				DrbdReport.ConnectionState connectionState = report.getConnectionState();
 				if(
