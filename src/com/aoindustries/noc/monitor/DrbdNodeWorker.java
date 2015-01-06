@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2015 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.AOServer.DrbdReport;
+import com.aoindustries.lang.ObjectUtils;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
@@ -133,7 +134,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
         for(DrbdReport report : reports) {
             tableData.add(report.getDevice());
             tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
-            tableData.add(report.getConnectionState().toString());
+            tableData.add(ObjectUtils.toString(report.getConnectionState()));
             tableData.add(report.getLocalDiskState()+"/"+report.getRemoteDiskState());
             tableData.add(report.getLocalRole()+"/"+report.getRemoteRole());
 			Long lastVerified = report.getLastVerified();
