@@ -135,8 +135,12 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
             tableData.add(report.getDevice());
             tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
             tableData.add(ObjectUtils.toString(report.getConnectionState()));
-            tableData.add(report.getLocalDiskState()+"/"+report.getRemoteDiskState());
-            tableData.add(report.getLocalRole()+"/"+report.getRemoteRole());
+			DrbdReport.DiskState localDiskState = report.getLocalDiskState();
+			DrbdReport.DiskState remoteDiskState = report.getRemoteDiskState();
+            tableData.add(localDiskState==null && remoteDiskState==null ? null : (localDiskState+"/"+remoteDiskState));
+			DrbdReport.Role localRole = report.getLocalRole();
+			DrbdReport.Role remoteRole = report.getRemoteRole();
+            tableData.add(localRole==null && remoteRole==null ? null : (localRole+"/"+remoteRole));
 			Long lastVerified = report.getLastVerified();
             tableData.add(lastVerified==null ? null : new TimeWithTimeZone(lastVerified, timeZone));
 			tableData.add(report.getOutOfSync());
@@ -151,8 +155,8 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
         for(DrbdReport report : reports) {
 			final AlertLevel alertLevel;
 			// High alert if any out of sync
-			long outOfSync = report.getOutOfSync();
-			if(outOfSync != 0) {
+			Long outOfSync = report.getOutOfSync();
+			if(outOfSync != null && outOfSync != 0) {
 				if(outOfSync >= OUT_OF_SYNC_HIGH_THRESHOLD) {
 					alertLevel = AlertLevel.HIGH;
 				} else {
