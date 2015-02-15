@@ -1,12 +1,12 @@
 /*
- * Copyright 2000-2013 by AO Industries, Inc.,
+ * Copyright 2000-2013, 2015 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.dbc.Database;
 import com.aoindustries.io.AOPool;
-import com.aoindustries.sql.Database;
 import com.aoindustries.util.PropertiesUtils;
 import java.io.IOException;
 import java.util.Properties;
