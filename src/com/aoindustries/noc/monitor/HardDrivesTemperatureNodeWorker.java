@@ -45,7 +45,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
     /**
      * One unique worker is made per persistence file (and should match the aoServer exactly)
      */
-    private static final Map<String, HardDrivesTemperatureNodeWorker> workerCache = new HashMap<String,HardDrivesTemperatureNodeWorker>();
+    private static final Map<String, HardDrivesTemperatureNodeWorker> workerCache = new HashMap<>();
     static HardDrivesTemperatureNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
         String path = persistenceFile.getCanonicalPath();
         synchronized(workerCache) {
@@ -99,7 +99,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 
     @Override
     protected List<String> getColumnHeaders(Locale locale) {
-        List<String> columnHeaders = new ArrayList<String>(3);
+        List<String> columnHeaders = new ArrayList<>(3);
         columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.device"));
         columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.model"));
         columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.temperature"));
@@ -110,7 +110,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
     protected List<String> getQueryResult(Locale locale) throws Exception {
         String report = aoServer.getHddTempReport();
         List<String> lines = StringUtility.splitLines(report);
-        List<String> tableData = new ArrayList<String>(lines.size()*3);
+        List<String> tableData = new ArrayList<>(lines.size()*3);
         int lineNum = 0;
         for(String line : lines) {
             lineNum++;
@@ -139,7 +139,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 
     @Override
     protected List<AlertLevel> getAlertLevels(List<String> tableData) {
-        List<AlertLevel> alertLevels = new ArrayList<AlertLevel>(tableData.size()/3);
+        List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/3);
         for(int index=0,len=tableData.size();index<len;index+=3) {
             String value = tableData.get(index+2);
             AlertLevel alertLevel = AlertLevel.NONE;
@@ -157,22 +157,22 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
                     String hostname = aoServer.getHostname().toString();
                     String device = tableData.get(index);
                     int offset;
-                    if(
-                        hostname.equals("xen1.mob.aoindustries.com")
-                        && device.equals("/dev/sda")
-                    ) {
-                        offset = -7;
-                    } else if(
-                        hostname.equals("xen907-4.fc.aoindustries.com")
-                        && (
-                            device.equals("/dev/sda")
-                            || device.equals("/dev/sdb")
-                        )
-                    ) {
-                        offset = 12;
-                    } else {
+//                    if(
+//                        hostname.equals("xen1.mob.aoindustries.com")
+//                        && device.equals("/dev/sda")
+//                    ) {
+//                        offset = -7;
+//                    } else if(
+//                        hostname.equals("xen907-4.fc.aoindustries.com")
+//                        && (
+//                            device.equals("/dev/sda")
+//                            || device.equals("/dev/sdb")
+//                        )
+//                    ) {
+//                        offset = 12;
+//                    } else {
                         offset = 0;
-                    }
+//                    }
                     String numString = value.substring(0, value.length()-2);
                     try {
                         int num = Integer.parseInt(numString);
