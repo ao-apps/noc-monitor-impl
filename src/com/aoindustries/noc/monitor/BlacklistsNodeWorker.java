@@ -1,15 +1,15 @@
 /*
- * Copyright 2009-2013, 2014 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2015 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.validator.DomainName;
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
@@ -406,7 +406,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("dnsbl-1.uceprotect.net"),
 			new DnsBlacklist("dnsbl-2.uceprotect.net"),
 			new DnsBlacklist("dnsbl-3.uceprotect.net"),
-			new DnsBlacklist("dnsbl.ahbl.org"),
+			// Removed 2014-02-09: new DnsBlacklist("dnsbl.ahbl.org"),
 			new DnsBlacklist("dnsbl.antispam.or.id"),
 			new DnsBlacklist("dnsbl.cyberlogic.net"),
 			new DnsBlacklist("dnsbl.inps.de"),
@@ -540,7 +540,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("dnsbl-2.uceprotect.net"),
 			new DnsBlacklist("dnsbl-3.uceprotect.net"),
 			new DnsBlacklist("dnsbl.abuse.ch"),
-			new DnsBlacklist("dnsbl.ahbl.org"),
+			// Removed 2014-02-09: new DnsBlacklist("dnsbl.ahbl.org"),
 			new DnsBlacklist("dnsbl.antispam.or.id"),
 			new DnsBlacklist("dnsbl.dronebl.org"),
 			new DnsBlacklist("dnsbl.inps.de"),
@@ -685,7 +685,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2014-02-09: new RblBlacklist("bl.deadbeef.com"),
 			// Removed 2014-02-09: new RblBlacklist("dnsbl.ahbl.org"),
 			// Removed 2014-02-09: new RblBlacklist("tor.ahbl.org"),
-			new DnsBlacklist("ircbl.ahbl.org"),
+			// Removed 2014-02-09: new DnsBlacklist("ircbl.ahbl.org"),
 			new DnsBlacklist("dyna.spamrats.com"),
 			new DnsBlacklist("noptr.spamrats.com"),
 			new DnsBlacklist("spam.spamrats.com"),
@@ -793,8 +793,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("ipbl.zeustracker.abuse.ch"),
 			new DnsBlacklist("rbl.abuse.ro"),
 			// Forward lookup: uribl.abuse.ro
-			new DnsBlacklist("dnsbl.ahbl.org"),
-			new DnsBlacklist("ircbl.ahbl.org"),
+			// Removed 2014-02-09: new DnsBlacklist("dnsbl.ahbl.org"),
+			// Removed 2014-02-09: new DnsBlacklist("ircbl.ahbl.org"),
 			// Forward lookup: rhsbl.ahbl.org
 			// Removed 2014-02-09: new RblBlacklist("orvedb.aupads.org"),
 			// Removed 2014-02-09: new RblBlacklist("rsbl.aupads.org"),
@@ -950,8 +950,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("tor.dnsbl.sectoor.de"),
 			new DnsBlacklist("exitnodes.tor.dnsbl.sectoor.de"),
 			new DnsBlacklist("bl.score.senderscore.com"),
-			new DnsBlacklist("bl.shlink.org"),
-			new DnsBlacklist("dyn.shlink.org"),
+			// Removed 2015-06-26: new DnsBlacklist("bl.shlink.org"),
+			// Removed 2015-06-26: new DnsBlacklist("dyn.shlink.org"),
 			// Forward lookup: rhsbl.shlink.org
 			// Removed 2014-02-09: new RblBlacklist("dnsbl.solid.net"),
 			new DnsBlacklist("dnsbl.sorbs.net"),
