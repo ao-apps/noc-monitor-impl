@@ -1,12 +1,12 @@
 /*
- * Copyright 2008-2009, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServConnector;
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.AlertLevelChange;
 import com.aoindustries.noc.monitor.common.NodeSnapshot;
@@ -125,22 +125,17 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 				if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
 				final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, port, csf, ssf);
 				// Start as a background task
-				executorService.submitUnbounded(
-					new Runnable() {
-						@Override
-						public void run() {
-							if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
-							try {
-								newRootNode.start();
-							} catch(ThreadDeath TD) {
-								throw TD;
-							} catch(Throwable err) {
-								ErrorPrinter.printStackTraces(err);
-								logger.log(Level.SEVERE, null, err);
-							}
-						}
+				executorService.submitUnbounded(() -> {
+					if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
+					try {
+						newRootNode.start();
+					} catch(ThreadDeath TD) {
+						throw TD;
+					} catch(RuntimeException | IOException | SQLException err) {
+						ErrorPrinter.printStackTraces(err);
+						logger.log(Level.SEVERE, null, err);
 					}
-				);
+				});
 				rootNodeCache.put(key, newRootNode);
 				rootNode = newRootNode;
 			} else {

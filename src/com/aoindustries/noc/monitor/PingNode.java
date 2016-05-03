@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -20,32 +20,32 @@ import java.util.List;
  */
 public class PingNode extends TableMultiResultNodeImpl<PingResult> {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    //private final IPAddressNode ipAddressNode;
+	//private final IPAddressNode ipAddressNode;
 
-    PingNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-        super(
-            ipAddressNode.ipAddressesNode.rootNode,
-            ipAddressNode,
-            PingNodeWorker.getWorker(
-                ipAddressNode.getPersistenceDirectory(),
-                ipAddressNode.getIPAddress()
-            ),
-            port,
-            csf,
-            ssf
-        );
-        //this.ipAddressNode = ipAddressNode;
-    }
+	PingNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+		super(
+			ipAddressNode.ipAddressesNode.rootNode,
+			ipAddressNode,
+			PingNodeWorker.getWorker(
+				ipAddressNode.getPersistenceDirectory(),
+				ipAddressNode.getIPAddress()
+			),
+			port,
+			csf,
+			ssf
+		);
+		//this.ipAddressNode = ipAddressNode;
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*ipAddressNode.ipAddressesNode.rootNode.locale,*/ "PingNode.label");
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*ipAddressNode.ipAddressesNode.rootNode.locale,*/ "PingNode.label");
+	}
 
-    @Override
-    public List<?> getColumnHeaders() {
-        return Collections.emptyList();
-    }
+	@Override
+	public List<?> getColumnHeaders() {
+		return Collections.emptyList();
+	}
 }

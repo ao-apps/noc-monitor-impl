@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -10,8 +10,7 @@ import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,35 +18,35 @@ import java.util.List;
  */
 public class NetDeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRateResult> {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    NetDeviceBitRateNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-        super(
-            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
-            netDeviceNode,
-            NetDeviceBitRateNodeWorker.getWorker(
-                netDeviceNode.getPersistenceDirectory(),
-                netDeviceNode.getNetDevice()
-            ),
-            port,
-            csf,
-            ssf
-        );
-    }
+	NetDeviceBitRateNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+		super(
+			netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+			netDeviceNode,
+			NetDeviceBitRateNodeWorker.getWorker(
+				netDeviceNode.getPersistenceDirectory(),
+				netDeviceNode.getNetDevice()
+			),
+			port,
+			csf,
+			ssf
+		);
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "NetDeviceBitRateNode.label");
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "NetDeviceBitRateNode.label");
+	}
 
-    @Override
-    public List<?> getColumnHeaders() {
-        List<String> headers = new ArrayList<String>(5);
-        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.txBitRate"));
-        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.rxBitRate"));
-        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.txPacketRate"));
-        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.rxPacketRate"));
-        headers.add(accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.alertThresholds"));
-        return Collections.unmodifiableList(headers);
-    }
+	@Override
+	public List<String> getColumnHeaders() {
+		return Arrays.asList(
+			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.txBitRate"),
+			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.rxBitRate"),
+			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.txPacketRate"),
+			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
+			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.alertThresholds")
+		);
+	}
 }

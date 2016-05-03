@@ -1,13 +1,13 @@
 /*
- * Copyright 2008-2009, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetDevice;
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
@@ -43,7 +43,7 @@ public class IPAddressesNode extends NodeImpl {
 
 		this.netDeviceNode = netDeviceNode;
 		this.unallocatedNode = null;
-		
+
 		this.rootNode = netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode;
 	}
 
@@ -52,7 +52,7 @@ public class IPAddressesNode extends NodeImpl {
 
 		this.netDeviceNode = null;
 		this.unallocatedNode = unallocatedNode;
-	
+
 		this.rootNode = unallocatedNode.rootNode;
 	}
 
@@ -100,14 +100,11 @@ public class IPAddressesNode extends NodeImpl {
 		return accessor.getMessage(/*rootNode.locale,*/ "IPAddressesNode.label");
 	}
 
-	private final TableListener tableListener = new TableListener() {
-		@Override
-		public void tableUpdated(Table<?> table) {
-			try {
-				verifyIPAddresses();
-			} catch(IOException | SQLException err) {
-				throw new WrappedException(err);
-			}
+	private final TableListener tableListener = (Table<?> table) -> {
+		try {
+			verifyIPAddresses();
+		} catch(IOException | SQLException err) {
+			throw new WrappedException(err);
 		}
 	};
 

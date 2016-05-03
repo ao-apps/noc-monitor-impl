@@ -1,25 +1,25 @@
 /*
- * Copyright 2008-2012, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
-import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableMultiResult;
 import com.aoindustries.util.persistent.PersistentCollections;
+import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.util.persistent.ProtectionLevel;
 import com.aoindustries.util.persistent.Serializer;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -53,343 +53,333 @@ import javax.swing.SwingUtilities;
  */
 abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
+	private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
-    /**
-     * The most recent timer task
-     */
-    private final Object timerTaskLock = new Object();
-    private Future<?> timerTask;
+	/**
+	 * The most recent timer task
+	 */
+	private final Object timerTaskLock = new Object();
+	private Future<?> timerTask;
 
-    final private PersistentLinkedList<R> results;
+	final private PersistentLinkedList<R> results;
 
-    volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
-    volatile private String alertMessage = null;
+	volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
+	volatile private String alertMessage = null;
 
-    final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
+	final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
 
-    TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
-        this.results = new PersistentLinkedList<>(
-            PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
-            //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
-            /*
-            new TwoCopyBarrierBuffer(
-                persistenceFile,
-                ProtectionLevel.BARRIER,
-                4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash page size??? Can't find specs.
-                60L*1000L, // TODO: Flash: 60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
-                5L*60L*1000L // TODO: Flash: 24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
-            ),
-             */
-            serializer
-        );
-    }
+	TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
+		this.results = new PersistentLinkedList<>(
+			PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
+			//new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
+			/*
+			new TwoCopyBarrierBuffer(
+				persistenceFile,
+				ProtectionLevel.BARRIER,
+				4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash page size??? Can't find specs.
+				60L*1000L, // TODO: Flash: 60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
+				5L*60L*1000L // TODO: Flash: 24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
+			),
+			 */
+			serializer
+		);
+	}
 
-    /**
-     * Gets an unmodifiable copy of the results.
-     */
-    final List<R> getResults() {
-        //System.out.println("DEBUG: getResults");
-        //try {
-            synchronized(results) {
-                return Collections.unmodifiableList(new ArrayList<>(results));
-            }
-        //} catch(RuntimeException err) {
-        //    ErrorPrinter.printStackTraces(err);
-        //    throw err;
-        //}
-    }
+	/**
+	 * Gets an unmodifiable copy of the results.
+	 */
+	final List<R> getResults() {
+		//System.out.println("DEBUG: getResults");
+		//try {
+			synchronized(results) {
+				return Collections.unmodifiableList(new ArrayList<>(results));
+			}
+		//} catch(RuntimeException err) {
+		//    ErrorPrinter.printStackTraces(err);
+		//    throw err;
+		//}
+	}
 
-    final AlertLevel getAlertLevel() {
-        return alertLevel;
-    }
-    
-    final String getAlertMessage() {
-        return alertMessage;
-    }
+	final AlertLevel getAlertLevel() {
+		return alertLevel;
+	}
 
-    /**
-     * The default startup delay is within five minutes.
-     */
-    protected int getNextStartupDelay() {
-        return RootNodeImpl.getNextStartupDelayFiveMinutes();
-    }
+	final String getAlertMessage() {
+		return alertMessage;
+	}
 
-    @SuppressWarnings("unchecked")
-    private void start() {
-        synchronized(timerTaskLock) {
-            assert timerTask==null : "thread already started";
-            timerTask = RootNodeImpl.schedule(this, getNextStartupDelay());
-        }
-    }
+	/**
+	 * The default startup delay is within five minutes.
+	 */
+	protected int getNextStartupDelay() {
+		return RootNodeImpl.getNextStartupDelayFiveMinutes();
+	}
 
-    private void stop() {
-        synchronized(timerTaskLock) {
-            if(timerTask!=null) {
-                timerTask.cancel(true);
-                timerTask = null;
-            }
-        }
-    }
+	@SuppressWarnings("unchecked")
+	private void start() {
+		synchronized(timerTaskLock) {
+			assert timerTask==null : "thread already started";
+			timerTask = RootNodeImpl.schedule(this, getNextStartupDelay());
+		}
+	}
 
-    private S getSampleWithTimeout(final Locale locale) throws Exception {
-        Future<S> future = RootNodeImpl.executorService.submitUnbounded(
-            new Callable<S>() {
-                @Override
-                public S call() throws Exception {
-                    return getSample(locale);
-                }
-            }
-        );
-        try {
-            return future.get(getFutureTimeout(), getFutureTimeoutUnit());
-        } catch(InterruptedException err) {
-            cancel(future);
-            throw err;
-        } catch(TimeoutException err) {
-            cancel(future);
-            throw err;
-        }
-    }
+	private void stop() {
+		synchronized(timerTaskLock) {
+			if(timerTask!=null) {
+				timerTask.cancel(true);
+				timerTask = null;
+			}
+		}
+	}
 
-    @Override
-    final public void run() {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	private S getSampleWithTimeout(final Locale locale) throws Exception {
+		Future<S> future = RootNodeImpl.executorService.submitUnbounded(() -> getSample(locale));
+		try {
+			return future.get(getFutureTimeout(), getFutureTimeoutUnit());
+		} catch(InterruptedException | TimeoutException err) {
+			cancel(future);
+			throw err;
+		}
+	}
 
-        boolean lastSuccessful = false;
-        synchronized(timerTaskLock) {if(timerTask==null) return;}
-        try {
-            long startMillis = System.currentTimeMillis();
-            long startNanos = System.nanoTime();
-            
-            lastSuccessful = false;
-            
-            final Locale locale = Locale.getDefault();
+	@Override
+	final public void run() {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-            String error;
-            S sample;
-            AlertLevelAndMessage alertLevelAndMessage;
-            try {
-                error = null;
-                if(useFutureTimeout()) {
-                    sample = getSampleWithTimeout(locale);
-                } else {
-                    sample = getSample(locale);
-                }
-                synchronized(results) {
-                    alertLevelAndMessage = getAlertLevelAndMessage(locale, sample, results);
-                }
-                lastSuccessful = true;
-            } catch(Exception err) {
-                error = err.getLocalizedMessage();
-                if(error==null) error = err.toString();
-                sample = null;
-                alertLevelAndMessage = new AlertLevelAndMessage(
-                    AlertLevel.CRITICAL,
-                    accessor.getMessage(/*locale,*/ "TableMultiResultNodeWorker.tableData.error", error)
-                );
-                lastSuccessful = false;
-            }
-            long pingNanos = System.nanoTime() - startNanos;
+		boolean lastSuccessful = false;
+		synchronized(timerTaskLock) {if(timerTask==null) return;}
+		try {
+			long startMillis = System.currentTimeMillis();
+			long startNanos = System.nanoTime();
 
-            synchronized(timerTaskLock) {if(timerTask==null) return;}
+			lastSuccessful = false;
 
-            if(error==null && sample==null) throw new IllegalArgumentException("error and sample may not both be null");
-            if(error!=null && sample!=null) throw new IllegalArgumentException("error and sample may not both be non-null");
+			final Locale locale = Locale.getDefault();
 
-            R added;
-            if(error!=null) {
-                added = newErrorResult(
-                    startMillis,
-                    pingNanos,
-                    alertLevelAndMessage.getAlertLevel(),
-                    error
-                );
-            } else {
-                added = newSampleResult(
-                    startMillis,
-                    pingNanos,
-                    alertLevelAndMessage.getAlertLevel(),
-                    sample
-                );
-            }
+			String error;
+			S sample;
+			AlertLevelAndMessage alertLevelAndMessage;
+			try {
+				error = null;
+				if(useFutureTimeout()) {
+					sample = getSampleWithTimeout(locale);
+				} else {
+					sample = getSample(locale);
+				}
+				synchronized(results) {
+					alertLevelAndMessage = getAlertLevelAndMessage(locale, sample, results);
+				}
+				lastSuccessful = true;
+			} catch(Exception err) {
+				error = err.getLocalizedMessage();
+				if(error==null) error = err.toString();
+				sample = null;
+				alertLevelAndMessage = new AlertLevelAndMessage(
+					AlertLevel.CRITICAL,
+					accessor.getMessage(/*locale,*/ "TableMultiResultNodeWorker.tableData.error", error)
+				);
+				lastSuccessful = false;
+			}
+			long pingNanos = System.nanoTime() - startNanos;
 
-            // Update the results
-            R removed = null;
-            synchronized(results) {
-                results.addFirst(added);
-                if(results.size()>getHistorySize()) removed = results.removeLast();
-            }
+			synchronized(timerTaskLock) {if(timerTask==null) return;}
 
-            tableMultiResultAdded(added);
-            if(removed!=null) tableMultiResultRemoved(removed);
+			if(error==null && sample==null) throw new IllegalArgumentException("error and sample may not both be null");
+			if(error!=null && sample!=null) throw new IllegalArgumentException("error and sample may not both be non-null");
 
-            AlertLevel curAlertLevel = alertLevel;
-            if(curAlertLevel==AlertLevel.UNKNOWN) curAlertLevel = AlertLevel.NONE;
-            AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
-            AlertLevel newAlertLevel;
-            if(maxAlertLevel==AlertLevel.UNKNOWN) {
-                newAlertLevel = AlertLevel.UNKNOWN;
-            } else if(maxAlertLevel.compareTo(curAlertLevel)<0) {
-                // If maxAlertLevel < current, drop current to be the max
-                newAlertLevel = maxAlertLevel;
-            } else if(curAlertLevel.compareTo(maxAlertLevel)<0) {
-                // If current < maxAlertLevel, increment by one
-                newAlertLevel = AlertLevel.values()[curAlertLevel.ordinal()+1];
-            } else {
-                newAlertLevel = maxAlertLevel;
-            }
+			R added;
+			if(error!=null) {
+				added = newErrorResult(
+					startMillis,
+					pingNanos,
+					alertLevelAndMessage.getAlertLevel(),
+					error
+				);
+			} else {
+				added = newSampleResult(
+					startMillis,
+					pingNanos,
+					alertLevelAndMessage.getAlertLevel(),
+					sample
+				);
+			}
 
-            AlertLevel oldAlertLevel = alertLevel;
-            alertLevel = newAlertLevel;
-            alertMessage = alertLevelAndMessage.getAlertMessage();
+			// Update the results
+			R removed = null;
+			synchronized(results) {
+				results.addFirst(added);
+				if(results.size()>getHistorySize()) removed = results.removeLast();
+			}
 
-            if(oldAlertLevel!=newAlertLevel) {
-                synchronized(tableMultiResultNodeImpls) {
-                    for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
-                        tableMultiResultNodeImpl.nodeAlertLevelChanged(
-                            oldAlertLevel,
-                            newAlertLevel,
-                            alertLevelAndMessage.getAlertMessage()
-                        );
-                    }
-                }
-            }
-        } catch(Exception err) {
-            logger.log(Level.SEVERE, null, err);
-            lastSuccessful = false;
-        } finally {
-            // Reschedule next timer task if still running
-            synchronized(timerTaskLock) {
-                if(timerTask!=null) {
-                    timerTask = RootNodeImpl.schedule(
-                        this,
-                        getSleepDelay(lastSuccessful, alertLevel)
-                    );
-                }
-            }
-        }
-    }
+			tableMultiResultAdded(added);
+			if(removed!=null) tableMultiResultRemoved(removed);
 
-    final void addTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
-        synchronized(tableMultiResultNodeImpls) {
-            boolean needsStart = tableMultiResultNodeImpls.isEmpty();
-            tableMultiResultNodeImpls.add(tableMultiResultNodeImpl);
-            if(needsStart) start();
-        }
-    }
+			AlertLevel curAlertLevel = alertLevel;
+			if(curAlertLevel==AlertLevel.UNKNOWN) curAlertLevel = AlertLevel.NONE;
+			AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
+			AlertLevel newAlertLevel;
+			if(maxAlertLevel==AlertLevel.UNKNOWN) {
+				newAlertLevel = AlertLevel.UNKNOWN;
+			} else if(maxAlertLevel.compareTo(curAlertLevel)<0) {
+				// If maxAlertLevel < current, drop current to be the max
+				newAlertLevel = maxAlertLevel;
+			} else if(curAlertLevel.compareTo(maxAlertLevel)<0) {
+				// If current < maxAlertLevel, increment by one
+				newAlertLevel = AlertLevel.values()[curAlertLevel.ordinal()+1];
+			} else {
+				newAlertLevel = maxAlertLevel;
+			}
 
-    final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
-        // TODO: log error if wrong number of listeners matched
-        synchronized(tableMultiResultNodeImpls) {
-            if(tableMultiResultNodeImpls.isEmpty()) throw new AssertionError("tableMultiResultNodeImpls is empty");
-            for(int c=tableMultiResultNodeImpls.size()-1;c>=0;c--) {
-                if(tableMultiResultNodeImpls.get(c)==tableMultiResultNodeImpl) {
-                    tableMultiResultNodeImpls.remove(c);
-                    break;
-                }
-            }
-            if(tableMultiResultNodeImpls.isEmpty()) {
-                stop();
-            }
-        }
-    }
+			AlertLevel oldAlertLevel = alertLevel;
+			alertLevel = newAlertLevel;
+			alertMessage = alertLevelAndMessage.getAlertMessage();
 
-    /**
-     * Notifies all of the listeners.
-     */
-    private void tableMultiResultAdded(R result) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+			if(oldAlertLevel!=newAlertLevel) {
+				synchronized(tableMultiResultNodeImpls) {
+					for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+						tableMultiResultNodeImpl.nodeAlertLevelChanged(
+							oldAlertLevel,
+							newAlertLevel,
+							alertLevelAndMessage.getAlertMessage()
+						);
+					}
+				}
+			}
+		} catch(RuntimeException | RemoteException err) {
+			logger.log(Level.SEVERE, null, err);
+			lastSuccessful = false;
+		} finally {
+			// Reschedule next timer task if still running
+			synchronized(timerTaskLock) {
+				if(timerTask!=null) {
+					timerTask = RootNodeImpl.schedule(
+						this,
+						getSleepDelay(lastSuccessful, alertLevel)
+					);
+				}
+			}
+		}
+	}
 
-        synchronized(tableMultiResultNodeImpls) {
-            for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
-                tableMultiResultNodeImpl.tableMultiResultAdded(result);
-            }
-        }
-    }
+	final void addTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
+		synchronized(tableMultiResultNodeImpls) {
+			boolean needsStart = tableMultiResultNodeImpls.isEmpty();
+			tableMultiResultNodeImpls.add(tableMultiResultNodeImpl);
+			if(needsStart) start();
+		}
+	}
 
-    /**
-     * Notifies all of the listeners.
-     */
-    private void tableMultiResultRemoved(R result) {
-        assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+	final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
+		// TODO: log error if wrong number of listeners matched
+		synchronized(tableMultiResultNodeImpls) {
+			if(tableMultiResultNodeImpls.isEmpty()) throw new AssertionError("tableMultiResultNodeImpls is empty");
+			for(int c=tableMultiResultNodeImpls.size()-1;c>=0;c--) {
+				if(tableMultiResultNodeImpls.get(c)==tableMultiResultNodeImpl) {
+					tableMultiResultNodeImpls.remove(c);
+					break;
+				}
+			}
+			if(tableMultiResultNodeImpls.isEmpty()) {
+				stop();
+			}
+		}
+	}
 
-        synchronized(tableMultiResultNodeImpls) {
-            for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
-                tableMultiResultNodeImpl.tableMultiResultRemoved(result);
-            }
-        }
-    }
+	/**
+	 * Notifies all of the listeners.
+	 */
+	private void tableMultiResultAdded(R result) {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-    /**
-     * The default sleep delay is five minutes when successful
-     * or one minute when unsuccessful.
-     */
-    protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-        return lastSuccessful && alertLevel==AlertLevel.NONE ? 5*60000 : 60000;
-    }
+		synchronized(tableMultiResultNodeImpls) {
+			for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+				tableMultiResultNodeImpl.tableMultiResultAdded(result);
+			}
+		}
+	}
 
-    /**
-     * The number of history items to store.
-     */
-    protected abstract int getHistorySize();
+	/**
+	 * Notifies all of the listeners.
+	 */
+	private void tableMultiResultRemoved(R result) {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-    /**
-     * This is the main monitor routine.
-     * Gets the current sample for this worker, any error should result in an exception.
-     * The sample may be any object that encapsulates the state of the resource in order
-     * to determine its alert level, alert message, and overall result.
-     */
-    protected abstract S getSample(Locale locale) throws Exception;
+		synchronized(tableMultiResultNodeImpls) {
+			for(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
+				tableMultiResultNodeImpl.tableMultiResultRemoved(result);
+			}
+		}
+	}
 
-    /**
-     * Creates a new result container object for error condition.
-     */
-    protected abstract R newErrorResult(long time, long latency, AlertLevel alertLevel, String error);
+	/**
+	 * The default sleep delay is five minutes when successful
+	 * or one minute when unsuccessful.
+	 */
+	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+		return lastSuccessful && alertLevel==AlertLevel.NONE ? 5*60000 : 60000;
+	}
 
-    /**
-     * Creates a new result container object for success condition.
-     */
-    protected abstract R newSampleResult(long time, long latency, AlertLevel alertLevel, S sample);
+	/**
+	 * The number of history items to store.
+	 */
+	protected abstract int getHistorySize();
 
-    /**
-     * Cancels the current getSample call on a best-effort basis.
-     * Implementations of this method <b>must not block</b>.
-     * This default implementation calls <code>future.cancel(true)</code>.
-     */
-    protected void cancel(Future<S> future) {
-        future.cancel(true);
-    }
+	/**
+	 * This is the main monitor routine.
+	 * Gets the current sample for this worker, any error should result in an exception.
+	 * The sample may be any object that encapsulates the state of the resource in order
+	 * to determine its alert level, alert message, and overall result.
+	 */
+	protected abstract S getSample(Locale locale) throws Exception;
 
-    /**
-     * Determines the alert level and message for the provided result and locale.
-     * If unable to parse, may throw an exception to report the error.  This
-     * should not block or delay for any reason.
-     */
-    protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, S sample, Iterable<? extends R> previousResults) throws Exception;
+	/**
+	 * Creates a new result container object for error condition.
+	 */
+	protected abstract R newErrorResult(long time, long latency, AlertLevel alertLevel, String error);
 
-    /**
-     * By default, the call to <code>getSample</code> uses a <code>Future</code>
-     * and times-out at 5 minutes.  If the monitoring check cannot block
-     * indefinitely, it is more efficient to not use this decoupling.
-     */
-    protected boolean useFutureTimeout() {
-        return true;
-    }
+	/**
+	 * Creates a new result container object for success condition.
+	 */
+	protected abstract R newSampleResult(long time, long latency, AlertLevel alertLevel, S sample);
 
-    /**
-     * The default future timeout is 5 minutes.
-     */
-    protected long getFutureTimeout() {
-        return 5;
-    }
+	/**
+	 * Cancels the current getSample call on a best-effort basis.
+	 * Implementations of this method <b>must not block</b>.
+	 * This default implementation calls <code>future.cancel(true)</code>.
+	 */
+	protected void cancel(Future<S> future) {
+		future.cancel(true);
+	}
 
-    /**
-     * The default future timeout unit is MINUTES.
-     *
-     * @see  TimeUnit#MINUTES
-     */
-    protected TimeUnit getFutureTimeoutUnit() {
-        return TimeUnit.MINUTES;
-    }
+	/**
+	 * Determines the alert level and message for the provided result and locale.
+	 * If unable to parse, may throw an exception to report the error.  This
+	 * should not block or delay for any reason.
+	 */
+	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, S sample, Iterable<? extends R> previousResults) throws Exception;
+
+	/**
+	 * By default, the call to <code>getSample</code> uses a <code>Future</code>
+	 * and times-out at 5 minutes.  If the monitoring check cannot block
+	 * indefinitely, it is more efficient to not use this decoupling.
+	 */
+	protected boolean useFutureTimeout() {
+		return true;
+	}
+
+	/**
+	 * The default future timeout is 5 minutes.
+	 */
+	protected long getFutureTimeout() {
+		return 5;
+	}
+
+	/**
+	 * The default future timeout unit is MINUTES.
+	 *
+	 * @see  TimeUnit#MINUTES
+	 */
+	protected TimeUnit getFutureTimeoutUnit() {
+		return TimeUnit.MINUTES;
+	}
 }

@@ -1,14 +1,14 @@
 /*
- * Copyright 2008-2013, 2014, 2015 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2015, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.AOServer.DrbdReport;
 import com.aoindustries.lang.ObjectUtils;
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
@@ -41,56 +41,56 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	private static final int OUT_OF_SYNC_HIGH_THRESHOLD = 512;
 
 	/**
-     * One unique worker is made per persistence file (and should match the aoServer exactly)
-     */
-    private static final Map<String, DrbdNodeWorker> workerCache = new HashMap<>();
-    static DrbdNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException, SQLException {
-        String path = persistenceFile.getCanonicalPath();
-        synchronized(workerCache) {
-            DrbdNodeWorker worker = workerCache.get(path);
-            if(worker==null) {
-                worker = new DrbdNodeWorker(persistenceFile, aoServer);
-                workerCache.put(path, worker);
-            } else {
-                if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
-            }
-            return worker;
-        }
-    }
+	 * One unique worker is made per persistence file (and should match the aoServer exactly)
+	 */
+	private static final Map<String, DrbdNodeWorker> workerCache = new HashMap<>();
+	static DrbdNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException, SQLException {
+		String path = persistenceFile.getCanonicalPath();
+		synchronized(workerCache) {
+			DrbdNodeWorker worker = workerCache.get(path);
+			if(worker==null) {
+				worker = new DrbdNodeWorker(persistenceFile, aoServer);
+				workerCache.put(path, worker);
+			} else {
+				if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
+			}
+			return worker;
+		}
+	}
 
-    // Will use whichever connector first created this worker, even if other accounts connect later.
-    final private AOServer aoServer;
+	// Will use whichever connector first created this worker, even if other accounts connect later.
+	final private AOServer aoServer;
 	final private TimeZone timeZone;
 
-    DrbdNodeWorker(File persistenceFile, AOServer aoServer) throws IOException, SQLException {
-        super(persistenceFile);
-        this.aoServer = aoServer;
+	DrbdNodeWorker(File persistenceFile, AOServer aoServer) throws IOException, SQLException {
+		super(persistenceFile);
+		this.aoServer = aoServer;
 		this.timeZone = aoServer.getTimeZone().getTimeZone();
-    }
+	}
 
-    /**
-     * Determines the alert message for the provided result.
-     * 
-     * @link http://www.drbd.org/users-guide/ch-admin.html#s-disk-states
-     */
-    @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result) {
-        AlertLevel highestAlertLevel = AlertLevel.NONE;
-        String highestAlertMessage = "";
-        List<?> tableData = result.getTableData();
-        if(result.isError()) {
-            highestAlertLevel = result.getAlertLevels().get(0);
-            highestAlertMessage = tableData.get(0).toString();
-        } else {
-            List<AlertLevel> alertLevels = result.getAlertLevels();
-            for(
+	/**
+	 * Determines the alert message for the provided result.
+	 * 
+	 * @link http://www.drbd.org/users-guide/ch-admin.html#s-disk-states
+	 */
+	@Override
+	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result) {
+		AlertLevel highestAlertLevel = AlertLevel.NONE;
+		String highestAlertMessage = "";
+		List<?> tableData = result.getTableData();
+		if(result.isError()) {
+			highestAlertLevel = result.getAlertLevels().get(0);
+			highestAlertMessage = tableData.get(0).toString();
+		} else {
+			List<AlertLevel> alertLevels = result.getAlertLevels();
+			for(
 				int index=0, len=tableData.size();
 				index<len;
 				index += NUM_COLS
 			) {
-                AlertLevel alertLevel = alertLevels.get(index / NUM_COLS);
-                if(alertLevel.compareTo(highestAlertLevel)>0) {
-                    highestAlertLevel = alertLevel;
+				AlertLevel alertLevel = alertLevels.get(index / NUM_COLS);
+				if(alertLevel.compareTo(highestAlertLevel)>0) {
+					highestAlertLevel = alertLevel;
 					String device = (String)tableData.get(index);
 					String resource = (String)tableData.get(index + 1);
 					String cstate = (String)tableData.get(index + 2);
@@ -98,61 +98,61 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 					String roles = (String)tableData.get(index + 4);
 					TimeWithTimeZone lastVerified = (TimeWithTimeZone)tableData.get(index + 5);
 					Long outOfSync = (Long)tableData.get(index + 6);
-                    highestAlertMessage = device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync;
-                }
-            }
-        }
-        return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
-    }
+					highestAlertMessage = device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync;
+				}
+			}
+		}
+		return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
+	}
 
-    @Override
-    protected int getColumns() {
-        return NUM_COLS;
-    }
+	@Override
+	protected int getColumns() {
+		return NUM_COLS;
+	}
 
-    @Override
-    protected List<String> getColumnHeaders(Locale locale) {
-        List<String> columnHeaders = new ArrayList<>(NUM_COLS);
-        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.device"));
-        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.resource"));
-        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.cs"));
-        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.ds"));
-        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.roles"));
-        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.lastVerified"));
-        columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.outOfSync"));
-        return columnHeaders;
-    }
+	@Override
+	protected List<String> getColumnHeaders(Locale locale) {
+		List<String> columnHeaders = new ArrayList<>(NUM_COLS);
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.device"));
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.resource"));
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.cs"));
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.ds"));
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.roles"));
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.lastVerified"));
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.outOfSync"));
+		return columnHeaders;
+	}
 
-    @Override
-    protected List<DrbdReport> getQueryResult(Locale locale) throws Exception {
-        return aoServer.getDrbdReport();
-    }
+	@Override
+	protected List<DrbdReport> getQueryResult(Locale locale) throws Exception {
+		return aoServer.getDrbdReport();
+	}
 
-    @Override
-    protected List<Object> getTableData(List<DrbdReport> reports, Locale locale) throws Exception {
-        List<Object> tableData = new ArrayList<>(reports.size() * NUM_COLS);
-        for(DrbdReport report : reports) {
-            tableData.add(report.getDevice());
-            tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
-            tableData.add(ObjectUtils.toString(report.getConnectionState()));
+	@Override
+	protected List<Object> getTableData(List<DrbdReport> reports, Locale locale) throws Exception {
+		List<Object> tableData = new ArrayList<>(reports.size() * NUM_COLS);
+		for(DrbdReport report : reports) {
+			tableData.add(report.getDevice());
+			tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
+			tableData.add(ObjectUtils.toString(report.getConnectionState()));
 			DrbdReport.DiskState localDiskState = report.getLocalDiskState();
 			DrbdReport.DiskState remoteDiskState = report.getRemoteDiskState();
-            tableData.add(localDiskState==null && remoteDiskState==null ? null : (localDiskState+"/"+remoteDiskState));
+			tableData.add(localDiskState==null && remoteDiskState==null ? null : (localDiskState+"/"+remoteDiskState));
 			DrbdReport.Role localRole = report.getLocalRole();
 			DrbdReport.Role remoteRole = report.getRemoteRole();
-            tableData.add(localRole==null && remoteRole==null ? null : (localRole+"/"+remoteRole));
+			tableData.add(localRole==null && remoteRole==null ? null : (localRole+"/"+remoteRole));
 			Long lastVerified = report.getLastVerified();
-            tableData.add(lastVerified==null ? null : new TimeWithTimeZone(lastVerified, timeZone));
+			tableData.add(lastVerified==null ? null : new TimeWithTimeZone(lastVerified, timeZone));
 			tableData.add(report.getOutOfSync());
-        }
-        return tableData;
-    }
+		}
+		return tableData;
+	}
 
-    @Override
-    protected List<AlertLevel> getAlertLevels(List<DrbdReport> reports) {
+	@Override
+	protected List<AlertLevel> getAlertLevels(List<DrbdReport> reports) {
 		final long currentTime = System.currentTimeMillis();
-        List<AlertLevel> alertLevels = new ArrayList<>(reports.size());
-        for(DrbdReport report : reports) {
+		List<AlertLevel> alertLevels = new ArrayList<>(reports.size());
+		for(DrbdReport report : reports) {
 			final AlertLevel alertLevel;
 			// High alert if any out of sync
 			Long outOfSync = report.getOutOfSync();
@@ -206,8 +206,8 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 					}
 				}
 			}
-            alertLevels.add(alertLevel);
-        }
-        return alertLevels;
-    }
+			alertLevels.add(alertLevel);
+		}
+		return alertLevels;
+	}
 }

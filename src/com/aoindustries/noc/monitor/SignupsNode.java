@@ -20,22 +20,22 @@ public class SignupsNode extends TableResultNodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-    SignupsNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-        super(
-            rootNode,
-            rootNode,
-            SignupsNodeWorker.getWorker(
-                new File(rootNode.getPersistenceDirectory(), "signups"),
-                rootNode.conn
-            ),
-            port,
-            csf,
-            ssf
-        );
-    }
+	SignupsNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+		super(
+			rootNode,
+			rootNode,
+			SignupsNodeWorker.getWorker(
+				new File(rootNode.getPersistenceDirectory(), "signups"),
+				rootNode.conn
+			),
+			port,
+			csf,
+			ssf
+		);
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "SignupsNode.label");
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "SignupsNode.label");
+	}
 }

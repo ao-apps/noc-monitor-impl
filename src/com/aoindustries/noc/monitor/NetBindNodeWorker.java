@@ -1,15 +1,15 @@
 /*
- * Copyright 2009-2013 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.aoserv.client.validator.InetAddress;
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetBindResult;
 import com.aoindustries.noc.monitor.portmon.PortMonitor;
@@ -28,103 +28,100 @@ import java.util.concurrent.Future;
  */
 class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
 
-    /**
-     * One unique worker is made per persistence file (and should match the NetMonitorSetting)
-     */
-    private static final Map<String, NetBindNodeWorker> workerCache = new HashMap<String,NetBindNodeWorker>();
-    static NetBindNodeWorker getWorker(File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
-        try {
-            String path = persistenceFile.getCanonicalPath();
-            synchronized(workerCache) {
-                NetBindNodeWorker worker = workerCache.get(path);
-                if(worker==null) {
-                    worker = new NetBindNodeWorker(persistenceFile, netMonitorSetting);
-                    workerCache.put(path, worker);
-                } else {
-                    if(!worker.netMonitorSetting.equals(netMonitorSetting)) throw new AssertionError("worker.netMonitorSetting!=netMonitorSetting: "+worker.netMonitorSetting+"!="+netMonitorSetting);
-                }
-                return worker;
-            }
-        } catch(IOException err) {
-            ErrorPrinter.printStackTraces(err);
-            throw err;
-        } catch(RuntimeException err) {
-            ErrorPrinter.printStackTraces(err);
-            throw err;
-        }
-    }
+	/**
+	 * One unique worker is made per persistence file (and should match the NetMonitorSetting)
+	 */
+	private static final Map<String, NetBindNodeWorker> workerCache = new HashMap<>();
+	static NetBindNodeWorker getWorker(File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+		try {
+			String path = persistenceFile.getCanonicalPath();
+			synchronized(workerCache) {
+				NetBindNodeWorker worker = workerCache.get(path);
+				if(worker==null) {
+					worker = new NetBindNodeWorker(persistenceFile, netMonitorSetting);
+					workerCache.put(path, worker);
+				} else {
+					if(!worker.netMonitorSetting.equals(netMonitorSetting)) throw new AssertionError("worker.netMonitorSetting!=netMonitorSetting: "+worker.netMonitorSetting+"!="+netMonitorSetting);
+				}
+				return worker;
+			}
+		} catch(RuntimeException | IOException err) {
+			ErrorPrinter.printStackTraces(err);
+			throw err;
+		}
+	}
 
-    final private NetBindsNode.NetMonitorSetting netMonitorSetting;
-    private volatile PortMonitor portMonitor;
+	final private NetBindsNode.NetMonitorSetting netMonitorSetting;
+	private volatile PortMonitor portMonitor;
 
-    private NetBindNodeWorker(File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
-        super(persistenceFile, new NetBindResultSerializer());
-        this.netMonitorSetting = netMonitorSetting;
-    }
+	private NetBindNodeWorker(File persistenceFile, NetBindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+		super(persistenceFile, new NetBindResultSerializer());
+		this.netMonitorSetting = netMonitorSetting;
+	}
 
-    @Override
-    protected int getHistorySize() {
-        return 2000;
-    }
+	@Override
+	protected int getHistorySize() {
+		return 2000;
+	}
 
-    @Override
-    protected String getSample(Locale locale) throws Exception {
-        // Get the latest netBind for the appProtocol and monitoring parameters
-        NetBind netBind = netMonitorSetting.getNetBind();
-        NetBind currentNetBind = netBind.getTable().get(netBind.getKey());
+	@Override
+	protected String getSample(Locale locale) throws Exception {
+		// Get the latest netBind for the appProtocol and monitoring parameters
+		NetBind netBind = netMonitorSetting.getNetBind();
+		NetBind currentNetBind = netBind.getTable().get(netBind.getKey());
 		int netPort = netMonitorSetting.getPort();
-        // If loopback or private IP, make the monitoring request through the master->daemon channel
-        InetAddress ipAddress = netMonitorSetting.getIpAddress();
-        if(
+		// If loopback or private IP, make the monitoring request through the master->daemon channel
+		InetAddress ipAddress = netMonitorSetting.getIpAddress();
+		if(
 			ipAddress.isUniqueLocal()
 			|| ipAddress.isLooback()
 			|| netPort==25 // Port 25 cannot be monitored directly from several networks
 		) {
-            Server server = netMonitorSetting.getServer();
-            AOServer aoServer = server.getAOServer();
-            if(aoServer==null) throw new IllegalArgumentException(accessor.getMessage(/*locale,*/ "NetBindNodeWorker.server.notAOServer", server));
-            portMonitor = new AOServDaemonPortMonitor(
-                aoServer,
-                ipAddress,
-                netPort,
-                netMonitorSetting.getNetProtocol(),
-                currentNetBind.getAppProtocol().getProtocol(),
-                currentNetBind.getMonitoringParameters()
-            );
-        } else {
-            portMonitor = PortMonitor.getPortMonitor(
-                ipAddress,
-                netMonitorSetting.getPort(),
-                netMonitorSetting.getNetProtocol(),
-                currentNetBind.getAppProtocol().getProtocol(),
-                currentNetBind.getMonitoringParameters()
-            );
-        }
-        return portMonitor.checkPort();
-    }
+			Server server = netMonitorSetting.getServer();
+			AOServer aoServer = server.getAOServer();
+			if(aoServer==null) throw new IllegalArgumentException(accessor.getMessage(/*locale,*/ "NetBindNodeWorker.server.notAOServer", server));
+			portMonitor = new AOServDaemonPortMonitor(
+				aoServer,
+				ipAddress,
+				netPort,
+				netMonitorSetting.getNetProtocol(),
+				currentNetBind.getAppProtocol().getProtocol(),
+				currentNetBind.getMonitoringParameters()
+			);
+		} else {
+			portMonitor = PortMonitor.getPortMonitor(
+				ipAddress,
+				netMonitorSetting.getPort(),
+				netMonitorSetting.getNetProtocol(),
+				currentNetBind.getAppProtocol().getProtocol(),
+				currentNetBind.getMonitoringParameters()
+			);
+		}
+		return portMonitor.checkPort();
+	}
 
-    @Override
-    protected void cancel(Future<String> future) {
-        super.cancel(future);
-        PortMonitor myPortMonitor = portMonitor;
-        if(myPortMonitor!=null) myPortMonitor.cancel();
-    }
+	@Override
+	protected void cancel(Future<String> future) {
+		super.cancel(future);
+		PortMonitor myPortMonitor = portMonitor;
+		if(myPortMonitor!=null) myPortMonitor.cancel();
+	}
 
-    @Override
-    protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, String sample, Iterable<? extends NetBindResult> previousResults) throws Exception {
-        return new AlertLevelAndMessage(
-            AlertLevel.NONE,
-            sample
-        );
-    }
+	@Override
+	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, String sample, Iterable<? extends NetBindResult> previousResults) throws Exception {
+		return new AlertLevelAndMessage(
+			AlertLevel.NONE,
+			sample
+		);
+	}
 
-    @Override
-    protected NetBindResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-        return new NetBindResult(time, latency, alertLevel, error, null);
-    }
+	@Override
+	protected NetBindResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
+		return new NetBindResult(time, latency, alertLevel, error, null);
+	}
 
-    @Override
-    protected NetBindResult newSampleResult(long time, long latency, AlertLevel alertLevel, String sample) {
-        return new NetBindResult(time, latency, alertLevel, null, sample);
-    }
+	@Override
+	protected NetBindResult newSampleResult(long time, long latency, AlertLevel alertLevel, String sample) {
+		return new NetBindResult(time, latency, alertLevel, null, sample);
+	}
 }

@@ -1,14 +1,14 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.PhysicalServer;
 import com.aoindustries.aoserv.client.Server;
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -22,22 +22,25 @@ import java.sql.SQLException;
  */
 public class PhysicalServersNode extends ServersNode {
 
-    PhysicalServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-        super(rootNode, port, csf, ssf);
-    }
+	private static final long serialVersionUID = 1L;
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "PhysicalServersNode.label");
-    }
+	PhysicalServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+		super(rootNode, port, csf, ssf);
+	}
 
-    boolean includeServer(Server server) throws SQLException, IOException {
-        PhysicalServer physicalServer = server.getPhysicalServer();
-        AOServer aoServer = server.getAOServer();
-        return
-            physicalServer!=null && physicalServer.getRam()!=-1
-            // Ignore ao-box in fail-over
-            && (aoServer==null || aoServer.getFailoverServer()==null)
-        ;
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "PhysicalServersNode.label");
+	}
+
+	@Override
+	boolean includeServer(Server server) throws SQLException, IOException {
+		PhysicalServer physicalServer = server.getPhysicalServer();
+		AOServer aoServer = server.getAOServer();
+		return
+			physicalServer!=null && physicalServer.getRam()!=-1
+			// Ignore ao-box in fail-over
+			&& (aoServer==null || aoServer.getFailoverServer()==null)
+		;
+	}
 }

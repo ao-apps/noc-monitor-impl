@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2013, 2015 by AO Industries, Inc.,
+ * Copyright 2000-2013, 2015, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,64 +19,64 @@ import java.util.logging.Logger;
  */
 public class WebSiteDatabase extends Database {
 
-    private static final Logger logger = Logger.getLogger(WebSiteDatabase.class.getName());
+	private static final Logger logger = Logger.getLogger(WebSiteDatabase.class.getName());
 
-    /**
-     * Only one database accessor is made.
-     */
-    private static WebSiteDatabase websiteDatabase;
+	/**
+	 * Only one database accessor is made.
+	 */
+	private static WebSiteDatabase websiteDatabase;
 
-    private static Properties props;
+	private static Properties props;
 
-    private static String getProperty(String name) throws IOException {
-        if (props == null) props = PropertiesUtils.loadFromResource(WebSiteDatabase.class, "WebSiteDatabase.properties");
-        return props.getProperty(name);
-    }
+	private static String getProperty(String name) throws IOException {
+		if (props == null) props = PropertiesUtils.loadFromResource(WebSiteDatabase.class, "WebSiteDatabase.properties");
+		return props.getProperty(name);
+	}
 
-    private static String getDatabaseDriver() throws IOException {
-        return getProperty("com.aoindustries.website.database.driver");
-    }
+	private static String getDatabaseDriver() throws IOException {
+		return getProperty("com.aoindustries.website.database.driver");
+	}
 
-    private static String getDatabaseURL() throws IOException {
-        return getProperty("com.aoindustries.website.database.url");
-    }
+	private static String getDatabaseURL() throws IOException {
+		return getProperty("com.aoindustries.website.database.url");
+	}
 
-    private static String getDatabaseUsername() throws IOException {
-        return getProperty("com.aoindustries.website.database.username");
-    }
+	private static String getDatabaseUsername() throws IOException {
+		return getProperty("com.aoindustries.website.database.username");
+	}
 
-    private static String getDatabasePassword() throws IOException {
-        return getProperty("com.aoindustries.website.database.password");
-    }
+	private static String getDatabasePassword() throws IOException {
+		return getProperty("com.aoindustries.website.database.password");
+	}
 
-    private static int getDatabasePoolSize() throws IOException {
-        return Integer.parseInt(getProperty("com.aoindustries.website.database.pool.size"));
-    }
+	private static int getDatabasePoolSize() throws IOException {
+		return Integer.parseInt(getProperty("com.aoindustries.website.database.pool.size"));
+	}
 
-    private static long getDatabaseMaxConnectionAge() throws IOException {
-        String S=getProperty("com.aoindustries.website.database.max_connection_age");
-        return S==null || S.length()==0 ? AOPool.DEFAULT_MAX_CONNECTION_AGE : Long.parseLong(S);
-    }
+	private static long getDatabaseMaxConnectionAge() throws IOException {
+		String S=getProperty("com.aoindustries.website.database.max_connection_age");
+		return S==null || S.length()==0 ? AOPool.DEFAULT_MAX_CONNECTION_AGE : Long.parseLong(S);
+	}
 
-    /**
-     * Make no instances.
-     */
-    private WebSiteDatabase() throws IOException {
-        super(
-            getDatabaseDriver(),
-            getDatabaseURL(),
-            getDatabaseUsername(),
-            getDatabasePassword(),
-            getDatabasePoolSize(),
-            getDatabaseMaxConnectionAge(),
-            logger
-        );
-    }
+	/**
+	 * Make no instances.
+	 */
+	private WebSiteDatabase() throws IOException {
+		super(
+			getDatabaseDriver(),
+			getDatabaseURL(),
+			getDatabaseUsername(),
+			getDatabasePassword(),
+			getDatabasePoolSize(),
+			getDatabaseMaxConnectionAge(),
+			logger
+		);
+	}
 
-    public static WebSiteDatabase getDatabase() throws IOException {
-        synchronized(WebSiteDatabase.class) {
-            if(websiteDatabase==null) websiteDatabase=new WebSiteDatabase();
-            return websiteDatabase;
-        }
-    }
+	public static WebSiteDatabase getDatabase() throws IOException {
+		synchronized(WebSiteDatabase.class) {
+			if(websiteDatabase==null) websiteDatabase=new WebSiteDatabase();
+			return websiteDatabase;
+		}
+	}
 }

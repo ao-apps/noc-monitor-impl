@@ -1,12 +1,11 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008, 2009, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.io.FileUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,82 +43,76 @@ import java.util.zip.GZIPOutputStream;
  */
 class BackgroundWriter {
 
-    private BackgroundWriter() {}
+	private BackgroundWriter() {}
 
-    private static final Logger logger = Logger.getLogger(BackgroundWriter.class.getName());
+	private static final Logger logger = Logger.getLogger(BackgroundWriter.class.getName());
 
-    private static boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 
-    private static class QueueEntry {
+	private static class QueueEntry {
 
-        private final File newPersistenceFile;
-        private final Serializable object;
-        private final boolean gzip;
+		private final File newPersistenceFile;
+		private final Serializable object;
+		private final boolean gzip;
 
-        private QueueEntry(File newPersistenceFile, Serializable object, boolean gzip) {
-            this.newPersistenceFile = newPersistenceFile;
-            this.object = object;
-            this.gzip = gzip;
-        }
-    }
+		private QueueEntry(File newPersistenceFile, Serializable object, boolean gzip) {
+			this.newPersistenceFile = newPersistenceFile;
+			this.object = object;
+			this.gzip = gzip;
+		}
+	}
 
-    // These are both synchronized on queue
-    private static final LinkedHashMap<File,QueueEntry> queue = new LinkedHashMap<File,QueueEntry>();
-    private static boolean running = false;
+	// These are both synchronized on queue
+	private static final LinkedHashMap<File,QueueEntry> queue = new LinkedHashMap<>();
+	private static boolean running = false;
 
-    /**
-     * Queues the object for write.  No defensive copy of the object is made - do not change after giving to this method.
-     */
-    static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) throws IOException {
-        QueueEntry queueEntry = new QueueEntry(newPersistenceFile, serializable, gzip);
-        synchronized(queue) {
-            if(queue.put(persistenceFile, queueEntry)!=null) {
-                if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Updating existing in queue");
-            }
-            if(!running) {
-                RootNodeImpl.executorService.submitUnbounded(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            int counter = 0;
-                            while(true) {
-                                // Get the next file from the queue until done
-                                File persistenceFile;
-                                QueueEntry queueEntry;
-                                synchronized(queue) {
-                                    Iterator<Map.Entry<File,QueueEntry>> iter = queue.entrySet().iterator();
-                                    if(!iter.hasNext()) {
-                                        running = false;
-                                        if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
-                                        return;
-                                    }
-                                    Map.Entry<File,QueueEntry> first = iter.next();
-                                    persistenceFile = first.getKey();
-                                    queueEntry = first.getValue();
-                                    iter.remove();
-                                    counter++;
-                                }
-                                try {
-                                    ObjectOutputStream oout = new ObjectOutputStream(
-                                        queueEntry.gzip
-                                        ? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(queueEntry.newPersistenceFile)))
-                                        : new BufferedOutputStream(new FileOutputStream(queueEntry.newPersistenceFile))
-                                    );
-                                    try {
-                                        oout.writeObject(queueEntry.object);
-                                    } finally {
-                                        oout.close();
-                                    }
-									FileUtils.renameAllowNonAtomic(queueEntry.newPersistenceFile, persistenceFile);
-                                } catch(Exception err) {
-                                    logger.log(Level.SEVERE, null, err);
-                                }
-                            }
-                        }
-                    }
-                );
-                running = true;
-            }
-        }
-    }
+	/**
+	 * Queues the object for write.  No defensive copy of the object is made - do not change after giving to this method.
+	 */
+	static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) throws IOException {
+		QueueEntry queueEntry = new QueueEntry(newPersistenceFile, serializable, gzip);
+		synchronized(queue) {
+			if(queue.put(persistenceFile, queueEntry)!=null) {
+				if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Updating existing in queue");
+			}
+			if(!running) {
+				RootNodeImpl.executorService.submitUnbounded(() -> {
+					int counter = 0;
+					while (true) {
+						// Get the next file from the queue until done
+						File persistenceFile1;
+						QueueEntry queueEntry1;
+						synchronized (queue) {
+							Iterator<Map.Entry<File,QueueEntry>> iter = queue.entrySet().iterator();
+							if(!iter.hasNext()) {
+								running = false;
+								if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
+								return;
+							}
+							Map.Entry<File,QueueEntry> first = iter.next();
+							persistenceFile1 = first.getKey();
+							queueEntry1 = first.getValue();
+							iter.remove();
+							counter++;
+						}
+						try {
+							try (
+								ObjectOutputStream oout = new ObjectOutputStream(
+									queueEntry1.gzip
+									? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile)))
+									: new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile))
+								)
+							) {
+								oout.writeObject(queueEntry1.object);
+							}
+							FileUtils.renameAllowNonAtomic(queueEntry1.newPersistenceFile, persistenceFile1);
+						}catch(Exception err) {
+							logger.log(Level.SEVERE, null, err);
+						}
+					}
+				});
+				running = true;
+			}
+		}
+	}
 }

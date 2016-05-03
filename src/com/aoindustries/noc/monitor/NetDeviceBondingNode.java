@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -18,22 +18,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class NetDeviceBondingNode extends SingleResultNodeImpl {
 
-    NetDeviceBondingNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-        super(
-            netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
-            netDeviceNode,
-            NetDeviceBondingNodeWorker.getWorker(
-                new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
-                netDeviceNode.getNetDevice()
-            ),
-            port,
-            csf,
-            ssf
-        );
-    }
+	private static final long serialVersionUID = 1L;
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "NetDeviceBondingNode.label");
-    }
+	NetDeviceBondingNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+		super(
+			netDeviceNode._networkDevicesNode.serverNode.serversNode.rootNode,
+			netDeviceNode,
+			NetDeviceBondingNodeWorker.getWorker(
+				new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
+				netDeviceNode.getNetDevice()
+			),
+			port,
+			csf,
+			ssf
+		);
+	}
+
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "NetDeviceBondingNode.label");
+	}
 }

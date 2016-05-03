@@ -1,18 +1,17 @@
 /*
- * Copyright 2008-2012, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.LoadAverageResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -49,15 +48,15 @@ public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult>
 	}
 
 	@Override
-	public List<?> getColumnHeaders(/*Locale locale*/) {
-		List<String> headers = new ArrayList<>(7);
-		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.oneMinute"));
-		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.fiveMinute"));
-		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.tenMinute"));
-		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.runningProcesses"));
-		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.totalProcesses"));
-		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.lastPID"));
-		headers.add(accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.alertThresholds"));
-		return Collections.unmodifiableList(headers);
+	public List<String> getColumnHeaders(/*Locale locale*/) {
+		return Arrays.asList(
+			accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.oneMinute"),
+			accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.fiveMinute"),
+			accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.tenMinute"),
+			accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.runningProcesses"),
+			accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.totalProcesses"),
+			accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.lastPID"),
+			accessor.getMessage(/*locale,*/ "LoadAverageNode.columnHeader.alertThresholds")
+		);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012 by AO Industries, Inc.,
+ * Copyright 2009-2012, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -11,8 +11,7 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,41 +21,41 @@ import java.util.List;
  */
 public class MySQLSlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicationResult> {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    MySQLSlaveStatusNode(MySQLSlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
-        super(
-            mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
-            mysqlSlaveNode,
-            MySQLSlaveStatusNodeWorker.getWorker(
-                mysqlSlaveNode.getPersistenceDirectory(),
-                mysqlSlaveNode.getFailoverMySQLReplication()
-            ),
-            port,
-            csf,
-            ssf
-        );
-    }
+	MySQLSlaveStatusNode(MySQLSlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+		super(
+			mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
+			mysqlSlaveNode,
+			MySQLSlaveStatusNodeWorker.getWorker(
+				mysqlSlaveNode.getPersistenceDirectory(),
+				mysqlSlaveNode.getFailoverMySQLReplication()
+			),
+			port,
+			csf,
+			ssf
+		);
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "MySQLSlaveStatusNode.label");
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "MySQLSlaveStatusNode.label");
+	}
 
-    @Override
-    public List<?> getColumnHeaders(/*Locale locale*/) {
-        List<String> headers = new ArrayList<String>(11);
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.secondsBehindMaster"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.masterLogFile"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.masterLogPosition"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveIOState"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveLogFile"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveLogPosition"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveIORunning"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveSQLRunning"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.lastErrorNumber"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.lastErrorDetails"));
-        headers.add(accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.alertThresholds"));
-        return Collections.unmodifiableList(headers);
-    }
+	@Override
+	public List<String> getColumnHeaders(/*Locale locale*/) {
+		return Arrays.asList(
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.secondsBehindMaster"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.masterLogFile"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.masterLogPosition"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveIOState"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveLogFile"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveLogPosition"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveIORunning"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveSQLRunning"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.lastErrorNumber"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.lastErrorDetails"),
+			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.alertThresholds")
+		);
+	}
 }

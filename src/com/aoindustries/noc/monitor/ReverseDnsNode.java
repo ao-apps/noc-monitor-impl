@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2014 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,27 +19,27 @@ import java.sql.SQLException;
  */
 public class ReverseDnsNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    //private final IPAddress ipAddress;
-    
-    ReverseDnsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
-        super(
-            ipAddressNode.ipAddressesNode.rootNode,
-            ipAddressNode,
-            ReverseDnsNodeWorker.getWorker(
-                new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
-                ipAddressNode.getIPAddress()
-            ),
-            port,
-            csf,
-            ssf
-        );
-        //this.ipAddress = ipAddressNode.getIPAddress();
-    }
+	//private final IPAddress ipAddress;
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "ReverseDnsNode.label");
-    }
+	ReverseDnsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+		super(
+			ipAddressNode.ipAddressesNode.rootNode,
+			ipAddressNode,
+			ReverseDnsNodeWorker.getWorker(
+				new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
+				ipAddressNode.getIPAddress()
+			),
+			port,
+			csf,
+			ssf
+		);
+		//this.ipAddress = ipAddressNode.getIPAddress();
+	}
+
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "ReverseDnsNode.label");
+	}
 }

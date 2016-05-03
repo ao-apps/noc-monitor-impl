@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2015 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2015, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -1075,9 +1075,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			&& netDevice.getServer().getAOServer() != null
 		;
 		lookups = new ArrayList<>(checkSmtpBlacklist ? (rblBlacklists.length + 6) : rblBlacklists.length);
-		for(BlacklistLookup rblBlacklist : rblBlacklists) {
-			lookups.add(rblBlacklist);
-		}
+		lookups.addAll(Arrays.asList(rblBlacklists));
 		if(checkSmtpBlacklist) {
 			lookups.add(new SmtpBlacklist("att.net",       AlertLevel.MEDIUM));
 			lookups.add(new SmtpBlacklist("bellsouth.net", AlertLevel.MEDIUM));
@@ -1097,23 +1095,18 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
 	@Override
 	protected List<String> getColumnHeaders(Locale locale) {
-		List<String> columnHeaders = new ArrayList<>(5);
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.basename"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.queryTime"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.latency"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.query"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.result"));
-		return columnHeaders;
+		return Arrays.asList(
+			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.basename"),
+			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.queryTime"),
+			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.latency"),
+			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.query"),
+			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.result")
+		);
 	}
 
 	private static final ExecutorService executorService = Executors.newFixedThreadPool(
 		NUM_THREADS,
-		new ThreadFactory() {
-			@Override
-			public Thread newThread(Runnable r) {
-				return new Thread(r, BlacklistsNodeWorker.class.getName()+".executorService");
-			}
-		}
+		(Runnable r) -> new Thread(r, BlacklistsNodeWorker.class.getName() + ".executorService")
 	);
 
 	private final Map<String,BlacklistQueryResult> queryResultCache = new HashMap<>();
@@ -1155,20 +1148,15 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 				startTimes.add(currentTime);
 				startNanos.add(System.nanoTime());
 				futures.add(
-					executorService.submit(
-						new Callable<BlacklistQueryResult>() {
-							@Override
-							public BlacklistQueryResult call() throws Exception {
-								BlacklistQueryResult result = lookup.call();
-								// Remember result even if timed-out on queue, this is to try to not lose any progress.
-								// Time-outs are only cached here, never from a queue timeout
-								synchronized(queryResultCache) {
-									queryResultCache.put(baseName, result);
-								}
-								return result;
-							}
+					executorService.submit(() -> {
+						BlacklistQueryResult result = lookup.call();
+						// Remember result even if timed-out on queue, this is to try to not lose any progress.
+						// Time-outs are only cached here, never from a queue timeout
+						synchronized(queryResultCache) {
+							queryResultCache.put(baseName, result);
 						}
-					)
+						return result;
+					})
 				);
 				Thread.sleep(TASK_DELAY);
 			} else {

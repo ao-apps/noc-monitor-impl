@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 by AO Industries, Inc.,
+ * Copyright 2009, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -19,37 +19,31 @@ import java.io.InputStream;
  */
 public class PingResultSerializer extends BufferedSerializer<PingResult> {
 
-    private static final int VERSION = 1;
+	private static final int VERSION = 1;
 
-    @Override
-    protected void serialize(PingResult value, ByteArrayOutputStream buffer) throws IOException {
-        CompressedDataOutputStream out = new CompressedDataOutputStream(buffer);
-        try {
-            out.writeCompressedInt(VERSION);
-            out.writeLong(value.getTime());
-            out.writeLong(value.getLatency());
-            out.writeByte(value.getAlertLevel().ordinal());
-            out.writeNullUTF(value.getError());
-        } finally {
-            out.close();
-        }
-    }
+	@Override
+	protected void serialize(PingResult value, ByteArrayOutputStream buffer) throws IOException {
+		try (CompressedDataOutputStream out = new CompressedDataOutputStream(buffer)) {
+			out.writeCompressedInt(VERSION);
+			out.writeLong(value.getTime());
+			out.writeLong(value.getLatency());
+			out.writeByte(value.getAlertLevel().ordinal());
+			out.writeNullUTF(value.getError());
+		}
+	}
 
-    @Override
-    public PingResult deserialize(InputStream rawIn) throws IOException {
-        CompressedDataInputStream in = new CompressedDataInputStream(rawIn);
-        try {
-            int version = in.readCompressedInt();
-            if(version==1) {
-                long time = in.readLong();
-                long latency = in.readLong();
-                AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
-                String error = in.readNullUTF();
-                if(error!=null) return new PingResult(time, latency, alertLevel, error);
-                return new PingResult(time, latency, alertLevel);
-            } else throw new IOException("Unsupported object version: "+version);
-        } finally {
-            in.close();
-        }
-    }
+	@Override
+	public PingResult deserialize(InputStream rawIn) throws IOException {
+		try (CompressedDataInputStream in = new CompressedDataInputStream(rawIn)) {
+			int version = in.readCompressedInt();
+			if(version==1) {
+				long time = in.readLong();
+				long latency = in.readLong();
+				AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
+				String error = in.readNullUTF();
+				if(error!=null) return new PingResult(time, latency, alertLevel, error);
+				return new PingResult(time, latency, alertLevel);
+			} else throw new IOException("Unsupported object version: "+version);
+		}
+	}
 }

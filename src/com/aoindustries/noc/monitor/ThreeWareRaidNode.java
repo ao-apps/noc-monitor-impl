@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -18,22 +18,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class ThreeWareRaidNode extends SingleResultNodeImpl {
 
-    ThreeWareRaidNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-        super(
-            raidNode.serverNode.serversNode.rootNode,
-            raidNode,
-            ThreeWareRaidNodeWorker.getWorker(
-                new File(raidNode.getPersistenceDirectory(), "3ware"),
-                raidNode.getAOServer()
-            ),
-            port,
-            csf,
-            ssf
-        );
-    }
+	private static final long serialVersionUID = 1L;
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "ThreeWareRaidNode.label");
-    }
+	ThreeWareRaidNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+		super(
+			raidNode.serverNode.serversNode.rootNode,
+			raidNode,
+			ThreeWareRaidNodeWorker.getWorker(
+				new File(raidNode.getPersistenceDirectory(), "3ware"),
+				raidNode.getAOServer()
+			),
+			port,
+			csf,
+			ssf
+		);
+	}
+
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "ThreeWareRaidNode.label");
+	}
 }

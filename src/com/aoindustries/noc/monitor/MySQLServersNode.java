@@ -1,13 +1,13 @@
 /*
- * Copyright 2009, 2014 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.MySQLServer;
+import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
@@ -88,14 +88,11 @@ public class MySQLServersNode extends NodeImpl {
 		return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "MySQLServersNode.label");
 	}
 
-	private final TableListener tableListener = new TableListener() {
-		@Override
-		public void tableUpdated(Table<?> table) {
-			try {
-				verifyMySQLServers();
-			} catch(IOException | SQLException err) {
-				throw new WrappedException(err);
-			}
+	private final TableListener tableListener = (Table<?> table) -> {
+		try {
+			verifyMySQLServers();
+		} catch(IOException | SQLException err) {
+			throw new WrappedException(err);
 		}
 	};
 

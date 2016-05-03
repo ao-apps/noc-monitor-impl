@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 by AO Industries, Inc.,
+ * Copyright 2014, 2016 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -18,24 +18,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class MdMismatchNode extends TableResultNodeImpl {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    MdMismatchNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-        super(
-            raidNode.serverNode.serversNode.rootNode,
-            raidNode,
-            MdMismatchWorker.getWorker(
-                new File(raidNode.getPersistenceDirectory(), "md_mismatch"),
-                raidNode.getAOServer()
-            ),
-            port,
-            csf,
-            ssf
-        );
-    }
+	MdMismatchNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+		super(
+			raidNode.serverNode.serversNode.rootNode,
+			raidNode,
+			MdMismatchWorker.getWorker(
+				new File(raidNode.getPersistenceDirectory(), "md_mismatch"),
+				raidNode.getAOServer()
+			),
+			port,
+			csf,
+			ssf
+		);
+	}
 
-    @Override
-    public String getLabel() {
-        return accessor.getMessage(/*rootNode.locale,*/ "MdMismatchNode.label");
-    }
+	@Override
+	public String getLabel() {
+		return accessor.getMessage(/*rootNode.locale,*/ "MdMismatchNode.label");
+	}
 }

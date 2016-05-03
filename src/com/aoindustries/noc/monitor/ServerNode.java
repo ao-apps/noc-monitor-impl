@@ -123,22 +123,19 @@ public class ServerNode extends NodeImpl {
 		return _label;
 	}
 
-	private final TableListener tableListener = new TableListener() {
-		@Override
-		public void tableUpdated(Table<?> table) {
-			try {
-				verifyNetDevices();
-				verifyMySQLServers();
-				verifyHardDrives();
-				verifyRaid();
-				verifyUps();
-				verifyFilesystems();
-				verifyLoadAverage();
-				verifyMemory();
-				verifyTime();
-			} catch(IOException | SQLException err) {
-				throw new WrappedException(err);
-			}
+	private final TableListener tableListener = (Table<?> table) -> {
+		try {
+			verifyNetDevices();
+			verifyMySQLServers();
+			verifyHardDrives();
+			verifyRaid();
+			verifyUps();
+			verifyFilesystems();
+			verifyLoadAverage();
+			verifyMemory();
+			verifyTime();
+		} catch(IOException | SQLException err) {
+			throw new WrappedException(err);
 		}
 	};
 
