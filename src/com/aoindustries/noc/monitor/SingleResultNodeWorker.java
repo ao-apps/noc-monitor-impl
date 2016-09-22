@@ -83,7 +83,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 	}
 
 	private String getReportWithTimeout() throws Exception {
-		Future<String> future = RootNodeImpl.executorService.submitUnbounded(this::getReport);
+		Future<String> future = RootNodeImpl.executors.getUnbounded().submit(this::getReport);
 		try {
 			return future.get(5, TimeUnit.MINUTES);
 		} catch(InterruptedException | TimeoutException err) {

@@ -133,7 +133,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	}
 
 	private S getSampleWithTimeout(final Locale locale) throws Exception {
-		Future<S> future = RootNodeImpl.executorService.submitUnbounded(() -> getSample(locale));
+		Future<S> future = RootNodeImpl.executors.getUnbounded().submit(() -> getSample(locale));
 		try {
 			return future.get(getFutureTimeout(), getFutureTimeoutUnit());
 		} catch(InterruptedException | TimeoutException err) {

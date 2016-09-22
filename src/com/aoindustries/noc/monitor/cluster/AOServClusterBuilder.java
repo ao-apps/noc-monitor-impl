@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -153,14 +152,7 @@ public class AOServClusterBuilder {
 			}
 			if(foundDom0) {
 				futures.add(
-					RootNodeImpl.executorService.submitUnbounded(
-						new Callable<Cluster>() {
-							@Override
-							public Cluster call() throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-								return getCluster(conn, serverFarm, aoServers, hddModelReports, lvmReports, useTarget);
-							}
-						}
-					)
+					RootNodeImpl.executors.getUnbounded().submit(() -> getCluster(conn, serverFarm, aoServers, hddModelReports, lvmReports, useTarget))
 				);
 			}
 		}
@@ -327,14 +319,7 @@ public class AOServClusterBuilder {
 		List<Future<ClusterConfiguration>> futures = new ArrayList<>(clusters.size());
 		for(final Cluster cluster : clusters) {
 			futures.add(
-				RootNodeImpl.executorService.submitUnbounded(
-					new Callable<ClusterConfiguration>() {
-						@Override
-						public ClusterConfiguration call() throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
-							return getClusterConfiguration(locale, conn, cluster, drbdReports, lvmReports);
-						}
-					}
-				)
+				RootNodeImpl.executors.getUnbounded().submit(() -> getClusterConfiguration(locale, conn, cluster, drbdReports, lvmReports))
 			);
 		}
 
@@ -361,14 +346,7 @@ public class AOServClusterBuilder {
 			if(isEnabledDom0(aoServer)) {
 				futures.put(
 					aoServer.getHostname().toString(),
-					RootNodeImpl.executorService.submitUnbounded(
-						new Callable<List<AOServer.DrbdReport>>() {
-							@Override
-							public List<AOServer.DrbdReport> call() throws ParseException, IOException, SQLException {
-								return aoServer.getDrbdReport(/*locale*/);
-							}
-						}
-					)
+					RootNodeImpl.executors.getUnbounded().submit(aoServer::getDrbdReport)
 				);
 			}
 		}
@@ -390,14 +368,7 @@ public class AOServClusterBuilder {
 			if(isEnabledDom0(aoServer)) {
 				futures.put(
 					aoServer.getHostname().toString(),
-					RootNodeImpl.executorService.submitUnbounded(
-						new Callable<AOServer.LvmReport>() {
-							@Override
-							public AOServer.LvmReport call() throws IOException, SQLException, ParseException {
-								return aoServer.getLvmReport(/*locale*/);
-							}
-						}
-					)
+					RootNodeImpl.executors.getUnbounded().submit(aoServer::getLvmReport)
 				);
 			}
 		}
@@ -419,14 +390,7 @@ public class AOServClusterBuilder {
 			if(isEnabledDom0(aoServer)) {
 				futures.put(
 					aoServer.getHostname().toString(),
-					RootNodeImpl.executorService.submitUnbounded(
-						new Callable<Map<String,String>>() {
-							@Override
-							public Map<String,String> call() throws ParseException, IOException, SQLException {
-								return aoServer.getHddModelReport(/*locale*/);
-							}
-						}
-					)
+					RootNodeImpl.executors.getUnbounded().submit(aoServer::getHddModelReport)
 				);
 			}
 		}

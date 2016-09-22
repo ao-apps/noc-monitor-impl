@@ -13,7 +13,7 @@ import com.aoindustries.noc.monitor.common.NodeSnapshot;
 import com.aoindustries.noc.monitor.common.RootNode;
 import com.aoindustries.noc.monitor.common.TreeListener;
 import com.aoindustries.util.ErrorPrinter;
-import com.aoindustries.util.concurrent.ExecutorService;
+import com.aoindustries.util.concurrent.Executors;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -55,13 +55,13 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	/**
 	 * One thread pool is shared by all components, and it is never disposed.
 	 */
-	public final static ExecutorService executorService = ExecutorService.newInstance();
+	public final static Executors executors = new Executors();
 
 	/**
 	 * Schedules a task to be performed in the future.  It will be performed in a background thread via the ExecutorService.
 	 */
 	public static Future<?> schedule(Runnable task, long delay) {
-		return executorService.submitUnbounded(task, delay);
+		return executors.getUnbounded().submit(task, delay);
 	}
 
 	/**
@@ -125,7 +125,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 				if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
 				final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, port, csf, ssf);
 				// Start as a background task
-				executorService.submitUnbounded(() -> {
+				executors.getUnbounded().submit(() -> {
 					if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
 					try {
 						newRootNode.start();
@@ -442,7 +442,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 					nodeAddedSignaler = new NodeAddedSignaler(treeListener);
 					nodeAddedSignalers.put(treeListener, nodeAddedSignaler);
 					nodeAddedSignaler.nodeAdded();
-					executorService.submitUnbounded(nodeAddedSignaler);
+					executors.getUnbounded().submit(nodeAddedSignaler);
 				} else {
 					nodeAddedSignaler.nodeAdded();
 				}
@@ -462,7 +462,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 					nodeRemovedSignaler = new NodeRemovedSignaler(treeListener);
 					nodeRemovedSignalers.put(treeListener, nodeRemovedSignaler);
 					nodeRemovedSignaler.nodeRemoved();
-					executorService.submitUnbounded(nodeRemovedSignaler);
+					executors.getUnbounded().submit(nodeRemovedSignaler);
 				} else {
 					nodeRemovedSignaler.nodeRemoved();
 				}
@@ -492,7 +492,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						nodeAlertLevelChangedSignaler = new NodeAlertLevelChangedSignaler(treeListener);
 						nodeAlertLevelChangedSignalers.put(treeListener, nodeAlertLevelChangedSignaler);
 						nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
-						executorService.submitUnbounded(nodeAlertLevelChangedSignaler);
+						executors.getUnbounded().submit(nodeAlertLevelChangedSignaler);
 					} else {
 						nodeAlertLevelChangedSignaler.nodeAlertLevelChanged(change);
 					}

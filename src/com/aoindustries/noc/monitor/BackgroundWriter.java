@@ -76,7 +76,7 @@ class BackgroundWriter {
 				if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Updating existing in queue");
 			}
 			if(!running) {
-				RootNodeImpl.executorService.submitUnbounded(() -> {
+				RootNodeImpl.executors.getUnbounded().submit(() -> {
 					int counter = 0;
 					while (true) {
 						// Get the next file from the queue until done
