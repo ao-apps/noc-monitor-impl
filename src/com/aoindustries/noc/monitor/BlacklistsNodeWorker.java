@@ -1199,6 +1199,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 					future.cancel(false);
 					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), e.getMessage(), lookup.getMaxAlertLevel());
 					cacheResult = true;
+					if(e instanceof InterruptedException) {
+						// Restore the interrupted status
+						Thread.currentThread().interrupt();
+					}
 				}
 				if(cacheResult) {
 					synchronized(queryResultCache) {

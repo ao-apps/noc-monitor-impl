@@ -146,6 +146,8 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 					lastTableStatusesLock.wait();
 				} catch(InterruptedException err) {
 					// logger.warning("wait interrupted");
+					// Restore the interrupted status
+					Thread.currentThread().interrupt();
 				}
 			}
 			return lastTableStatuses;

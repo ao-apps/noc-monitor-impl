@@ -313,6 +313,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
+						// Restore the interrupted status
+						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {
@@ -365,6 +367,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
+						// Restore the interrupted status
+						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {
@@ -415,6 +419,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
+						// Restore the interrupted status
+						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {
