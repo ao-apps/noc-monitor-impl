@@ -44,7 +44,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
- * Builds the cluster configuration from the AOServ system.
+ * Builds the cluster configuration from the AOServ Platform.
  *
  * TODO: Add check to make sure that virtual server to physical server mappings are always within the same cluster?
  *       - or - Could this be an underlying database constraint?
@@ -123,7 +123,7 @@ public class AOServClusterBuilder {
 	}
 
 	/**
-	 * Loads an unmodifiable set of the current cluster states from the AOServ system.
+	 * Loads an unmodifiable set of the current cluster states from the AOServ Platform.
 	 * Only ServerFarms that have at least one enabled Dom0 are included.
 	 * 
 	 * @see Cluster
@@ -297,7 +297,7 @@ public class AOServClusterBuilder {
 	}
 
 	/**
-	 * Loads an unmodifiable set of the current cluster configuration from the AOServ system.
+	 * Loads an unmodifiable set of the current cluster configuration from the AOServ Platform.
 	 * 
 	 * @see  #getClusters
 	 * @see  #getClusterConfiguration
