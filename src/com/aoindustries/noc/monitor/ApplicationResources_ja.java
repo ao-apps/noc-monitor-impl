@@ -24,7 +24,7 @@ public final class ApplicationResources_ja extends EditableResourceBundle {
 		super(
 			Locale.JAPANESE,
 			ApplicationResources.bundleSet,
-			new File(System.getProperty("user.home")+"/common/ao/cvswork/noc-monitor/src/com/aoindustries/noc/monitor/ApplicationResources_ja.properties")
+			new File(System.getProperty("user.home")+"/maven2/ao/noc-monitor/src/com/aoindustries/noc/monitor/ApplicationResources_ja.properties")
 		);
 	}
 }
