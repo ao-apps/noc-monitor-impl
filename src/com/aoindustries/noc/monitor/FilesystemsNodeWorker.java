@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -244,31 +244,29 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 
 		// Check for disk space percent
 		{
-			// Ignore on www1.fc.lnxhosting.ca:/var/backup (until they use AO-based backup code)
 			String hostname = aoServer.getHostname().toString();
 			String mountpoint = tableData.get(index).toString();
-			if(
-				!hostname.equals("www1.fc.lnxhosting.ca")
-				|| !mountpoint.equals("/var/backup")
-			) {
-				String use = tableData.get(index+5).toString();
-				if(!use.endsWith("%")) throw new IOException("use doesn't end with '%': "+use);
-				int useNum = Integer.parseInt(use.substring(0, use.length()-1));
-				// Backup partitions and www1.nl.pertinence.net:/ will allow a higher percentage
-				final boolean allowHigherPercentage =
-					(hostname.equals("www1.nl.pertinence.net") && mountpoint.equals("/"))
-					|| mountpoint.startsWith("/var/backup")
-				;
-				final AlertLevel newAlertLevel;
-				if(useNum<0 || useNum>=(allowHigherPercentage ? 99 : 97)) newAlertLevel = AlertLevel.CRITICAL;
-				else if(useNum>=(allowHigherPercentage ? 98 : 94)) newAlertLevel = AlertLevel.HIGH;
-				else if(useNum>=(allowHigherPercentage ? 97 : 91)) newAlertLevel = AlertLevel.MEDIUM;
-				else if(useNum>=(allowHigherPercentage ? 96 : 88)) newAlertLevel = AlertLevel.LOW;
+			String use = tableData.get(index+5).toString();
+			if(!use.endsWith("%")) throw new IOException("use doesn't end with '%': "+use);
+			int useNum = Integer.parseInt(use.substring(0, use.length()-1));
+			final AlertLevel newAlertLevel;
+			if(mountpoint.startsWith("/var/backup")) {
+				// Backup partitions allow a higher percentage and never go critical
+				if(useNum >= 98) newAlertLevel = AlertLevel.HIGH;
+				else if(useNum >= 97) newAlertLevel = AlertLevel.MEDIUM;
+				else if(useNum >= 96) newAlertLevel = AlertLevel.LOW;
 				else newAlertLevel = AlertLevel.NONE;
-				if(newAlertLevel.compareTo(highestAlertLevel)>0) {
-					highestAlertLevel = newAlertLevel;
-					highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.use", use);
-				}
+			} else {
+				// Other partitions notify at lower percentages and can go critical
+				if(useNum >= 97) newAlertLevel = AlertLevel.CRITICAL;
+				else if(useNum >= 94) newAlertLevel = AlertLevel.HIGH;
+				else if(useNum >= 91) newAlertLevel = AlertLevel.MEDIUM;
+				else if(useNum >= 88) newAlertLevel = AlertLevel.LOW;
+				else newAlertLevel = AlertLevel.NONE;
+			}
+			if(newAlertLevel.compareTo(highestAlertLevel)>0) {
+				highestAlertLevel = newAlertLevel;
+				highestAlertMessage = accessor.getMessage(/*locale,*/ "FilesystemsNodeWorker.alertMessage.use", use);
 			}
 		}
 
