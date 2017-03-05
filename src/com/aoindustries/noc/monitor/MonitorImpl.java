@@ -30,6 +30,8 @@ import java.util.logging.Logger;
  *
  * TODO: Managed switches
  *
+ * TODO: Watch /var/log/audit/audit.log for any SELinux denials or messages that indicate intrusion.
+ *
  * TODO:
  *     Group servers by cluster and then by rack, can add power warning on rack node itself
  *        /cluster/
