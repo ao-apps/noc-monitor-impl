@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 /**
  * The main starting point for the monitor.
  *
+ * TODO: bind/named: rndc status
+ *
  * TODO: Monitor PDU load levels
  *
  * TODO: Fan speed, CPU voltages, system/CPU temps (BMC) (Hardware Sensors)
