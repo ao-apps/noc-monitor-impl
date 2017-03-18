@@ -1,12 +1,12 @@
 /*
- * Copyright 2008-2009, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.IPAddress;
-import com.aoindustries.aoserv.client.validator.InetAddress;
+import com.aoindustries.net.InetAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;

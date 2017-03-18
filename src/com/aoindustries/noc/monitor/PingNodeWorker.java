@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -38,9 +38,9 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 	private static final Map<String, PingNodeWorker> workerCache = new HashMap<>();
 	static PingNodeWorker getWorker(File persistenceDirectory, IPAddress ipAddress) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
-		com.aoindustries.aoserv.client.validator.InetAddress ip = ipAddress.getInetAddress();
-		com.aoindustries.aoserv.client.validator.InetAddress externalIp = ipAddress.getExternalIpAddress();
-		com.aoindustries.aoserv.client.validator.InetAddress pingAddress = externalIp==null ? ip : externalIp;
+		com.aoindustries.net.InetAddress ip = ipAddress.getInetAddress();
+		com.aoindustries.net.InetAddress externalIp = ipAddress.getExternalIpAddress();
+		com.aoindustries.net.InetAddress pingAddress = externalIp==null ? ip : externalIp;
 		synchronized(workerCache) {
 			PingNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
@@ -56,9 +56,9 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 	/**
 	 * The most recent timer task
 	 */
-	final private com.aoindustries.aoserv.client.validator.InetAddress ipAddress;
+	final private com.aoindustries.net.InetAddress ipAddress;
 
-	private PingNodeWorker(File persistenceDirectory, com.aoindustries.aoserv.client.validator.InetAddress ipAddress) throws IOException {
+	private PingNodeWorker(File persistenceDirectory, com.aoindustries.net.InetAddress ipAddress) throws IOException {
 		super(new File(persistenceDirectory, "pings"), new PingResultSerializer());
 		this.ipAddress = ipAddress;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2015, 2016 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2015, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,7 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetDevice;
-import com.aoindustries.aoserv.client.validator.DomainName;
+import com.aoindustries.net.DomainName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -158,7 +158,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		DnsBlacklist(String basename, AlertLevel maxAlertLevel) {
 			this.basename = basename;
 			this.maxAlertLevel = maxAlertLevel;
-			com.aoindustries.aoserv.client.validator.InetAddress ip = ipAddress.getExternalIpAddress();
+			com.aoindustries.net.InetAddress ip = ipAddress.getExternalIpAddress();
 			if(ip==null) ip = ipAddress.getInetAddress();
 			if(ip.isIPv6()) throw new UnsupportedOperationException("IPv6 not yet implemented");
 			int bits = IPAddress.getIntForIPAddress(ip.toString());
