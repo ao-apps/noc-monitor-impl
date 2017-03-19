@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.net.HttpParameters;
 import com.aoindustries.net.InetAddress;
+import com.aoindustries.net.Port;
 import com.aoindustries.noc.monitor.portmon.PortMonitor;
 
 /**
@@ -20,20 +21,18 @@ import com.aoindustries.noc.monitor.portmon.PortMonitor;
 public class AOServDaemonPortMonitor extends PortMonitor {
 
 	private final AOServer aoServer;
-	private final String netProtocol;
 	private final String appProtocol;
 	private final HttpParameters monitoringParameters;
 
-	public AOServDaemonPortMonitor(AOServer aoServer, InetAddress ipAddress, int port, String netProtocol, String appProtocol, HttpParameters monitoringParameters) {
+	public AOServDaemonPortMonitor(AOServer aoServer, InetAddress ipAddress, Port port, String appProtocol, HttpParameters monitoringParameters) {
 		super(ipAddress, port);
 		this.aoServer = aoServer;
-		this.netProtocol = netProtocol;
 		this.appProtocol = appProtocol;
 		this.monitoringParameters = monitoringParameters;
 	}
 
 	@Override
 	public String checkPort() throws Exception {
-		return aoServer.checkPort(ipAddress, port, netProtocol, appProtocol, monitoringParameters);
+		return aoServer.checkPort(ipAddress, port, appProtocol, monitoringParameters);
 	}
 }

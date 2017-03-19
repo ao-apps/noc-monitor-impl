@@ -11,6 +11,7 @@ import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.net.InetAddress;
+import com.aoindustries.net.Port;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -140,15 +141,13 @@ public class NetBindsNode extends NodeImpl {
 		private final Server server;
 		private final NetBind netBind;
 		private final InetAddress ipAddress;
-		private final int port;
-		private final String netProtocol;
+		private final Port port;
 
-		private NetMonitorSetting(Server server, NetBind netBind, InetAddress ipAddress, int port, String netProtocol) {
+		private NetMonitorSetting(Server server, NetBind netBind, InetAddress ipAddress, Port port) {
 			this.server = server;
 			this.netBind = netBind;
 			this.ipAddress = ipAddress;
 			this.port = port;
-			this.netProtocol = netProtocol;
 		}
 
 		@Override
@@ -160,10 +159,7 @@ public class NetBindsNode extends NodeImpl {
 			diff = ipAddress.compareTo(o.ipAddress);
 			if(diff!=0) return diff;
 			// port
-			if(port<o.port) return -1;
-			if(port>o.port) return 1;
-			// net protocol
-			return netProtocol.compareTo(o.netProtocol);
+			return port.compareTo(o.port);
 		}
 
 		@Override
@@ -176,7 +172,6 @@ public class NetBindsNode extends NodeImpl {
 				&& server.equals(other.server)
 				&& netBind.equals(other.netBind)
 				&& ipAddress.equals(other.ipAddress)
-				&& netProtocol.equals(other.netProtocol)
 			;
 		}
 
@@ -186,8 +181,7 @@ public class NetBindsNode extends NodeImpl {
 			hash = 11 * hash + server.hashCode();
 			hash = 11 * hash + netBind.hashCode();
 			hash = 11 * hash + ipAddress.hashCode();
-			hash = 11 * hash + port;
-			hash = 11 * hash + netProtocol.hashCode();
+			hash = 11 * hash + port.hashCode();
 			return hash;
 		}
 
@@ -212,15 +206,8 @@ public class NetBindsNode extends NodeImpl {
 		/**
 		 * @return the port
 		 */
-		int getPort() {
+		Port getPort() {
 			return port;
-		}
-
-		/**
-		 * @return the netProtocol
-		 */
-		String getNetProtocol() {
-			return netProtocol;
 		}
 	}
 
@@ -257,8 +244,7 @@ public class NetBindsNode extends NodeImpl {
 						server,
 						netBind,
 						inetaddress,
-						netBind.getPort().getPort(),
-						netBind.getNetProtocol().getProtocol()
+						netBind.getPort()
 					)
 				);
 			}
@@ -270,8 +256,7 @@ public class NetBindsNode extends NodeImpl {
 						server,
 						netBind,
 						inetaddress,
-						netBind.getPort().getPort(),
-						netBind.getNetProtocol().getProtocol()
+						netBind.getPort()
 					)
 				);
 			}

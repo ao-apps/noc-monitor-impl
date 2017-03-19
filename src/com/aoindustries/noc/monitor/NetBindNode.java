@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2009-2012, 2014, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -14,6 +14,7 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * The net bind monitor.
@@ -32,7 +33,10 @@ public class NetBindNode extends TableMultiResultNodeImpl<NetBindResult> {
 			netBindsNode.ipAddressNode.ipAddressesNode.rootNode,
 			netBindsNode,
 			NetBindNodeWorker.getWorker(
-				new File(netBindsNode.getPersistenceDirectory(), netMonitorSetting.getPort()+"_"+netMonitorSetting.getNetProtocol()),
+				new File(
+					netBindsNode.getPersistenceDirectory(),
+					netMonitorSetting.getPort().getPort()+"_"+netMonitorSetting.getPort().getProtocol().name()
+				),
 				netMonitorSetting
 			),
 			port,
@@ -40,7 +44,7 @@ public class NetBindNode extends TableMultiResultNodeImpl<NetBindResult> {
 			ssf
 		);
 		this.netMonitorSetting = netMonitorSetting;
-		this.label = netMonitorSetting.getPort()+"/"+netMonitorSetting.getNetProtocol()+" ("+netMonitorSetting.getNetBind().getAppProtocol().getProtocol()+')';
+		this.label = netMonitorSetting.getPort()+" ("+netMonitorSetting.getNetBind().getAppProtocol().getProtocol()+')';
 	}
 
 	NetBindsNode.NetMonitorSetting getNetMonitorSetting() {

@@ -9,6 +9,7 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.Server;
 import com.aoindustries.net.InetAddress;
+import com.aoindustries.net.Port;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetBindResult;
@@ -69,13 +70,13 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 		// Get the latest netBind for the appProtocol and monitoring parameters
 		NetBind netBind = netMonitorSetting.getNetBind();
 		NetBind currentNetBind = netBind.getTable().get(netBind.getKey());
-		int netPort = netMonitorSetting.getPort();
+		Port netPort = netMonitorSetting.getPort();
 		// If loopback or private IP, make the monitoring request through the master->daemon channel
 		InetAddress ipAddress = netMonitorSetting.getIpAddress();
 		if(
 			ipAddress.isUniqueLocal()
 			|| ipAddress.isLooback()
-			|| netPort==25 // Port 25 cannot be monitored directly from several networks
+			|| netPort.getPort() == 25 // Port 25 cannot be monitored directly from several networks
 		) {
 			Server server = netMonitorSetting.getServer();
 			AOServer aoServer = server.getAOServer();
@@ -84,7 +85,6 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 				aoServer,
 				ipAddress,
 				netPort,
-				netMonitorSetting.getNetProtocol(),
 				currentNetBind.getAppProtocol().getProtocol(),
 				currentNetBind.getMonitoringParameters()
 			);
@@ -92,7 +92,6 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 			portMonitor = PortMonitor.getPortMonitor(
 				ipAddress,
 				netMonitorSetting.getPort(),
-				netMonitorSetting.getNetProtocol(),
 				currentNetBind.getAppProtocol().getProtocol(),
 				currentNetBind.getMonitoringParameters()
 			);
