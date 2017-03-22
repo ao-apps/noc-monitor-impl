@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLServer;
+import com.aoindustries.aoserv.client.validator.MySQLServerName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -32,7 +33,7 @@ public class MySQLServerNode extends NodeImpl {
 
 	final MySQLServersNode _mysqlServersNode;
 	private final MySQLServer _mysqlServer;
-	private final String _label;
+	private final MySQLServerName _label;
 
 	volatile private MySQLSlavesNode _mysqlSlavesNode;
 	volatile private MySQLDatabasesNode _mysqlDatabasesNode;
@@ -91,7 +92,7 @@ public class MySQLServerNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return _label;
+		return _label.toString();
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -148,7 +149,7 @@ public class MySQLServerNode extends NodeImpl {
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(_mysqlServersNode.getPersistenceDirectory(), _label);
+		File dir = new File(_mysqlServersNode.getPersistenceDirectory(), _label.toString());
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(

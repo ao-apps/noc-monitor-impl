@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -262,8 +262,8 @@ public class AOServClusterBuilder {
 				if(physicalServer!=null && virtualServer!=null) throw new SQLException("Server is both a physical server and a virtual server: "+server);
 				if(virtualServer!=null) {
 					// Must always be in the package with the same name as the root business
-					String packageName = server.getPackage().getName();
-					if(!packageName.equals(rootAccounting.toString())) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
+					AccountingCode packageName = server.getPackage().getName();
+					if(!packageName.equals(rootAccounting)) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
 					String hostname = server.getName();
 					cluster = cluster.addDomU(
 						hostname,

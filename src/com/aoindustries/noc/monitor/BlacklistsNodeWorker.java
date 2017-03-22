@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.aoserv.client.NetDevice;
+import com.aoindustries.net.AddressFamily;
 import com.aoindustries.net.DomainName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -160,7 +161,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			this.maxAlertLevel = maxAlertLevel;
 			com.aoindustries.net.InetAddress ip = ipAddress.getExternalIpAddress();
 			if(ip==null) ip = ipAddress.getInetAddress();
-			if(ip.isIPv6()) throw new UnsupportedOperationException("IPv6 not yet implemented");
+			AddressFamily addressFamily = ip.getAddressFamily();
+			if(addressFamily != AddressFamily.INET) throw new UnsupportedOperationException("Address family not yet implemented: " + addressFamily);
 			int bits = IPAddress.getIntForIPAddress(ip.toString());
 			this.query =
 				new StringBuilder(16+basename.length())
@@ -321,14 +323,14 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			if(netDevice==null) throw new SQLException(ipAddress+": NetDevice not found");
 			AOServer aoServer = netDevice.getServer().getAOServer();
 			if(aoServer==null) throw new SQLException(ipAddress+": AOServer not found");
-			String addressIp = address.getHostAddress();
+			com.aoindustries.net.InetAddress addressIp = com.aoindustries.net.InetAddress.valueOf(address.getHostAddress());
 			String statusLine = aoServer.checkSmtpBlacklist(ipAddress.getInetAddress(), addressIp);
 			// Return results
 			long endNanos = System.nanoTime();
 			AlertLevel alertLevel;
 			if(statusLine.startsWith("220 ")) alertLevel = AlertLevel.NONE;
 			else alertLevel = maxAlertLevel;
-			return new BlacklistQueryResult(domain, startTime, endNanos-startNanos, addressIp, statusLine, alertLevel);
+			return new BlacklistQueryResult(domain, startTime, endNanos-startNanos, addressIp.toString(), statusLine, alertLevel);
 		}
 
 		@Override

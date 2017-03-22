@@ -14,7 +14,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The net bind monitor.

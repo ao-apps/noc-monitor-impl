@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.validator.UserId;
 import com.aoindustries.noc.monitor.common.Monitor;
 import com.aoindustries.noc.monitor.common.RootNode;
 import java.io.IOException;
@@ -148,7 +149,7 @@ public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 	}
 
 	@Override
-	public RootNode login(Locale locale, String username, String password) throws IOException, SQLException {
+	public RootNode login(Locale locale, UserId username, String password) throws IOException, SQLException {
 		AOServConnector connector=AOServConnector.getConnector(username, password, logger);
 		connector.testConnect();
 		return RootNodeImpl.getRootNode(locale, connector, port, csf, ssf);

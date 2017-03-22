@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
+import com.aoindustries.aoserv.client.validator.MySQLDatabaseName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -29,7 +30,7 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
 	final MySQLDatabasesNode mysqlDatabasesNode;
 	final MySQLDatabase mysqlDatabase;
 	private final FailoverMySQLReplication mysqlSlave;
-	private final String _label;
+	private final MySQLDatabaseName _label;
 	volatile private MySQLCheckTablesNode mysqlCheckTablesNode;
 
 	MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
@@ -85,11 +86,11 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return _label;
+		return _label.toString();
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(mysqlDatabasesNode.getPersistenceDirectory(), _label);
+		File dir = new File(mysqlDatabasesNode.getPersistenceDirectory(), _label.toString());
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(

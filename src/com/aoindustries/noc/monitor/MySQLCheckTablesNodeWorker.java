@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2016 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2016, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import com.aoindustries.aoserv.client.MySQLServer;
+import com.aoindustries.aoserv.client.validator.MySQLTableName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -96,8 +97,8 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 		List<MySQLDatabase.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
 		if(lastTableStatuses.isEmpty()) return Collections.emptyList();
 		// Build the set of table names and types
-		List<String> tableNames = new ArrayList<>(lastTableStatuses.size());
-		Map<String,MySQLDatabase.Engine> tables = new HashMap<>(lastTableStatuses.size()*4/3+1);
+		List<MySQLTableName> tableNames = new ArrayList<>(lastTableStatuses.size());
+		Map<MySQLTableName,MySQLDatabase.Engine> tables = new HashMap<>(lastTableStatuses.size()*4/3+1);
 		for(MySQLDatabase.TableStatus lastTableStatus : lastTableStatuses) {
 			MySQLDatabase.Engine engine = lastTableStatus.getEngine();
 			if(
@@ -108,15 +109,15 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 				&& engine!=MySQLDatabase.Engine.PERFORMANCE_SCHEMA
 				&& !(engine==null && "VIEW".equals(lastTableStatus.getComment()))
 			) {
-				String name = lastTableStatus.getName();
+				MySQLTableName name = lastTableStatus.getName();
 				if(
 					// Skip the four expected non-checkable tables in information_schema
 					!mysqlDatabase.getName().equals(MySQLDatabase.INFORMATION_SCHEMA)
 					|| (
-						!name.equals("COLUMNS")
-						&& !name.equals("ROUTINES")
-						&& !name.equals("TRIGGERS")
-						&& !name.equals("VIEWS")
+						!name.toString().equals("COLUMNS")
+						&& !name.toString().equals("ROUTINES")
+						&& !name.toString().equals("TRIGGERS")
+						&& !name.toString().equals("VIEWS")
 					)
 				) {
 					tableNames.add(name);
@@ -128,7 +129,7 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 		List<Object> tableData = new ArrayList<>(checkTableResults.size()*5);
 
 		for(MySQLDatabase.CheckTableResult checkTableResult : checkTableResults) {
-			String table = checkTableResult.getTable();
+			MySQLTableName table = checkTableResult.getTable();
 			tableData.add(table);
 			tableData.add(tables.get(table));
 			tableData.add(new MilliInterval(checkTableResult.getDuration()));
