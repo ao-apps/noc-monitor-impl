@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2014 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2017 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -46,7 +46,9 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
 		"[IN-USE] Unable to lock maildrop: Mailbox is locked by POP server",
 		"SSH-2.0-OpenSSH_5.3",
 		"SSH-2.0-OpenSSH_3.8.1p1 Debian-8.sarge.6",
-		"SSH-2.0-dropbear_2012.55"
+		"SSH-2.0-dropbear_2012.55",
+		"SSH-2.0-OpenSSH_6.6.1",
+		"SSH-2.0-dropbear_2013.60"
 	};
 	private static final Map<String,Integer> commonResultsMap = new HashMap<>(commonResults.length*4/3+1);
 	static {

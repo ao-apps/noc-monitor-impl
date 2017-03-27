@@ -47,8 +47,8 @@ public class IPAddressNode extends NodeImpl {
 			&& ipAddress.isPingMonitorEnabled()
 			// Must be publicly addressable
 			&& (
-				(externalIp!=null && !(externalIp.isUniqueLocal() || externalIp.isLooback()))
-				|| !(ip.isUniqueLocal() || ip.isLooback())
+				(externalIp!=null && !(externalIp.isUniqueLocal() || externalIp.isLoopback()))
+				|| !(ip.isUniqueLocal() || ip.isLoopback())
 			)
 			// Must not be on loopback device
 			&& !ipAddress.getNetDevice().getNetDeviceID().isLoopback()
@@ -152,7 +152,7 @@ public class IPAddressNode extends NodeImpl {
 				InetAddress ip = ipAddress.getExternalIpAddress();
 				if(ip==null) ip = ipAddress.getInetAddress();
 				// Skip private IP addresses
-				if(!(ip.isUniqueLocal() || ip.isLooback())) {
+				if(!(ip.isUniqueLocal() || ip.isLoopback())) {
 					reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
 					reverseDnsNode.start();
 					rootNode.nodeAdded();
@@ -162,7 +162,7 @@ public class IPAddressNode extends NodeImpl {
 				InetAddress ip = ipAddress.getExternalIpAddress();
 				if(ip==null) ip = ipAddress.getInetAddress();
 				// Skip private IP addresses
-				if(!(ip.isUniqueLocal() || ip.isLooback())) {
+				if(!(ip.isUniqueLocal() || ip.isLoopback())) {
 					blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
 					blacklistsNode.start();
 					rootNode.nodeAdded();

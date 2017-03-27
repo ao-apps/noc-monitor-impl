@@ -75,7 +75,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 		InetAddress ipAddress = netMonitorSetting.getIpAddress();
 		if(
 			ipAddress.isUniqueLocal()
-			|| ipAddress.isLooback()
+			|| ipAddress.isLoopback()
 			|| netPort.getPort() == 25 // Port 25 cannot be monitored directly from several networks
 		) {
 			Server server = netMonitorSetting.getServer();
