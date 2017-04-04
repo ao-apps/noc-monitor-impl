@@ -83,6 +83,7 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 			if(
 				version.startsWith(MySQLServer.VERSION_5_1_PREFIX)
 				|| version.startsWith(MySQLServer.VERSION_5_6_PREFIX)
+				|| version.startsWith(MySQLServer.VERSION_5_7_PREFIX)
 			) return Collections.emptyList();
 		}
 
@@ -91,6 +92,15 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 			String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
 			if(
 				version.startsWith(MySQLServer.VERSION_5_6_PREFIX)
+				|| version.startsWith(MySQLServer.VERSION_5_7_PREFIX)
+			) return Collections.emptyList();
+		}
+
+		// Don't check any table on MySQL 5.7+ sys database
+		if(mysqlDatabase.getName().equals(MySQLDatabase.SYS)) {
+			String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
+			if(
+				version.startsWith(MySQLServer.VERSION_5_7_PREFIX)
 			) return Collections.emptyList();
 		}
 
