@@ -95,7 +95,11 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
 							out.writeByte(MESSAGE_ACCEPTED);
 							out.writeUTF(result.substring(0, result.length()-MESSAGE_ACCEPTED_SUFFIX.length()));
 						} else {
-							if(logger.isLoggable(Level.INFO) && commonResultsSuggested.putIfAbsent(result, Boolean.TRUE)==null) {
+							if(
+								logger.isLoggable(Level.INFO)
+								&& !result.startsWith("User logged in SESSIONID=")
+								&& commonResultsSuggested.putIfAbsent(result, Boolean.TRUE) == null
+							) {
 								logger.info("Suggested value for commonResultsMap: \""+result+"\"");
 							}
 							out.writeByte(RAW);
