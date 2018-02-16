@@ -129,6 +129,9 @@ import java.util.logging.Logger;
  *
  * Open Resolvers: http://openresolverproject.org/
  *
+ * Process Monitoring
+ *      Any process linked to libraries or binaries that do not match current on-disk: This might mean a process needs restarted to have latest security updates.
+ *
  * @author  AO Industries, Inc.
  */
 public class MonitorImpl extends UnicastRemoteObject implements Monitor {
