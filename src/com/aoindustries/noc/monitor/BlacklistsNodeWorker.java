@@ -836,7 +836,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Forward lookup: bsb.empty.us
 			new DnsBlacklist("bsb.spamlookup.net"),
 			// Forward lookup: bsb.spamlookup.net
-			new DnsBlacklist("dnsbl.burnt-tech.com"),
+			// Domain expired 2018-03-27: new DnsBlacklist("dnsbl.burnt-tech.com"),
 			new DnsBlacklist("blacklist.sci.kun.nl"),
 			new DnsBlacklist("cbl.anti-spam.org.cn"),
 			new DnsBlacklist("cblplus.anti-spam.org.cn"),
@@ -878,7 +878,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("fnrbl.fast.net"),
 			new DnsBlacklist("forbidden.icm.edu.pl"),
 			new DnsBlacklist("hil.habeas.com"),
-			new DnsBlacklist("lookup.dnsbl.iip.lu"),
+			// Offline 2018-03-27: new DnsBlacklist("lookup.dnsbl.iip.lu"),
 			new DnsBlacklist("spamrbl.imp.ch"),
 			new DnsBlacklist("wormrbl.imp.ch"),
 			new DnsBlacklist("dnsbl.inps.de"),
@@ -1079,6 +1079,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		lookups = new ArrayList<>(checkSmtpBlacklist ? (rblBlacklists.length + 6) : rblBlacklists.length);
 		lookups.addAll(Arrays.asList(rblBlacklists));
 		if(checkSmtpBlacklist) {
+			// TODO: Update this list dynamically, since update to ip_addresses.check_blacklists_over_smtp can happen at any time
 			lookups.add(new SmtpBlacklist("att.net",       AlertLevel.MEDIUM));
 			lookups.add(new SmtpBlacklist("bellsouth.net", AlertLevel.MEDIUM));
 			lookups.add(new SmtpBlacklist("comcast.net",   AlertLevel.MEDIUM));
