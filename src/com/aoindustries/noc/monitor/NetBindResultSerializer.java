@@ -48,7 +48,8 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
 		"SSH-2.0-OpenSSH_3.8.1p1 Debian-8.sarge.6",
 		"SSH-2.0-dropbear_2012.55",
 		"SSH-2.0-OpenSSH_6.6.1",
-		"SSH-2.0-dropbear_2013.60"
+		"SSH-2.0-dropbear_2013.60",
+		"SSH-2.0-OpenSSH_7.4"
 	};
 	private static final Map<String,Integer> commonResultsMap = new HashMap<>(commonResults.length*4/3+1);
 	static {
@@ -98,6 +99,7 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
 							if(
 								logger.isLoggable(Level.INFO)
 								&& !result.startsWith("User logged in SESSIONID=")
+								&& !result.startsWith("Mailbox locked and ready SESSIONID=")
 								&& commonResultsSuggested.putIfAbsent(result, Boolean.TRUE) == null
 							) {
 								logger.info("Suggested value for commonResultsMap: \""+result+"\"");
