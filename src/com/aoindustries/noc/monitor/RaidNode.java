@@ -98,7 +98,6 @@ public class RaidNode extends NodeImpl {
 		if(
 			osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
 			|| osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
-			|| osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
 		) {
 			if(_threeWareRaidNode==null) {
 				_threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
