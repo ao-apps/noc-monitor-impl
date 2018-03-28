@@ -154,8 +154,8 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 				boolean parsed;
 				if(value.endsWith(" C")) {
 					// A few hard drives read much differently than other drives, offset the thresholds here
-					String hostname = aoServer.getHostname().toString();
-					String device = tableData.get(index);
+//					String hostname = aoServer.getHostname().toString();
+//					String device = tableData.get(index);
 					int offset;
 //                    if(
 //                        hostname.equals("xen1.mob.aoindustries.com")
