@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2015, 2016, 2017 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2015, 2016, 2017, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -901,9 +901,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2014-02-09: new RblBlacklist("sbl.csma.biz"),
 			// Removed 2014-02-09: new RblBlacklist("bl.csma.biz"),
 			new DnsBlacklist("dnsbl.madavi.de"),
-			new DnsBlacklist("ipbl.mailhosts.org"),
+			// Offline 2018-03-27: new DnsBlacklist("ipbl.mailhosts.org"),
 			// Forward lookup: rhsbl.mailhosts.org
-			new DnsBlacklist("shortlist.mailhosts.org"),
+			// Offline 2018-03-27: new DnsBlacklist("shortlist.mailhosts.org"),
 			new DnsBlacklist("bl.mailspike.net"),
 			new DnsBlacklist("z.mailspike.net"),
 			new DnsBlacklist("bl.mav.com.br"),
@@ -1020,7 +1020,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2014-02-09: new RblBlacklist("ph.surbl.org"),
 			// Removed 2014-02-09: new RblBlacklist("sc.surbl.org"),
 			// Removed 2014-02-09: new RblBlacklist("ws.surbl.org"),
-			new DnsBlacklist("xs.surbl.org"),
+			// Deprecated and offline 2018-03-27: new DnsBlacklist("xs.surbl.org"),
 			// Forward lookup: xs.surbl.org
 			// Disabled 2012-02-07: new RblBlacklist("dnsbl.swiftbl.net"),
 			// Offline 2014-06-28: new DnsBlacklist("dnsbl.swiftbl.org"),
