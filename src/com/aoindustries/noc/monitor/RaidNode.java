@@ -93,6 +93,7 @@ public class RaidNode extends NodeImpl {
 	}
 
 	synchronized void start() throws IOException, SQLException {
+		// TODO: Operating system versions can change on-the-fly:
 		// We only have 3ware cards in xen outers
 		int osv = aoServer.getServer().getOperatingSystemVersion().getPkey();
 		if(
