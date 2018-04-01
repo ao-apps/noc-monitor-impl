@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013, 2016 by AO Industries, Inc.,
+ * Copyright 2012-2013, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -78,6 +78,7 @@ class UpsStatus {
 	private static float parseTemperature(String value) {
 		if(value==null) return Float.NaN;
 		if(value.endsWith(" C Internal")) value = value.substring(0, value.length()-11);
+		else if(value.endsWith(" C")) value = value.substring(0, value.length()-2);
 		value = value.trim();
 		return value.length()==0 ? Float.NaN : Float.parseFloat(value);
 	}
@@ -103,6 +104,7 @@ class UpsStatus {
 	private final int badbatts;
 	// Runtime
 	private final MilliInterval tonbatt;
+	private final MilliInterval cumonbatt;
 	private final MilliInterval timeleft;
 	private final float itemp;
 
@@ -123,6 +125,7 @@ class UpsStatus {
 		int _extbatts = -1;
 		int _badbatts = -1;
 		MilliInterval _tonbatt = null;
+		MilliInterval _cumonbatt = null;
 		MilliInterval _timeleft = null;
 		float _itemp = Float.NaN;
 
@@ -132,42 +135,44 @@ class UpsStatus {
 			if(colonPos==-1) throw new ParseException(accessor.getMessage("UpsStatus.parse.noColon", line), 0);
 			String name = line.substring(0, colonPos).trim();
 			String value = line.substring(colonPos+1).trim();
-				 if("UPSNAME" .equals(name)) _upsname  = value;
-			else if("STATUS"  .equals(name)) _status   = value;
-			else if("LINEV"   .equals(name)) _linev    = parseVolts(value);
-			else if("LOTRANS" .equals(name)) _lotrans  = parseVolts(value);
-			else if("HITRANS" .equals(name)) _hitrans  = parseVolts(value);
-			else if("LINEFREQ".equals(name)) _linefreq = parseFrequency(value);
-			else if("OUTPUTV" .equals(name)) _outputv  = parseVolts(value);
-			else if("NOMOUTV" .equals(name)) _nomoutv  = parseVolts(value);
-			else if("LOADPCT" .equals(name)) _loadpct  = parsePercent(value);
-			else if("BCHARGE" .equals(name)) _bcharge  = parsePercent(value);
-			else if("BATTV"   .equals(name)) _battv    = parseVolts(value);
-			else if("NOMBATTV".equals(name)) _nombattv = parseVolts(value);
-			else if("EXTBATTS".equals(name)) _extbatts = parseInt(value);
-			else if("BADBATTS".equals(name)) _badbatts = parseInt(value);
-			else if("TONBATT" .equals(name)) _tonbatt  = parseTimeSpan(value);
-			else if("TIMELEFT".equals(name)) _timeleft = parseTimeSpan(value);
-			else if("ITEMP"   .equals(name)) _itemp    = parseTemperature(value);
+				 if("UPSNAME"  .equals(name)) _upsname   = value;
+			else if("STATUS"   .equals(name)) _status    = value;
+			else if("LINEV"    .equals(name)) _linev     = parseVolts(value);
+			else if("LOTRANS"  .equals(name)) _lotrans   = parseVolts(value);
+			else if("HITRANS"  .equals(name)) _hitrans   = parseVolts(value);
+			else if("LINEFREQ" .equals(name)) _linefreq  = parseFrequency(value);
+			else if("OUTPUTV"  .equals(name)) _outputv   = parseVolts(value);
+			else if("NOMOUTV"  .equals(name)) _nomoutv   = parseVolts(value);
+			else if("LOADPCT"  .equals(name)) _loadpct   = parsePercent(value);
+			else if("BCHARGE"  .equals(name)) _bcharge   = parsePercent(value);
+			else if("BATTV"    .equals(name)) _battv     = parseVolts(value);
+			else if("NOMBATTV" .equals(name)) _nombattv  = parseVolts(value);
+			else if("EXTBATTS" .equals(name)) _extbatts  = parseInt(value);
+			else if("BADBATTS" .equals(name)) _badbatts  = parseInt(value);
+			else if("TONBATT"  .equals(name)) _tonbatt   = parseTimeSpan(value);
+			else if("CUMONBATT".equals(name)) _cumonbatt = parseTimeSpan(value);
+			else if("TIMELEFT" .equals(name)) _timeleft  = parseTimeSpan(value);
+			else if("ITEMP"    .equals(name)) _itemp     = parseTemperature(value);
 		}
 
-		this.upsname = _upsname;
-		this.status = _status;
-		this.linev = _linev;
-		this.lotrans = _lotrans;
-		this.hitrans = _hitrans;
-		this.linefreq = _linefreq;
-		this.outputv = _outputv;
-		this.nomoutv = _nomoutv;
-		this.loadpct = _loadpct;
-		this.bcharge = _bcharge;
-		this.battv = _battv;
-		this.nombattv = _nombattv;
-		this.extbatts = _extbatts;
-		this.badbatts = _badbatts;
-		this.tonbatt = _tonbatt;
-		this.timeleft = _timeleft;
-		this.itemp = _itemp;
+		this.upsname   = _upsname;
+		this.status    = _status;
+		this.linev     = _linev;
+		this.lotrans   = _lotrans;
+		this.hitrans   = _hitrans;
+		this.linefreq  = _linefreq;
+		this.outputv   = _outputv;
+		this.nomoutv   = _nomoutv;
+		this.loadpct   = _loadpct;
+		this.bcharge   = _bcharge;
+		this.battv     = _battv;
+		this.nombattv  = _nombattv;
+		this.extbatts  = _extbatts;
+		this.badbatts  = _badbatts;
+		this.tonbatt   = _tonbatt;
+		this.cumonbatt = _cumonbatt;
+		this.timeleft  = _timeleft;
+		this.itemp     = _itemp;
 	}
 
 	/**
@@ -276,6 +281,13 @@ class UpsStatus {
 	}
 
 	/**
+	 * @see  UpsResult#getCumonbatt()
+	 */
+	MilliInterval getCumonbatt() {
+		return cumonbatt;
+	}
+
+	/**
 	 * @see  UpsResult#getTimeleft()
 	 */
 	MilliInterval getTimeleft() {
@@ -309,6 +321,7 @@ class UpsStatus {
 			extbatts,
 			badbatts,
 			tonbatt,
+			cumonbatt,
 			timeleft,
 			itemp
 		);

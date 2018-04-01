@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, 2016 by AO Industries, Inc.,
+ * Copyright 2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -48,7 +48,7 @@ public class UpsNode extends TableMultiResultNodeImpl<UpsResult> {
 
 	@Override
 	public List<?> getColumnHeaders(/*Locale locale*/) {
-		List<String> headers = new ArrayList<>(11);
+		List<String> headers = new ArrayList<>(12);
 		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.upsname"));
 		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.status"));
 		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.linev"));
@@ -58,6 +58,7 @@ public class UpsNode extends TableMultiResultNodeImpl<UpsResult> {
 		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.battv"));
 		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.badbatts"));
 		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.tonbatt"));
+		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.cumonbatt"));
 		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.timeleft"));
 		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.itemp"));
 		return Collections.unmodifiableList(headers);

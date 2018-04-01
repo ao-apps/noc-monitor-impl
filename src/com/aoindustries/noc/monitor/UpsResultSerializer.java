@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013, 2016 by AO Industries, Inc.,
+ * Copyright 2012-2013, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -22,7 +22,7 @@ import java.io.InputStream;
  */
 public class UpsResultSerializer extends BufferedSerializer<UpsResult> {
 
-	private static final int VERSION = 1;
+	private static final int VERSION = 2;
 
 	private static void writeTimeSpan(MilliInterval value, DataOutput out) throws IOException {
 		out.writeLong(value==null ? Long.MIN_VALUE : value.getIntervalMillis());
@@ -58,6 +58,7 @@ public class UpsResultSerializer extends BufferedSerializer<UpsResult> {
 				out.writeCompressedInt(value.getExtbatts());
 				out.writeCompressedInt(value.getBadbatts());
 				writeTimeSpan(value.getTonbatt(), out);
+				writeTimeSpan(value.getCumonbatt(), out);
 				writeTimeSpan(value.getTimeleft(), out);
 				out.writeFloat(value.getItemp());
 			}
@@ -68,7 +69,7 @@ public class UpsResultSerializer extends BufferedSerializer<UpsResult> {
 	public UpsResult deserialize(InputStream rawIn) throws IOException {
 		try (CompressedDataInputStream in = new CompressedDataInputStream(rawIn)) {
 			int version = in.readCompressedInt();
-			if(version==1) {
+			if(version==1 || version==2) {
 				long time = in.readLong();
 				long latency = in.readLong();
 				AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
@@ -93,6 +94,7 @@ public class UpsResultSerializer extends BufferedSerializer<UpsResult> {
 					in.readCompressedInt(),
 					in.readCompressedInt(),
 					readTimeSpan(in),
+					version==1 ? null : readTimeSpan(in), // cumonbatt added in version 2
 					readTimeSpan(in),
 					in.readFloat()
 				);
