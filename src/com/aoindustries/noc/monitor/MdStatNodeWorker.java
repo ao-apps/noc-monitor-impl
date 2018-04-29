@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -105,6 +105,11 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 				&& !(
 					line.startsWith("      bitmap: ")
 					&& line.endsWith(" chunk")
+				)
+				// Skip routine RAID check progress line:
+				&& !(
+					line.startsWith("      [")
+					&& line.contains("]  check = ")
 				)
 			) {
 				if(line.indexOf(':')!=-1) {
