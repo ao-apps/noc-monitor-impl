@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -313,8 +313,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
-						// Restore the interrupted status
-						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {
@@ -367,8 +365,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
-						// Restore the interrupted status
-						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {
@@ -419,8 +415,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
-						// Restore the interrupted status
-						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {

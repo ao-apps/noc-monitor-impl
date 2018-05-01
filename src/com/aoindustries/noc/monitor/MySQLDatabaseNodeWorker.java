@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2016 by AO Industries, Inc.,
+ * Copyright 2009, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -146,8 +146,6 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 					lastTableStatusesLock.wait();
 				} catch(InterruptedException err) {
 					// logger.warning("wait interrupted");
-					// Restore the interrupted status
-					Thread.currentThread().interrupt();
 				}
 			}
 			return lastTableStatuses;
