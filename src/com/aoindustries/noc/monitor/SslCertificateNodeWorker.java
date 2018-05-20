@@ -119,7 +119,7 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	protected List<AlertLevel> getAlertLevels(List<SslCertificate.Check> results) {
 		List<AlertLevel> alertLevels = new ArrayList<>(results.size());
 		for(SslCertificate.Check result : results) {
-			alertLevels.add(AlertLevel.valueOf(result.getAlertLevel().name()));
+			alertLevels.add(AlertLevelUtils.getMonitoringAlertLevel(result.getAlertLevel()));
 		}
 		return alertLevels;
 	}
