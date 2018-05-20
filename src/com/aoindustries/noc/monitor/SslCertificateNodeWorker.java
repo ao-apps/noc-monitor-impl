@@ -25,7 +25,7 @@ import java.util.Map;
  */
 class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate.Check>,Object> {
 
-	private static final int NUM_COLS = 2;
+	private static final int NUM_COLS = 3;
 
 	/**
 	 * One unique worker is made per persistence file (and should match the sslCertificate exactly)
@@ -75,7 +75,10 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 				AlertLevel alertLevel = alertLevels.get(index / NUM_COLS);
 				if(alertLevel.compareTo(highestAlertLevel) > 0) {
 					highestAlertLevel = alertLevel;
-					highestAlertMessage = (String)tableData.get(index + 1);
+					highestAlertMessage = (String)tableData.get(index + 2);
+					if(highestAlertMessage == null || highestAlertMessage.isEmpty()) {
+						highestAlertMessage = (String)tableData.get(index + 1);
+					}
 				}
 			}
 		}
@@ -91,7 +94,8 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	protected List<String> getColumnHeaders(Locale locale) {
 		List<String> columnHeaders = new ArrayList<>(NUM_COLS);
 		columnHeaders.add(accessor.getMessage(/*locale,*/ "SslCertificateNodeWorker.columnHeader.check"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "SslCertificateNodeWorker.columnHeader.result"));
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "SslCertificateNodeWorker.columnHeader.value"));
+		columnHeaders.add(accessor.getMessage(/*locale,*/ "SslCertificateNodeWorker.columnHeader.message"));
 		return columnHeaders;
 	}
 
@@ -105,7 +109,8 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 		List<Object> tableData = new ArrayList<>(results.size() * NUM_COLS);
 		for(SslCertificate.Check result : results) {
 			tableData.add(result.getCheck());
-			tableData.add(result.getResult());
+			tableData.add(result.getValue());
+			tableData.add(result.getMessage());
 		}
 		return tableData;
 	}
