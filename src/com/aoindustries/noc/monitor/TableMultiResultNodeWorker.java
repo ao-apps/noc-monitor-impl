@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -63,7 +63,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
 	final private PersistentLinkedList<R> results;
 
-	volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
+	volatile private AlertLevel alertLevel = null;
 	volatile private String alertMessage = null;
 
 	final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
@@ -101,7 +101,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	}
 
 	final AlertLevel getAlertLevel() {
-		return alertLevel;
+		return alertLevel == null ? AlertLevel.UNKNOWN : alertLevel;
 	}
 
 	final String getAlertMessage() {
@@ -215,7 +215,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 			if(removed!=null) tableMultiResultRemoved(removed);
 
 			AlertLevel curAlertLevel = alertLevel;
-			if(curAlertLevel==AlertLevel.UNKNOWN) curAlertLevel = AlertLevel.NONE;
+			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
 			AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
 			AlertLevel newAlertLevel;
 			if(maxAlertLevel==AlertLevel.UNKNOWN) {
@@ -231,6 +231,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 			}
 
 			AlertLevel oldAlertLevel = alertLevel;
+			if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
 			alertLevel = newAlertLevel;
 			alertMessage = alertLevelAndMessage.getAlertMessage();
 
@@ -314,6 +315,8 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	/**
 	 * The default sleep delay is five minutes when successful
 	 * or one minute when unsuccessful.
+	 *
+	 * @param  alertLevel  When {@code null}, treated as {@link AlertLevel#UNKNOWN}
 	 */
 	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
 		return lastSuccessful && alertLevel==AlertLevel.NONE ? 5*60000 : 60000;

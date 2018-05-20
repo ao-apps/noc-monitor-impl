@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -36,7 +36,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 	private Future<?> timerTask;
 
 	volatile private SingleResult lastResult;
-	volatile private AlertLevel alertLevel = AlertLevel.UNKNOWN;
+	volatile private AlertLevel alertLevel;
 	volatile private String alertMessage = null;
 
 	final private List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<>();
@@ -52,7 +52,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 	}
 
 	final AlertLevel getAlertLevel() {
-		return alertLevel;
+		return alertLevel == null ? AlertLevel.UNKNOWN : alertLevel;
 	}
 
 	final String getAlertMessage() {
@@ -130,7 +130,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 			lastResult = result;
 
 			AlertLevel curAlertLevel = alertLevel;
-			if(curAlertLevel==AlertLevel.UNKNOWN) curAlertLevel = AlertLevel.NONE;
+			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
 			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(Locale.getDefault(), result);
 			AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
 			AlertLevel newAlertLevel;
@@ -145,6 +145,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 			}
 
 			AlertLevel oldAlertLevel = alertLevel;
+			if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
 			alertLevel = newAlertLevel;
 			alertMessage = alertLevelAndMessage.getAlertMessage();
 
@@ -216,6 +217,8 @@ abstract class SingleResultNodeWorker implements Runnable {
 	/**
 	 * The default sleep delay is five minutes when successful
 	 * or one minute when unsuccessful.
+	 *
+	 * @param  alertLevel  When {@code null}, treated as {@link AlertLevel#UNKNOWN}
 	 */
 	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
 		return lastSuccessful && alertLevel==AlertLevel.NONE ? 5*60000 : 60000;

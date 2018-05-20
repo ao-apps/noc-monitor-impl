@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -52,7 +52,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 	final ServerNode serverNode;
 	private final List<BackupNode> backupNodes = new ArrayList<>();
 
-	private AlertLevel alertLevel = AlertLevel.UNKNOWN;
+	private AlertLevel alertLevel;
 	private TableResult lastResult;
 
 	final private List<TableResultListener> tableResultListeners = new ArrayList<>();
@@ -87,7 +87,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		AlertLevel level;
 		synchronized(backupNodes) {
 			level = AlertLevelUtils.getMaxAlertLevel(
-				this.alertLevel,
+				alertLevel==null ? AlertLevel.UNKNOWN : alertLevel,
 				backupNodes
 			);
 		}
@@ -197,6 +197,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 				: AlertLevel.NONE
 		;
 		AlertLevel oldAlertLevel = alertLevel;
+		if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
 		String newAlertLevelMessage =
 			failoverFileReplications.isEmpty()
 			? accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.noBackupsConfigured")
