@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -44,6 +44,7 @@ public class ServerNode extends NodeImpl {
 	volatile private MySQLServersNode _mysqlServersNode;
 	volatile private HardDrivesNode _hardDrivesNode;
 	volatile private RaidNode _raidNode;
+	volatile private SslCertificatesNode _sslCertificatesNode;
 	volatile private UpsNode _upsNode;
 	volatile private FilesystemsNode _filesystemsNode;
 	volatile private LoadAverageNode _loadAverageNode;
@@ -81,6 +82,7 @@ public class ServerNode extends NodeImpl {
 			this._mysqlServersNode,
 			this._hardDrivesNode,
 			this._raidNode,
+			this._sslCertificatesNode,
 			this._upsNode,
 			this._filesystemsNode,
 			this._loadAverageNode,
@@ -101,6 +103,7 @@ public class ServerNode extends NodeImpl {
 				this._mysqlServersNode,
 				this._hardDrivesNode,
 				this._raidNode,
+				this._sslCertificatesNode,
 				this._upsNode,
 				this._filesystemsNode,
 				this._loadAverageNode,
@@ -129,6 +132,7 @@ public class ServerNode extends NodeImpl {
 			verifyMySQLServers();
 			verifyHardDrives();
 			verifyRaid();
+			verifySslCertificates();
 			verifyUps();
 			verifyFilesystems();
 			verifyLoadAverage();
@@ -148,6 +152,7 @@ public class ServerNode extends NodeImpl {
 		serversNode.rootNode.conn.getMysqlServers().addTableListener(tableListener, 100);
 		serversNode.rootNode.conn.getPhysicalServers().addTableListener(tableListener, 100);
 		serversNode.rootNode.conn.getServers().addTableListener(tableListener, 100);
+		serversNode.rootNode.conn.getSslCertificates().addTableListener(tableListener, 100);
 		if(_backupsNode==null) {
 			_backupsNode = new BackupsNode(this, port, csf, ssf);
 			_backupsNode.start();
@@ -157,6 +162,7 @@ public class ServerNode extends NodeImpl {
 		verifyMySQLServers();
 		verifyHardDrives();
 		verifyRaid();
+		verifySslCertificates();
 		verifyUps();
 		verifyFilesystems();
 		verifyLoadAverage();
@@ -173,6 +179,7 @@ public class ServerNode extends NodeImpl {
 		serversNode.rootNode.conn.getMysqlServers().removeTableListener(tableListener);
 		serversNode.rootNode.conn.getPhysicalServers().removeTableListener(tableListener);
 		serversNode.rootNode.conn.getServers().removeTableListener(tableListener);
+		serversNode.rootNode.conn.getSslCertificates().removeTableListener(tableListener);
 		if(_timeNode!=null) {
 			_timeNode.stop();
 			_timeNode = null;
@@ -196,6 +203,11 @@ public class ServerNode extends NodeImpl {
 		if(_upsNode!=null) {
 			_upsNode.stop();
 			_upsNode = null;
+			serversNode.rootNode.nodeRemoved();
+		}
+		if(_sslCertificatesNode!=null) {
+			_sslCertificatesNode.stop();
+			_sslCertificatesNode = null;
 			serversNode.rootNode.nodeRemoved();
 		}
 		if(_raidNode!=null) {
@@ -303,6 +315,28 @@ public class ServerNode extends NodeImpl {
 			if(_raidNode==null) {
 				_raidNode = new RaidNode(this, aoServer, port, csf, ssf);
 				_raidNode.start();
+				serversNode.rootNode.nodeAdded();
+			}
+		}
+	}
+
+	synchronized private void verifySslCertificates() throws IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		AOServer aoServer = _server.getAOServer();
+		int numCerts = aoServer == null ? 0 : aoServer.getSslCertificates().size();
+		if(numCerts == 0) {
+			// No SSL certificate monitoring or no certificates to monitor
+			if(_sslCertificatesNode != null) {
+				_sslCertificatesNode.stop();
+				_sslCertificatesNode = null;
+				serversNode.rootNode.nodeRemoved();
+			}
+		} else {
+			// Has monitored SSL certificates
+			if(_sslCertificatesNode == null) {
+				_sslCertificatesNode = new SslCertificatesNode(this, aoServer, port, csf, ssf);
+				_sslCertificatesNode.start();
 				serversNode.rootNode.nodeAdded();
 			}
 		}
