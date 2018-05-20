@@ -1,11 +1,12 @@
 /*
- * Copyright 2008-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import java.util.function.Supplier;
 
 /**
  * Stores two return values.
@@ -42,16 +43,16 @@ class AlertLevelAndMessage {
 	 * Gets a new alert level and message if a higher alert level, otherwise returns
 	 * this alert level and message.
 	 */
-	AlertLevelAndMessage escalate(AlertLevel newAlertLevel, String newAlertMessage) {
+	AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Supplier<String> newAlertMessage) {
 		int diff = newAlertLevel.compareTo(this.alertLevel);
-		if(diff>0) return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
+		if(diff > 0) return new AlertLevelAndMessage(newAlertLevel, newAlertMessage.get());
 		if(
-			diff==0
+			diff == 0
 			// Use the new alert if the old one had an empty message (like NONE above)
-			&& this.alertMessage.length()==0
-			&& newAlertMessage.length()>0
+			&& this.alertMessage.isEmpty()
 		) {
-			return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
+			String message = newAlertMessage.get();
+			if(!message.isEmpty()) return new AlertLevelAndMessage(newAlertLevel, message);
 		}
 		return this;
 	}
