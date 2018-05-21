@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.lang.EnumUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableMultiResult;
@@ -101,7 +102,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	}
 
 	final AlertLevel getAlertLevel() {
-		return alertLevel == null ? AlertLevel.UNKNOWN : alertLevel;
+		return alertLevel;
 	}
 
 	final String getAlertMessage() {
@@ -156,6 +157,9 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
 			final Locale locale = Locale.getDefault();
 
+			AlertLevel curAlertLevel = alertLevel;
+			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
+
 			String error;
 			S sample;
 			AlertLevelAndMessage alertLevelAndMessage;
@@ -175,7 +179,8 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 				if(error==null) error = err.toString();
 				sample = null;
 				alertLevelAndMessage = new AlertLevelAndMessage(
-					AlertLevel.CRITICAL,
+					// Don't downgrade UNKNOWN to CRITICAL on error
+					EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
 					accessor.getMessage(/*locale,*/ "TableMultiResultNodeWorker.tableData.error", error)
 				);
 				lastSuccessful = false;
@@ -214,8 +219,6 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 			tableMultiResultAdded(added);
 			if(removed!=null) tableMultiResultRemoved(removed);
 
-			AlertLevel curAlertLevel = alertLevel;
-			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
 			AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
 			AlertLevel newAlertLevel;
 			if(maxAlertLevel==AlertLevel.UNKNOWN) {

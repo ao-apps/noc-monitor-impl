@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -61,7 +61,8 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
 	@Override
 	final public AlertLevel getAlertLevel() {
-		return constrainAlertLevel(worker.getAlertLevel());
+		AlertLevel alertLevel = worker.getAlertLevel();
+		return constrainAlertLevel(alertLevel == null ? AlertLevel.UNKNOWN : alertLevel);
 	}
 
 	@Override

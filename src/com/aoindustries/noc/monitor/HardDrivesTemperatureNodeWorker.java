@@ -72,7 +72,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
 		String highestAlertMessage = "";
 		List<?> tableData = result.getTableData();

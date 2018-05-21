@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -61,7 +61,8 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 
 	@Override
 	final public AlertLevel getAlertLevel() {
-		return constrainAlertLevel(worker.getAlertLevel());
+		AlertLevel alertLevel = worker.getAlertLevel();
+		return constrainAlertLevel(alertLevel == null ? AlertLevel.UNKNOWN : alertLevel);
 	}
 
 	@Override
@@ -85,14 +86,14 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 	/**
 	 * Called by the worker when the alert level changes.
 	 */
-	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, SingleResult result) throws RemoteException {
+	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		rootNode.nodeAlertLevelChanged(
 			this,
 			constrainAlertLevel(oldAlertLevel),
 			constrainAlertLevel(newAlertLevel),
-			worker.getAlertLevelAndMessage(rootNode.locale, result).getAlertMessage()
+			alertMessage
 		);
 	}
 

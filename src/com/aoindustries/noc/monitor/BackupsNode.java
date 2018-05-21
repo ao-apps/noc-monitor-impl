@@ -205,8 +205,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 				? accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.missingMobBackup")
 				: accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.backupsConfigured")
 		;
+		alertLevel = newAlertLevel;
 		if(oldAlertLevel!=newAlertLevel) {
-			alertLevel = newAlertLevel;
 			serverNode.serversNode.rootNode.nodeAlertLevelChanged(
 				this,
 				constrainAlertLevel(oldAlertLevel),

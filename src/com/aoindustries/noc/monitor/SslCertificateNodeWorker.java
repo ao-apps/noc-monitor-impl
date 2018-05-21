@@ -58,7 +58,7 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	 * The alert level is the first result of the highest alert level.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
 		String highestAlertMessage = "";
 		List<?> tableData = result.getTableData();

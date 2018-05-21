@@ -5,6 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.lang.EnumUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -54,7 +55,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 	}
 
 	final AlertLevel getAlertLevel() {
-		return alertLevel == null ? AlertLevel.UNKNOWN : alertLevel;
+		return alertLevel;
 	}
 
 	final String getAlertMessage() {
@@ -109,6 +110,9 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 
 			final Locale locale = Locale.getDefault();
 
+			AlertLevel curAlertLevel = alertLevel;
+			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
+
 			int columns;
 			int rows;
 			List<String> columnHeaders;
@@ -135,7 +139,10 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 				tableData = Collections.singletonList(
 					accessor.getMessage(/*locale,*/ "TableResultNodeWorker.tableData.error", error)
 				);
-				alertLevels = Collections.singletonList(AlertLevel.CRITICAL);
+				alertLevels = Collections.singletonList(
+					// Don't downgrade UNKNOWN to CRITICAL on error
+					EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel)
+				);
 				isError = true;
 				lastSuccessful = false;
 			}
@@ -155,9 +162,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 			);
 			lastResult = result;
 
-			AlertLevel curAlertLevel = alertLevel;
-			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
-			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(locale, result);
+			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(locale, curAlertLevel, result);
 			maxAlertLevel = alertLevelAndMessage.getAlertLevel();
 			AlertLevel newAlertLevel;
 			if(maxAlertLevel.compareTo(curAlertLevel)<0) {
@@ -181,7 +186,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 						tableResultNodeImpl.nodeAlertLevelChanged(
 							oldAlertLevel,
 							newAlertLevel,
-							result
+							alertMessage
 						);
 					}
 				}
@@ -267,7 +272,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 	 * Determines the alert level and message for the provided result and locale.  This result may also represent the error state.
 	 * The error state will always have columns=1, rows=1, and tableData.size()==1
 	 */
-	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result);
+	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result);
 
 	/**
 	 * Gets the number of columns in the table data.

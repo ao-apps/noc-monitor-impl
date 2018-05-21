@@ -52,7 +52,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 	}
 
 	final AlertLevel getAlertLevel() {
-		return alertLevel == null ? AlertLevel.UNKNOWN : alertLevel;
+		return alertLevel;
 	}
 
 	final String getAlertMessage() {
@@ -131,7 +131,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 
 			AlertLevel curAlertLevel = alertLevel;
 			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
-			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(Locale.getDefault(), result);
+			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(Locale.getDefault(), curAlertLevel, result);
 			AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
 			AlertLevel newAlertLevel;
 			if(maxAlertLevel.compareTo(curAlertLevel)<0) {
@@ -156,7 +156,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 						singleResultNodeImpl.nodeAlertLevelChanged(
 							oldAlertLevel,
 							newAlertLevel,
-							result
+							alertMessage
 						);
 					}
 				}
@@ -227,7 +227,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 	/**
 	 * Determines the alert level and message for the provided result and locale.
 	 */
-	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, SingleResult result);
+	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, SingleResult result);
 
 	/**
 	 * Gets the report for this worker.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, 2009, 2016 by AO Industries, Inc.,
+ * Copyright 2008, 2009, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -67,7 +67,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
 	 * If there is not any data (no backups logged, make high level)
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel;
 		String highestAlertMessage;
 		List<?> tableData = result.getTableData();

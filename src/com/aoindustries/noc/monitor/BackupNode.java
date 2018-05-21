@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, 2009, 2016 by AO Industries, Inc.,
+ * Copyright 2008, 2009, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.BackupPartition;
 import com.aoindustries.aoserv.client.FailoverFileReplication;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +61,12 @@ public class BackupNode extends TableResultNodeImpl {
 	}
 
 	AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result) {
-		return worker.getAlertLevelAndMessage(locale, result);
+		AlertLevel curAlertLevel = worker.getAlertLevel();
+		if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
+		return worker.getAlertLevelAndMessage(
+			locale,
+			curAlertLevel,
+			result
+		);
 	}
 }

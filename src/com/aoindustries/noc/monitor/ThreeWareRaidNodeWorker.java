@@ -1,11 +1,12 @@
 /*
- * Copyright 2008-2009, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
+import com.aoindustries.lang.EnumUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
@@ -60,10 +61,11 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, SingleResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, SingleResult result) {
 		if(result.getError()!=null) {
 			return new AlertLevelAndMessage(
-				AlertLevel.CRITICAL,
+				// Don't downgrade UNKNOWN to CRITICAL on error
+				EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
 				accessor.getMessage(
 					//locale,
 					"ThreeWareRaidNode.alertMessage.error",

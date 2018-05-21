@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2015, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2015, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -57,7 +57,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
 		List<?> tableData = result.getTableData();
 		if(result.isError()) {
 			return new AlertLevelAndMessage(result.getAlertLevels().get(0), tableData.get(0).toString());
