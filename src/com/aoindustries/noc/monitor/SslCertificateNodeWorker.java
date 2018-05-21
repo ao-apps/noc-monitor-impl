@@ -54,6 +54,14 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	}
 
 	/**
+	 * Sleep delay is one hour when successful or five minutes when unsuccessful.
+	 */
+	@Override
+	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+		return lastSuccessful && alertLevel == AlertLevel.NONE ? 60 * 60 * 1000 : 5 * 60 * 1000;
+	}
+
+	/**
 	 * Determines the alert message for the provided result.
 	 * The alert level is the first result of the highest alert level.
 	 */
