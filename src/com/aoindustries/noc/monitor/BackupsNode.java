@@ -26,9 +26,12 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -104,7 +107,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.label");
+		return accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -200,10 +203,10 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
 		String newAlertLevelMessage =
 			failoverFileReplications.isEmpty()
-			? accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.noBackupsConfigured")
+			? accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
 			: missingMobBackup
-				? accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.missingMobBackup")
-				: accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.backupsConfigured")
+				? accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.missingMobBackup")
+				: accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.backupsConfigured")
 		;
 		alertLevel = newAlertLevel;
 		if(oldAlertLevel!=newAlertLevel) {
@@ -252,8 +255,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					true,
 					1,
 					1,
-					Collections.singletonList(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.configurationError")),
-					Collections.singletonList(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.noBackupsConfigured")),
+					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
+					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.noBackupsConfigured")),
 					Collections.singletonList(aoServer==null ? AlertLevel.NONE : AlertLevel.MEDIUM)
 				);
 			} else if(missingMobBackup) {
@@ -263,19 +266,11 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					true,
 					1,
 					1,
-					Collections.singletonList(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.configurationError")),
-					Collections.singletonList(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.missingMobBackup")),
+					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
+					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.missingMobBackup")),
 					Collections.singletonList(AlertLevel.LOW)
 				);
 			} else {
-				List<String> columnHeaders = new ArrayList<>(7);
-				columnHeaders.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.to"));
-				columnHeaders.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.path"));
-				columnHeaders.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.scheduledTimes"));
-				columnHeaders.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.maxBitRate"));
-				columnHeaders.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.useCompression"));
-				columnHeaders.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.retention"));
-				columnHeaders.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.columnHeaders.status"));
 				List<Object> tableData = new ArrayList<>(failoverFileReplications.size()*7);
 				List<AlertLevel> alertLevels = new ArrayList<>(failoverFileReplications.size());
 				for(int c=0;c<failoverFileReplications.size();c++) {
@@ -296,14 +291,14 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					tableData.add(times.toString());
 					Long bitRate = failoverFileReplication.getBitRate();
 					if(bitRate==null) {
-						tableData.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.bitRate.unlimited"));
+						tableData.add(accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.bitRate.unlimited"));
 					} else {
-						tableData.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.bitRate", bitRate));
+						tableData.add(accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.bitRate", bitRate));
 					}
 					if(failoverFileReplication.getUseCompression()) {
-						tableData.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.useCompression.true"));
+						tableData.add(accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.useCompression.true"));
 					} else {
-						tableData.add(accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "BackupsNode.useCompression.false"));
+						tableData.add(accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.useCompression.false"));
 					}
 					tableData.add(failoverFileReplication.getRetention().getDisplay());
 					BackupNode backupNode = backupNodes.get(c);
@@ -312,8 +307,9 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 						tableData.add("");
 						alertLevels.add(AlertLevel.UNKNOWN);
 					} else {
-						AlertLevelAndMessage alertLevelAndMessage = backupNode.getAlertLevelAndMessage(serverNode.serversNode.rootNode.locale, backupNodeResult);
-						tableData.add(alertLevelAndMessage.getAlertMessage());
+						AlertLevelAndMessage alertLevelAndMessage = backupNode.getAlertLevelAndMessage(backupNodeResult);
+						Function<Locale,String> alertMessage = alertLevelAndMessage.getAlertMessage();
+						tableData.add(alertMessage == null ? null : alertMessage.apply(serverNode.serversNode.rootNode.locale));
 						alertLevels.add(alertLevelAndMessage.getAlertLevel());
 					}
 				}
@@ -323,8 +319,16 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					false,
 					7,
 					failoverFileReplications.size(),
-					columnHeaders,
-					tableData,
+					locale -> Arrays.asList(
+						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.to"),
+						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.path"),
+						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.scheduledTimes"),
+						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.maxBitRate"),
+						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.useCompression"),
+						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.retention"),
+						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.status")
+					),
+					locale -> tableData,
 					alertLevels
 				);
 			}
@@ -339,7 +343,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//serverNode.serversNode.rootNode.locale,
+						serverNode.serversNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)
@@ -356,19 +360,18 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		}
 	}
 
-	// TODO: Remove only once, in case add and remove come in out of order with quick GUI changes?
 	@Override
 	final public void removeTableResultListener(TableResultListener tableResultListener) {
-		int foundCount = 0;
 		synchronized(tableResultListeners) {
 			for(int c=tableResultListeners.size()-1;c>=0;c--) {
 				if(tableResultListeners.get(c).equals(tableResultListener)) {
 					tableResultListeners.remove(c);
-					foundCount++;
+					// Remove only once, in case add and remove come in out of order with quick GUI changes
+					return;
 				}
 			}
 		}
-		if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
+		logger.log(Level.WARNING, null, new AssertionError("Listener not found: " + tableResultListener));
 	}
 
 	/**

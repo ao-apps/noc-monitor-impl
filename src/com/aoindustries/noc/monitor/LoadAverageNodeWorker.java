@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -15,7 +15,6 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -55,9 +54,9 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 	}
 
 	@Override
-	protected List<Number> getSample(Locale locale) throws Exception {
+	protected List<Number> getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().get(_aoServer.getKey());
+		currentAOServer = _aoServer.getTable().getConnector().getAoServers().get(_aoServer.getKey().intValue());
 		String loadavg = currentAOServer.getLoadAvgReport();
 		int pos1 = loadavg.indexOf(' ');
 		if(pos1==-1) throw new ParseException("Unable to find first space in loadavg", 0);
@@ -84,14 +83,14 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 	}
 
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<Number> sample, Iterable<? extends LoadAverageResult> previousResults) throws Exception {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(List<Number> sample, Iterable<? extends LoadAverageResult> previousResults) throws Exception {
 		float fiveMinuteAverage = (Float)sample.get(1);
 		float loadCritical = currentAOServer.getMonitoringLoadCritical();
 		if(!Float.isNaN(loadCritical) && fiveMinuteAverage>=loadCritical) {
 			return new AlertLevelAndMessage(
 				AlertLevel.CRITICAL,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"LoadAverageNodeWorker.alertMessage.critical",
 					loadCritical,
 					fiveMinuteAverage
@@ -102,8 +101,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 		if(!Float.isNaN(loadHigh) && fiveMinuteAverage>=loadHigh) {
 			return new AlertLevelAndMessage(
 				AlertLevel.HIGH,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"LoadAverageNodeWorker.alertMessage.high",
 					loadHigh,
 					fiveMinuteAverage
@@ -114,8 +113,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 		if(!Float.isNaN(loadMedium) && fiveMinuteAverage>=loadMedium) {
 			return new AlertLevelAndMessage(
 				AlertLevel.MEDIUM,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"LoadAverageNodeWorker.alertMessage.medium",
 					loadMedium,
 					fiveMinuteAverage
@@ -126,8 +125,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 		if(!Float.isNaN(loadLow) && fiveMinuteAverage>=loadLow) {
 			return new AlertLevelAndMessage(
 				AlertLevel.LOW,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"LoadAverageNodeWorker.alertMessage.low",
 					loadLow,
 					fiveMinuteAverage
@@ -137,8 +136,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 		if(Float.isNaN(loadLow)) {
 			return new AlertLevelAndMessage(
 				AlertLevel.NONE,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"LoadAverageNodeWorker.alertMessage.notAny",
 					fiveMinuteAverage
 				)
@@ -146,8 +145,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 		} else {
 			return new AlertLevelAndMessage(
 				AlertLevel.NONE,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"LoadAverageNodeWorker.alertMessage.none",
 					loadLow,
 					fiveMinuteAverage

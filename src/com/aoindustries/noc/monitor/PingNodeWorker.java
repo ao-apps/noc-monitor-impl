@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016, 2017 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2017, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,13 +9,12 @@ import com.aoindustries.aoserv.client.IPAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.PingResult;
+import com.aoindustries.util.concurrent.LocalizedTimeoutException;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Each worker may be shared by any number of <code>PingNodeImpl</code>s.
@@ -74,10 +73,10 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 	private static final Object SAMPLE = new Object();
 
 	@Override
-	protected Object getSample(Locale locale) throws Exception {
+	protected Object getSample() throws Exception {
 		final InetAddress inetAddress = InetAddress.getByName(ipAddress.toString());
 		boolean timeout = !inetAddress.isReachable(TIMEOUT);
-		if(timeout) throw new TimeoutException(accessor.getMessage(/*locale,*/ "PingNodeWorker.error.timeout"));
+		if(timeout) throw new LocalizedTimeoutException(accessor, "PingNodeWorker.error.timeout");
 		return SAMPLE;
 	}
 
@@ -116,12 +115,12 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 	}
 
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, Object sample, Iterable<? extends PingResult> previousResults) throws Exception {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(Object sample, Iterable<? extends PingResult> previousResults) throws Exception {
 		int packetLossPercent = getPacketLossPercent(previousResults);
 		return new AlertLevelAndMessage(
 			getAlertLevel(packetLossPercent),
-			accessor.getMessage(
-				//locale,
+			locale -> accessor.getMessage(
+				locale,
 				"PingNodeWorker.alertMessage",
 				packetLossPercent
 			)

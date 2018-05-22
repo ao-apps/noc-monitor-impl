@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2009-2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -39,23 +39,23 @@ public class MySQLSlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicat
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*rootNode.locale,*/ "MySQLSlaveStatusNode.label");
+		return accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.label");
 	}
 
 	@Override
-	public List<String> getColumnHeaders(/*Locale locale*/) {
+	public List<String> getColumnHeaders() {
 		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.secondsBehindMaster"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.masterLogFile"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.masterLogPosition"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveIOState"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveLogFile"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveLogPosition"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveIORunning"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.slaveSQLRunning"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.lastErrorNumber"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.lastErrorDetails"),
-			accessor.getMessage(/*locale,*/ "MySQLSlaveStatusNode.columnHeader.alertThresholds")
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.secondsBehindMaster"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogFile"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogPosition"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIOState"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogFile"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogPosition"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIORunning"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveSQLRunning"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorNumber"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorDetails"),
+			accessor.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.alertThresholds")
 		);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -11,7 +11,6 @@ import com.aoindustries.noc.monitor.common.TimeResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,13 +40,13 @@ public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*rootNode.locale,*/ "TimeNode.label");
+		return accessor.getMessage(rootNode.locale, "TimeNode.label");
 	}
 
 	@Override
 	public List<?> getColumnHeaders() {
-		List<String> headers = new ArrayList<>(1);
-		headers.add(accessor.getMessage(/*locale,*/ "TimeNode.columnHeader.clockSkew"));
-		return Collections.unmodifiableList(headers);
+		return Collections.singletonList(
+			accessor.getMessage(rootNode.locale, "TimeNode.columnHeader.clockSkew")
+		);
 	}
 }

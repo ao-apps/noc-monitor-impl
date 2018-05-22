@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012, 2014, 2016, 2017 by AO Industries, Inc.,
+ * Copyright 2009-2012, 2014, 2016, 2017, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -57,6 +57,8 @@ public class NetBindNode extends TableMultiResultNodeImpl<NetBindResult> {
 
 	@Override
 	public List<?> getColumnHeaders() {
-		return Collections.singletonList(accessor.getMessage(/*locale,*/ "NetBindNode.columnHeader.result"));
+		return Collections.singletonList(
+			accessor.getMessage(rootNode.locale, "NetBindNode.columnHeader.result")
+		);
 	}
 }

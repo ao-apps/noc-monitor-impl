@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -16,7 +16,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -79,9 +78,9 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 	}
 
 	@Override
-	protected List<Object> getSample(Locale locale) throws Exception {
+	protected List<Object> getSample() throws Exception {
 		// Get the latest object
-		_currentNetDevice = _netDevice.getTable().get(_netDevice.getKey());
+		_currentNetDevice = _netDevice.getTable().getConnector().getNetDevices().get(_netDevice.getKey().intValue());
 
 		// Get the current state
 		String stats = _currentNetDevice.getStatisticsReport();
@@ -148,11 +147,11 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 	}
 
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<Object> sample, Iterable<? extends NetDeviceBitRateResult> previousResults) throws Exception {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(List<Object> sample, Iterable<? extends NetDeviceBitRateResult> previousResults) throws Exception {
 		long txBitsPerSecond = (Long)sample.get(0);
 		long rxBitsPerSecond = (Long)sample.get(1);
 		if(txBitsPerSecond==-1 || rxBitsPerSecond==-1) {
-			return new AlertLevelAndMessage(AlertLevel.UNKNOWN, "");
+			return new AlertLevelAndMessage(AlertLevel.UNKNOWN, null);
 		}
 		long bps;
 		String direction;
@@ -171,8 +170,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 		if(bitRateCritical!=-1 && bps>=bitRateCritical) {
 			return new AlertLevelAndMessage(
 				AlertLevel.CRITICAL,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"NetDeviceBitRateNodeWorker.alertMessage."+direction+".critical",
 					bitRateCritical,
 					bps
@@ -183,8 +182,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 		if(bitRateHigh!=-1 && bps>=bitRateHigh) {
 			return new AlertLevelAndMessage(
 				AlertLevel.HIGH,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"NetDeviceBitRateNodeWorker.alertMessage."+direction+".high",
 					bitRateHigh,
 					bps
@@ -195,8 +194,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 		if(bitRateMedium!=-1 && bps>=bitRateMedium) {
 			return new AlertLevelAndMessage(
 				AlertLevel.MEDIUM,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"NetDeviceBitRateNodeWorker.alertMessage."+direction+".medium",
 					bitRateMedium,
 					bps
@@ -207,8 +206,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 		if(bitRateLow!=-1 && bps>=bitRateLow) {
 			return new AlertLevelAndMessage(
 				AlertLevel.LOW,
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"NetDeviceBitRateNodeWorker.alertMessage."+direction+".low",
 					bitRateLow,
 					bps
@@ -217,8 +216,8 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 		}
 		return new AlertLevelAndMessage(
 			AlertLevel.NONE,
-			accessor.getMessage(
-				//locale,
+			locale -> accessor.getMessage(
+				locale,
 				"NetDeviceBitRateNodeWorker.alertMessage."+direction+".none",
 				bps
 			)

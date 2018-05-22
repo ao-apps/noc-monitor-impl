@@ -458,7 +458,7 @@ public class ServerNode extends NodeImpl {
 			if(!packDir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//serversNode.rootNode.locale,
+						serversNode.rootNode.locale,
 						"error.mkdirFailed",
 						packDir.getCanonicalPath()
 					)
@@ -470,7 +470,7 @@ public class ServerNode extends NodeImpl {
 			if(!serverDir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//serversNode.rootNode.locale,
+						serversNode.rootNode.locale,
 						"error.mkdirFailed",
 						serverDir.getCanonicalPath()
 					)

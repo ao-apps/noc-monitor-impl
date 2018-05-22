@@ -8,16 +8,19 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
+import com.aoindustries.text.LocalizedParseException;
 import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The workers for hard drive temperature monitoring.
@@ -72,20 +75,23 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		String highestAlertMessage = "";
-		List<?> tableData = result.getTableData();
+		Function<Locale,String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = tableData.get(0).toString();
+			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
+			List<?> tableData = result.getTableData(Locale.getDefault());
 			List<AlertLevel> alertLevels = result.getAlertLevels();
 			for(int index=0,len=tableData.size();index<len;index+=3) {
 				AlertLevel alertLevel = alertLevels.get(index/3);
 				if(alertLevel.compareTo(highestAlertLevel)>0) {
 					highestAlertLevel = alertLevel;
-					highestAlertMessage = tableData.get(index)+" "+tableData.get(index+1)+" "+tableData.get(index+2);
+					Object device = tableData.get(index);
+					Object model = tableData.get(index+1);
+					Object temperature = tableData.get(index+2);
+					highestAlertMessage = locale -> device+" "+model+" "+temperature;
 				}
 			}
 		}
@@ -98,16 +104,16 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		List<String> columnHeaders = new ArrayList<>(3);
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.device"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.model"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "HardDrivesTemperatureNodeWorker.columnHeader.temperature"));
-		return columnHeaders;
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.device"),
+			accessor.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.model"),
+			accessor.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.temperature")
+		);
 	}
 
 	@Override
-	protected List<String> getQueryResult(Locale locale) throws Exception {
+	protected List<String> getQueryResult() throws Exception {
 		String report = aoServer.getHddTempReport();
 		List<String> lines = StringUtility.splitLines(report);
 		List<String> tableData = new ArrayList<>(lines.size()*3);
@@ -116,13 +122,11 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 			lineNum++;
 			List<String> values = StringUtility.splitString(line, ':');
 			if(values.size()!=3) {
-				throw new ParseException(
-					accessor.getMessage(
-						//locale,
-						"HardDrivesTemperatureNodeWorker.alertMessage.badColumnCount",
-						line
-					),
-					lineNum
+				throw new LocalizedParseException(
+					lineNum,
+					accessor,
+					"HardDrivesTemperatureNodeWorker.alertMessage.badColumnCount",
+					line
 				);
 			}
 			for(int c=0,len=values.size(); c<len; c++) {
@@ -133,8 +137,8 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	}
 
 	@Override
-	protected List<String> getTableData(List<String> tableData, Locale locale) throws Exception {
-		return tableData;
+	protected SerializableFunction<Locale,List<String>> getTableData(List<String> tableData) throws Exception {
+		return locale -> tableData;
 	}
 
 	@Override

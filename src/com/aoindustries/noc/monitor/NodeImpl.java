@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -190,7 +190,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * Gets the full path to the node.
 	 */
 	String getFullPath(Locale locale) throws RemoteException {
-		String pathSeparator = accessor.getMessage(/*locale,*/ "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
+		String pathSeparator = accessor.getMessage(locale, "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
 		final StringBuilder fullPath = new StringBuilder();
 		Stack<Node> path = new Stack<>();
 		Node parent = this;

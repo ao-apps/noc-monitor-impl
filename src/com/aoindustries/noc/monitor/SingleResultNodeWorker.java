@@ -6,7 +6,9 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.SingleResult;
+import com.aoindustries.util.i18n.ThreadLocale;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.Locale;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -37,7 +40,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 
 	volatile private SingleResult lastResult;
 	volatile private AlertLevel alertLevel;
-	volatile private String alertMessage = null;
+	volatile private Function<Locale,String> alertMessage = null;
 
 	final private List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<>();
 
@@ -55,7 +58,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 		return alertLevel;
 	}
 
-	final String getAlertMessage() {
+	final Function<Locale,String> getAlertMessage() {
 		return alertMessage;
 	}
 
@@ -104,7 +107,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 
 			lastSuccessful = false;
 
-			String error;
+			SerializableFunction<Locale,String> error;
 			String report;
 			try {
 				error = null;
@@ -112,8 +115,14 @@ abstract class SingleResultNodeWorker implements Runnable {
 				if(report==null) throw new NullPointerException("report is null");
 				lastSuccessful = true;
 			} catch(Exception err) {
-				error = err.getLocalizedMessage();
-				if(error==null) error = err.toString();
+				error = locale -> ThreadLocale.set(
+					locale,
+					(ThreadLocale.Supplier<String>)() -> {
+						String msg = err.getLocalizedMessage();
+						if(msg == null || msg.isEmpty()) msg = err.toString();
+						return msg;
+					}
+				);
 				report = null;
 				lastSuccessful = false;
 			}
@@ -131,7 +140,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 
 			AlertLevel curAlertLevel = alertLevel;
 			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
-			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(Locale.getDefault(), curAlertLevel, result);
+			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(curAlertLevel, result);
 			AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
 			AlertLevel newAlertLevel;
 			if(maxAlertLevel.compareTo(curAlertLevel)<0) {
@@ -186,7 +195,6 @@ abstract class SingleResultNodeWorker implements Runnable {
 	}
 
 	final void removeSingleResultNodeImpl(SingleResultNodeImpl singleResultNodeImpl) {
-		// TODO: log error if wrong number of listeners matched
 		synchronized(singleResultNodeImpls) {
 			if(singleResultNodeImpls.isEmpty()) throw new AssertionError("singleResultNodeImpls is empty");
 			for(int c=singleResultNodeImpls.size()-1;c>=0;c--) {
@@ -225,9 +233,9 @@ abstract class SingleResultNodeWorker implements Runnable {
 	}
 
 	/**
-	 * Determines the alert level and message for the provided result and locale.
+	 * Determines the alert level and message for the provided result.
 	 */
-	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, SingleResult result);
+	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result);
 
 	/**
 	 * Gets the report for this worker.

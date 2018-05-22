@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2016, 2017 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2016, 2017, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -428,7 +428,7 @@ public class AOServClusterBuilder {
 				Server domUServer = conn.getServers().get(rootAccounting+"/"+domUHostname);
 				if(domUServer==null) throw new ParseException(
 					accessor.getMessage(
-						//locale,
+						locale,
 						"AOServClusterBuilder.ParseException.serverNotFound",
 						domUHostname
 					),
@@ -437,7 +437,7 @@ public class AOServClusterBuilder {
 				VirtualServer domUVirtualServer = domUServer.getVirtualServer();
 				if(domUVirtualServer==null) throw new ParseException(
 					accessor.getMessage(
-						//locale,
+						locale,
 						"AOServClusterBuilder.ParseException.notVirtualServer",
 						domUHostname
 					),
@@ -453,7 +453,7 @@ public class AOServClusterBuilder {
 					|| domUDevice.charAt(3)>'z'
 				) throw new ParseException(
 					accessor.getMessage(
-						//locale,
+						locale,
 						"AOServClusterBuilder.ParseException.unexpectedResourceEnding",
 						domUDevice
 					),
@@ -465,7 +465,7 @@ public class AOServClusterBuilder {
 					String previousValue = drbdPrimaryDom0s.put(domUHostname, dom0Hostname);
 					if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
 						accessor.getMessage(
-							//locale,
+							locale,
 							"AOServClusterBuilder.ParseException.multiPrimary",
 							domUHostname,
 							previousValue,
@@ -478,7 +478,7 @@ public class AOServClusterBuilder {
 					String previousValue = drbdSecondaryDom0s.put(domUHostname, dom0Hostname);
 					if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
 						accessor.getMessage(
-							//locale,
+							locale,
 							"AOServClusterBuilder.ParseException.multiSecondary",
 							domUHostname,
 							previousValue,
@@ -489,7 +489,7 @@ public class AOServClusterBuilder {
 				} else {
 					throw new ParseException(
 						accessor.getMessage(
-							//locale,
+							locale,
 							"AOServClusterBuilder.ParseException.unexpectedState",
 							localRole
 						),
@@ -504,7 +504,7 @@ public class AOServClusterBuilder {
 					//System.err.println("INSERT INTO virtual_disks VALUES(DEFAULT, "+domUVirtualServer.getPkey()+", '"+device+"', NULL, extents, 1, false, false);");
 					throw new ParseException(
 						accessor.getMessage(
-							//locale,
+							locale,
 							"AOServClusterBuilder.ParseException.virtualDiskNotFound",
 							domUHostname,
 							domUDevice
@@ -525,7 +525,7 @@ public class AOServClusterBuilder {
 			String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
 			if(primaryDom0Hostname==null) throw new ParseException(
 				accessor.getMessage(
-					//locale,
+					locale,
 					"AOServClusterBuilder.ParseException.primaryNotFound",
 					domUHostname
 				),
@@ -535,7 +535,7 @@ public class AOServClusterBuilder {
 			String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
 			if(secondaryDom0Hostname==null) throw new ParseException(
 				accessor.getMessage(
-					//locale,
+					locale,
 					"AOServClusterBuilder.ParseException.secondaryNotFound",
 					domUHostname
 				),
@@ -558,7 +558,7 @@ public class AOServClusterBuilder {
 				}
 				if(foundCount!=1) throw new ParseException(
 					accessor.getMessage(
-						//locale,
+						locale,
 						"AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
 						domUDisk.getDevice(),
 						primaryDom0Hostname
@@ -573,7 +573,7 @@ public class AOServClusterBuilder {
 				}
 				if(foundCount!=1) throw new ParseException(
 					accessor.getMessage(
-						//locale,
+						locale,
 						"AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
 						domUDisk.getDevice(),
 						secondaryDom0Hostname

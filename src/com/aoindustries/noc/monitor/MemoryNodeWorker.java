@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -17,7 +17,6 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -66,9 +65,9 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 	}
 
 	@Override
-	protected List<ApproximateDisplayExactSize> getSample(Locale locale) throws Exception {
+	protected List<ApproximateDisplayExactSize> getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().get(_aoServer.getKey());
+		currentAOServer = _aoServer.getTable().getConnector().getAoServers().get(_aoServer.getKey().intValue());
 		String meminfo = currentAOServer.getMemInfoReport();
 		long memTotal = -1;
 		long memFree = -1;
@@ -116,7 +115,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 	}
 
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, List<ApproximateDisplayExactSize> sample, Iterable<? extends MemoryResult> previousResults) throws Exception {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(List<ApproximateDisplayExactSize> sample, Iterable<? extends MemoryResult> previousResults) throws Exception {
 		long memTotal = sample.get(0).getSize();
 		long memFree = sample.get(1).getSize();
 		long buffers = sample.get(2).getSize();
@@ -126,8 +125,8 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 		long memoryPercent = ((memTotal - (memFree + buffers + cached)) + (swapTotal - swapFree)) * 100 / (memTotal + swapTotal);
 		return new AlertLevelAndMessage(
 			getAlertLevel(memoryPercent),
-			accessor.getMessage(
-				//locale,
+			locale -> accessor.getMessage(
+				locale,
 				"MemoryNodeWorker.alertMessage",
 				memoryPercent
 			)

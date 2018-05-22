@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -89,7 +89,7 @@ public class RaidNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "RaidNode.label");
+		return accessor.getMessage(serverNode.serversNode.rootNode.locale, "RaidNode.label");
 	}
 
 	synchronized void start() throws IOException, SQLException {
@@ -160,7 +160,7 @@ public class RaidNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//serverNode.serversNode.rootNode.locale,
+						serverNode.serversNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -37,6 +37,6 @@ public class DrbdNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*rootNode.locale,*/ "DrbdNode.label");
+		return accessor.getMessage(rootNode.locale, "DrbdNode.label");
 	}
 }

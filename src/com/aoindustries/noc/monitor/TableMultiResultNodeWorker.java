@@ -9,6 +9,7 @@ import com.aoindustries.lang.EnumUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableMultiResult;
+import com.aoindustries.util.i18n.ThreadLocale;
 import com.aoindustries.util.persistent.PersistentCollections;
 import com.aoindustries.util.persistent.PersistentLinkedList;
 import com.aoindustries.util.persistent.ProtectionLevel;
@@ -24,6 +25,7 @@ import java.util.Locale;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -65,7 +67,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	final private PersistentLinkedList<R> results;
 
 	volatile private AlertLevel alertLevel = null;
-	volatile private String alertMessage = null;
+	volatile private Function<Locale,String> alertMessage = null;
 
 	final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
 
@@ -105,7 +107,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 		return alertLevel;
 	}
 
-	final String getAlertMessage() {
+	final Function<Locale,String> getAlertMessage() {
 		return alertMessage;
 	}
 
@@ -133,8 +135,8 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 		}
 	}
 
-	private S getSampleWithTimeout(final Locale locale) throws Exception {
-		Future<S> future = RootNodeImpl.executors.getUnbounded().submit(() -> getSample(locale));
+	private S getSampleWithTimeout() throws Exception {
+		Future<S> future = RootNodeImpl.executors.getUnbounded().submit(() -> getSample());
 		try {
 			return future.get(getFutureTimeout(), getFutureTimeoutUnit());
 		} catch(InterruptedException | TimeoutException err) {
@@ -155,8 +157,6 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
 			lastSuccessful = false;
 
-			final Locale locale = Locale.getDefault();
-
 			AlertLevel curAlertLevel = alertLevel;
 			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
 
@@ -166,22 +166,30 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 			try {
 				error = null;
 				if(useFutureTimeout()) {
-					sample = getSampleWithTimeout(locale);
+					sample = getSampleWithTimeout();
 				} else {
-					sample = getSample(locale);
+					sample = getSample();
 				}
 				synchronized(results) {
-					alertLevelAndMessage = getAlertLevelAndMessage(locale, sample, results);
+					alertLevelAndMessage = getAlertLevelAndMessage(sample, results);
 				}
 				lastSuccessful = true;
 			} catch(Exception err) {
+				// Get error in default locale because it is persisted by serializer
 				error = err.getLocalizedMessage();
-				if(error==null) error = err.toString();
+				if(error == null || error.isEmpty()) error = err.toString();
 				sample = null;
 				alertLevelAndMessage = new AlertLevelAndMessage(
 					// Don't downgrade UNKNOWN to CRITICAL on error
 					EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-					accessor.getMessage(/*locale,*/ "TableMultiResultNodeWorker.tableData.error", error)
+					locale -> ThreadLocale.set(
+						locale,
+						(ThreadLocale.Supplier<String>)() -> {
+							String msg = err.getLocalizedMessage();
+							if(msg == null || msg.isEmpty()) msg = err.toString();
+							return accessor.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);
+						}
+					)
 				);
 				lastSuccessful = false;
 			}
@@ -273,9 +281,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 		}
 	}
 
-	final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
-		// TODO: log error if wrong number of listeners matched
-		synchronized(tableMultiResultNodeImpls) {
+	final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {		synchronized(tableMultiResultNodeImpls) {
 			if(tableMultiResultNodeImpls.isEmpty()) throw new AssertionError("tableMultiResultNodeImpls is empty");
 			for(int c=tableMultiResultNodeImpls.size()-1;c>=0;c--) {
 				if(tableMultiResultNodeImpls.get(c)==tableMultiResultNodeImpl) {
@@ -336,7 +342,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	 * The sample may be any object that encapsulates the state of the resource in order
 	 * to determine its alert level, alert message, and overall result.
 	 */
-	protected abstract S getSample(Locale locale) throws Exception;
+	protected abstract S getSample() throws Exception;
 
 	/**
 	 * Creates a new result container object for error condition.
@@ -358,11 +364,11 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	}
 
 	/**
-	 * Determines the alert level and message for the provided result and locale.
+	 * Determines the alert level and message for the provided result.
 	 * If unable to parse, may throw an exception to report the error.  This
 	 * should not block or delay for any reason.
 	 */
-	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, S sample, Iterable<? extends R> previousResults) throws Exception;
+	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(S sample, Iterable<? extends R> previousResults) throws Exception;
 
 	/**
 	 * By default, the call to <code>getSample</code> uses a <code>Future</code>

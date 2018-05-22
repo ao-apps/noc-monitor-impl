@@ -11,6 +11,7 @@ import com.aoindustries.aoserv.client.FailoverFileReplication;
 import com.aoindustries.aoserv.client.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
 import com.aoindustries.util.StringUtility;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.function.Function;
 
 /**
  * The workers for 3ware RAID.
@@ -67,65 +69,66 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
 	 * If there is not any data (no backups logged, make high level)
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel;
-		String highestAlertMessage;
-		List<?> tableData = result.getTableData();
+		Function<Locale,String> highestAlertMessage;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = tableData.get(0).toString();
-		} else if(tableData.isEmpty()) {
-			highestAlertLevel = AlertLevel.MEDIUM;
-			highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.noBackupPassesLogged");
+			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
-			// We try to find the most recent successful pass
-			// If <30 hours NONE
-			// if <48 hours LOW
-			// otherwise MEDIUM
-			long lastSuccessfulTime = -1;
-			for(int index=0,len=tableData.size();index<len;index+=6) {
-				boolean successful = (Boolean)tableData.get(index+5);
-				if(successful) {
-					lastSuccessfulTime = ((TimeWithTimeZone)tableData.get(index)).getTime();
-					break;
-				}
-			}
-			if(lastSuccessfulTime==-1) {
-				// No success found, is MEDIUM
+			List<?> tableData = result.getTableData(Locale.getDefault());
+			if(tableData.isEmpty()) {
 				highestAlertLevel = AlertLevel.MEDIUM;
-				highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
+				highestAlertMessage = locale -> accessor.getMessage(locale, "BackupNodeWorker.noBackupPassesLogged");
 			} else {
-				long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime)/((long)60*60*1000);
-				if(hoursSince<0) {
-					highestAlertLevel = AlertLevel.CRITICAL;
-					highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.lastSuccessfulPassInFuture");
-				} else {
-					if(hoursSince<30) {
-						highestAlertLevel = AlertLevel.NONE;
-					} else if(hoursSince<48) {
-						highestAlertLevel = AlertLevel.LOW;
-					} else {
-						highestAlertLevel = AlertLevel.MEDIUM;
-					}
-					if(hoursSince<=48) {
-						highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.lastSuccessfulPass", hoursSince);
-					} else {
-						long days = hoursSince / 24;
-						long hours = hoursSince % 24;
-						highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.lastSuccessfulPassDays", days, hours);
+				// We try to find the most recent successful pass
+				// If <30 hours NONE
+				// if <48 hours LOW
+				// otherwise MEDIUM
+				long lastSuccessfulTime = -1;
+				for(int index=0,len=tableData.size();index<len;index+=6) {
+					boolean successful = (Boolean)tableData.get(index+5);
+					if(successful) {
+						lastSuccessfulTime = ((TimeWithTimeZone)tableData.get(index)).getTime();
+						break;
 					}
 				}
-			}
-			// We next see if the last pass failed - if so this will be considered low priority (higher priority is time-based above)
-			boolean lastSuccessful = (Boolean)tableData.get(5);
-			if(!lastSuccessful) {
-				if(AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
-					highestAlertLevel = AlertLevel.LOW;
-					highestAlertMessage = accessor.getMessage(/*locale,*/ "BackupNodeWorker.lastPassNotSuccessful");
+				if(lastSuccessfulTime==-1) {
+					// No success found, is MEDIUM
+					highestAlertLevel = AlertLevel.MEDIUM;
+					highestAlertMessage = locale -> accessor.getMessage(locale, "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
+				} else {
+					long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime)/((long)60*60*1000);
+					if(hoursSince<0) {
+						highestAlertLevel = AlertLevel.CRITICAL;
+						highestAlertMessage = locale -> accessor.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassInFuture");
+					} else {
+						if(hoursSince<30) {
+							highestAlertLevel = AlertLevel.NONE;
+						} else if(hoursSince<48) {
+							highestAlertLevel = AlertLevel.LOW;
+						} else {
+							highestAlertLevel = AlertLevel.MEDIUM;
+						}
+						if(hoursSince<=48) {
+							highestAlertMessage = locale -> accessor.getMessage(locale, "BackupNodeWorker.lastSuccessfulPass", hoursSince);
+						} else {
+							long days = hoursSince / 24;
+							long hours = hoursSince % 24;
+							highestAlertMessage = locale -> accessor.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassDays", days, hours);
+						}
+					}
+				}
+				// We next see if the last pass failed - if so this will be considered low priority (higher priority is time-based above)
+				boolean lastSuccessful = (Boolean)tableData.get(5);
+				if(!lastSuccessful) {
+					if(AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
+						highestAlertLevel = AlertLevel.LOW;
+						highestAlertMessage = locale -> accessor.getMessage(locale, "BackupNodeWorker.lastPassNotSuccessful");
+					}
 				}
 			}
 		}
-
 		return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
 	}
 
@@ -135,31 +138,30 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.startTime"),
-			accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.duration"),
-			accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.scanned"),
-			accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.updated"),
-			accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.bytes"),
-			accessor.getMessage(/*locale,*/ "BackupNodeWorker.columnHeader.successful")
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"),
+			accessor.getMessage(locale, "BackupNodeWorker.columnHeader.duration"),
+			accessor.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"),
+			accessor.getMessage(locale, "BackupNodeWorker.columnHeader.updated"),
+			accessor.getMessage(locale, "BackupNodeWorker.columnHeader.bytes"),
+			accessor.getMessage(locale, "BackupNodeWorker.columnHeader.successful")
 		);
 	}
 
 	@Override
-	protected List<FailoverFileLog> getQueryResult(Locale locale) throws Exception {
+	protected List<FailoverFileLog> getQueryResult() throws Exception {
 		return failoverFileReplication.getFailoverFileLogs(HISTORY_SIZE);
 	}
 
 	@Override
-	protected List<Object> getTableData(List<FailoverFileLog> failoverFileLogs, Locale locale) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<FailoverFileLog> failoverFileLogs) throws Exception {
 		if(failoverFileLogs.isEmpty()) {
-			return Collections.emptyList();
+			return locale -> Collections.emptyList();
 		} else {
 			Server server = failoverFileReplication.getServer();
 			AOServer aoServer = server.getAOServer();
 			TimeZone timeZone = aoServer==null ? null : aoServer.getTimeZone().getTimeZone();
-
 			List<Object> tableData = new ArrayList<>(failoverFileLogs.size()*6);
 			//int lineNum = 0;
 			for(FailoverFileLog failoverFileLog : failoverFileLogs) {
@@ -172,7 +174,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
 				tableData.add(StringUtility.getApproximateSize(failoverFileLog.getBytes()));
 				tableData.add(failoverFileLog.isSuccessful());
 			}
-			return tableData;
+			return locale -> tableData;
 		}
 	}
 

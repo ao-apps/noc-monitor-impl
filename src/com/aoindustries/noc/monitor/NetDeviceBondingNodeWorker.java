@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The workers for bonding monitoring.
@@ -55,7 +56,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 	@Override
 	protected String getReport() throws IOException, SQLException {
 		// Get a new version of the NetDevice object
-		NetDevice newNetDevice = netDevice.getTable().get(netDevice.getKey());
+		NetDevice newNetDevice = netDevice.getTable().getConnector().getNetDevices().get(netDevice.getKey().intValue());
 		if(newNetDevice!=null) netDevice = newNetDevice;
 		// Get report from server
 		return netDevice.getBondingReport();
@@ -72,36 +73,43 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 	 * Determines the alert level for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, SingleResult result) {
-		if(result.getError()!=null) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result) {
+		Function<Locale,String> error = result.getError();
+		if(error != null) {
 			return new AlertLevelAndMessage(
 				// Don't downgrade UNKNOWN to CRITICAL on error
 				EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"NetDeviceBondingNode.alertMessage.error",
-					result.getError()
+					error.apply(locale)
 				)
 			);
 		}
 		String report = result.getReport();
 		List<String> lines = StringUtility.splitLines(report);
-		int upCount = 0;
-		int downCount = 0;
-		boolean skippedFirst = false;
-		for(String line : lines) {
-			if(line.startsWith("MII Status: ")) {
-				if(!skippedFirst) {
-					skippedFirst = true;
-				} else {
-					if(line.equals("MII Status: up")) upCount++;
-					else downCount++;
+		final int upCount;
+		final int downCount;
+		{
+			int up = 0;
+			int down = 0;
+			boolean skippedFirst = false;
+			for(String line : lines) {
+				if(line.startsWith("MII Status: ")) {
+					if(!skippedFirst) {
+						skippedFirst = true;
+					} else {
+						if(line.equals("MII Status: up")) up++;
+						else down++;
+					}
 				}
 			}
+			upCount = up;
+			downCount = down;
 		}
 		AlertLevel alertLevel;
-		String alertMessage = accessor.getMessage(
-			//locale,
+		Function<Locale,String> alertMessage = locale -> accessor.getMessage(
+			locale,
 			"NetDeviceBondingNode.alertMessage.counts",
 			upCount,
 			downCount
@@ -117,8 +125,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 				if(line.startsWith("Duplex: ")) {
 					if(!line.equals("Duplex: full")) {
 						alertLevel = AlertLevel.LOW;
-						alertMessage = accessor.getMessage(
-							//locale,
+						alertMessage = locale -> accessor.getMessage(
+							locale,
 							"NetDeviceBondingNode.alertMessage.notFullDuplex",
 							line
 						);
@@ -143,8 +151,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 						default:
 							bondindMode = BondingMode.UNKNOWN;
 							alertLevel = AlertLevel.HIGH;
-							alertMessage = accessor.getMessage(
-								//locale,
+							alertMessage = locale -> accessor.getMessage(
+								locale,
 								"NetDeviceBondingNode.alertMessage.unexpectedBondingMode",
 								line
 							);	break;
@@ -154,8 +162,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 			}
 			if(bondindMode == null) {
 				alertLevel = AlertLevel.HIGH;
-				alertMessage = accessor.getMessage(
-					//locale,
+				alertMessage = locale -> accessor.getMessage(
+					locale,
 					"NetDeviceBondingNode.alertMessage.noBondingMode"
 				);
 			} else if(bondindMode == BondingMode.ACTIVE_BACKUP) {
@@ -179,8 +187,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 						}
 						if(bps == -1L) {
 							alertLevel = AlertLevel.HIGH;
-							alertMessage = accessor.getMessage(
-								//locale,
+							alertMessage = locale -> accessor.getMessage(
+								locale,
 								"NetDeviceBondingNode.alertMessage.unknownSpeed",
 								line
 							);
@@ -189,8 +197,8 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 						long maxBitRate = netDevice.getMaxBitRate();
 						if(maxBitRate!=-1 && bps != maxBitRate) {
 							alertLevel = AlertLevel.HIGH;
-							alertMessage = accessor.getMessage(
-								//locale,
+							alertMessage = locale -> accessor.getMessage(
+								locale,
 								"NetDeviceBondingNode.alertMessage.speedMismatch",
 								maxBitRate,
 								bps
@@ -204,43 +212,47 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 				|| bondindMode == BondingMode.XOR
 			) {
 				// Get the sum of all speeds found
-				long totalBps = 0;
-				for(String line : lines) {
-					if(line.startsWith("Speed: ")) {
-						long bps;
-						switch (line) {
-							case "Speed: 10000 Mbps":
-								bps = 10000000000L;
+				final long totalBps;
+				{
+					long sum = 0;
+					for(String line : lines) {
+						if(line.startsWith("Speed: ")) {
+							long bps;
+							switch (line) {
+								case "Speed: 10000 Mbps":
+									bps = 10000000000L;
+									break;
+								case "Speed: 1000 Mbps":
+									bps = 1000000000L;
+									break;
+								case "Speed: 100 Mbps":
+									bps = 100000000L;
+									break;
+								default:
+									bps = -1L;
+									break;
+							}
+							if(bps == -1L) {
+								alertLevel = AlertLevel.HIGH;
+								alertMessage = locale -> accessor.getMessage(
+									locale,
+									"NetDeviceBondingNode.alertMessage.unknownSpeed",
+									line
+								);
 								break;
-							case "Speed: 1000 Mbps":
-								bps = 1000000000L;
-								break;
-							case "Speed: 100 Mbps":
-								bps = 100000000L;
-								break;
-							default:
-								bps = -1L;
-								break;
-						}
-						if(bps == -1L) {
-							alertLevel = AlertLevel.HIGH;
-							alertMessage = accessor.getMessage(
-								//locale,
-								"NetDeviceBondingNode.alertMessage.unknownSpeed",
-								line
-							);
-							break;
-						} else {
-							totalBps += bps;
+							} else {
+								sum += bps;
+							}
 						}
 					}
+					totalBps = sum;
 				}
 				if(alertLevel.compareTo(AlertLevel.HIGH) < 0 ) {
 					long maxBitRate = netDevice.getMaxBitRate();
 					if(maxBitRate!=-1 && totalBps != maxBitRate) {
 						alertLevel = AlertLevel.HIGH;
-						alertMessage = accessor.getMessage(
-							//locale,
+						alertMessage = locale -> accessor.getMessage(
+							locale,
 							"NetDeviceBondingNode.alertMessage.speedMismatch",
 							maxBitRate,
 							totalBps

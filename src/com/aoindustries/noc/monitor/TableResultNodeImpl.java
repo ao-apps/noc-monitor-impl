@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -68,7 +70,8 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 
 	@Override
 	final public String getAlertMessage() {
-		return worker.getAlertMessage();
+		Function<Locale,String> alertMessage = worker.getAlertMessage();
+		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
 
 	void start() throws IOException {
@@ -87,14 +90,14 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 	/**
 	 * Called by the worker when the alert level changes.
 	 */
-	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
+	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale,String> alertMessage) throws RemoteException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		rootNode.nodeAlertLevelChanged(
 			this,
 			constrainAlertLevel(oldAlertLevel),
 			constrainAlertLevel(newAlertLevel),
-			alertMessage
+			alertMessage == null ? null : alertMessage.apply(rootNode.locale)
 		);
 	}
 
@@ -105,21 +108,18 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 		}
 	}
 
-	// TODO: Remove only once, in case add and remove come in out of order with quick GUI changes?
 	@Override
 	final public void removeTableResultListener(TableResultListener tableResultListener) {
-		int foundCount = 0;
 		synchronized(tableResultListeners) {
 			for(int c=tableResultListeners.size()-1;c>=0;c--) {
 				if(tableResultListeners.get(c).equals(tableResultListener)) {
 					tableResultListeners.remove(c);
-					foundCount++;
+					// Remove only once, in case add and remove come in out of order with quick GUI changes
+					return;
 				}
 			}
 		}
-		if(foundCount!=1) {
-			logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
-		}
+		logger.log(Level.WARNING, null, new AssertionError("Listener not found: " + tableResultListener));
 	}
 
 	/**

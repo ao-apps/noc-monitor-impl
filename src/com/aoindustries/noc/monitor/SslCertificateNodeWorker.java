@@ -8,15 +8,18 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.SslCertificate;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The workers for SSL certificates.
@@ -66,14 +69,14 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	 * The alert level is the first result of the highest alert level.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		String highestAlertMessage = "";
-		List<?> tableData = result.getTableData();
+		Function<Locale,String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = tableData.get(0).toString();
+			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
+			List<?> tableData = result.getTableData(Locale.getDefault());
 			List<AlertLevel> alertLevels = result.getAlertLevels();
 			for(
 				int index = 0, len = tableData.size();
@@ -83,10 +86,12 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 				AlertLevel alertLevel = alertLevels.get(index / NUM_COLS);
 				if(alertLevel.compareTo(highestAlertLevel) > 0) {
 					highestAlertLevel = alertLevel;
-					highestAlertMessage = (String)tableData.get(index + 2);
-					if(highestAlertMessage == null || highestAlertMessage.isEmpty()) {
-						highestAlertMessage = (String)tableData.get(index + 1);
+					String message = (String)tableData.get(index + 2);
+					if(message == null || message.isEmpty()) {
+						message = (String)tableData.get(index + 1);
 					}
+					final String msg = message;
+					highestAlertMessage = locale -> msg;
 				}
 			}
 		}
@@ -99,28 +104,28 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		List<String> columnHeaders = new ArrayList<>(NUM_COLS);
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "SslCertificateNodeWorker.columnHeader.check"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "SslCertificateNodeWorker.columnHeader.value"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "SslCertificateNodeWorker.columnHeader.message"));
-		return columnHeaders;
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "SslCertificateNodeWorker.columnHeader.check"),
+			accessor.getMessage(locale, "SslCertificateNodeWorker.columnHeader.value"),
+			accessor.getMessage(locale, "SslCertificateNodeWorker.columnHeader.message")
+		);
 	}
 
 	@Override
-	protected List<SslCertificate.Check> getQueryResult(Locale locale) throws Exception {
+	protected List<SslCertificate.Check> getQueryResult() throws Exception {
 		return sslCertificate.check();
 	}
 
 	@Override
-	protected List<Object> getTableData(List<SslCertificate.Check> results, Locale locale) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<SslCertificate.Check> results) throws Exception {
 		List<Object> tableData = new ArrayList<>(results.size() * NUM_COLS);
 		for(SslCertificate.Check result : results) {
 			tableData.add(result.getCheck());
 			tableData.add(result.getValue());
 			tableData.add(result.getMessage());
 		}
-		return tableData;
+		return locale -> tableData;
 	}
 
 	@Override

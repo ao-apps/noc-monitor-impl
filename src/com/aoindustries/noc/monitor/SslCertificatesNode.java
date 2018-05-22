@@ -83,7 +83,7 @@ public class SslCertificatesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "SslCertificatesNode.label");
+		return accessor.getMessage(serverNode.serversNode.rootNode.locale, "SslCertificatesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -148,7 +148,7 @@ public class SslCertificatesNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//serverNode.serversNode.rootNode.locale,
+						serverNode.serversNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

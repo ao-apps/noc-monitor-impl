@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -76,7 +76,7 @@ public class HardDrivesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*serverNode.serversNode.rootNode.locale,*/ "HardDrivesNode.label");
+		return accessor.getMessage(serverNode.serversNode.rootNode.locale, "HardDrivesNode.label");
 	}
 
 	synchronized void start() throws IOException {
@@ -101,7 +101,7 @@ public class HardDrivesNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//serverNode.serversNode.rootNode.locale,
+						serverNode.serversNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

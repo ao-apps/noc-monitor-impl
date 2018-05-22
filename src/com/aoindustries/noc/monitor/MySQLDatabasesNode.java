@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -88,7 +88,7 @@ public class MySQLDatabasesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,*/ "MySQLDatabasesNode.label");
+		return accessor.getMessage(mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale, "MySQLDatabasesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -153,7 +153,7 @@ public class MySQLDatabasesNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,
+						mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

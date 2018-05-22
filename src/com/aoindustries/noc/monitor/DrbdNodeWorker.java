@@ -10,18 +10,22 @@ import com.aoindustries.aoserv.client.AOServer.DrbdReport;
 import com.aoindustries.lang.ObjectUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
+import com.aoindustries.util.i18n.ThreadLocale;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * The workers for DRBD.
@@ -74,14 +78,14 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	 * @link http://www.drbd.org/users-guide/ch-admin.html#s-disk-states
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		String highestAlertMessage = "";
-		List<?> tableData = result.getTableData();
+		Function<Locale,String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = tableData.get(0).toString();
+			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
+			List<?> tableData = result.getTableData(Locale.getDefault());
 			List<AlertLevel> alertLevels = result.getAlertLevels();
 			for(
 				int index=0, len=tableData.size();
@@ -98,7 +102,10 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 					String roles = (String)tableData.get(index + 4);
 					TimeWithTimeZone lastVerified = (TimeWithTimeZone)tableData.get(index + 5);
 					Long outOfSync = (Long)tableData.get(index + 6);
-					highestAlertMessage = device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync;
+					highestAlertMessage = locale -> ThreadLocale.set(
+						locale,
+						(ThreadLocale.Supplier<String>)() -> device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync
+					);
 				}
 			}
 		}
@@ -111,25 +118,25 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		List<String> columnHeaders = new ArrayList<>(NUM_COLS);
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.device"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.resource"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.cs"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.ds"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.roles"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.lastVerified"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "DrbdNodeWorker.columnHeader.outOfSync"));
-		return columnHeaders;
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "DrbdNodeWorker.columnHeader.device"),
+			accessor.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"),
+			accessor.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"),
+			accessor.getMessage(locale, "DrbdNodeWorker.columnHeader.ds"),
+			accessor.getMessage(locale, "DrbdNodeWorker.columnHeader.roles"),
+			accessor.getMessage(locale, "DrbdNodeWorker.columnHeader.lastVerified"),
+			accessor.getMessage(locale, "DrbdNodeWorker.columnHeader.outOfSync")
+		);
 	}
 
 	@Override
-	protected List<DrbdReport> getQueryResult(Locale locale) throws Exception {
+	protected List<DrbdReport> getQueryResult() throws Exception {
 		return aoServer.getDrbdReport();
 	}
 
 	@Override
-	protected List<Object> getTableData(List<DrbdReport> reports, Locale locale) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<DrbdReport> reports) throws Exception {
 		List<Object> tableData = new ArrayList<>(reports.size() * NUM_COLS);
 		for(DrbdReport report : reports) {
 			tableData.add(report.getDevice());
@@ -145,7 +152,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 			tableData.add(lastVerified==null ? null : new TimeWithTimeZone(lastVerified, timeZone));
 			tableData.add(report.getOutOfSync());
 		}
-		return tableData;
+		return locale -> tableData;
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The workers for watching /proc/mdstat.
@@ -83,15 +84,16 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 	 *      two+ down: critical
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, SingleResult result) {
-		if(result.getError()!=null) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result) {
+		Function<Locale,String> error = result.getError();
+		if(error != null) {
 			return new AlertLevelAndMessage(
 				// Don't downgrade UNKNOWN to CRITICAL on error
 				EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-				accessor.getMessage(
-					//locale,
+				locale -> accessor.getMessage(
+					locale,
 					"MdStatNode.alertMessage.error",
-					result.getError()
+					error.apply(locale)
 				)
 			);
 		}
@@ -99,7 +101,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 		List<String> lines = StringUtility.splitLines(report);
 		RaidLevel lastRaidLevel = null;
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		String highestAlertMessage = "";
+		Function<Locale,String> highestAlertMessage = null;
 		for(String line : lines) {
 			if(
 				!line.startsWith("Personalities :")
@@ -123,8 +125,8 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 					else {
 						return new AlertLevelAndMessage(
 							AlertLevel.CRITICAL,
-							accessor.getMessage(
-								//locale,
+							locale -> accessor.getMessage(
+								locale,
 								"MdStatNode.alertMessage.noRaidType",
 								line
 							)
@@ -142,8 +144,8 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 					) {
 						if(AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
 							highestAlertLevel = AlertLevel.LOW;
-							highestAlertMessage = accessor.getMessage(
-								//locale,
+							highestAlertMessage = locale -> accessor.getMessage(
+								locale,
 								"MdStatNode.alertMessage.resync",
 								line.trim()
 							);
@@ -158,26 +160,32 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 									pos2=line.indexOf(']', pos1+1);
 									if(pos2!=-1) {
 										// Count the down and up between the brackets
-										int upCount = 0;
-										int downCount = 0;
-										for(int pos=pos1+1;pos<pos2;pos++) {
-											char ch = line.charAt(pos);
-											if(ch=='U') upCount++;
-											else if(ch=='_') downCount++;
-											else {
-												return new AlertLevelAndMessage(
-													AlertLevel.CRITICAL,
-													accessor.getMessage(
-														//locale,
-														"MdStatNode.alertMessage.invalidCharacter",
-														ch
-													)
-												);
+										final int upCount;
+										final int downCount;
+										{
+											int up = 0;
+											int down = 0;
+											for(int pos=pos1+1;pos<pos2;pos++) {
+												char ch = line.charAt(pos);
+												if(ch=='U') up++;
+												else if(ch=='_') down++;
+												else {
+													return new AlertLevelAndMessage(
+														AlertLevel.CRITICAL,
+														locale -> accessor.getMessage(
+															locale,
+															"MdStatNode.alertMessage.invalidCharacter",
+															ch
+														)
+													);
+												}
 											}
+											upCount = up;
+											downCount = down;
 										}
 										// Get the current alert level
 										final AlertLevel alertLevel;
-										final String alertMessage;
+										final Function<Locale,String> alertMessage;
 										if(lastRaidLevel==RaidLevel.RAID1) {
 											if(upCount==1 && downCount==0) {
 												// xen917-4.fc.aoindustries.com has a bad drive we don't fix, this is normal for it
@@ -190,8 +198,8 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 											else if(upCount==1) alertLevel = AlertLevel.HIGH;
 											else if(upCount==0) alertLevel = AlertLevel.CRITICAL;
 											else throw new AssertionError("upCount should have already matched");
-											alertMessage = accessor.getMessage(
-												//locale,
+											alertMessage = locale -> accessor.getMessage(
+												locale,
 												"MdStatNode.alertMessage.raid1",
 												upCount,
 												downCount
@@ -201,8 +209,8 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 											else if(downCount==1) alertLevel = AlertLevel.HIGH;
 											else if(downCount>=2) alertLevel = AlertLevel.CRITICAL;
 											else throw new AssertionError("downCount should have already matched");
-											alertMessage = accessor.getMessage(
-												//locale,
+											alertMessage = locale -> accessor.getMessage(
+												locale,
 												"MdStatNode.alertMessage.raid5",
 												upCount,
 												downCount
@@ -213,19 +221,20 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 											else if(downCount==2) alertLevel = AlertLevel.HIGH;
 											else if(downCount>=3) alertLevel = AlertLevel.CRITICAL;
 											else throw new AssertionError("downCount should have already matched");
-											alertMessage = accessor.getMessage(
-												//locale,
+											alertMessage = locale -> accessor.getMessage(
+												locale,
 												"MdStatNode.alertMessage.raid6",
 												upCount,
 												downCount
 											);
 										} else {
+											final RaidLevel raidLevel = lastRaidLevel;
 											return new AlertLevelAndMessage(
 												AlertLevel.CRITICAL,
-												accessor.getMessage(
-													//locale,
+												locale -> accessor.getMessage(
+													locale,
 													"MdStatNode.alertMessage.unexpectedRaidLevel",
-													lastRaidLevel
+													raidLevel
 												)
 											);
 										}
@@ -236,8 +245,8 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 									} else {
 										return new AlertLevelAndMessage(
 											AlertLevel.CRITICAL,
-											accessor.getMessage(
-												//locale,
+											locale -> accessor.getMessage(
+												locale,
 												"MdStatNode.alertMessage.unableToFindCharacter",
 												']',
 												line
@@ -247,8 +256,8 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 								} else {
 									return new AlertLevelAndMessage(
 										AlertLevel.CRITICAL,
-										accessor.getMessage(
-											//locale,
+										locale -> accessor.getMessage(
+											locale,
 											"MdStatNode.alertMessage.unableToFindCharacter",
 											'[',
 											line
@@ -258,8 +267,8 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 							} else {
 								return new AlertLevelAndMessage(
 									AlertLevel.CRITICAL,
-									accessor.getMessage(
-										//locale,
+									locale -> accessor.getMessage(
+										locale,
 										"MdStatNode.alertMessage.unableToFindCharacter",
 										']',
 										line

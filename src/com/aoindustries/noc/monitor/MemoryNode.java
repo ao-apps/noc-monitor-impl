@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -40,18 +40,18 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*rootNode.locale,*/ "MemoryNode.label");
+		return accessor.getMessage(rootNode.locale, "MemoryNode.label");
 	}
 
 	@Override
-	public List<String> getColumnHeaders(/*Locale locale*/) {
+	public List<String> getColumnHeaders() {
 		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.memTotal"),
-			accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.memFree"),
-			accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.buffers"),
-			accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.cached"),
-			accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.swapTotal"),
-			accessor.getMessage(/*locale,*/ "MemoryNode.columnHeader.swapFree")
+			accessor.getMessage(rootNode.locale, "MemoryNode.columnHeader.memTotal"),
+			accessor.getMessage(rootNode.locale, "MemoryNode.columnHeader.memFree"),
+			accessor.getMessage(rootNode.locale, "MemoryNode.columnHeader.buffers"),
+			accessor.getMessage(rootNode.locale, "MemoryNode.columnHeader.cached"),
+			accessor.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapTotal"),
+			accessor.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapFree")
 		);
 	}
 }

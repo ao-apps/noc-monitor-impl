@@ -10,6 +10,7 @@ import com.aoindustries.aoserv.client.BusinessAdministrator;
 import com.aoindustries.aoserv.client.SignupRequest;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
 import java.io.File;
@@ -57,25 +58,32 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
-		List<?> tableData = result.getTableData();
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		if(result.isError()) {
-			return new AlertLevelAndMessage(result.getAlertLevels().get(0), tableData.get(0).toString());
+			return new AlertLevelAndMessage(
+				result.getAlertLevels().get(0),
+				locale -> result.getTableData(locale).get(0).toString()
+			);
 		} else {
+			List<?> tableData = result.getTableData(Locale.getDefault());
 			// Count the number of incompleted signups
-			int incompleteCount = 0;
-			for(int index=0,len=tableData.size();index<len;index+=6) {
-				String completedBy = (String)tableData.get(index+4);
-				if(completedBy==null) incompleteCount++;
+			int incompleteCount;
+			{
+				int i = 0;
+				for(int index=0,len=tableData.size();index<len;index+=6) {
+					String completedBy = (String)tableData.get(index+4);
+					if(completedBy==null) i++;
+				}
+				incompleteCount = i;
 			}
 			if(incompleteCount==0) {
-				return new AlertLevelAndMessage(AlertLevel.NONE, "");
+				return AlertLevelAndMessage.NONE;
 			} else {
 				return new AlertLevelAndMessage(
 					AlertLevel.CRITICAL,
-					incompleteCount==1
-					? accessor.getMessage(/*locale,*/ "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
-					: accessor.getMessage(/*locale,*/ "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
+					locale -> incompleteCount==1
+						? accessor.getMessage(locale, "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
+						: accessor.getMessage(locale, "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
 				);
 			}
 		}
@@ -87,19 +95,19 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.source"),
-			accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.pkey"),
-			accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.time"),
-			accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.ip_address"),
-			accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.completed_by"),
-			accessor.getMessage(/*locale,*/ "SignpusNodeWorker.columnHeader.completed_time")
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.source"),
+			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"),
+			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.time"),
+			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.ip_address"),
+			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_by"),
+			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_time")
 		);
 	}
 
 	@Override
-	protected List<Object> getQueryResult(Locale locale) throws Exception {
+	protected List<Object> getQueryResult() throws Exception {
 		// Add the old signup forms
 		final List<Object> tableData = WebSiteDatabase.getDatabase().executeQuery(
 			(ResultSet results) -> {
@@ -133,8 +141,8 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	}
 
 	@Override
-	protected List<Object> getTableData(List<Object> tableData, Locale locale) throws Exception {
-		return tableData;
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<Object> tableData) throws Exception {
+		return locale -> tableData;
 	}
 
 	@Override

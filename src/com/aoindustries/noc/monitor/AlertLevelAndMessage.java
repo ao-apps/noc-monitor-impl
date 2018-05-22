@@ -6,7 +6,8 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import java.util.function.Supplier;
+import java.util.Locale;
+import java.util.function.Function;
 
 /**
  * Stores two return values.
@@ -18,12 +19,12 @@ class AlertLevelAndMessage {
 	/**
 	 * An alert level and message with no alert and no message.
 	 */
-	static final AlertLevelAndMessage NONE = new AlertLevelAndMessage(AlertLevel.NONE, "");
+	static final AlertLevelAndMessage NONE = new AlertLevelAndMessage(AlertLevel.NONE, null);
 
 	final private AlertLevel alertLevel;
-	final private String alertMessage;
+	final private Function<Locale,String> alertMessage;
 
-	AlertLevelAndMessage(AlertLevel alertLevel, String alertMessage) {
+	AlertLevelAndMessage(AlertLevel alertLevel, Function<Locale,String> alertMessage) {
 		this.alertLevel = alertLevel;
 		this.alertMessage = alertMessage;
 	}
@@ -35,7 +36,7 @@ class AlertLevelAndMessage {
 	/**
 	 * Gets the alert message or <code>null</code> for none.
 	 */
-	String getAlertMessage() {
+	Function<Locale, String> getAlertMessage() {
 		return alertMessage;
 	}
 
@@ -43,16 +44,16 @@ class AlertLevelAndMessage {
 	 * Gets a new alert level and message if a higher alert level, otherwise returns
 	 * this alert level and message.
 	 */
-	AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Supplier<String> newAlertMessage) {
+	AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Function<Locale,String> newAlertMessage) {
 		int diff = newAlertLevel.compareTo(this.alertLevel);
-		if(diff > 0) return new AlertLevelAndMessage(newAlertLevel, newAlertMessage.get());
+		if(diff > 0) return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
 		if(
 			diff == 0
 			// Use the new alert if the old one had an empty message (like NONE above)
-			&& this.alertMessage.isEmpty()
+			&& this.alertMessage == null
+			&& newAlertMessage != null
 		) {
-			String message = newAlertMessage.get();
-			if(!message.isEmpty()) return new AlertLevelAndMessage(newAlertLevel, message);
+			return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
 		}
 		return this;
 	}

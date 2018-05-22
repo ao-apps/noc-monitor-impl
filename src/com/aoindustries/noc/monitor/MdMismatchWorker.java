@@ -9,14 +9,17 @@ import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.AOServer.MdMismatchReport;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The workers for MD mismatch monitoring.
@@ -59,14 +62,14 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		String highestAlertMessage = "";
-		List<?> tableData = result.getTableData();
+		Function<Locale,String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = tableData.get(0).toString();
+			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
+			List<?> tableData = result.getTableData(Locale.getDefault());
 			List<AlertLevel> alertLevels = result.getAlertLevels();
 			for(
 				int index=0, len=tableData.size();
@@ -76,7 +79,10 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 				AlertLevel alertLevel = alertLevels.get(index / 3);
 				if(alertLevel.compareTo(highestAlertLevel)>0) {
 					highestAlertLevel = alertLevel;
-					highestAlertMessage = tableData.get(index) + " " + tableData.get(index+1) + " " + tableData.get(index+2);
+					Object device = tableData.get(index);
+					Object level = tableData.get(index+1);
+					Object count = tableData.get(index+2);
+					highestAlertMessage = locale -> device + " " + level + " " + count;
 				}
 			}
 		}
@@ -89,28 +95,28 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		List<String> columnHeaders = new ArrayList<>(3);
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "MdMismatchWorker.columnHeader.device"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "MdMismatchWorker.columnHeader.level"));
-		columnHeaders.add(accessor.getMessage(/*locale,*/ "MdMismatchWorker.columnHeader.count"));
-		return columnHeaders;
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "MdMismatchWorker.columnHeader.device"),
+			accessor.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
+			accessor.getMessage(locale, "MdMismatchWorker.columnHeader.count")
+		);
 	}
 
 	@Override
-	protected List<MdMismatchReport> getQueryResult(Locale locale) throws Exception {
+	protected List<MdMismatchReport> getQueryResult() throws Exception {
 		return aoServer.getMdMismatchReport();
 	}
 
 	@Override
-	protected List<String> getTableData(List<MdMismatchReport> reports, Locale locale) throws Exception {
+	protected SerializableFunction<Locale,List<String>> getTableData(List<MdMismatchReport> reports) throws Exception {
 		List<String> tableData = new ArrayList<>(reports.size() * 3);
 		for(MdMismatchReport report : reports) {
 			tableData.add(report.getDevice());
 			tableData.add(report.getLevel().name());
 			tableData.add(Long.toString(report.getCount()));
 		}
-		return tableData;
+		return locale -> tableData;
 	}
 
 	@Override

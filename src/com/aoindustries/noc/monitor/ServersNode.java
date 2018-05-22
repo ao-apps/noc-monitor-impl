@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -152,7 +152,7 @@ abstract public class ServersNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//rootNode.locale,
+						rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

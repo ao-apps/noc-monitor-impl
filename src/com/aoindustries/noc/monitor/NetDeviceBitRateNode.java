@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -36,17 +36,17 @@ public class NetDeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitR
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*rootNode.locale,*/ "NetDeviceBitRateNode.label");
+		return accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.label");
 	}
 
 	@Override
 	public List<String> getColumnHeaders() {
 		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.txBitRate"),
-			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.rxBitRate"),
-			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.txPacketRate"),
-			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
-			accessor.getMessage(/*locale,*/ "NetDeviceBitRateNode.columnHeader.alertThresholds")
+			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txBitRate"),
+			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"),
+			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"),
+			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
+			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.alertThresholds")
 		);
 	}
 }

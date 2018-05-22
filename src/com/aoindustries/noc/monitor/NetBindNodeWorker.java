@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2016, 2017 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2016, 2017, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.NetBind;
 import com.aoindustries.aoserv.client.Server;
+import com.aoindustries.lang.LocalizedIllegalArgumentException;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
@@ -18,7 +19,6 @@ import com.aoindustries.util.ErrorPrinter;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -66,10 +66,10 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 	}
 
 	@Override
-	protected String getSample(Locale locale) throws Exception {
+	protected String getSample() throws Exception {
 		// Get the latest netBind for the appProtocol and monitoring parameters
 		NetBind netBind = netMonitorSetting.getNetBind();
-		NetBind currentNetBind = netBind.getTable().get(netBind.getKey());
+		NetBind currentNetBind = netBind.getTable().getConnector().getNetBinds().get(netBind.getKey().intValue());
 		Port netPort = netMonitorSetting.getPort();
 		// If loopback or private IP, make the monitoring request through the master->daemon channel
 		InetAddress ipAddress = netMonitorSetting.getIpAddress();
@@ -80,7 +80,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 		) {
 			Server server = netMonitorSetting.getServer();
 			AOServer aoServer = server.getAOServer();
-			if(aoServer==null) throw new IllegalArgumentException(accessor.getMessage(/*locale,*/ "NetBindNodeWorker.server.notAOServer", server));
+			if(aoServer==null) throw new LocalizedIllegalArgumentException(accessor, "NetBindNodeWorker.server.notAOServer", server.toString());
 			portMonitor = new AOServDaemonPortMonitor(
 				aoServer,
 				ipAddress,
@@ -107,10 +107,10 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 	}
 
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, String sample, Iterable<? extends NetBindResult> previousResults) throws Exception {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(String sample, Iterable<? extends NetBindResult> previousResults) throws Exception {
 		return new AlertLevelAndMessage(
 			AlertLevel.NONE,
-			sample
+			locale -> sample
 		);
 	}
 

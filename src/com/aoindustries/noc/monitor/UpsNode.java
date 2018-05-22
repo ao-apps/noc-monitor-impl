@@ -11,8 +11,7 @@ import com.aoindustries.noc.monitor.common.UpsResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,24 +42,24 @@ public class UpsNode extends TableMultiResultNodeImpl<UpsResult> {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*rootNode.locale,*/ "UpsNode.label");
+		return accessor.getMessage(rootNode.locale, "UpsNode.label");
 	}
 
 	@Override
-	public List<?> getColumnHeaders(/*Locale locale*/) {
-		List<String> headers = new ArrayList<>(12);
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.upsname"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.status"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.linev"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.outputv"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.loadpct"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.bcharge"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.battv"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.badbatts"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.tonbatt"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.cumonbatt"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.timeleft"));
-		headers.add(accessor.getMessage(/*locale,*/ "UpsNode.columnHeader.itemp"));
-		return Collections.unmodifiableList(headers);
+	public List<?> getColumnHeaders() {
+		return Arrays.asList(
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.upsname"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.status"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.linev"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.outputv"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.loadpct"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.bcharge"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.battv"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.badbatts"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.tonbatt"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.cumonbatt"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.timeleft"),
+			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.itemp")
+		);
 	}
 }

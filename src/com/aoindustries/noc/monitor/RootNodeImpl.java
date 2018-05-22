@@ -207,7 +207,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*locale,*/ "RootNode.label");
+		return accessor.getMessage(locale, "RootNode.label");
 	}
 
 	/**
@@ -262,16 +262,16 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	@Override
 	public void removeTreeListener(TreeListener treeListener) {
-		int foundCount = 0;
 		synchronized(treeListeners) {
 			for(int c=treeListeners.size()-1;c>=0;c--) {
 				if(treeListeners.get(c)==treeListener) {
 					treeListeners.remove(c);
-					foundCount++;
+					// Remove only once, in case add and remove come in out of order with quick GUI changes
+					return;
 				}
 			}
 		}
-		if(foundCount!=1) logger.log(Level.WARNING, null, new AssertionError("Expected foundCount==1, got foundCount="+foundCount));
+		logger.log(Level.WARNING, null, new AssertionError("Listener not found: " + treeListener));
 	}
 
 	private class NodeAddedSignaler implements Runnable {
@@ -515,7 +515,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//locale,
+						locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

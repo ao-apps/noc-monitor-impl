@@ -9,6 +9,7 @@ import com.aoindustries.aoserv.client.FailoverMySQLReplication;
 import com.aoindustries.aoserv.client.MySQLDatabase;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
 import java.io.IOException;
@@ -71,40 +72,39 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.name"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.engine"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.version"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.rows"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.createTime"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.collation"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.checksum"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
-			accessor.getMessage(/*locale,*/ "MySQLDatabaseNodeWorker.columnHeader.comment")
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
+			accessor.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment")
 		);
 	}
 
 	@Override
-	protected List<MySQLDatabase.TableStatus> getQueryResult(Locale locale) throws Exception {
+	protected List<MySQLDatabase.TableStatus> getQueryResult() throws Exception {
 		List<MySQLDatabase.TableStatus> tableStatuses = mysqlDatabase.getTableStatus(mysqlSlave);
 		setLastTableStatuses(tableStatuses);
 		return tableStatuses;
 	}
 
 	@Override
-	protected List<?> getTableData(List<MySQLDatabase.TableStatus> tableStatuses, Locale locale) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<MySQLDatabase.TableStatus> tableStatuses) throws Exception {
 		List<Object> tableData = new ArrayList<>(tableStatuses.size()*18);
-
 		for(MySQLDatabase.TableStatus tableStatus : tableStatuses) {
 			tableData.add(tableStatus.getName());
 			tableData.add(tableStatus.getEngine());
@@ -125,7 +125,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 			tableData.add(tableStatus.getCreateOptions());
 			tableData.add(tableStatus.getComment());
 		}
-		return tableData;
+		return locale -> tableData;
 	}
 
 	private void setLastTableStatuses(List<MySQLDatabase.TableStatus> tableStatuses) {
@@ -182,17 +182,14 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
-		AlertLevel highestAlertLevel;
-		String highestAlertMessage;
-		List<?> tableData = result.getTableData();
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		if(result.isError()) {
-			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = tableData.get(0).toString();
+			return new AlertLevelAndMessage(
+				result.getAlertLevels().get(0),
+				locale -> result.getTableData(locale).get(0).toString()
+			);
 		} else {
-			highestAlertLevel = AlertLevel.NONE;
-			highestAlertMessage = "";
+			return AlertLevelAndMessage.NONE;
 		}
-		return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
 	}
 }

@@ -10,6 +10,7 @@ import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.net.InetAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.sql.NanoInterval;
 import java.io.File;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.Lookup;
@@ -86,18 +88,18 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "ReverseDnsNodeWorker.columnHeader.query"),
-			accessor.getMessage(/*locale,*/ "ReverseDnsNodeWorker.columnHeader.latency"),
-			accessor.getMessage(/*locale,*/ "ReverseDnsNodeWorker.columnHeader.result"),
-			accessor.getMessage(/*locale,*/ "ReverseDnsNodeWorker.columnHeader.message")
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.query"),
+			accessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.latency"),
+			accessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.result"),
+			accessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.message")
 		);
 	}
 
 	@Override
-	protected List<ReverseDnsQueryResult> getQueryResult(Locale locale) throws Exception {
-		IPAddress currentIPAddress = ipAddress.getTable().get(ipAddress.getKey());
+	protected List<ReverseDnsQueryResult> getQueryResult() throws Exception {
+		IPAddress currentIPAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getKey().intValue());
 		InetAddress ip = currentIPAddress.getExternalIpAddress();
 		if(ip==null) ip = currentIPAddress.getInetAddress();
 		ArrayList<ReverseDnsQueryResult> results = new ArrayList<>(2);
@@ -180,7 +182,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 	}
 
 	@Override
-	protected List<Object> getTableData(List<ReverseDnsQueryResult> results, Locale locale) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<ReverseDnsQueryResult> results) throws Exception {
 		List<Object> tableData = new ArrayList<>(results.size()*4);
 		for(ReverseDnsQueryResult result : results) {
 			tableData.add(result.query);
@@ -188,7 +190,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 			tableData.add(result.result);
 			tableData.add(result.message);
 		}
-		return tableData;
+		return locale -> tableData;
 	}
 
 	@Override
@@ -199,19 +201,22 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 	}
 
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		String highestAlertMessage = "";
-		List<?> tableData = result.getTableData();
+		Function<Locale,String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = tableData.get(0).toString();
+			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
+			List<?> tableData = result.getTableData(Locale.getDefault());
 			for(int index=0,len=tableData.size();index<len;index+=4) {
 				AlertLevel alertLevel = result.getAlertLevels().get(index/4);
 				if(alertLevel.compareTo(highestAlertLevel)>0) {
 					highestAlertLevel = alertLevel;
-					highestAlertMessage = tableData.get(index)+"->"+tableData.get(index+2)+": "+tableData.get(index+3);
+					Object resultQuery = tableData.get(index);
+					Object resultResult = tableData.get(index+2);
+					Object resultMessage = tableData.get(index+3);
+					highestAlertMessage = locale -> resultQuery + "->" + resultResult + ": " + resultMessage;
 				}
 			}
 		}

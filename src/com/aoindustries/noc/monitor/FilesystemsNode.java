@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -40,6 +40,6 @@ public class FilesystemsNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*rootNode.locale,*/ "FilesystemsNode.label");
+		return accessor.getMessage(rootNode.locale, "FilesystemsNode.label");
 	}
 }

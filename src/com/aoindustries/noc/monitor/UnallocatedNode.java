@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 by AO Industries, Inc.,
+ * Copyright 2014, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -72,7 +72,7 @@ public class UnallocatedNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*rootNode.locale,*/ "UnallocatedNode.label");
+		return accessor.getMessage(rootNode.locale, "UnallocatedNode.label");
 	}
 
 	synchronized void start() throws IOException, SQLException {
@@ -97,7 +97,7 @@ public class UnallocatedNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						//rootNode.locale,
+						rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

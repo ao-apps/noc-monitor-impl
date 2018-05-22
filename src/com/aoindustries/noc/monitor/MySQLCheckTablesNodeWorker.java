@@ -11,6 +11,7 @@ import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.aoserv.client.validator.MySQLTableName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.sql.MilliInterval;
 import java.io.File;
@@ -62,18 +63,18 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.name"),
-			accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.engine"),
-			accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.duration"),
-			accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.msgType"),
-			accessor.getMessage(/*locale,*/ "MySQLCheckTablesNodeWorker.columnHeader.msgText")
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"),
+			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"),
+			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.duration"),
+			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgType"),
+			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgText")
 		);
 	}
 
 	@Override
-	protected List<Object> getQueryResult(Locale locale) throws Exception {
+	protected List<Object> getQueryResult() throws Exception {
 		MySQLDatabase mysqlDatabase = databaseNode.getMySQLDatabase();
 		FailoverMySQLReplication mysqlSlave = databaseNode.getMySQLSlave();
 
@@ -150,8 +151,8 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 	}
 
 	@Override
-	protected List<Object> getTableData(List<Object> tableData, Locale locale) throws Exception {
-		return tableData;
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<Object> tableData) throws Exception {
+		return locale -> tableData;
 	}
 
 	/**
@@ -187,21 +188,25 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
-		List<?> tableData = result.getTableData();
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		if(result.isError()) {
-			return new AlertLevelAndMessage(result.getAlertLevels().get(0), tableData.get(0).toString());
+			return new AlertLevelAndMessage(
+				result.getAlertLevels().get(0),
+				locale -> result.getTableData(locale).get(0).toString()
+			);
 		} else {
+			List<?> tableData = result.getTableData(Locale.getDefault());
 			for(int index=0,len=tableData.size();index<len;index+=5) {
 				String msgText = (String)tableData.get(index+4);
 				if(msgText==null || (!msgText.equals("OK") && !msgText.equals("Table is already up to date"))) {
+					Object name = tableData.get(index);
 					return new AlertLevelAndMessage(
 						AlertLevel.CRITICAL,
-						tableData.get(index) + " - " + msgText
+						locale -> name + " - " + msgText
 					);
 				}
 			}
 		}
-		return new AlertLevelAndMessage(AlertLevel.NONE, "");
+		return AlertLevelAndMessage.NONE;
 	}
 }

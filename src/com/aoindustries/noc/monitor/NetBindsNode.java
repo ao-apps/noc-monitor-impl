@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016, 2017 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2017, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -32,7 +32,7 @@ import javax.swing.SwingUtilities;
 /**
  * The node per NetBind.
  *
- * TODO: Add output of netstat -ln here to detect extra ports.
+ * TODO: Add output of netstat -ln / ss -lnt here to detect extra ports.
  *
  * @author  AO Industries, Inc.
  */
@@ -88,7 +88,7 @@ public class NetBindsNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(/*ipAddressNode.ipAddressesNode.rootNode.locale,*/ "NetBindsNode.label");
+		return accessor.getMessage(ipAddressNode.ipAddressesNode.rootNode.locale, "NetBindsNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -295,7 +295,7 @@ public class NetBindsNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						/*ipAddressNode.ipAddressesNode.rootNode.locale,*/
+						ipAddressNode.ipAddressesNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

@@ -9,6 +9,7 @@ import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import com.aoindustries.sql.MilliInterval;
+import com.aoindustries.text.LocalizedParseException;
 import com.aoindustries.util.StringUtility;
 import java.text.ParseException;
 
@@ -132,7 +133,7 @@ class UpsStatus {
 		// Parse the status
 		for(String line : StringUtility.splitLines(upsStatus)) {
 			int colonPos = line.indexOf(':');
-			if(colonPos==-1) throw new ParseException(accessor.getMessage("UpsStatus.parse.noColon", line), 0);
+			if(colonPos==-1) throw new LocalizedParseException(0, accessor, "UpsStatus.parse.noColon", line);
 			String name = line.substring(0, colonPos).trim();
 			String value = line.substring(colonPos+1).trim();
 				 if("UPSNAME"  .equals(name)) _upsname   = value;

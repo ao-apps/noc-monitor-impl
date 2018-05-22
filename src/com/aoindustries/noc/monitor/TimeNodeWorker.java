@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -13,7 +13,6 @@ import com.aoindustries.sql.MilliInterval;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -67,9 +66,9 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult
 	}
 
 	@Override
-	protected MilliInterval getSample(Locale locale) throws Exception {
+	protected MilliInterval getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().get(_aoServer.getKey());
+		currentAOServer = _aoServer.getTable().getConnector().getAoServers().get(_aoServer.getKey().intValue());
 
 		long requestTime = System.currentTimeMillis();
 		long startNanos = System.nanoTime();
@@ -91,13 +90,13 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult
 	}
 
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, MilliInterval sample, Iterable<? extends TimeResult> previousResults) throws Exception {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(MilliInterval sample, Iterable<? extends TimeResult> previousResults) throws Exception {
 		final long currentSkew = sample.getIntervalMillis();
 
 		return new AlertLevelAndMessage(
 			getAlertLevel(currentSkew),
-			accessor.getMessage(
-				//locale,
+			locale -> accessor.getMessage(
+				locale,
 				"TimeNodeWorker.alertMessage",
 				currentSkew
 			)

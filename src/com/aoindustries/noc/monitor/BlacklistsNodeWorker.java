@@ -12,6 +12,7 @@ import com.aoindustries.net.AddressFamily;
 import com.aoindustries.net.DomainName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
 import com.aoindustries.sql.NanoInterval;
@@ -33,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xbill.DNS.ARecord;
@@ -1097,13 +1099,13 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	}
 
 	@Override
-	protected List<String> getColumnHeaders(Locale locale) {
-		return Arrays.asList(
-			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.basename"),
-			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.queryTime"),
-			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.latency"),
-			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.query"),
-			accessor.getMessage(/*locale,*/ "BlacklistsNodeWorker.columnHeader.result")
+	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+		return locale -> Arrays.asList(
+			accessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.basename"),
+			accessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.queryTime"),
+			accessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.latency"),
+			accessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.query"),
+			accessor.getMessage(locale, "BlacklistsNodeWorker.columnHeader.result")
 		);
 	}
 
@@ -1115,7 +1117,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	private final Map<String,BlacklistQueryResult> queryResultCache = new HashMap<>();
 
 	@Override
-	protected List<BlacklistQueryResult> getQueryResult(Locale locale) throws Exception {
+	protected List<BlacklistQueryResult> getQueryResult() throws Exception {
 		// Run each query in parallel
 		List<Long> startTimes = new ArrayList<>(lookups.size());
 		List<Long> startNanos = new ArrayList<>(lookups.size());
@@ -1221,7 +1223,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	}
 
 	@Override
-	protected List<Object> getTableData(List<BlacklistQueryResult> queryResult, Locale locale) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<BlacklistQueryResult> queryResult) throws Exception {
 		List<Object> tableData = new ArrayList<>(queryResult.size()*5);
 		for(BlacklistQueryResult result : queryResult) {
 			tableData.add(result.basename);
@@ -1230,7 +1232,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			tableData.add(result.query);
 			tableData.add(result.result);
 		}
-		return tableData;
+		return locale -> tableData;
 	}
 
 	@Override
@@ -1241,22 +1243,23 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	}
 
 	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, AlertLevel curAlertLevel, TableResult result) {
+	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		String highestAlertMessage = "";
-		List<?> tableData = result.getTableData();
+		Function<Locale,String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = tableData.get(0).toString();
+			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
+			List<?> tableData = result.getTableData(Locale.getDefault());
 			for(int index=0,len=tableData.size();index<len;index+=5) {
 				AlertLevel alertLevel = result.getAlertLevels().get(index/5);
 				// Too many queries time-out: if alert level is "Unknown", treat as "Low"
 				if(alertLevel == AlertLevel.UNKNOWN) alertLevel = AlertLevel.LOW;
 				if(alertLevel.compareTo(highestAlertLevel)>0) {
 					highestAlertLevel = alertLevel;
+					Object resultBasename = tableData.get(index);
 					Object resultValue = tableData.get(index+4);
-					highestAlertMessage = tableData.get(index)+": "+(resultValue==null ? "null" : resultValue.toString());
+					highestAlertMessage = locale -> resultBasename+": "+(resultValue==null ? "null" : resultValue.toString());
 				}
 			}
 		}

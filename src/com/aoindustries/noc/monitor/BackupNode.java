@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
-import java.util.Locale;
 
 /**
  * The node for the backup monitoring.
@@ -44,7 +43,7 @@ public class BackupNode extends TableResultNodeImpl {
 		this.failoverFileReplication = failoverFileReplication;
 		BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
 		this.label = accessor.getMessage(
-			//rootNode.locale,
+			rootNode.locale,
 			"BackupNode.label",
 			backupPartition==null ? "null" : backupPartition.getAOServer().getHostname(),
 			backupPartition==null ? "null" : backupPartition.getPath()
@@ -60,11 +59,10 @@ public class BackupNode extends TableResultNodeImpl {
 		return label;
 	}
 
-	AlertLevelAndMessage getAlertLevelAndMessage(Locale locale, TableResult result) {
+	AlertLevelAndMessage getAlertLevelAndMessage(TableResult result) {
 		AlertLevel curAlertLevel = worker.getAlertLevel();
 		if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
 		return worker.getAlertLevelAndMessage(
-			locale,
 			curAlertLevel,
 			result
 		);
