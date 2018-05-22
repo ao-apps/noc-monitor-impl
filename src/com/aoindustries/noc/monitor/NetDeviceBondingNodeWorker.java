@@ -162,10 +162,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 			}
 			if(bondindMode == null) {
 				alertLevel = AlertLevel.HIGH;
-				alertMessage = locale -> accessor.getMessage(
-					locale,
-					"NetDeviceBondingNode.alertMessage.noBondingMode"
-				);
+				alertMessage = locale -> accessor.getMessage(locale, "NetDeviceBondingNode.alertMessage.noBondingMode");
 			} else if(bondindMode == BondingMode.ACTIVE_BACKUP) {
 				// Look for any mismatched speed
 				for(String line : lines) {
