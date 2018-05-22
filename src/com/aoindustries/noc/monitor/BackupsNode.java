@@ -247,7 +247,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 			}
 
 			// Update lastResult: failoverFileReplications and backupNodes are completely aligned currently
-			long latency = System.nanoTime() - startNanos;
+			final long latency = System.nanoTime() - startNanos;
 			if(failoverFileReplications.isEmpty()) {
 				newResult = new TableResult(
 					startTime,
@@ -320,13 +320,13 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					7,
 					failoverFileReplications.size(),
 					locale -> Arrays.asList(
-						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.to"),
-						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.path"),
-						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.scheduledTimes"),
-						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.maxBitRate"),
-						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.useCompression"),
-						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.retention"),
-						accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.columnHeaders.status")
+						accessor.getMessage(locale, "BackupsNode.columnHeaders.to"),
+						accessor.getMessage(locale, "BackupsNode.columnHeaders.path"),
+						accessor.getMessage(locale, "BackupsNode.columnHeaders.scheduledTimes"),
+						accessor.getMessage(locale, "BackupsNode.columnHeaders.maxBitRate"),
+						accessor.getMessage(locale, "BackupsNode.columnHeaders.useCompression"),
+						accessor.getMessage(locale, "BackupsNode.columnHeaders.retention"),
+						accessor.getMessage(locale, "BackupsNode.columnHeaders.status")
 					),
 					locale -> tableData,
 					alertLevels
