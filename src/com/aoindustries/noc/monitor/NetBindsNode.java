@@ -211,15 +211,13 @@ public class NetBindsNode extends NodeImpl {
 		}
 	}
 
-	private void verifyNetBinds() throws RemoteException, IOException, SQLException {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
-		final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
-
-		// The list of net binds is:
-		//     The binds directly on the IP address plus the wildcard binds
-		IPAddress ipAddress = ipAddressNode.getIPAddress();
+	/**
+	 * The list of net binds is:
+	 * The binds directly on the IP address plus the wildcard binds
+	 */
+	static List<NetMonitorSetting> getSettings(IPAddress ipAddress) throws IOException, SQLException {
 		NetDevice netDevice = ipAddress.getNetDevice();
+		if(netDevice == null) return Collections.emptyList();
 		List<NetBind> directNetBinds = ipAddress.getNetBinds();
 
 		// Find the wildcard IP address, if available
@@ -262,6 +260,17 @@ public class NetBindsNode extends NodeImpl {
 			}
 		}
 		Collections.sort(netMonitorSettings);
+		return netMonitorSettings;
+	}
+
+	private void verifyNetBinds() throws RemoteException, IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
+
+		IPAddress ipAddress = ipAddressNode.getIPAddress();
+		ipAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
+		List<NetMonitorSetting> netMonitorSettings = getSettings(ipAddress);
 
 		synchronized(netBindNodes) {
 			// Remove old ones

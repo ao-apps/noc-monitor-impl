@@ -5,10 +5,14 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.IPAddress;
 import com.aoindustries.net.InetAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.table.Table;
+import com.aoindustries.table.TableListener;
+import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -58,7 +62,9 @@ public class IPAddressNode extends NodeImpl {
 	final IPAddressesNode ipAddressesNode;
 	private final IPAddress ipAddress;
 	private final String label;
-	private final boolean isPingable;
+
+	private static class ChildLock {}
+	private final ChildLock childLock = new ChildLock();
 
 	volatile private PingNode pingNode;
 	volatile private NetBindsNode netBindsNode;
@@ -72,7 +78,6 @@ public class IPAddressNode extends NodeImpl {
 		this.ipAddressesNode = ipAddressesNode;
 		this.ipAddress = ipAddress;
 		this.label = getLabel(ipAddress);
-		this.isPingable = isPingable(ipAddressesNode, ipAddress);
 	}
 
 	@Override
@@ -127,75 +132,125 @@ public class IPAddressNode extends NodeImpl {
 		return label;
 	}
 
-	boolean isPingable() {
-		return isPingable;
+	private final TableListener tableListener = (Table<?> table) -> {
+		try {
+			verifyChildren();
+		} catch(IOException | SQLException err) {
+			throw new WrappedException(err);
+		}
+	};
+
+	void start() throws RemoteException, IOException, SQLException {
+		AOServConnector conn = ipAddressesNode.rootNode.conn;
+		conn.getIpAddresses().addTableListener(tableListener, 100);
+		conn.getNetBinds().addTableListener(tableListener, 100);
+		conn.getNetDevices().addTableListener(tableListener, 100);
+		conn.getNetDeviceIDs().addTableListener(tableListener, 100);
+		conn.getServers().addTableListener(tableListener, 100);
+		verifyChildren();
 	}
 
-	synchronized void start() throws RemoteException, IOException, SQLException {
+	void stop() {
 		RootNodeImpl rootNode = ipAddressesNode.rootNode;
-		if(isPingable && pingNode==null) {
-			pingNode = new PingNode(this, port, csf, ssf);
-			pingNode.start();
-			rootNode.nodeAdded();
+		AOServConnector conn = rootNode.conn;
+		conn.getIpAddresses().removeTableListener(tableListener);
+		conn.getNetBinds().removeTableListener(tableListener);
+		conn.getNetDevices().removeTableListener(tableListener);
+		conn.getNetDeviceIDs().removeTableListener(tableListener);
+		conn.getServers().removeTableListener(tableListener);
+		synchronized(childLock) {
+			if(blacklistsNode != null) {
+				blacklistsNode.stop();
+				blacklistsNode = null;
+				rootNode.nodeRemoved();
+			}
+			if(reverseDnsNode != null) {
+				reverseDnsNode.stop();
+				reverseDnsNode = null;
+				rootNode.nodeRemoved();
+			}
+			if(netBindsNode != null) {
+				netBindsNode.stop();
+				netBindsNode = null;
+				rootNode.nodeRemoved();
+			}
+			if(pingNode != null) {
+				pingNode.stop();
+				pingNode = null;
+				rootNode.nodeRemoved();
+			}
 		}
-		if(ipAddressesNode.netDeviceNode!=null && netBindsNode==null) {
-			netBindsNode = new NetBindsNode(this, port, csf, ssf);
-			netBindsNode.start();
-			rootNode.nodeAdded();
-		}
-		// Skip loopback device
-		if(
-			ipAddressesNode.netDeviceNode == null
-			|| !ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback()
-		) {
-			if(reverseDnsNode==null) {
-				InetAddress ip = ipAddress.getExternalIpAddress();
-				if(ip==null) ip = ipAddress.getInetAddress();
+	}
+
+	private void verifyChildren() throws RemoteException, IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		final RootNodeImpl rootNode = ipAddressesNode.rootNode;
+
+		IPAddress _currentIpAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
+		boolean isPingable = isPingable(ipAddressesNode, _currentIpAddress);
+		boolean isLoopback = 
+			ipAddressesNode.netDeviceNode != null
+			&& ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback();
+		InetAddress ip = _currentIpAddress.getExternalIpAddress();
+		if(ip == null) ip = _currentIpAddress.getInetAddress();
+		boolean hasNetBinds = ipAddressesNode.netDeviceNode != null && !NetBindsNode.getSettings(_currentIpAddress).isEmpty();
+
+		synchronized(childLock) {
+			if(isPingable) {
+				if(pingNode == null) {
+					pingNode = new PingNode(this, port, csf, ssf);
+					pingNode.start();
+					rootNode.nodeAdded();
+				}
+			} else {
+				if(pingNode != null) {
+					pingNode.stop();
+					pingNode = null;
+					rootNode.nodeRemoved();
+				}
+			}
+			if(hasNetBinds) {
+				if(netBindsNode == null) {
+					netBindsNode = new NetBindsNode(this, port, csf, ssf);
+					netBindsNode.start();
+					rootNode.nodeAdded();
+				}
+			} else {
+				if(netBindsNode != null) {
+					netBindsNode.stop();
+					netBindsNode = null;
+					rootNode.nodeRemoved();
+				}
+			}
+			if(
+				// Skip loopback device
+				!isLoopback
 				// Skip private IP addresses
-				if(!(ip.isUniqueLocal() || ip.isLoopback())) {
+				&& !(ip.isUniqueLocal() || ip.isLoopback())
+			) {
+				if(reverseDnsNode == null) {
 					reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
 					reverseDnsNode.start();
 					rootNode.nodeAdded();
 				}
-			}
-			if(blacklistsNode==null) {
-				InetAddress ip = ipAddress.getExternalIpAddress();
-				if(ip==null) ip = ipAddress.getInetAddress();
-				// Skip private IP addresses
-				if(!(ip.isUniqueLocal() || ip.isLoopback())) {
+				if(blacklistsNode == null) {
 					blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
 					blacklistsNode.start();
 					rootNode.nodeAdded();
 				}
+			} else {
+				if(reverseDnsNode != null) {
+					reverseDnsNode.stop();
+					reverseDnsNode = null;
+					rootNode.nodeRemoved();
+				}
+				if(blacklistsNode != null) {
+					blacklistsNode.stop();
+					blacklistsNode = null;
+					rootNode.nodeRemoved();
+				}
 			}
-		}
-	}
-
-	synchronized void stop() {
-		RootNodeImpl rootNode = ipAddressesNode.rootNode;
-
-		if(blacklistsNode!=null) {
-			blacklistsNode.stop();
-			blacklistsNode = null;
-			rootNode.nodeRemoved();
-		}
-
-		if(reverseDnsNode!=null) {
-			reverseDnsNode.stop();
-			reverseDnsNode = null;
-			rootNode.nodeRemoved();
-		}
-
-		if(netBindsNode!=null) {
-			netBindsNode.stop();
-			netBindsNode = null;
-			rootNode.nodeRemoved();
-		}
-
-		if(pingNode!=null) {
-			pingNode.stop();
-			pingNode = null;
-			rootNode.nodeRemoved();
 		}
 	}
 

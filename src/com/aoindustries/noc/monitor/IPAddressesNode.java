@@ -168,9 +168,6 @@ public class IPAddressesNode extends NodeImpl {
 					newIpAddress==null
 					// Node has a new label
 					|| !IPAddressNode.getLabel(newIpAddress).equals(ipAddressNode.getLabel())
-					// Node pingability has changed
-					// TODO: Rather than replacing node, IPAddressNode should internally add/remove the ping node as needed
-					|| IPAddressNode.isPingable(this, newIpAddress) != ipAddressNode.isPingable()
 				) {
 					ipAddressNode.stop();
 					ipAddressNodeIter.remove();
