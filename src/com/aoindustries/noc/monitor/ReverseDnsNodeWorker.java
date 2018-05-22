@@ -99,7 +99,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 
 	@Override
 	protected List<ReverseDnsQueryResult> getQueryResult() throws Exception {
-		IPAddress currentIPAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getKey().intValue());
+		IPAddress currentIPAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
 		InetAddress ip = currentIPAddress.getExternalIpAddress();
 		if(ip==null) ip = currentIPAddress.getInetAddress();
 		ArrayList<ReverseDnsQueryResult> results = new ArrayList<>(2);

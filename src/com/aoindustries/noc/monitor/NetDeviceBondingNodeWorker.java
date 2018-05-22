@@ -56,7 +56,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 	@Override
 	protected String getReport() throws IOException, SQLException {
 		// Get a new version of the NetDevice object
-		NetDevice newNetDevice = netDevice.getTable().getConnector().getNetDevices().get(netDevice.getKey().intValue());
+		NetDevice newNetDevice = netDevice.getTable().getConnector().getNetDevices().get(netDevice.getPkey());
 		if(newNetDevice!=null) netDevice = newNetDevice;
 		// Get report from server
 		return netDevice.getBondingReport();

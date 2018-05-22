@@ -56,7 +56,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 	@Override
 	protected List<Number> getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().getConnector().getAoServers().get(_aoServer.getKey().intValue());
+		currentAOServer = _aoServer.getTable().getConnector().getAoServers().get(_aoServer.getPkey());
 		String loadavg = currentAOServer.getLoadAvgReport();
 		int pos1 = loadavg.indexOf(' ');
 		if(pos1==-1) throw new ParseException("Unable to find first space in loadavg", 0);

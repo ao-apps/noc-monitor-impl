@@ -67,7 +67,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 	@Override
 	protected List<ApproximateDisplayExactSize> getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().getConnector().getAoServers().get(_aoServer.getKey().intValue());
+		currentAOServer = _aoServer.getTable().getConnector().getAoServers().get(_aoServer.getPkey());
 		String meminfo = currentAOServer.getMemInfoReport();
 		long memTotal = -1;
 		long memFree = -1;
