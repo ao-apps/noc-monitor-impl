@@ -50,7 +50,8 @@ public class NetBindResultSerializer extends BufferedSerializer<NetBindResult> {
 		"SSH-2.0-OpenSSH_6.6.1",
 		"SSH-2.0-dropbear_2013.60",
 		"SSH-2.0-OpenSSH_7.4",
-		"Connected successfully (SSL disabled)"
+		"Connected successfully (SSL disabled)",
+		"Connected successfully over SSL"
 	};
 	private static final Map<String,Integer> commonResultsMap = new HashMap<>(commonResults.length*4/3+1);
 	static {
