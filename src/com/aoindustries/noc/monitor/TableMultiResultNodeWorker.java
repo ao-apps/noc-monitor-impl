@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -142,6 +143,10 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 		} catch(InterruptedException | TimeoutException err) {
 			cancel(future);
 			throw err;
+		} catch(ExecutionException err) {
+			// Unwrap exception here
+			Throwable cause = err.getCause();
+			throw (cause instanceof Exception) ? (Exception)cause : err;
 		}
 	}
 
