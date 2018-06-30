@@ -21,18 +21,22 @@ import java.util.Map;
  */
 class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,HttpdServerResult> {
 
+	private static final boolean DEBUG = false;
+
 	/**
-	 * One unique worker is made per persistence directory (and should match httpdServer exactly)
+	 * One unique worker is made per persistence file (and should match httpdServer exactly)
 	 */
 	private static final Map<String, HttpdServerNodeWorker> workerCache = new HashMap<>();
-	static HttpdServerNodeWorker getWorker(File persistenceDirectory, HttpdServer httpdServer) throws IOException {
-		String path = persistenceDirectory.getCanonicalPath();
+	static HttpdServerNodeWorker getWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
+		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			HttpdServerNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new HttpdServerNodeWorker(persistenceDirectory, httpdServer);
+				if(DEBUG) System.err.println("Creating new worker for " + httpdServer.getName());
+				worker = new HttpdServerNodeWorker(persistenceFile, httpdServer);
 				workerCache.put(path, worker);
 			} else {
+				if(DEBUG) System.err.println("Found existing worker for " + httpdServer.getName());
 				if(!worker._httpdServer.equals(httpdServer)) throw new AssertionError("worker.httpdServer!=httpdServer: "+worker._httpdServer+"!="+httpdServer);
 			}
 			return worker;
@@ -42,8 +46,8 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 	final private HttpdServer _httpdServer;
 	private HttpdServer currentHttpdServer;
 
-	private HttpdServerNodeWorker(File persistenceDirectory, HttpdServer httpdServer) throws IOException {
-		super(new File(persistenceDirectory, Integer.toString(httpdServer.getPkey())), new HttpdServerResultSerializer());
+	private HttpdServerNodeWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
+		super(persistenceFile, new HttpdServerResultSerializer());
 		this._httpdServer = currentHttpdServer = httpdServer;
 	}
 

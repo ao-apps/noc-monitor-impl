@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.HttpdServer;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
+import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -28,7 +29,7 @@ public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult>
 			httpdServersNode.serverNode.serversNode.rootNode,
 			httpdServersNode,
 			HttpdServerNodeWorker.getWorker(
-				httpdServersNode.getPersistenceDirectory(),
+				new File(httpdServersNode.getPersistenceDirectory(), Integer.toString(httpdServer.getPkey())),
 				httpdServer
 			),
 			port,
