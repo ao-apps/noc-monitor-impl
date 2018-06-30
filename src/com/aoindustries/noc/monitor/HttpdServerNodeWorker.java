@@ -74,7 +74,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 	@Override
 	protected AlertLevelAndMessage getAlertLevelAndMessage(List<Integer> sample, Iterable<? extends HttpdServerResult> previousResults) throws Exception {
 		int concurrency = sample.get(0);
-		int concurrencyCritical = currentHttpdServer.getMonitoringConcurrencyLow();
+		int concurrencyCritical = currentHttpdServer.getMonitoringConcurrencyCritical();
 		if(concurrencyCritical != -1 && concurrency >= concurrencyCritical) {
 			return new AlertLevelAndMessage(
 				AlertLevel.CRITICAL,
