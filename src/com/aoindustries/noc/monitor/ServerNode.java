@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
+import com.aoindustries.aoserv.client.HttpdServer;
 import com.aoindustries.aoserv.client.MySQLServer;
 import com.aoindustries.aoserv.client.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.PhysicalServer;
@@ -41,6 +42,7 @@ public class ServerNode extends NodeImpl {
 
 	volatile private BackupsNode _backupsNode;
 	volatile private NetDevicesNode _netDevicesNode;
+	volatile private HttpdServersNode _httpdServersNode;
 	volatile private MySQLServersNode _mysqlServersNode;
 	volatile private HardDrivesNode _hardDrivesNode;
 	volatile private RaidNode _raidNode;
@@ -79,6 +81,7 @@ public class ServerNode extends NodeImpl {
 		return getSnapshot(
 			this._backupsNode,
 			this._netDevicesNode,
+			this._httpdServersNode,
 			this._mysqlServersNode,
 			this._hardDrivesNode,
 			this._raidNode,
@@ -100,6 +103,7 @@ public class ServerNode extends NodeImpl {
 			AlertLevelUtils.getMaxAlertLevel(
 				this._backupsNode,
 				this._netDevicesNode,
+				this._httpdServersNode,
 				this._mysqlServersNode,
 				this._hardDrivesNode,
 				this._raidNode,
@@ -129,6 +133,7 @@ public class ServerNode extends NodeImpl {
 	private final TableListener tableListener = (Table<?> table) -> {
 		try {
 			verifyNetDevices();
+			verifyHttpdServers();
 			verifyMySQLServers();
 			verifyHardDrives();
 			verifyRaid();
@@ -149,6 +154,7 @@ public class ServerNode extends NodeImpl {
 	synchronized void start() throws IOException, SQLException {
 		serversNode.rootNode.conn.getAoServers().addTableListener(tableListener, 100);
 		serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
+		serversNode.rootNode.conn.getHttpdServers().addTableListener(tableListener, 100);
 		serversNode.rootNode.conn.getMysqlServers().addTableListener(tableListener, 100);
 		serversNode.rootNode.conn.getPhysicalServers().addTableListener(tableListener, 100);
 		serversNode.rootNode.conn.getServers().addTableListener(tableListener, 100);
@@ -159,6 +165,7 @@ public class ServerNode extends NodeImpl {
 			serversNode.rootNode.nodeAdded();
 		}
 		verifyNetDevices();
+		verifyHttpdServers();
 		verifyMySQLServers();
 		verifyHardDrives();
 		verifyRaid();
@@ -176,6 +183,7 @@ public class ServerNode extends NodeImpl {
 	synchronized void stop() {
 		serversNode.rootNode.conn.getAoServers().removeTableListener(tableListener);
 		serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
+		serversNode.rootNode.conn.getHttpdServers().removeTableListener(tableListener);
 		serversNode.rootNode.conn.getMysqlServers().removeTableListener(tableListener);
 		serversNode.rootNode.conn.getPhysicalServers().removeTableListener(tableListener);
 		serversNode.rootNode.conn.getServers().removeTableListener(tableListener);
@@ -225,6 +233,11 @@ public class ServerNode extends NodeImpl {
 			_mysqlServersNode = null;
 			serversNode.rootNode.nodeRemoved();
 		}
+		if(_httpdServersNode!=null) {
+			_httpdServersNode.stop();
+			_httpdServersNode = null;
+			serversNode.rootNode.nodeRemoved();
+		}
 		if(_netDevicesNode!=null) {
 			_netDevicesNode.stop();
 			_netDevicesNode = null;
@@ -244,6 +257,28 @@ public class ServerNode extends NodeImpl {
 			_netDevicesNode = new NetDevicesNode(this, _server, port, csf, ssf);
 			_netDevicesNode.start();
 			serversNode.rootNode.nodeAdded();
+		}
+	}
+
+	synchronized private void verifyHttpdServers() throws IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		AOServer aoServer = _server.getAOServer();
+		List<HttpdServer> httpdServers = aoServer==null ? null : aoServer.getHttpdServers();
+		if(httpdServers!=null && !httpdServers.isEmpty()) {
+			// Has HTTPD server
+			if(_httpdServersNode == null) {
+				_httpdServersNode = new HttpdServersNode(this, aoServer, port, csf, ssf);
+				_httpdServersNode.start();
+				serversNode.rootNode.nodeAdded();
+			}
+		} else {
+			// No HTTPD server
+			if(_httpdServersNode != null) {
+				_httpdServersNode.stop();
+				_httpdServersNode = null;
+				serversNode.rootNode.nodeRemoved();
+			}
 		}
 	}
 
