@@ -31,6 +31,11 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	private static final int NUM_COLS = 3;
 
 	/**
+	 * @implNote  This is 5 minutes more than "CERTBOT_CACHE_DURATION" in aoserv-daemon/SslCertificateManager.java
+	 */
+	private static final long NONE_SLEEP_DELAY = 60L * 60 * 1000;
+
+	/**
 	 * One unique worker is made per persistence file (and should match the sslCertificate exactly)
 	 */
 	private static final Map<String, SslCertificateNodeWorker> workerCache = new HashMap<>();
@@ -61,7 +66,7 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	 */
 	@Override
 	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		return lastSuccessful && alertLevel == AlertLevel.NONE ? 60 * 60 * 1000 : 5 * 60 * 1000;
+		return lastSuccessful && alertLevel == AlertLevel.NONE ? NONE_SLEEP_DELAY : 5 * 60 * 1000;
 	}
 
 	/**
