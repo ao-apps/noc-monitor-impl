@@ -24,6 +24,10 @@ public class SslCertificateNode extends TableResultNodeImpl {
 	private final SslCertificate _sslCertificate;
 	private final String _label;
 
+	static String getLabel(SslCertificate cert) throws IOException, SQLException {
+		return cert.getCommonName().getName();
+	}
+
 	SslCertificateNode(SslCertificatesNode sslCertificatesNode, SslCertificate sslCertificate, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
 			sslCertificatesNode.serverNode.serversNode.rootNode,
@@ -37,7 +41,7 @@ public class SslCertificateNode extends TableResultNodeImpl {
 			ssf
 		);
 		this._sslCertificate = sslCertificate;
-		this._label = sslCertificate.toString();
+		this._label = getLabel(sslCertificate);
 	}
 
 	@Override

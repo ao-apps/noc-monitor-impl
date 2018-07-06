@@ -122,7 +122,20 @@ public class SslCertificatesNode extends NodeImpl {
 			while(sslCertificateNodeIter.hasNext()) {
 				SslCertificateNode sslCertificateNode = sslCertificateNodeIter.next();
 				SslCertificate sslCertificate = sslCertificateNode.getSslCertificate();
-				if(!sslCertificates.contains(sslCertificate)) {
+				// Find matching new state
+				SslCertificate newCert = null;
+				for(SslCertificate cert : sslCertificates) {
+					if(cert.equals(sslCertificate)) {
+						newCert = cert;
+						break;
+					}
+				}
+				if(
+					// Does not exist
+					newCert == null
+					// or label changed
+					|| !SslCertificateNode.getLabel(newCert).equals(sslCertificateNode.getLabel())
+				) {
 					sslCertificateNode.stop();
 					sslCertificateNodeIter.remove();
 					serverNode.serversNode.rootNode.nodeRemoved();
@@ -138,6 +151,12 @@ public class SslCertificatesNode extends NodeImpl {
 					sslCertificateNode.start();
 					serverNode.serversNode.rootNode.nodeAdded();
 				}
+			}
+			// Prune any extra nodes that can happen when they are reordered
+			while(sslCertificateNodes.size() > sslCertificates.size()) {
+				SslCertificateNode sslCertificateNode = sslCertificateNodes.remove(sslCertificateNodes.size() - 1);
+				sslCertificateNode.stop();
+				serverNode.serversNode.rootNode.nodeRemoved();
 			}
 		}
 	}
