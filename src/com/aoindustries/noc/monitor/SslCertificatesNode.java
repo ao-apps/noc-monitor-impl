@@ -97,12 +97,14 @@ public class SslCertificatesNode extends NodeImpl {
 	void start() throws IOException, SQLException {
 		synchronized(sslCertificateNodes) {
 			serverNode.serversNode.rootNode.conn.getSslCertificates().addTableListener(tableListener, 100);
+			serverNode.serversNode.rootNode.conn.getSslCertificateNames().addTableListener(tableListener, 100);
 			verifySslCertificates();
 		}
 	}
 
 	void stop() {
 		synchronized(sslCertificateNodes) {
+			serverNode.serversNode.rootNode.conn.getSslCertificateNames().removeTableListener(tableListener);
 			serverNode.serversNode.rootNode.conn.getSslCertificates().removeTableListener(tableListener);
 			for(SslCertificateNode sslCertificateNode : sslCertificateNodes) {
 				sslCertificateNode.stop();
