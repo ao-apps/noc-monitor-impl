@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016, 2017 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2017, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -52,6 +52,7 @@ import java.util.logging.Logger;
  *         smartctl?
  *     watch for procmail/spamc failures in: /var/log/mail/info
  *         Dec  8 19:25:10 www3 sendmail[1795]: mB88rS9R029955: to=\\jl, delay=16:31:40, xdelay=00:00:04, mailer=local, pri=6962581, dsn=4.0.0, stat=Deferred: local mailer (/usr/bin/procmail) exited with EX_TEMPFAIL
+ * Watch the count of files in "/var/spool/aoserv/spamassassin" - a large number of files (not directories) indicates training failing.  Also watch parsed times.
  * mrtg auto-check and graphs
  * /proc/version against template
  * Other hardware (temps, fans, ...)
