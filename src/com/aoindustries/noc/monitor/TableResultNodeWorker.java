@@ -231,6 +231,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 	final void addTableResultNodeImpl(TableResultNodeImpl tableResultNodeImpl) {
 		synchronized(tableResultNodeImpls) {
 			boolean needsStart = tableResultNodeImpls.isEmpty();
+			assert !CollectionUtils.containsByIdentity(tableResultNodeImpls, tableResultNodeImpl);
 			tableResultNodeImpls.add(tableResultNodeImpl);
 			if(needsStart) start();
 		}
@@ -245,6 +246,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 					break;
 				}
 			}
+			assert !CollectionUtils.containsByIdentity(tableResultNodeImpls, tableResultNodeImpl);
 			if(tableResultNodeImpls.isEmpty()) {
 				stop();
 			}

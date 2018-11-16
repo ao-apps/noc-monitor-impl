@@ -189,6 +189,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 	final void addSingleResultNodeImpl(SingleResultNodeImpl singleResultNodeImpl) {
 		synchronized(singleResultNodeImpls) {
 			boolean needsStart = singleResultNodeImpls.isEmpty();
+			assert !CollectionUtils.containsByIdentity(singleResultNodeImpls, singleResultNodeImpl);
 			singleResultNodeImpls.add(singleResultNodeImpl);
 			if(needsStart) start();
 		}
@@ -203,6 +204,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 					break;
 				}
 			}
+			assert !CollectionUtils.containsByIdentity(singleResultNodeImpls, singleResultNodeImpl);
 			if(singleResultNodeImpls.isEmpty()) {
 				stop();
 			}

@@ -281,12 +281,14 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	final void addTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
 		synchronized(tableMultiResultNodeImpls) {
 			boolean needsStart = tableMultiResultNodeImpls.isEmpty();
+			assert !CollectionUtils.containsByIdentity(tableMultiResultNodeImpls, tableMultiResultNodeImpl);
 			tableMultiResultNodeImpls.add(tableMultiResultNodeImpl);
 			if(needsStart) start();
 		}
 	}
 
-	final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {		synchronized(tableMultiResultNodeImpls) {
+	final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
+		synchronized(tableMultiResultNodeImpls) {
 			if(tableMultiResultNodeImpls.isEmpty()) throw new AssertionError("tableMultiResultNodeImpls is empty");
 			for(int c=tableMultiResultNodeImpls.size()-1;c>=0;c--) {
 				if(tableMultiResultNodeImpls.get(c)==tableMultiResultNodeImpl) {
@@ -294,6 +296,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 					break;
 				}
 			}
+			assert !CollectionUtils.containsByIdentity(tableMultiResultNodeImpls, tableMultiResultNodeImpl);
 			if(tableMultiResultNodeImpls.isEmpty()) {
 				stop();
 			}
