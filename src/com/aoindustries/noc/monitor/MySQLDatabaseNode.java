@@ -31,6 +31,9 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
 	final MySQLDatabase mysqlDatabase;
 	private final FailoverMySQLReplication mysqlSlave;
 	private final MySQLDatabaseName _label;
+
+	private boolean started;
+
 	volatile private MySQLCheckTablesNode mysqlCheckTablesNode;
 
 	MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
@@ -106,22 +109,29 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
 	}
 
 	@Override
-	synchronized void start() throws IOException {
-		if(mysqlCheckTablesNode==null) {
-			mysqlCheckTablesNode = new MySQLCheckTablesNode(this, port, csf, ssf);
-			mysqlCheckTablesNode.start();
-			mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+	void start() throws IOException {
+		synchronized(this) {
+			if(started) throw new IllegalStateException();
+			started = true;
+			if(mysqlCheckTablesNode==null) {
+				mysqlCheckTablesNode = new MySQLCheckTablesNode(this, port, csf, ssf);
+				mysqlCheckTablesNode.start();
+				mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+			}
+			super.start();
 		}
-		super.start();
 	}
 
 	@Override
-	synchronized void stop() {
-		super.stop();
-		if(mysqlCheckTablesNode!=null) {
-			mysqlCheckTablesNode.stop();
-			mysqlCheckTablesNode = null;
-			mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+	void stop() {
+		synchronized(this) {
+			started = false;
+			super.stop();
+			if(mysqlCheckTablesNode!=null) {
+				mysqlCheckTablesNode.stop();
+				mysqlCheckTablesNode = null;
+				mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+			}
 		}
 	}
 }

@@ -37,6 +37,7 @@ public class IPAddressesNode extends NodeImpl {
 	final RootNodeImpl rootNode;
 
 	private final List<IPAddressNode> ipAddressNodes = new ArrayList<>();
+	private boolean started;
 
 	IPAddressesNode(NetDeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -110,13 +111,16 @@ public class IPAddressesNode extends NodeImpl {
 
 	void start() throws IOException, SQLException {
 		synchronized(ipAddressNodes) {
+			if(started) throw new IllegalStateException();
+			started = true;
 			rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
-			verifyIPAddresses();
 		}
+		verifyIPAddresses();
 	}
 
 	void stop() {
 		synchronized(ipAddressNodes) {
+			started = false;
 			rootNode.conn.getIpAddresses().removeTableListener(tableListener);
 			for(IPAddressNode ipAddressNode : ipAddressNodes) {
 				ipAddressNode.stop();
@@ -128,6 +132,10 @@ public class IPAddressesNode extends NodeImpl {
 
 	private void verifyIPAddresses() throws RemoteException, IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		synchronized(ipAddressNodes) {
+			if(!started) return;
+		}
 
 		List<IPAddress> ipAddresses;
 		if(netDeviceNode != null) {
@@ -153,39 +161,41 @@ public class IPAddressesNode extends NodeImpl {
 			}
 		}
 		synchronized(ipAddressNodes) {
-			// Remove old ones
-			Iterator<IPAddressNode> ipAddressNodeIter = ipAddressNodes.iterator();
-			while(ipAddressNodeIter.hasNext()) {
-				IPAddressNode ipAddressNode = ipAddressNodeIter.next();
-				IPAddress oldIpAddress = ipAddressNode.getIPAddress();
-				// Find the any new version of the IP address matching this node
-				IPAddress newIpAddress = null;
-				for(IPAddress ipAddress : ipAddresses) {
-					if(ipAddress.equals(oldIpAddress)) {
-						newIpAddress = ipAddress;
-						break;
+			if(started) {
+				// Remove old ones
+				Iterator<IPAddressNode> ipAddressNodeIter = ipAddressNodes.iterator();
+				while(ipAddressNodeIter.hasNext()) {
+					IPAddressNode ipAddressNode = ipAddressNodeIter.next();
+					IPAddress oldIpAddress = ipAddressNode.getIPAddress();
+					// Find the any new version of the IP address matching this node
+					IPAddress newIpAddress = null;
+					for(IPAddress ipAddress : ipAddresses) {
+						if(ipAddress.equals(oldIpAddress)) {
+							newIpAddress = ipAddress;
+							break;
+						}
+					}
+					if(
+						// Node no longer exists
+						newIpAddress==null
+						// Node has a new label
+						|| !IPAddressNode.getLabel(newIpAddress).equals(ipAddressNode.getLabel())
+					) {
+						ipAddressNode.stop();
+						ipAddressNodeIter.remove();
+						rootNode.nodeRemoved();
 					}
 				}
-				if(
-					// Node no longer exists
-					newIpAddress==null
-					// Node has a new label
-					|| !IPAddressNode.getLabel(newIpAddress).equals(ipAddressNode.getLabel())
-				) {
-					ipAddressNode.stop();
-					ipAddressNodeIter.remove();
-					rootNode.nodeRemoved();
-				}
-			}
-			// Add new ones
-			for(int c=0;c<ipAddresses.size();c++) {
-				IPAddress ipAddress = ipAddresses.get(c);
-				if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
-					// Insert into proper index
-					IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
-					ipAddressNodes.add(c, ipAddressNode);
-					ipAddressNode.start();
-					rootNode.nodeAdded();
+				// Add new ones
+				for(int c=0;c<ipAddresses.size();c++) {
+					IPAddress ipAddress = ipAddresses.get(c);
+					if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
+						// Insert into proper index
+						IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);
+						ipAddressNodes.add(c, ipAddressNode);
+						ipAddressNode.start();
+						rootNode.nodeAdded();
+					}
 				}
 			}
 		}

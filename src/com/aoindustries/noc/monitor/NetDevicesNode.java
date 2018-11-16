@@ -35,6 +35,7 @@ public class NetDevicesNode extends NodeImpl {
 	final ServerNode serverNode;
 	private final Server server;
 	private final List<NetDeviceNode> netDeviceNodes = new ArrayList<>();
+	private boolean started;
 
 	NetDevicesNode(ServerNode serverNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -98,13 +99,16 @@ public class NetDevicesNode extends NodeImpl {
 
 	void start() throws IOException, SQLException {
 		synchronized(netDeviceNodes) {
+			if(started) throw new IllegalStateException();
+			started = true;
 			serverNode.serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
-			verifyNetDevices();
 		}
+		verifyNetDevices();
 	}
 
 	void stop() {
 		synchronized(netDeviceNodes) {
+			started = false;
 			serverNode.serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
 			for(NetDeviceNode netDeviceNode : netDeviceNodes) {
 				netDeviceNode.stop();
@@ -117,6 +121,10 @@ public class NetDevicesNode extends NodeImpl {
 	private void verifyNetDevices() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+		synchronized(netDeviceNodes) {
+			if(!started) return;
+		}
+
 		// Filter only those that are enabled
 		List<NetDevice> netDevices;
 		{
@@ -127,26 +135,28 @@ public class NetDevicesNode extends NodeImpl {
 			}
 		}
 		synchronized(netDeviceNodes) {
-			// Remove old ones
-			Iterator<NetDeviceNode> netDeviceNodeIter = netDeviceNodes.iterator();
-			while(netDeviceNodeIter.hasNext()) {
-				NetDeviceNode netDeviceNode = netDeviceNodeIter.next();
-				NetDevice netDevice = netDeviceNode.getNetDevice();
-				if(!netDevices.contains(netDevice)) {
-					netDeviceNode.stop();
-					netDeviceNodeIter.remove();
-					serverNode.serversNode.rootNode.nodeRemoved();
+			if(started) {
+				// Remove old ones
+				Iterator<NetDeviceNode> netDeviceNodeIter = netDeviceNodes.iterator();
+				while(netDeviceNodeIter.hasNext()) {
+					NetDeviceNode netDeviceNode = netDeviceNodeIter.next();
+					NetDevice netDevice = netDeviceNode.getNetDevice();
+					if(!netDevices.contains(netDevice)) {
+						netDeviceNode.stop();
+						netDeviceNodeIter.remove();
+						serverNode.serversNode.rootNode.nodeRemoved();
+					}
 				}
-			}
-			// Add new ones
-			for(int c=0;c<netDevices.size();c++) {
-				NetDevice netDevice = netDevices.get(c);
-				if(c>=netDeviceNodes.size() || !netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
-					// Insert into proper index
-					NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice, port, csf, ssf);
-					netDeviceNodes.add(c, netDeviceNode);
-					netDeviceNode.start();
-					serverNode.serversNode.rootNode.nodeAdded();
+				// Add new ones
+				for(int c=0;c<netDevices.size();c++) {
+					NetDevice netDevice = netDevices.get(c);
+					if(c>=netDeviceNodes.size() || !netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
+						// Insert into proper index
+						NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice, port, csf, ssf);
+						netDeviceNodes.add(c, netDeviceNode);
+						netDeviceNode.start();
+						serverNode.serversNode.rootNode.nodeAdded();
+					}
 				}
 			}
 		}

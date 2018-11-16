@@ -65,6 +65,7 @@ public class IPAddressNode extends NodeImpl {
 
 	private static class ChildLock {}
 	private final ChildLock childLock = new ChildLock();
+	private boolean started;
 
 	volatile private PingNode pingNode;
 	volatile private NetBindsNode netBindsNode;
@@ -142,23 +143,28 @@ public class IPAddressNode extends NodeImpl {
 
 	void start() throws RemoteException, IOException, SQLException {
 		AOServConnector conn = ipAddressesNode.rootNode.conn;
-		conn.getIpAddresses().addTableListener(tableListener, 100);
-		conn.getNetBinds().addTableListener(tableListener, 100);
-		conn.getNetDevices().addTableListener(tableListener, 100);
-		conn.getNetDeviceIDs().addTableListener(tableListener, 100);
-		conn.getServers().addTableListener(tableListener, 100);
+		synchronized(childLock) {
+			if(started) throw new IllegalStateException();
+			started = true;
+			conn.getIpAddresses().addTableListener(tableListener, 100);
+			conn.getNetBinds().addTableListener(tableListener, 100);
+			conn.getNetDevices().addTableListener(tableListener, 100);
+			conn.getNetDeviceIDs().addTableListener(tableListener, 100);
+			conn.getServers().addTableListener(tableListener, 100);
+		}
 		verifyChildren();
 	}
 
 	void stop() {
 		RootNodeImpl rootNode = ipAddressesNode.rootNode;
 		AOServConnector conn = rootNode.conn;
-		conn.getIpAddresses().removeTableListener(tableListener);
-		conn.getNetBinds().removeTableListener(tableListener);
-		conn.getNetDevices().removeTableListener(tableListener);
-		conn.getNetDeviceIDs().removeTableListener(tableListener);
-		conn.getServers().removeTableListener(tableListener);
 		synchronized(childLock) {
+			started = false;
+			conn.getIpAddresses().removeTableListener(tableListener);
+			conn.getNetBinds().removeTableListener(tableListener);
+			conn.getNetDevices().removeTableListener(tableListener);
+			conn.getNetDeviceIDs().removeTableListener(tableListener);
+			conn.getServers().removeTableListener(tableListener);
 			if(blacklistsNode != null) {
 				blacklistsNode.stop();
 				blacklistsNode = null;
@@ -185,6 +191,10 @@ public class IPAddressNode extends NodeImpl {
 	private void verifyChildren() throws RemoteException, IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+		synchronized(childLock) {
+			if(!started) return;
+		}
+
 		final RootNodeImpl rootNode = ipAddressesNode.rootNode;
 
 		IPAddress _currentIpAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
@@ -197,58 +207,60 @@ public class IPAddressNode extends NodeImpl {
 		boolean hasNetBinds = ipAddressesNode.netDeviceNode != null && !NetBindsNode.getSettings(_currentIpAddress).isEmpty();
 
 		synchronized(childLock) {
-			if(isPingable) {
-				if(pingNode == null) {
-					pingNode = new PingNode(this, port, csf, ssf);
-					pingNode.start();
-					rootNode.nodeAdded();
+			if(started) {
+				if(isPingable) {
+					if(pingNode == null) {
+						pingNode = new PingNode(this, port, csf, ssf);
+						pingNode.start();
+						rootNode.nodeAdded();
+					}
+				} else {
+					if(pingNode != null) {
+						pingNode.stop();
+						pingNode = null;
+						rootNode.nodeRemoved();
+					}
 				}
-			} else {
-				if(pingNode != null) {
-					pingNode.stop();
-					pingNode = null;
-					rootNode.nodeRemoved();
+				if(hasNetBinds) {
+					if(netBindsNode == null) {
+						netBindsNode = new NetBindsNode(this, port, csf, ssf);
+						netBindsNode.start();
+						rootNode.nodeAdded();
+					}
+				} else {
+					if(netBindsNode != null) {
+						netBindsNode.stop();
+						netBindsNode = null;
+						rootNode.nodeRemoved();
+					}
 				}
-			}
-			if(hasNetBinds) {
-				if(netBindsNode == null) {
-					netBindsNode = new NetBindsNode(this, port, csf, ssf);
-					netBindsNode.start();
-					rootNode.nodeAdded();
-				}
-			} else {
-				if(netBindsNode != null) {
-					netBindsNode.stop();
-					netBindsNode = null;
-					rootNode.nodeRemoved();
-				}
-			}
-			if(
-				// Skip loopback device
-				!isLoopback
-				// Skip private IP addresses
-				&& !(ip.isUniqueLocal() || ip.isLoopback())
-			) {
-				if(reverseDnsNode == null) {
-					reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
-					reverseDnsNode.start();
-					rootNode.nodeAdded();
-				}
-				if(blacklistsNode == null) {
-					blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
-					blacklistsNode.start();
-					rootNode.nodeAdded();
-				}
-			} else {
-				if(reverseDnsNode != null) {
-					reverseDnsNode.stop();
-					reverseDnsNode = null;
-					rootNode.nodeRemoved();
-				}
-				if(blacklistsNode != null) {
-					blacklistsNode.stop();
-					blacklistsNode = null;
-					rootNode.nodeRemoved();
+				if(
+					// Skip loopback device
+					!isLoopback
+					// Skip private IP addresses
+					&& !(ip.isUniqueLocal() || ip.isLoopback())
+				) {
+					if(reverseDnsNode == null) {
+						reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
+						reverseDnsNode.start();
+						rootNode.nodeAdded();
+					}
+					if(blacklistsNode == null) {
+						blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
+						blacklistsNode.start();
+						rootNode.nodeAdded();
+					}
+				} else {
+					if(reverseDnsNode != null) {
+						reverseDnsNode.stop();
+						reverseDnsNode = null;
+						rootNode.nodeRemoved();
+					}
+					if(blacklistsNode != null) {
+						blacklistsNode.stop();
+						blacklistsNode = null;
+						rootNode.nodeRemoved();
+					}
 				}
 			}
 		}

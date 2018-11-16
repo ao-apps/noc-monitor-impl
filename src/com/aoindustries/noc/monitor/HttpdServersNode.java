@@ -38,6 +38,7 @@ public class HttpdServersNode extends NodeImpl {
 	final ServerNode serverNode;
 	private final AOServer aoServer;
 	private final List<HttpdServerNode> httpdServerNodes = new ArrayList<>();
+	private boolean started;
 
 	HttpdServersNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -101,13 +102,16 @@ public class HttpdServersNode extends NodeImpl {
 
 	void start() throws IOException, SQLException {
 		synchronized(httpdServerNodes) {
+			if(started) throw new IllegalStateException();
+			started = true;
 			serverNode.serversNode.rootNode.conn.getHttpdServers().addTableListener(tableListener, 100);
-			verifyHttpdServers();
 		}
+		verifyHttpdServers();
 	}
 
 	void stop() {
 		synchronized(httpdServerNodes) {
+			started = false;
 			serverNode.serversNode.rootNode.conn.getHttpdServers().removeTableListener(tableListener);
 			for(HttpdServerNode httpdServerNode : httpdServerNodes) {
 				httpdServerNode.stop();
@@ -121,53 +125,59 @@ public class HttpdServersNode extends NodeImpl {
 	private void verifyHttpdServers() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+		synchronized(httpdServerNodes) {
+			if(!started) return;
+		}
+
 		List<HttpdServer> httpdServers = aoServer.getHttpdServers();
 		if(DEBUG) System.err.println("httpdServers = " + httpdServers);
 		synchronized(httpdServerNodes) {
-			// Remove old ones
-			Iterator<HttpdServerNode> httpdServerNodeIter = httpdServerNodes.iterator();
-			while(httpdServerNodeIter.hasNext()) {
-				HttpdServerNode httpdServerNode = httpdServerNodeIter.next();
-				HttpdServer existingHttpdServer = httpdServerNode.getHttpdServer();
-				// Look for existing node with matching HttpdServer with the same name
-				boolean hasMatch = false;
-				for(HttpdServer httpdServer : httpdServers) {
-					if(httpdServer.equals(existingHttpdServer)) {
-						if(ObjectUtils.equals(httpdServer.getName(), existingHttpdServer.getName())) {
-							if(DEBUG) System.err.println("Found with matching name " + existingHttpdServer.getName() + ", keeping node");
-							hasMatch = true;
-						} else {
-							if(DEBUG) System.err.println("Name changed from " + existingHttpdServer.getName() + " to " + httpdServer.getName() + ", removing node");
-							// Name changed, remove old node
-							// matches remains false
+			if(started) {
+				// Remove old ones
+				Iterator<HttpdServerNode> httpdServerNodeIter = httpdServerNodes.iterator();
+				while(httpdServerNodeIter.hasNext()) {
+					HttpdServerNode httpdServerNode = httpdServerNodeIter.next();
+					HttpdServer existingHttpdServer = httpdServerNode.getHttpdServer();
+					// Look for existing node with matching HttpdServer with the same name
+					boolean hasMatch = false;
+					for(HttpdServer httpdServer : httpdServers) {
+						if(httpdServer.equals(existingHttpdServer)) {
+							if(ObjectUtils.equals(httpdServer.getName(), existingHttpdServer.getName())) {
+								if(DEBUG) System.err.println("Found with matching name " + existingHttpdServer.getName() + ", keeping node");
+								hasMatch = true;
+							} else {
+								if(DEBUG) System.err.println("Name changed from " + existingHttpdServer.getName() + " to " + httpdServer.getName() + ", removing node");
+								// Name changed, remove old node
+								// matches remains false
+							}
+							break;
 						}
-						break;
+					}
+					if(!hasMatch) {
+						httpdServerNode.stop();
+						httpdServerNodeIter.remove();
+						serverNode.serversNode.rootNode.nodeRemoved();
 					}
 				}
-				if(!hasMatch) {
-					httpdServerNode.stop();
-					httpdServerNodeIter.remove();
-					serverNode.serversNode.rootNode.nodeRemoved();
-				}
-			}
-			// Add new ones
-			for(int c = 0; c < httpdServers.size(); c++) {
-				HttpdServer httpdServer = httpdServers.get(c);
-				if(c >= httpdServerNodes.size() || !httpdServer.equals(httpdServerNodes.get(c).getHttpdServer())) {
-					if(DEBUG) System.err.println("Adding node for " + httpdServer.getName());
-					try {
-						// Insert into proper index
-						if(DEBUG) System.err.println("Creating node for " + httpdServer.getName());
-						HttpdServerNode httpdServerNode = new HttpdServerNode(this, httpdServer, port, csf, ssf);
-						if(DEBUG) System.err.println("Adding node to list for " + httpdServer.getName());
-						httpdServerNodes.add(c, httpdServerNode);
-						if(DEBUG) System.err.println("Starting node for " + httpdServer.getName());
-						httpdServerNode.start();
-						if(DEBUG) System.err.println("Notifying added for " + httpdServer.getName());
-						serverNode.serversNode.rootNode.nodeAdded();
-					} catch(IOException | RuntimeException e) {
-						if(DEBUG) e.printStackTrace(System.err);
-						throw e;
+				// Add new ones
+				for(int c = 0; c < httpdServers.size(); c++) {
+					HttpdServer httpdServer = httpdServers.get(c);
+					if(c >= httpdServerNodes.size() || !httpdServer.equals(httpdServerNodes.get(c).getHttpdServer())) {
+						if(DEBUG) System.err.println("Adding node for " + httpdServer.getName());
+						try {
+							// Insert into proper index
+							if(DEBUG) System.err.println("Creating node for " + httpdServer.getName());
+							HttpdServerNode httpdServerNode = new HttpdServerNode(this, httpdServer, port, csf, ssf);
+							if(DEBUG) System.err.println("Adding node to list for " + httpdServer.getName());
+							httpdServerNodes.add(c, httpdServerNode);
+							if(DEBUG) System.err.println("Starting node for " + httpdServer.getName());
+							httpdServerNode.start();
+							if(DEBUG) System.err.println("Notifying added for " + httpdServer.getName());
+							serverNode.serversNode.rootNode.nodeAdded();
+						} catch(IOException | RuntimeException e) {
+							if(DEBUG) e.printStackTrace(System.err);
+							throw e;
+						}
 					}
 				}
 			}

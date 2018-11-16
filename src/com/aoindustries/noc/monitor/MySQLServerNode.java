@@ -35,6 +35,7 @@ public class MySQLServerNode extends NodeImpl {
 	private final MySQLServer _mysqlServer;
 	private final MySQLServerName _label;
 
+	private boolean started;
 	volatile private MySQLSlavesNode _mysqlSlavesNode;
 	volatile private MySQLDatabasesNode _mysqlDatabasesNode;
 
@@ -103,47 +104,66 @@ public class MySQLServerNode extends NodeImpl {
 		}
 	};
 
-	synchronized void start() throws IOException, SQLException {
+	void start() throws IOException, SQLException {
 		RootNodeImpl rootNode = _mysqlServersNode.serverNode.serversNode.rootNode;
-		rootNode.conn.getFailoverMySQLReplications().addTableListener(tableListener, 100);
+		synchronized(this) {
+			if(started) throw new IllegalStateException();
+			started = true;
+			rootNode.conn.getFailoverMySQLReplications().addTableListener(tableListener, 100);
+		}
 		verifyFailoverMySQLReplications();
-		if(_mysqlDatabasesNode==null) {
-			_mysqlDatabasesNode = new MySQLDatabasesNode(this, port, csf, ssf);
-			_mysqlDatabasesNode.start();
-			rootNode.nodeAdded();
-		}
-	}
-
-	synchronized void stop() {
-		RootNodeImpl rootNode = _mysqlServersNode.serverNode.serversNode.rootNode;
-		if(_mysqlSlavesNode!=null) {
-			_mysqlSlavesNode.stop();
-			_mysqlSlavesNode = null;
-			rootNode.nodeRemoved();
-		}
-
-		if(_mysqlDatabasesNode!=null) {
-			_mysqlDatabasesNode.stop();
-			_mysqlDatabasesNode = null;
-			rootNode.nodeRemoved();
-		}
-	}
-
-	synchronized private void verifyFailoverMySQLReplications() throws IOException, SQLException {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
-
-		List<FailoverMySQLReplication> failoverMySQLReplications = _mysqlServer.getFailoverMySQLReplications();
-		if(!failoverMySQLReplications.isEmpty()) {
-			if(_mysqlSlavesNode==null) {
-				_mysqlSlavesNode = new MySQLSlavesNode(this, port, csf, ssf);
-				_mysqlSlavesNode.start();
-				_mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+		synchronized(this) {
+			if(started) {
+				if(_mysqlDatabasesNode==null) {
+					_mysqlDatabasesNode = new MySQLDatabasesNode(this, port, csf, ssf);
+					_mysqlDatabasesNode.start();
+					rootNode.nodeAdded();
+				}
 			}
-		} else {
+		}
+	}
+
+	void stop() {
+		synchronized(this) {
+			started = false;
+			RootNodeImpl rootNode = _mysqlServersNode.serverNode.serversNode.rootNode;
 			if(_mysqlSlavesNode!=null) {
 				_mysqlSlavesNode.stop();
 				_mysqlSlavesNode = null;
-				_mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+				rootNode.nodeRemoved();
+			}
+
+			if(_mysqlDatabasesNode!=null) {
+				_mysqlDatabasesNode.stop();
+				_mysqlDatabasesNode = null;
+				rootNode.nodeRemoved();
+			}
+		}
+	}
+
+	private void verifyFailoverMySQLReplications() throws IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		synchronized(this) {
+			if(!started) return;
+		}
+
+		List<FailoverMySQLReplication> failoverMySQLReplications = _mysqlServer.getFailoverMySQLReplications();
+		synchronized(this) {
+			if(started) {
+				if(!failoverMySQLReplications.isEmpty()) {
+					if(_mysqlSlavesNode==null) {
+						_mysqlSlavesNode = new MySQLSlavesNode(this, port, csf, ssf);
+						_mysqlSlavesNode.start();
+						_mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+					}
+				} else {
+					if(_mysqlSlavesNode!=null) {
+						_mysqlSlavesNode.stop();
+						_mysqlSlavesNode = null;
+						_mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+					}
+				}
 			}
 		}
 	}

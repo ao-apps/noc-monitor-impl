@@ -33,6 +33,7 @@ public class MySQLSlavesNode extends NodeImpl {
 
 	final MySQLServerNode mysqlServerNode;
 	private final List<MySQLSlaveNode> mysqlSlaveNodes = new ArrayList<>();
+	private boolean started;
 
 	MySQLSlavesNode(MySQLServerNode mysqlServerNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -91,14 +92,17 @@ public class MySQLSlavesNode extends NodeImpl {
 
 	void start() throws IOException, SQLException {
 		synchronized(mysqlSlaveNodes) {
+			if(started) throw new IllegalStateException();
+			started = true;
 			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getFailoverFileReplications().addTableListener(tableListener, 100);
 			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getFailoverMySQLReplications().addTableListener(tableListener, 100);
-			verifyMySQLSlaves();
 		}
+		verifyMySQLSlaves();
 	}
 
 	void stop() {
 		synchronized(mysqlSlaveNodes) {
+			started = false;
 			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getFailoverFileReplications().removeTableListener(tableListener);
 			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getFailoverMySQLReplications().removeTableListener(tableListener);
 			for(MySQLSlaveNode mysqlSlaveNode : mysqlSlaveNodes) {
@@ -112,28 +116,34 @@ public class MySQLSlavesNode extends NodeImpl {
 	private void verifyMySQLSlaves() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+		synchronized(mysqlSlaveNodes) {
+			if(!started) return;
+		}
+
 		List<FailoverMySQLReplication> mysqlReplications = mysqlServerNode.getMySQLServer().getFailoverMySQLReplications();
 		synchronized(mysqlSlaveNodes) {
-			// Remove old ones
-			Iterator<MySQLSlaveNode> mysqlSlaveNodeIter = mysqlSlaveNodes.iterator();
-			while(mysqlSlaveNodeIter.hasNext()) {
-				MySQLSlaveNode mysqlSlaveNode = mysqlSlaveNodeIter.next();
-				FailoverMySQLReplication mysqlReplication = mysqlSlaveNode.getFailoverMySQLReplication();
-				if(!mysqlReplications.contains(mysqlReplication)) {
-					mysqlSlaveNode.stop();
-					mysqlSlaveNodeIter.remove();
-					mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+			if(started) {
+				// Remove old ones
+				Iterator<MySQLSlaveNode> mysqlSlaveNodeIter = mysqlSlaveNodes.iterator();
+				while(mysqlSlaveNodeIter.hasNext()) {
+					MySQLSlaveNode mysqlSlaveNode = mysqlSlaveNodeIter.next();
+					FailoverMySQLReplication mysqlReplication = mysqlSlaveNode.getFailoverMySQLReplication();
+					if(!mysqlReplications.contains(mysqlReplication)) {
+						mysqlSlaveNode.stop();
+						mysqlSlaveNodeIter.remove();
+						mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+					}
 				}
-			}
-			// Add new ones
-			for(int c=0;c<mysqlReplications.size();c++) {
-				FailoverMySQLReplication mysqlReplication = mysqlReplications.get(c);
-				if(c>=mysqlSlaveNodes.size() || !mysqlReplication.equals(mysqlSlaveNodes.get(c).getFailoverMySQLReplication())) {
-					// Insert into proper index
-					MySQLSlaveNode mysqlSlaveNode = new MySQLSlaveNode(this, mysqlReplication, port, csf, ssf);
-					mysqlSlaveNodes.add(c, mysqlSlaveNode);
-					mysqlSlaveNode.start();
-					mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+				// Add new ones
+				for(int c=0;c<mysqlReplications.size();c++) {
+					FailoverMySQLReplication mysqlReplication = mysqlReplications.get(c);
+					if(c>=mysqlSlaveNodes.size() || !mysqlReplication.equals(mysqlSlaveNodes.get(c).getFailoverMySQLReplication())) {
+						// Insert into proper index
+						MySQLSlaveNode mysqlSlaveNode = new MySQLSlaveNode(this, mysqlReplication, port, csf, ssf);
+						mysqlSlaveNodes.add(c, mysqlSlaveNode);
+						mysqlSlaveNode.start();
+						mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+					}
 				}
 			}
 		}

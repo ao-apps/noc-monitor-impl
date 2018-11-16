@@ -54,6 +54,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
 	final ServerNode serverNode;
 	private final List<BackupNode> backupNodes = new ArrayList<>();
+	private boolean started;
 
 	private AlertLevel alertLevel;
 	private TableResult lastResult;
@@ -120,14 +121,17 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
 	void start() throws IOException, SQLException {
 		synchronized(backupNodes) {
+			if(started) throw new IllegalStateException();
+			started = true;
 			serverNode.serversNode.rootNode.conn.getFailoverFileReplications().addTableListener(tableListener, 100);
 			serverNode.serversNode.rootNode.conn.getFailoverFileSchedules().addTableListener(tableListener, 100);
-			verifyBackups();
 		}
+		verifyBackups();
 	}
 
 	void stop() {
 		synchronized(backupNodes) {
+			started = false;
 			serverNode.serversNode.rootNode.conn.getFailoverFileSchedules().removeTableListener(tableListener);
 			serverNode.serversNode.rootNode.conn.getFailoverFileReplications().removeTableListener(tableListener);
 			for(BackupNode backupNode : backupNodes) {
@@ -153,6 +157,10 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
 	private void verifyBackups() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		synchronized(backupNodes) {
+			if(!started) return;
+		}
 
 		final long startTime = System.currentTimeMillis();
 		final long startNanos = System.nanoTime();
@@ -199,28 +207,31 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 				? AlertLevel.LOW
 				: AlertLevel.NONE
 		;
-		AlertLevel oldAlertLevel = alertLevel;
-		if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
-		String newAlertLevelMessage =
-			failoverFileReplications.isEmpty()
-			? accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
-			: missingMobBackup
-				? accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.missingMobBackup")
-				: accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.backupsConfigured")
-		;
-		alertLevel = newAlertLevel;
-		if(oldAlertLevel!=newAlertLevel) {
-			serverNode.serversNode.rootNode.nodeAlertLevelChanged(
-				this,
-				constrainAlertLevel(oldAlertLevel),
-				constrainAlertLevel(newAlertLevel),
-				newAlertLevelMessage
-			);
-		}
 
 		// Control individual backup nodes
 		TableResult newResult;
 		synchronized(backupNodes) {
+			if(!started) return;
+
+			AlertLevel oldAlertLevel = alertLevel;
+			if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
+			String newAlertLevelMessage =
+				failoverFileReplications.isEmpty()
+				? accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
+				: missingMobBackup
+					? accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.missingMobBackup")
+					: accessor.getMessage(serverNode.serversNode.rootNode.locale, "BackupsNode.backupsConfigured")
+			;
+			alertLevel = newAlertLevel;
+			if(oldAlertLevel!=newAlertLevel) {
+				serverNode.serversNode.rootNode.nodeAlertLevelChanged(
+					this,
+					constrainAlertLevel(oldAlertLevel),
+					constrainAlertLevel(newAlertLevel),
+					newAlertLevelMessage
+				);
+			}
+
 			// Remove old ones
 			Iterator<BackupNode> backupNodeIter = backupNodes.iterator();
 			while(backupNodeIter.hasNext()) {

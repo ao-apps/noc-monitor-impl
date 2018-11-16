@@ -34,7 +34,7 @@ abstract public class ServersNode extends NodeImpl {
 	final RootNodeImpl rootNode;
 
 	private final List<ServerNode> serverNodes = new ArrayList<>();
-	private boolean stopped = false;
+	private boolean started;
 
 	ServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -88,16 +88,17 @@ abstract public class ServersNode extends NodeImpl {
 
 	final void start() throws IOException, SQLException {
 		synchronized(serverNodes) {
-			stopped = false;
+			if(started) throw new IllegalStateException();
+			started = true;
+			rootNode.conn.getServers().addTableListener(tableListener, 100);
 		}
-		rootNode.conn.getServers().addTableListener(tableListener, 100);
 		verifyServers();
 	}
 
 	final void stop() {
-		rootNode.conn.getServers().removeTableListener(tableListener);
 		synchronized(serverNodes) {
-			stopped = true;
+			started = false;
+			rootNode.conn.getServers().removeTableListener(tableListener);
 			for(ServerNode serverNode : serverNodes) {
 				serverNode.stop();
 				rootNode.nodeRemoved();
@@ -109,6 +110,10 @@ abstract public class ServersNode extends NodeImpl {
 	private void verifyServers() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+		synchronized(serverNodes) {
+			if(!started) return;
+		}
+
 		// Get all the servers that have monitoring enabled
 		List<Server> allServers = rootNode.conn.getServers().getRows();
 		List<Server> servers = new ArrayList<>(allServers.size());
@@ -116,7 +121,7 @@ abstract public class ServersNode extends NodeImpl {
 			if(server.isMonitoringEnabled() && includeServer(server)) servers.add(server);
 		}
 		synchronized(serverNodes) {
-			if(!stopped) {
+			if(started) {
 				// Remove old ones
 				Iterator<ServerNode> serverNodeIter = serverNodes.iterator();
 				while(serverNodeIter.hasNext()) {

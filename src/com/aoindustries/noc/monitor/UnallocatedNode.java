@@ -26,6 +26,8 @@ public class UnallocatedNode extends NodeImpl {
 
 	final RootNodeImpl rootNode;
 
+	private boolean started;
+
 	volatile private IPAddressesNode _ipAddressesNode;
 
 	UnallocatedNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -75,19 +77,26 @@ public class UnallocatedNode extends NodeImpl {
 		return accessor.getMessage(rootNode.locale, "UnallocatedNode.label");
 	}
 
-	synchronized void start() throws IOException, SQLException {
-		if(_ipAddressesNode==null) {
-			_ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
-			_ipAddressesNode.start();
-			rootNode.nodeAdded();
+	void start() throws IOException, SQLException {
+		synchronized(this) {
+			if(started) throw new IllegalStateException();
+			started = true;
+			if(_ipAddressesNode==null) {
+				_ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
+				_ipAddressesNode.start();
+				rootNode.nodeAdded();
+			}
 		}
 	}
 
-	synchronized void stop() {
-		if(_ipAddressesNode!=null) {
-			_ipAddressesNode.stop();
-			_ipAddressesNode = null;
-			rootNode.nodeRemoved();
+	void stop() {
+		synchronized(this) {
+			started = false;
+			if(_ipAddressesNode!=null) {
+				_ipAddressesNode.stop();
+				_ipAddressesNode = null;
+				rootNode.nodeRemoved();
+			}
 		}
 	}
 

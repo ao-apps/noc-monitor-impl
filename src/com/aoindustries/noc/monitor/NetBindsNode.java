@@ -42,6 +42,7 @@ public class NetBindsNode extends NodeImpl {
 
 	final IPAddressNode ipAddressNode;
 	private final List<NetBindNode> netBindNodes = new ArrayList<>();
+	private boolean started;
 
 	NetBindsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -102,6 +103,8 @@ public class NetBindsNode extends NodeImpl {
 	void start() throws IOException, SQLException {
 		AOServConnector conn = ipAddressNode.ipAddressesNode.rootNode.conn;
 		synchronized(netBindNodes) {
+			if(started) throw new IllegalStateException();
+			started = true;
 			conn.getHttpdJBossSites().addTableListener(tableListener, 100);
 			conn.getHttpdSharedTomcats().addTableListener(tableListener, 100);
 			conn.getHttpdSites().addTableListener(tableListener, 100);
@@ -111,14 +114,15 @@ public class NetBindsNode extends NodeImpl {
 			conn.getIpAddresses().addTableListener(tableListener, 100);
 			conn.getNetBinds().addTableListener(tableListener, 100);
 			conn.getNetDevices().addTableListener(tableListener, 100);
-			verifyNetBinds();
 		}
+		verifyNetBinds();
 	}
 
 	void stop() {
 		RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
 		AOServConnector conn = rootNode.conn;
 		synchronized(netBindNodes) {
+			started = false;
 			conn.getHttpdJBossSites().removeTableListener(tableListener);
 			conn.getHttpdSharedTomcats().removeTableListener(tableListener);
 			conn.getHttpdSites().removeTableListener(tableListener);
@@ -266,6 +270,10 @@ public class NetBindsNode extends NodeImpl {
 	private void verifyNetBinds() throws RemoteException, IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+		synchronized(netBindNodes) {
+			if(!started) return;
+		}
+
 		final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
 
 		IPAddress ipAddress = ipAddressNode.getIPAddress();
@@ -273,26 +281,28 @@ public class NetBindsNode extends NodeImpl {
 		List<NetMonitorSetting> netMonitorSettings = getSettings(ipAddress);
 
 		synchronized(netBindNodes) {
-			// Remove old ones
-			Iterator<NetBindNode> netBindNodeIter = netBindNodes.iterator();
-			while(netBindNodeIter.hasNext()) {
-				NetBindNode netBindNode = netBindNodeIter.next();
-				NetMonitorSetting netMonitorSetting = netBindNode.getNetMonitorSetting();
-				if(!netMonitorSettings.contains(netMonitorSetting)) {
-					netBindNode.stop();
-					netBindNodeIter.remove();
-					rootNode.nodeRemoved();
+			if(started) {
+				// Remove old ones
+				Iterator<NetBindNode> netBindNodeIter = netBindNodes.iterator();
+				while(netBindNodeIter.hasNext()) {
+					NetBindNode netBindNode = netBindNodeIter.next();
+					NetMonitorSetting netMonitorSetting = netBindNode.getNetMonitorSetting();
+					if(!netMonitorSettings.contains(netMonitorSetting)) {
+						netBindNode.stop();
+						netBindNodeIter.remove();
+						rootNode.nodeRemoved();
+					}
 				}
-			}
-			// Add new ones
-			for(int c=0;c<netMonitorSettings.size();c++) {
-				NetMonitorSetting netMonitorSetting = netMonitorSettings.get(c);
-				if(c>=netBindNodes.size() || !netMonitorSetting.equals(netBindNodes.get(c).getNetMonitorSetting())) {
-					// Insert into proper index
-					NetBindNode netBindNode = new NetBindNode(this, netMonitorSetting, port, csf, ssf);
-					netBindNodes.add(c, netBindNode);
-					netBindNode.start();
-					rootNode.nodeAdded();
+				// Add new ones
+				for(int c=0;c<netMonitorSettings.size();c++) {
+					NetMonitorSetting netMonitorSetting = netMonitorSettings.get(c);
+					if(c>=netBindNodes.size() || !netMonitorSetting.equals(netBindNodes.get(c).getNetMonitorSetting())) {
+						// Insert into proper index
+						NetBindNode netBindNode = new NetBindNode(this, netMonitorSetting, port, csf, ssf);
+						netBindNodes.add(c, netBindNode);
+						netBindNode.start();
+						rootNode.nodeAdded();
+					}
 				}
 			}
 		}

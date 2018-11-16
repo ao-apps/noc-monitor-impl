@@ -29,6 +29,8 @@ public class RaidNode extends NodeImpl {
 	final ServerNode serverNode;
 	private final AOServer aoServer;
 
+	private boolean started;
+
 	volatile private ThreeWareRaidNode _threeWareRaidNode;
 	volatile private MdStatNode _mdStatNode;
 	volatile private MdMismatchNode _mdMismatchNode;
@@ -92,65 +94,72 @@ public class RaidNode extends NodeImpl {
 		return accessor.getMessage(serverNode.serversNode.rootNode.locale, "RaidNode.label");
 	}
 
-	synchronized void start() throws IOException, SQLException {
+	void start() throws IOException, SQLException {
 		// TODO: Operating system versions can change on-the-fly:
 		// We only have 3ware cards in xen outers
 		int osv = aoServer.getServer().getOperatingSystemVersion().getPkey();
-		if(
-			osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
-			|| osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
-		) {
-			if(_threeWareRaidNode==null) {
-				_threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
-				_threeWareRaidNode.start();
+		synchronized(this) {
+			if(started) throw new IllegalStateException();
+			started = true;
+			if(
+				osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
+				|| osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
+			) {
+				if(_threeWareRaidNode==null) {
+					_threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
+					_threeWareRaidNode.start();
+					serverNode.serversNode.rootNode.nodeAdded();
+				}
+			}
+			// Any machine may have MD RAID (at least until all services run in Xen outers)
+			if(_mdStatNode==null) {
+				_mdStatNode = new MdStatNode(this, port, csf, ssf);
+				_mdStatNode.start();
 				serverNode.serversNode.rootNode.nodeAdded();
 			}
-		}
-		// Any machine may have MD RAID (at least until all services run in Xen outers)
-		if(_mdStatNode==null) {
-			_mdStatNode = new MdStatNode(this, port, csf, ssf);
-			_mdStatNode.start();
-			serverNode.serversNode.rootNode.nodeAdded();
-		}
-		if(_mdMismatchNode==null) {
-			_mdMismatchNode = new MdMismatchNode(this, port, csf, ssf);
-			_mdMismatchNode.start();
-			serverNode.serversNode.rootNode.nodeAdded();
-		}
-		// We only run DRBD in xen outers
-		if(
-			osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
-			|| osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
-			|| osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
-		) {
-			if(_drbdNode==null) {
-				_drbdNode = new DrbdNode(this, port, csf, ssf);
-				_drbdNode.start();
+			if(_mdMismatchNode==null) {
+				_mdMismatchNode = new MdMismatchNode(this, port, csf, ssf);
+				_mdMismatchNode.start();
 				serverNode.serversNode.rootNode.nodeAdded();
+			}
+			// We only run DRBD in xen outers
+			if(
+				osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
+				|| osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
+				|| osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
+			) {
+				if(_drbdNode==null) {
+					_drbdNode = new DrbdNode(this, port, csf, ssf);
+					_drbdNode.start();
+					serverNode.serversNode.rootNode.nodeAdded();
+				}
 			}
 		}
 	}
 
-	synchronized void stop() {
-		if(_threeWareRaidNode!=null) {
-			_threeWareRaidNode.stop();
-			_threeWareRaidNode = null;
-			serverNode.serversNode.rootNode.nodeRemoved();
-		}
-		if(_mdStatNode!=null) {
-			_mdStatNode.stop();
-			_mdStatNode = null;
-			serverNode.serversNode.rootNode.nodeRemoved();
-		}
-		if(_mdMismatchNode!=null) {
-			_mdMismatchNode.stop();
-			_mdMismatchNode = null;
-			serverNode.serversNode.rootNode.nodeRemoved();
-		}
-		if(_drbdNode!=null) {
-			_drbdNode.stop();
-			_drbdNode = null;
-			serverNode.serversNode.rootNode.nodeRemoved();
+	void stop() {
+		synchronized(this) {
+			started = false;
+			if(_threeWareRaidNode!=null) {
+				_threeWareRaidNode.stop();
+				_threeWareRaidNode = null;
+				serverNode.serversNode.rootNode.nodeRemoved();
+			}
+			if(_mdStatNode!=null) {
+				_mdStatNode.stop();
+				_mdStatNode = null;
+				serverNode.serversNode.rootNode.nodeRemoved();
+			}
+			if(_mdMismatchNode!=null) {
+				_mdMismatchNode.stop();
+				_mdMismatchNode = null;
+				serverNode.serversNode.rootNode.nodeRemoved();
+			}
+			if(_drbdNode!=null) {
+				_drbdNode.stop();
+				_drbdNode = null;
+				serverNode.serversNode.rootNode.nodeRemoved();
+			}
 		}
 	}
 

@@ -34,6 +34,7 @@ public class MySQLDatabasesNode extends NodeImpl {
 	final MySQLServerNode mysqlServerNode;
 	final MySQLSlaveNode mysqlSlaveNode;
 	private final List<MySQLDatabaseNode> mysqlDatabaseNodes = new ArrayList<>();
+	private boolean started;
 
 	MySQLDatabasesNode(MySQLServerNode mysqlServerNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -101,13 +102,16 @@ public class MySQLDatabasesNode extends NodeImpl {
 
 	void start() throws IOException, SQLException {
 		synchronized(mysqlDatabaseNodes) {
+			if(started) throw new IllegalStateException();
+			started = true;
 			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getMysqlDatabases().addTableListener(tableListener, 100);
-			verifyMySQLDatabases();
 		}
+		verifyMySQLDatabases();
 	}
 
 	void stop() {
 		synchronized(mysqlDatabaseNodes) {
+			started = false;
 			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getMysqlDatabases().removeTableListener(tableListener);
 			for(MySQLDatabaseNode mysqlDatabaseNode : mysqlDatabaseNodes) {
 				mysqlDatabaseNode.stop();
@@ -120,28 +124,34 @@ public class MySQLDatabasesNode extends NodeImpl {
 	private void verifyMySQLDatabases() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+		synchronized(mysqlDatabaseNodes) {
+			if(!started) return;
+		}
+
 		List<MySQLDatabase> mysqlDatabases = mysqlServerNode.getMySQLServer().getMySQLDatabases();
 		synchronized(mysqlDatabaseNodes) {
-			// Remove old ones
-			Iterator<MySQLDatabaseNode> mysqlDatabaseNodeIter = mysqlDatabaseNodes.iterator();
-			while(mysqlDatabaseNodeIter.hasNext()) {
-				MySQLDatabaseNode mysqlDatabaseNode = mysqlDatabaseNodeIter.next();
-				MySQLDatabase mysqlDatabase = mysqlDatabaseNode.getMySQLDatabase();
-				if(!mysqlDatabases.contains(mysqlDatabase)) {
-					mysqlDatabaseNode.stop();
-					mysqlDatabaseNodeIter.remove();
-					mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+			if(started) {
+				// Remove old ones
+				Iterator<MySQLDatabaseNode> mysqlDatabaseNodeIter = mysqlDatabaseNodes.iterator();
+				while(mysqlDatabaseNodeIter.hasNext()) {
+					MySQLDatabaseNode mysqlDatabaseNode = mysqlDatabaseNodeIter.next();
+					MySQLDatabase mysqlDatabase = mysqlDatabaseNode.getMySQLDatabase();
+					if(!mysqlDatabases.contains(mysqlDatabase)) {
+						mysqlDatabaseNode.stop();
+						mysqlDatabaseNodeIter.remove();
+						mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();
+					}
 				}
-			}
-			// Add new ones
-			for(int c=0;c<mysqlDatabases.size();c++) {
-				MySQLDatabase mysqlDatabase = mysqlDatabases.get(c);
-				if(c>=mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
-					// Insert into proper index
-					MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null, port, csf, ssf);
-					mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
-					mysqlDatabaseNode.start();
-					mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+				// Add new ones
+				for(int c=0;c<mysqlDatabases.size();c++) {
+					MySQLDatabase mysqlDatabase = mysqlDatabases.get(c);
+					if(c>=mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
+						// Insert into proper index
+						MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null, port, csf, ssf);
+						mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
+						mysqlDatabaseNode.start();
+						mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeAdded();
+					}
 				}
 			}
 		}

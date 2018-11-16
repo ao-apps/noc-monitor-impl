@@ -33,6 +33,8 @@ public class MySQLSlaveNode extends NodeImpl {
 	private final FailoverMySQLReplication _mysqlReplication;
 	private final String _label;
 
+	private boolean started;
+
 	volatile private MySQLSlaveStatusNode _mysqlSlaveStatusNode;
 	volatile private MySQLDatabasesNode _mysqlDatabasesNode;
 
@@ -112,32 +114,39 @@ public class MySQLSlaveNode extends NodeImpl {
 		return _label;
 	}
 
-	synchronized void start() throws IOException, SQLException {
+	void start() throws IOException, SQLException {
 		RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode;
-		if(_mysqlSlaveStatusNode==null) {
-			_mysqlSlaveStatusNode = new MySQLSlaveStatusNode(this, port, csf, ssf);
-			_mysqlSlaveStatusNode.start();
-			rootNode.nodeAdded();
-		}
-		if(_mysqlDatabasesNode==null) {
-			_mysqlDatabasesNode = new MySQLDatabasesNode(this, port, csf, ssf);
-			_mysqlDatabasesNode.start();
-			rootNode.nodeAdded();
+		synchronized(this) {
+			if(started) throw new IllegalStateException();
+			started = true;
+			if(_mysqlSlaveStatusNode==null) {
+				_mysqlSlaveStatusNode = new MySQLSlaveStatusNode(this, port, csf, ssf);
+				_mysqlSlaveStatusNode.start();
+				rootNode.nodeAdded();
+			}
+			if(_mysqlDatabasesNode==null) {
+				_mysqlDatabasesNode = new MySQLDatabasesNode(this, port, csf, ssf);
+				_mysqlDatabasesNode.start();
+				rootNode.nodeAdded();
+			}
 		}
 	}
 
-	synchronized void stop() {
+	void stop() {
 		RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode;
-		if(_mysqlSlaveStatusNode!=null) {
-			_mysqlSlaveStatusNode.stop();
-			_mysqlSlaveStatusNode = null;
-			rootNode.nodeRemoved();
-		}
+		synchronized(this) {
+			started = false;
+			if(_mysqlSlaveStatusNode!=null) {
+				_mysqlSlaveStatusNode.stop();
+				_mysqlSlaveStatusNode = null;
+				rootNode.nodeRemoved();
+			}
 
-		if(_mysqlDatabasesNode!=null) {
-			_mysqlDatabasesNode.stop();
-			_mysqlDatabasesNode = null;
-			rootNode.nodeRemoved();
+			if(_mysqlDatabasesNode!=null) {
+				_mysqlDatabasesNode.stop();
+				_mysqlDatabasesNode = null;
+				rootNode.nodeRemoved();
+			}
 		}
 	}
 

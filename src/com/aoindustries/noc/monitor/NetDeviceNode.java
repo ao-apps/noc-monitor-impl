@@ -31,6 +31,8 @@ public class NetDeviceNode extends NodeImpl {
 	private final NetDevice _netDevice;
 	private final String _label;
 
+	private boolean started;
+
 	volatile private NetDeviceBitRateNode _netDeviceBitRateNode;
 	volatile private NetDeviceBondingNode _netDeviceBondingNode;
 	volatile private IPAddressesNode _ipAddressesNode;
@@ -94,62 +96,69 @@ public class NetDeviceNode extends NodeImpl {
 		return _label;
 	}
 
-	synchronized void start() throws IOException, SQLException {
+	void start() throws IOException, SQLException {
 		final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
-		// bit rate and network bonding monitoring only supported for AOServer
-		if(_networkDevicesNode.getServer().getAOServer()!=null) {
-			NetDeviceID netDeviceID = _netDevice.getNetDeviceID();
-			if(
-				// bit rate for non-loopback devices
-				!netDeviceID.isLoopback()
-				// and non-BMC
-				&& !netDeviceID.getName().equals(NetDeviceID.BMC)
-			) {
-				if(_netDeviceBitRateNode==null) {
-					_netDeviceBitRateNode = new NetDeviceBitRateNode(this, port, csf, ssf);
-					_netDeviceBitRateNode.start();
-					rootNode.nodeAdded();
+		synchronized(this) {
+			if(started) throw new IllegalStateException();
+			started = true;
+			// bit rate and network bonding monitoring only supported for AOServer
+			if(_networkDevicesNode.getServer().getAOServer()!=null) {
+				NetDeviceID netDeviceID = _netDevice.getNetDeviceID();
+				if(
+					// bit rate for non-loopback devices
+					!netDeviceID.isLoopback()
+					// and non-BMC
+					&& !netDeviceID.getName().equals(NetDeviceID.BMC)
+				) {
+					if(_netDeviceBitRateNode==null) {
+						_netDeviceBitRateNode = new NetDeviceBitRateNode(this, port, csf, ssf);
+						_netDeviceBitRateNode.start();
+						rootNode.nodeAdded();
+					}
+				}
+				// bonding
+				if(
+					_label.equals(NetDeviceID.BOND0)
+					|| _label.equals(NetDeviceID.BOND1)
+					|| _label.equals(NetDeviceID.BOND2)
+				) {
+					if(_netDeviceBondingNode==null) {
+						_netDeviceBondingNode = new NetDeviceBondingNode(this, port, csf, ssf);
+						_netDeviceBondingNode.start();
+						rootNode.nodeAdded();
+					}
 				}
 			}
-			// bonding
-			if(
-				_label.equals(NetDeviceID.BOND0)
-				|| _label.equals(NetDeviceID.BOND1)
-				|| _label.equals(NetDeviceID.BOND2)
-			) {
-				if(_netDeviceBondingNode==null) {
-					_netDeviceBondingNode = new NetDeviceBondingNode(this, port, csf, ssf);
-					_netDeviceBondingNode.start();
-					rootNode.nodeAdded();
-				}
-			}
-		}
 
-		if(_ipAddressesNode==null) {
-			_ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
-			_ipAddressesNode.start();
-			rootNode.nodeAdded();
+			if(_ipAddressesNode==null) {
+				_ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
+				_ipAddressesNode.start();
+				rootNode.nodeAdded();
+			}
 		}
 	}
 
-	synchronized void stop() {
+	void stop() {
 		final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
-		if(_ipAddressesNode!=null) {
-			_ipAddressesNode.stop();
-			_ipAddressesNode = null;
-			rootNode.nodeRemoved();
-		}
+		synchronized(this) {
+			started = false;
+			if(_ipAddressesNode!=null) {
+				_ipAddressesNode.stop();
+				_ipAddressesNode = null;
+				rootNode.nodeRemoved();
+			}
 
-		if(_netDeviceBondingNode!=null) {
-			_netDeviceBondingNode.stop();
-			_netDeviceBondingNode = null;
-			rootNode.nodeRemoved();
-		}
+			if(_netDeviceBondingNode!=null) {
+				_netDeviceBondingNode.stop();
+				_netDeviceBondingNode = null;
+				rootNode.nodeRemoved();
+			}
 
-		if(_netDeviceBitRateNode!=null) {
-			_netDeviceBitRateNode.stop();
-			_netDeviceBitRateNode = null;
-			rootNode.nodeRemoved();
+			if(_netDeviceBitRateNode!=null) {
+				_netDeviceBitRateNode.stop();
+				_netDeviceBitRateNode = null;
+				rootNode.nodeRemoved();
+			}
 		}
 	}
 

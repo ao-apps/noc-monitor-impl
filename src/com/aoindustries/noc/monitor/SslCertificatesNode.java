@@ -33,6 +33,7 @@ public class SslCertificatesNode extends NodeImpl {
 	final ServerNode serverNode;
 	private final AOServer aoServer;
 	private final List<SslCertificateNode> sslCertificateNodes = new ArrayList<>();
+	private boolean started;
 
 	SslCertificatesNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -96,14 +97,17 @@ public class SslCertificatesNode extends NodeImpl {
 
 	void start() throws IOException, SQLException {
 		synchronized(sslCertificateNodes) {
+			if(started) throw new IllegalStateException();
+			started = true;
 			serverNode.serversNode.rootNode.conn.getSslCertificates().addTableListener(tableListener, 100);
 			serverNode.serversNode.rootNode.conn.getSslCertificateNames().addTableListener(tableListener, 100);
-			verifySslCertificates();
 		}
+		verifySslCertificates();
 	}
 
 	void stop() {
 		synchronized(sslCertificateNodes) {
+			started = false;
 			serverNode.serversNode.rootNode.conn.getSslCertificateNames().removeTableListener(tableListener);
 			serverNode.serversNode.rootNode.conn.getSslCertificates().removeTableListener(tableListener);
 			for(SslCertificateNode sslCertificateNode : sslCertificateNodes) {
@@ -117,48 +121,54 @@ public class SslCertificatesNode extends NodeImpl {
 	private void verifySslCertificates() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
+		synchronized(sslCertificateNodes) {
+			if(!started) return;
+		}
+
 		List<SslCertificate> sslCertificates = aoServer.getSslCertificates();
 		synchronized(sslCertificateNodes) {
-			// Remove old ones
-			Iterator<SslCertificateNode> sslCertificateNodeIter = sslCertificateNodes.iterator();
-			while(sslCertificateNodeIter.hasNext()) {
-				SslCertificateNode sslCertificateNode = sslCertificateNodeIter.next();
-				SslCertificate sslCertificate = sslCertificateNode.getSslCertificate();
-				// Find matching new state
-				SslCertificate newCert = null;
-				for(SslCertificate cert : sslCertificates) {
-					if(cert.equals(sslCertificate)) {
-						newCert = cert;
-						break;
+			if(started) {
+				// Remove old ones
+				Iterator<SslCertificateNode> sslCertificateNodeIter = sslCertificateNodes.iterator();
+				while(sslCertificateNodeIter.hasNext()) {
+					SslCertificateNode sslCertificateNode = sslCertificateNodeIter.next();
+					SslCertificate sslCertificate = sslCertificateNode.getSslCertificate();
+					// Find matching new state
+					SslCertificate newCert = null;
+					for(SslCertificate cert : sslCertificates) {
+						if(cert.equals(sslCertificate)) {
+							newCert = cert;
+							break;
+						}
+					}
+					if(
+						// Does not exist
+						newCert == null
+						// or label changed
+						|| !SslCertificateNode.getLabel(newCert).equals(sslCertificateNode.getLabel())
+					) {
+						sslCertificateNode.stop();
+						sslCertificateNodeIter.remove();
+						serverNode.serversNode.rootNode.nodeRemoved();
 					}
 				}
-				if(
-					// Does not exist
-					newCert == null
-					// or label changed
-					|| !SslCertificateNode.getLabel(newCert).equals(sslCertificateNode.getLabel())
-				) {
+				// Add new ones
+				for(int c = 0; c < sslCertificates.size(); c++) {
+					SslCertificate sslCertificate = sslCertificates.get(c);
+					if(c >= sslCertificateNodes.size() || !sslCertificate.equals(sslCertificateNodes.get(c).getSslCertificate())) {
+						// Insert into proper index
+						SslCertificateNode sslCertificateNode = new SslCertificateNode(this, sslCertificate, port, csf, ssf);
+						sslCertificateNodes.add(c, sslCertificateNode);
+						sslCertificateNode.start();
+						serverNode.serversNode.rootNode.nodeAdded();
+					}
+				}
+				// Prune any extra nodes that can happen when they are reordered
+				while(sslCertificateNodes.size() > sslCertificates.size()) {
+					SslCertificateNode sslCertificateNode = sslCertificateNodes.remove(sslCertificateNodes.size() - 1);
 					sslCertificateNode.stop();
-					sslCertificateNodeIter.remove();
 					serverNode.serversNode.rootNode.nodeRemoved();
 				}
-			}
-			// Add new ones
-			for(int c = 0; c < sslCertificates.size(); c++) {
-				SslCertificate sslCertificate = sslCertificates.get(c);
-				if(c >= sslCertificateNodes.size() || !sslCertificate.equals(sslCertificateNodes.get(c).getSslCertificate())) {
-					// Insert into proper index
-					SslCertificateNode sslCertificateNode = new SslCertificateNode(this, sslCertificate, port, csf, ssf);
-					sslCertificateNodes.add(c, sslCertificateNode);
-					sslCertificateNode.start();
-					serverNode.serversNode.rootNode.nodeAdded();
-				}
-			}
-			// Prune any extra nodes that can happen when they are reordered
-			while(sslCertificateNodes.size() > sslCertificates.size()) {
-				SslCertificateNode sslCertificateNode = sslCertificateNodes.remove(sslCertificateNodes.size() - 1);
-				sslCertificateNode.stop();
-				serverNode.serversNode.rootNode.nodeRemoved();
 			}
 		}
 	}

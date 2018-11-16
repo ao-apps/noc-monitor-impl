@@ -27,6 +27,8 @@ public class HardDrivesNode extends NodeImpl {
 	final ServerNode serverNode;
 	private final AOServer _aoServer;
 
+	private boolean started;
+
 	volatile private HardDrivesTemperatureNode _hardDriveTemperatureNode;
 
 	HardDrivesNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -79,19 +81,26 @@ public class HardDrivesNode extends NodeImpl {
 		return accessor.getMessage(serverNode.serversNode.rootNode.locale, "HardDrivesNode.label");
 	}
 
-	synchronized void start() throws IOException {
-		if(_hardDriveTemperatureNode==null) {
-			_hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
-			_hardDriveTemperatureNode.start();
-			serverNode.serversNode.rootNode.nodeAdded();
+	void start() throws IOException {
+		synchronized(this) {
+			if(started) throw new IllegalStateException();
+			started = true;
+			if(_hardDriveTemperatureNode==null) {
+				_hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
+				_hardDriveTemperatureNode.start();
+				serverNode.serversNode.rootNode.nodeAdded();
+			}
 		}
 	}
 
-	synchronized void stop() {
-		if(_hardDriveTemperatureNode!=null) {
-			_hardDriveTemperatureNode.stop();
-			_hardDriveTemperatureNode = null;
-			serverNode.serversNode.rootNode.nodeRemoved();
+	void stop() {
+		synchronized(this) {
+			started = false;
+			if(_hardDriveTemperatureNode!=null) {
+				_hardDriveTemperatureNode.stop();
+				_hardDriveTemperatureNode = null;
+				serverNode.serversNode.rootNode.nodeRemoved();
+			}
 		}
 	}
 
