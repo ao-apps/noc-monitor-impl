@@ -290,12 +290,15 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 	final void removeTableMultiResultNodeImpl(TableMultiResultNodeImpl<R> tableMultiResultNodeImpl) {
 		synchronized(tableMultiResultNodeImpls) {
 			if(tableMultiResultNodeImpls.isEmpty()) throw new AssertionError("tableMultiResultNodeImpls is empty");
+			boolean found = false;
 			for(int c=tableMultiResultNodeImpls.size()-1;c>=0;c--) {
 				if(tableMultiResultNodeImpls.get(c)==tableMultiResultNodeImpl) {
 					tableMultiResultNodeImpls.remove(c);
+					found = true;
 					break;
 				}
 			}
+			if(!found && logger.isLoggable(Level.WARNING)) logger.log(Level.WARNING, "tableMultiResultNodeImpl not found in tableMultiResultNodeImpls: " + tableMultiResultNodeImpl);
 			assert !CollectionUtils.containsByIdentity(tableMultiResultNodeImpls, tableMultiResultNodeImpl);
 			if(tableMultiResultNodeImpls.isEmpty()) {
 				stop();

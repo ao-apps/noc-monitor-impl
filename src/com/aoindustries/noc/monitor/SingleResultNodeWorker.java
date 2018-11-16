@@ -198,12 +198,15 @@ abstract class SingleResultNodeWorker implements Runnable {
 	final void removeSingleResultNodeImpl(SingleResultNodeImpl singleResultNodeImpl) {
 		synchronized(singleResultNodeImpls) {
 			if(singleResultNodeImpls.isEmpty()) throw new AssertionError("singleResultNodeImpls is empty");
+			boolean found = false;
 			for(int c=singleResultNodeImpls.size()-1;c>=0;c--) {
 				if(singleResultNodeImpls.get(c)==singleResultNodeImpl) {
 					singleResultNodeImpls.remove(c);
+					found = true;
 					break;
 				}
 			}
+			if(!found && logger.isLoggable(Level.WARNING)) logger.log(Level.WARNING, "singleResultNodeImpl not found in singleResultNodeImpls: " + singleResultNodeImpl);
 			assert !CollectionUtils.containsByIdentity(singleResultNodeImpls, singleResultNodeImpl);
 			if(singleResultNodeImpls.isEmpty()) {
 				stop();

@@ -240,12 +240,15 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 	final void removeTableResultNodeImpl(TableResultNodeImpl tableResultNodeImpl) {
 		synchronized(tableResultNodeImpls) {
 			if(tableResultNodeImpls.isEmpty()) throw new AssertionError("tableResultNodeImpls is empty");
+			boolean found = false;
 			for(int c=tableResultNodeImpls.size()-1;c>=0;c--) {
 				if(tableResultNodeImpls.get(c)==tableResultNodeImpl) {
 					tableResultNodeImpls.remove(c);
+					found = true;
 					break;
 				}
 			}
+			if(!found && logger.isLoggable(Level.WARNING)) logger.log(Level.WARNING, "tableResultNodeImpl not found in tableResultNodeImpls: " + tableResultNodeImpl);
 			assert !CollectionUtils.containsByIdentity(tableResultNodeImpls, tableResultNodeImpl);
 			if(tableResultNodeImpls.isEmpty()) {
 				stop();
