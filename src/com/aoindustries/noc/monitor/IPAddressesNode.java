@@ -132,9 +132,11 @@ public class IPAddressesNode extends NodeImpl {
 		List<IPAddress> ipAddresses;
 		if(netDeviceNode != null) {
 			NetDevice netDevice = netDeviceNode.getNetDevice();
-			ipAddresses = netDevice.getIPAddresses();
-			for(IPAddress ipAddress : ipAddresses) {
+			List<IPAddress> ndIPs = netDevice.getIPAddresses();
+			ipAddresses = new ArrayList<>(ndIPs.size());
+			for(IPAddress ipAddress : ndIPs) {
 				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+netDevice);
+				if(ipAddress.isMonitoringEnabled()) ipAddresses.add(ipAddress);
 			}
 		} else {
 			// Find all unallocated IP addresses, except the unspecified
@@ -143,6 +145,7 @@ public class IPAddressesNode extends NodeImpl {
 			for(IPAddress ip : allIPs) {
 				if(
 					!ip.getInetAddress().isUnspecified()
+					&& ip.isMonitoringEnabled()
 					&& ip.getNetDevice()==null
 				) {
 					ipAddresses.add(ip);
