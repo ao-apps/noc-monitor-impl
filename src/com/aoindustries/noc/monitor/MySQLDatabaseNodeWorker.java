@@ -59,7 +59,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 		super(persistenceFile);
 		this.mysqlDatabase = mysqlDatabase;
 		this.mysqlSlave = mysqlSlave;
-		String hostname = mysqlDatabase.getMySQLServer().getAOServer().getHostname().toString();
+		String hostname = mysqlDatabase.getMySQLServer().getAoServer().getHostname().toString();
 		this.isSlowServer =
 			hostname.equals("www.swimconnection.com")
 			// || hostname.equals("www1.leagle.com")

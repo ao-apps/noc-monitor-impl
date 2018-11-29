@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.IPAddress;
+import com.aoindustries.aoserv.client.IpAddressMonitoring;
 import com.aoindustries.aoserv.client.NetDevice;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -139,12 +140,13 @@ public class IPAddressesNode extends NodeImpl {
 
 		List<IPAddress> ipAddresses;
 		if(netDeviceNode != null) {
-			NetDevice netDevice = netDeviceNode.getNetDevice();
-			List<IPAddress> ndIPs = netDevice.getIPAddresses();
+			NetDevice device = netDeviceNode.getNetDevice();
+			List<IPAddress> ndIPs = device.getIPAddresses();
 			ipAddresses = new ArrayList<>(ndIPs.size());
 			for(IPAddress ipAddress : ndIPs) {
-				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+netDevice);
-				if(ipAddress.isMonitoringEnabled()) ipAddresses.add(ipAddress);
+				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+device);
+				IpAddressMonitoring iam = ipAddress.getMonitoring();
+				if(iam != null && iam.getEnabled()) ipAddresses.add(ipAddress);
 			}
 		} else {
 			// Find all unallocated IP addresses, except the unspecified
@@ -153,10 +155,15 @@ public class IPAddressesNode extends NodeImpl {
 			for(IPAddress ip : allIPs) {
 				if(
 					!ip.getInetAddress().isUnspecified()
-					&& ip.isMonitoringEnabled()
-					&& ip.getNetDevice()==null
+					&& ip.getDevice() == null
 				) {
-					ipAddresses.add(ip);
+					IpAddressMonitoring iam = ip.getMonitoring();
+					if(
+						iam != null
+						&& iam.getEnabled()
+					) {
+						ipAddresses.add(ip);
+					}
 				}
 			}
 		}

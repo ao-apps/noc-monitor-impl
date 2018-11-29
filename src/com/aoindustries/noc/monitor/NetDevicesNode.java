@@ -91,7 +91,7 @@ public class NetDevicesNode extends NodeImpl {
 
 	private final TableListener tableListener = (Table<?> table) -> {
 		try {
-			verifyNetDevices();
+			verifyDevices();
 		} catch(IOException | SQLException err) {
 			throw new WrappedException(err);
 		}
@@ -103,7 +103,7 @@ public class NetDevicesNode extends NodeImpl {
 			started = true;
 			serverNode.serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
 		}
-		verifyNetDevices();
+		verifyDevices();
 	}
 
 	void stop() {
@@ -118,7 +118,7 @@ public class NetDevicesNode extends NodeImpl {
 		}
 	}
 
-	private void verifyNetDevices() throws IOException, SQLException {
+	private void verifyDevices() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		synchronized(netDeviceNodes) {
@@ -128,10 +128,10 @@ public class NetDevicesNode extends NodeImpl {
 		// Filter only those that are enabled
 		List<NetDevice> netDevices;
 		{
-			List<NetDevice> allNetDevices = server.getNetDevices();
-			netDevices = new ArrayList<>(allNetDevices.size());
-			for(NetDevice netDevice : allNetDevices) {
-				if(netDevice.isMonitoringEnabled()) netDevices.add(netDevice);
+			List<NetDevice> allDevices = server.getNetDevices();
+			netDevices = new ArrayList<>(allDevices.size());
+			for(NetDevice device : allDevices) {
+				if(device.isMonitoringEnabled()) netDevices.add(device);
 			}
 		}
 		synchronized(netDeviceNodes) {
@@ -140,8 +140,8 @@ public class NetDevicesNode extends NodeImpl {
 				Iterator<NetDeviceNode> netDeviceNodeIter = netDeviceNodes.iterator();
 				while(netDeviceNodeIter.hasNext()) {
 					NetDeviceNode netDeviceNode = netDeviceNodeIter.next();
-					NetDevice netDevice = netDeviceNode.getNetDevice();
-					if(!netDevices.contains(netDevice)) {
+					NetDevice device = netDeviceNode.getNetDevice();
+					if(!netDevices.contains(device)) {
 						netDeviceNode.stop();
 						netDeviceNodeIter.remove();
 						serverNode.serversNode.rootNode.nodeRemoved();
@@ -149,10 +149,10 @@ public class NetDevicesNode extends NodeImpl {
 				}
 				// Add new ones
 				for(int c=0;c<netDevices.size();c++) {
-					NetDevice netDevice = netDevices.get(c);
-					if(c>=netDeviceNodes.size() || !netDevice.equals(netDeviceNodes.get(c).getNetDevice())) {
+					NetDevice device = netDevices.get(c);
+					if(c>=netDeviceNodes.size() || !device.equals(netDeviceNodes.get(c).getNetDevice())) {
 						// Insert into proper index
-						NetDeviceNode netDeviceNode = new NetDeviceNode(this, netDevice, port, csf, ssf);
+						NetDeviceNode netDeviceNode = new NetDeviceNode(this, device, port, csf, ssf);
 						netDeviceNodes.add(c, netDeviceNode);
 						netDeviceNode.start();
 						serverNode.serversNode.rootNode.nodeAdded();

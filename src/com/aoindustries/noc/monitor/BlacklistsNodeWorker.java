@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.IPAddress;
+import com.aoindustries.aoserv.client.IpAddressMonitoring;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.net.AddressFamily;
 import com.aoindustries.net.DomainName;
@@ -161,7 +162,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		DnsBlacklist(String basename, AlertLevel maxAlertLevel) {
 			this.basename = basename;
 			this.maxAlertLevel = maxAlertLevel;
-			com.aoindustries.net.InetAddress ip = ipAddress.getExternalIpAddress();
+			com.aoindustries.net.InetAddress ip = ipAddress.getExternalInetAddress();
 			if(ip==null) ip = ipAddress.getInetAddress();
 			AddressFamily addressFamily = ip.getAddressFamily();
 			if(addressFamily != AddressFamily.INET) throw new UnsupportedOperationException("Address family not yet implemented: " + addressFamily);
@@ -321,9 +322,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			else a = (ARecord)aRecords[RootNodeImpl.random.nextInt(aRecords.length)];
 			InetAddress address = a.getAddress();
 			// Make call from the daemon from privileged port
-			NetDevice netDevice = ipAddress.getNetDevice();
-			if(netDevice==null) throw new SQLException(ipAddress+": NetDevice not found");
-			AOServer aoServer = netDevice.getServer().getAOServer();
+			NetDevice device = ipAddress.getDevice();
+			if(device==null) throw new SQLException(ipAddress+": NetDevice not found");
+			AOServer aoServer = device.getServer().getAOServer();
 			if(aoServer==null) throw new SQLException(ipAddress+": AOServer not found");
 			com.aoindustries.net.InetAddress addressIp = com.aoindustries.net.InetAddress.valueOf(address.getHostAddress());
 			String statusLine = aoServer.checkSmtpBlacklist(ipAddress.getInetAddress(), addressIp);
@@ -1065,7 +1066,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// </editor-fold>
 		);
 		//InetAddress ip = ipAddress.getInetAddress();
-		NetDevice netDevice;
+		NetDevice device;
+		IpAddressMonitoring iam;
 		boolean checkSmtpBlacklist =
 			//!"64.62.174.125".equals(ip)
 			//&& !"64.62.174.189".equals(ip)
@@ -1074,9 +1076,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			//&& !"66.160.183.125".equals(ip)
 			//&& !"66.160.183.189".equals(ip)
 			//&& !"66.160.183.253".equals(ip)
-			ipAddress.getCheckBlacklistsOverSmtp()
-			&& (netDevice = ipAddress.getNetDevice()) != null
-			&& netDevice.getServer().getAOServer() != null
+			((iam = ipAddress.getMonitoring()) != null)
+			&& iam.getCheckBlacklistsOverSmtp()
+			&& (device = ipAddress.getDevice()) != null
+			&& device.getServer().getAOServer() != null
 		;
 		lookups = new ArrayList<>(checkSmtpBlacklist ? (rblBlacklists.length + 6) : rblBlacklists.length);
 		lookups.addAll(Arrays.asList(rblBlacklists));

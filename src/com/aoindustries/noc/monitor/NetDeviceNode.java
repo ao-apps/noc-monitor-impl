@@ -28,7 +28,7 @@ public class NetDeviceNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final NetDevicesNode _networkDevicesNode;
-	private final NetDevice _netDevice;
+	private final NetDevice _device;
 	private final String _label;
 
 	private boolean started;
@@ -37,13 +37,13 @@ public class NetDeviceNode extends NodeImpl {
 	volatile private NetDeviceBondingNode _netDeviceBondingNode;
 	volatile private IPAddressesNode _ipAddressesNode;
 
-	NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice netDevice, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
+	NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice device, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
 		super(port, csf, ssf);
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		this._networkDevicesNode = networkDevicesNode;
-		this._netDevice = netDevice;
-		this._label = netDevice.getNetDeviceID().getName();
+		this._device = device;
+		this._label = device.getDeviceId().getName();
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class NetDeviceNode extends NodeImpl {
 	}
 
 	public NetDevice getNetDevice() {
-		return _netDevice;
+		return _device;
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class NetDeviceNode extends NodeImpl {
 			started = true;
 			// bit rate and network bonding monitoring only supported for AOServer
 			if(_networkDevicesNode.getServer().getAOServer()!=null) {
-				NetDeviceID netDeviceID = _netDevice.getNetDeviceID();
+				NetDeviceID netDeviceID = _device.getDeviceId();
 				if(
 					// bit rate for non-loopback devices
 					!netDeviceID.isLoopback()

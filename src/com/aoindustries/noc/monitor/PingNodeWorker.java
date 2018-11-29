@@ -38,7 +38,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 	static PingNodeWorker getWorker(File persistenceDirectory, IPAddress ipAddress) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		com.aoindustries.net.InetAddress ip = ipAddress.getInetAddress();
-		com.aoindustries.net.InetAddress externalIp = ipAddress.getExternalIpAddress();
+		com.aoindustries.net.InetAddress externalIp = ipAddress.getExternalInetAddress();
 		com.aoindustries.net.InetAddress pingAddress = externalIp==null ? ip : externalIp;
 		synchronized(workerCache) {
 			PingNodeWorker worker = workerCache.get(path);

@@ -38,27 +38,27 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 	 * One unique worker is made per persistence directory (and should match the net device exactly)
 	 */
 	private static final Map<String, NetDeviceBitRateNodeWorker> workerCache = new HashMap<>();
-	static NetDeviceBitRateNodeWorker getWorker(File persistenceDirectory, NetDevice netDevice) throws IOException {
+	static NetDeviceBitRateNodeWorker getWorker(File persistenceDirectory, NetDevice device) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			NetDeviceBitRateNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new NetDeviceBitRateNodeWorker(persistenceDirectory, netDevice);
+				worker = new NetDeviceBitRateNodeWorker(persistenceDirectory, device);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker._netDevice.equals(netDevice)) throw new AssertionError("worker.netDevice!=netDevice: "+worker._netDevice+"!="+netDevice);
+				if(!worker._device.equals(device)) throw new AssertionError("worker.device!=device: "+worker._device+"!="+device);
 			}
 			return worker;
 		}
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private NetDevice _netDevice;
+	final private NetDevice _device;
 	private NetDevice _currentNetDevice;
 
-	private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice netDevice) throws IOException {
+	private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice device) throws IOException {
 		super(new File(persistenceDirectory, "bit_rate"), new NetDeviceBitRateResultSerializer());
-		this._netDevice = _currentNetDevice = netDevice;
+		this._device = _currentNetDevice = device;
 	}
 
 	@Override
@@ -80,7 +80,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 	@Override
 	protected List<Object> getSample() throws Exception {
 		// Get the latest object
-		_currentNetDevice = _netDevice.getTable().getConnector().getNetDevices().get(_netDevice.getPkey());
+		_currentNetDevice = _device.getTable().getConnector().getNetDevices().get(_device.getPkey());
 
 		// Get the current state
 		String stats = _currentNetDevice.getStatisticsReport();

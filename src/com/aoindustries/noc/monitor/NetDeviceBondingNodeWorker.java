@@ -31,35 +31,35 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 	 * One unique worker is made per persistence file (and should match the net device exactly)
 	 */
 	private static final Map<String, NetDeviceBondingNodeWorker> workerCache = new HashMap<>();
-	static NetDeviceBondingNodeWorker getWorker(File persistenceFile, NetDevice netDevice) throws IOException {
+	static NetDeviceBondingNodeWorker getWorker(File persistenceFile, NetDevice device) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			NetDeviceBondingNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new NetDeviceBondingNodeWorker(persistenceFile, netDevice);
+				worker = new NetDeviceBondingNodeWorker(persistenceFile, device);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker.netDevice.equals(netDevice)) throw new AssertionError("worker.netDevice!=netDevice: "+worker.netDevice+"!="+netDevice);
+				if(!worker.device.equals(device)) throw new AssertionError("worker.device!=device: "+worker.device+"!="+device);
 			}
 			return worker;
 		}
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	volatile private NetDevice netDevice;
+	volatile private NetDevice device;
 
-	private NetDeviceBondingNodeWorker(File persistenceFile, NetDevice netDevice) {
+	private NetDeviceBondingNodeWorker(File persistenceFile, NetDevice device) {
 		super(persistenceFile);
-		this.netDevice = netDevice;
+		this.device = device;
 	}
 
 	@Override
 	protected String getReport() throws IOException, SQLException {
 		// Get a new version of the NetDevice object
-		NetDevice newNetDevice = netDevice.getTable().getConnector().getNetDevices().get(netDevice.getPkey());
-		if(newNetDevice!=null) netDevice = newNetDevice;
+		NetDevice newNetDevice = device.getTable().getConnector().getNetDevices().get(device.getPkey());
+		if(newNetDevice!=null) device = newNetDevice;
 		// Get report from server
-		return netDevice.getBondingReport();
+		return device.getBondingReport();
 	}
 
 	private enum BondingMode {
@@ -191,7 +191,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 							);
 							break;
 						}
-						long maxBitRate = netDevice.getMaxBitRate();
+						long maxBitRate = device.getMaxBitRate();
 						if(maxBitRate!=-1 && bps != maxBitRate) {
 							alertLevel = AlertLevel.HIGH;
 							alertMessage = locale -> accessor.getMessage(
@@ -245,7 +245,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 					totalBps = sum;
 				}
 				if(alertLevel.compareTo(AlertLevel.HIGH) < 0 ) {
-					long maxBitRate = netDevice.getMaxBitRate();
+					long maxBitRate = device.getMaxBitRate();
 					if(maxBitRate!=-1 && totalBps != maxBitRate) {
 						alertLevel = AlertLevel.HIGH;
 						alertMessage = locale -> accessor.getMessage(
