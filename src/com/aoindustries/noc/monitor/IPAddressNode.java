@@ -47,18 +47,9 @@ public class IPAddressNode extends NodeImpl {
 		InetAddress externalIp = ipAddress.getExternalInetAddress();
 		IpAddressMonitoring iam;
 		return
-			// Must be allocated
-			ipAddressesNode.netDeviceNode != null
 			// Must have ping monitoring enabled
-			&& ((iam = ipAddress.getMonitoring()) != null)
+			((iam = ipAddress.getMonitoring()) != null)
 			&& iam.getPingMonitorEnabled()
-			// Must be publicly addressable
-			&& (
-				(externalIp!=null && !(externalIp.isUniqueLocal() || externalIp.isLoopback()))
-				|| !(ip.isUniqueLocal() || ip.isLoopback())
-			)
-			// Must not be on loopback device
-			&& !ipAddress.getDevice().getDeviceId().isLoopback()
 		;
 	}
 
@@ -241,12 +232,8 @@ public class IPAddressNode extends NodeImpl {
 					}
 				}
 				if(
-					// Skip loopback device
-					!isLoopback
-					// Skip private IP addresses
-					&& !(ip.isUniqueLocal() || ip.isLoopback())
 					// Must have DNS verification enabled
-					&& iam != null
+					iam != null
 					&& (
 						iam.getVerifyDnsPtr()
 						|| iam.getVerifyDnsA()
@@ -257,17 +244,25 @@ public class IPAddressNode extends NodeImpl {
 						reverseDnsNode.start();
 						rootNode.nodeAdded();
 					}
-					if(blacklistsNode == null) {
-						blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
-						blacklistsNode.start();
-						rootNode.nodeAdded();
-					}
 				} else {
 					if(reverseDnsNode != null) {
 						reverseDnsNode.stop();
 						reverseDnsNode = null;
 						rootNode.nodeRemoved();
 					}
+				}
+				if(
+					// Skip loopback device
+					!isLoopback
+					// Skip private IP addresses
+					&& !(ip.isUniqueLocal() || ip.isLoopback())
+				) {
+					if(blacklistsNode == null) {
+						blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
+						blacklistsNode.start();
+						rootNode.nodeAdded();
+					}
+				} else {
 					if(blacklistsNode != null) {
 						blacklistsNode.stop();
 						blacklistsNode = null;

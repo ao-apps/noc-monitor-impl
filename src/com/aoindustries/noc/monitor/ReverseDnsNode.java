@@ -23,6 +23,7 @@ public class ReverseDnsNode extends TableResultNodeImpl {
 
 	//private final IPAddress ipAddress;
 
+	// TODO: Rename "VerifyDnsNode", since can operate in A-only verification?
 	ReverseDnsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
 			ipAddressNode.ipAddressesNode.rootNode,

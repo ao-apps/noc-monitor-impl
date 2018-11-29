@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.DNSType;
 import com.aoindustries.aoserv.client.IPAddress;
+import com.aoindustries.aoserv.client.IpAddressMonitoring;
 import com.aoindustries.net.InetAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -100,88 +102,112 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 	@Override
 	protected List<ReverseDnsQueryResult> getQueryResult() throws Exception {
 		IPAddress currentIPAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
-		InetAddress ip = currentIPAddress.getExternalIpAddress();
+		IpAddressMonitoring iam = currentIPAddress.getMonitoring();
+		if(iam == null) return Collections.emptyList();
+		InetAddress ip = currentIPAddress.getExternalInetAddress();
 		if(ip==null) ip = currentIPAddress.getInetAddress();
-		ArrayList<ReverseDnsQueryResult> results = new ArrayList<>(2);
+		String expectedHostname = currentIPAddress.getHostname().toString();
+		if(!expectedHostname.endsWith(".")) expectedHostname += '.';
+		// Priority is higher when assigned, lower when unassigned
+		final AlertLevel problemAlertLevel = currentIPAddress.getDevice() != null ? AlertLevel.MEDIUM : AlertLevel.LOW;
+		StringBuilder SB = new StringBuilder();
+		List<ReverseDnsQueryResult> results = new ArrayList<>();
+		boolean didHostnameAVerification = false;
 		// Reverse DNS
-		//String ptrQuery = IPAddress.getReverseDnsQuery(ip);
-		Name ptrQuery = ReverseMap.fromAddress(ip.toString());
-		long ptrStartNanos = System.nanoTime();
-		Lookup ptrLookup = new Lookup(ptrQuery, Type.PTR);
-		ptrLookup.run();
-		long ptrLatency = System.nanoTime()-ptrStartNanos;
-		if(ptrLookup.getResult()!=Lookup.SUCCESSFUL) {
-			results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrLookup.getErrorString(), "", AlertLevel.LOW));
-		} else {
-			Record[] ptrRecords = ptrLookup.getAnswers();
-			if(ptrRecords.length==0) {
-				results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + DNSType.PTR +" records found", AlertLevel.LOW));
+		if(iam.getVerifyDnsPtr()) {
+			//String ptrQuery = IPAddress.getReverseDnsQuery(ip);
+			Name ptrQuery = ReverseMap.fromAddress(ip.toString());
+			long ptrStartNanos = System.nanoTime();
+			Lookup ptrLookup = new Lookup(ptrQuery, Type.PTR);
+			ptrLookup.run();
+			long ptrLatency = System.nanoTime()-ptrStartNanos;
+			if(ptrLookup.getResult()!=Lookup.SUCCESSFUL) {
+				results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrLookup.getErrorString(), "", problemAlertLevel));
 			} else {
-				String expectedHostname = currentIPAddress.getHostname().toString();
-				if(!expectedHostname.endsWith(".")) expectedHostname += '.';
-				StringBuilder SB = new StringBuilder();
-				boolean expectedHostnameFound = false;
-				for(Record record : ptrRecords) {
-					if(SB.length()>0) SB.append(", ");
-					PTRRecord ptrRecord = (PTRRecord)record;
-					String hostname = ptrRecord.getTarget().toString();
-					SB.append(hostname);
-					if(expectedHostname.equals(hostname)) expectedHostnameFound = true;
-				}
-				String ptrMessage;
-				AlertLevel ptrAlertLevel;
-				if(!expectedHostnameFound) {
-					ptrMessage = "Hostname not in results: "+expectedHostname;
-					ptrAlertLevel = AlertLevel.LOW;
+				Record[] ptrRecords = ptrLookup.getAnswers();
+				if(ptrRecords.length==0) {
+					results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + DNSType.PTR +" records found", problemAlertLevel));
 				} else {
-					ptrMessage = "";
-					ptrAlertLevel = AlertLevel.NONE;
-				}
-				results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, SB.toString(), ptrMessage, ptrAlertLevel));
-				// Do not verify A records on unassigned IP addresses
-				if(currentIPAddress.getNetDevice() != null) {
-					// Lookup each A record, making sure one of its IP addresses is the current IP
-					results.ensureCapacity(1+ptrRecords.length);
-					for(Record record : ptrRecords) {
-						PTRRecord ptrRecord = (PTRRecord)record;
-						Name target = ptrRecord.getTarget();
-						long aStartNanos = System.nanoTime();
-						Lookup aLookup = new Lookup(target, Type.A);
-						aLookup.run();
-						long aLatency = System.nanoTime() - aStartNanos;
-						if(aLookup.getResult()!=Lookup.SUCCESSFUL) {
-							results.add(new ReverseDnsQueryResult(target.toString(), aLatency, aLookup.getErrorString(), "", AlertLevel.LOW));
-						} else {
-							Record[] aRecords = aLookup.getAnswers();
-							if(aRecords.length==0) {
-								results.add(new ReverseDnsQueryResult(target.toString(), aLatency, "", "No A records found", AlertLevel.LOW));
-							} else {
-								SB.setLength(0);
-								boolean ipFound = false;
-								for(Record rec : aRecords) {
-									if(SB.length()>0) SB.append(", ");
-									ARecord aRecord = (ARecord)rec;
-									String aIp = aRecord.getAddress().getHostAddress();
-									SB.append(aIp);
-									if(ip.toString().equals(aIp)) ipFound = true;
-								}
-								String aMessage;
-								AlertLevel aAlertLevel;
-								if(!ipFound) {
-									aMessage = "Address not in results: "+ip;
-									aAlertLevel = AlertLevel.LOW;
-								} else {
-									aMessage = "";
-									aAlertLevel = AlertLevel.NONE;
-								}
-								results.add(new ReverseDnsQueryResult(target.toString(), aLatency, SB.toString(), aMessage, aAlertLevel));
-							}
+					String ptrList;
+					boolean expectedHostnameFound = false;
+					{
+						SB.setLength(0);
+						for(Record record : ptrRecords) {
+							if(SB.length()>0) SB.append(", ");
+							PTRRecord ptrRecord = (PTRRecord)record;
+							String hostname = ptrRecord.getTarget().toString();
+							SB.append(hostname);
+							if(expectedHostname.equals(hostname)) expectedHostnameFound = true;
 						}
+						ptrList = SB.toString();
+					}
+					boolean hasPtrResult = false;
+					if(ptrRecords.length > 1) {
+						results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + DNSType.PTR +" record found", problemAlertLevel));
+						hasPtrResult = true;
+					}
+					if(!expectedHostnameFound) {
+						results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "Hostname not in results: "+expectedHostname, problemAlertLevel));
+						hasPtrResult = true;
+					}
+					if(!hasPtrResult) {
+						results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "", AlertLevel.NONE));
+					}
+					if(iam.getVerifyDnsA()) {
+						// Lookup each A record, making sure one of its IP addresses is the current IP
+						for(Record record : ptrRecords) {
+							PTRRecord ptrRecord = (PTRRecord)record;
+							verifyDnsA(ptrRecord.getTarget(), results, problemAlertLevel, SB, ip);
+						}
+						if(expectedHostnameFound) didHostnameAVerification = true;
 					}
 				}
 			}
 		}
+		// Check forward DNS for the hostname, if not already done as part of the above
+		if(iam.getVerifyDnsA() && !didHostnameAVerification) {
+			verifyDnsA(new Name(expectedHostname), results, problemAlertLevel, SB, ip);
+		}
 		return results;
+	}
+
+	private static void verifyDnsA(Name target, List<ReverseDnsQueryResult> results, AlertLevel problemAlertLevel, StringBuilder SB, InetAddress ip) {
+		long aStartNanos = System.nanoTime();
+		Lookup aLookup = new Lookup(target, Type.A);
+		aLookup.run();
+		long aLatency = System.nanoTime() - aStartNanos;
+		if(aLookup.getResult()!=Lookup.SUCCESSFUL) {
+			results.add(new ReverseDnsQueryResult(target.toString(), aLatency, aLookup.getErrorString(), "", problemAlertLevel));
+		} else {
+			Record[] aRecords = aLookup.getAnswers();
+			if(aRecords.length==0) {
+				results.add(new ReverseDnsQueryResult(target.toString(), aLatency, "", "No A records found", problemAlertLevel));
+			} else {
+				String ipList;
+				boolean ipFound = false;
+				{
+					SB.setLength(0);
+					for(Record rec : aRecords) {
+						if(SB.length()>0) SB.append(", ");
+						ARecord aRecord = (ARecord)rec;
+						String aIp = aRecord.getAddress().getHostAddress();
+						SB.append(aIp);
+						if(ip.toString().equals(aIp)) ipFound = true;
+					}
+					ipList = SB.toString();
+				}
+				String aMessage;
+				AlertLevel aAlertLevel;
+				if(!ipFound) {
+					aMessage = "Address not in results: "+ip;
+					aAlertLevel = problemAlertLevel;
+				} else {
+					aMessage = "";
+					aAlertLevel = AlertLevel.NONE;
+				}
+				results.add(new ReverseDnsQueryResult(target.toString(), aLatency, ipList, aMessage, aAlertLevel));
+			}
+		}
 	}
 
 	@Override
