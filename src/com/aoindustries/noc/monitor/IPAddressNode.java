@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.IPAddress;
+import com.aoindustries.aoserv.client.IpAddressMonitoring;
 import com.aoindustries.net.InetAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -33,7 +34,7 @@ public class IPAddressNode extends NodeImpl {
 
 	static String getLabel(IPAddress ipAddress) {
 		InetAddress ip = ipAddress.getInetAddress();
-		InetAddress externalIp = ipAddress.getExternalIpAddress();
+		InetAddress externalIp = ipAddress.getExternalInetAddress();
 		return
 			(externalIp==null ? ip.toString() : (ip.toString()+"@"+externalIp.toString()))
 			+ "/" + ipAddress.getHostname()
@@ -43,19 +44,21 @@ public class IPAddressNode extends NodeImpl {
 	static boolean isPingable(IPAddressesNode ipAddressesNode, IPAddress ipAddress) throws SQLException, IOException {
 		// Private IPs and loopback IPs are not externally pingable
 		InetAddress ip = ipAddress.getInetAddress();
-		InetAddress externalIp = ipAddress.getExternalIpAddress();
+		InetAddress externalIp = ipAddress.getExternalInetAddress();
+		IpAddressMonitoring iam;
 		return
 			// Must be allocated
 			ipAddressesNode.netDeviceNode != null
 			// Must have ping monitoring enabled
-			&& ipAddress.isPingMonitorEnabled()
+			&& ((iam = ipAddress.getMonitoring()) != null)
+			&& iam.getPingMonitorEnabled()
 			// Must be publicly addressable
 			&& (
 				(externalIp!=null && !(externalIp.isUniqueLocal() || externalIp.isLoopback()))
 				|| !(ip.isUniqueLocal() || ip.isLoopback())
 			)
 			// Must not be on loopback device
-			&& !ipAddress.getNetDevice().getNetDeviceID().isLoopback()
+			&& !ipAddress.getDevice().getDeviceId().isLoopback()
 		;
 	}
 
@@ -147,6 +150,7 @@ public class IPAddressNode extends NodeImpl {
 			if(started) throw new IllegalStateException();
 			started = true;
 			conn.getIpAddresses().addTableListener(tableListener, 100);
+			conn.getIpAddressMonitoring().addTableListener(tableListener, 100);
 			conn.getNetBinds().addTableListener(tableListener, 100);
 			conn.getNetDevices().addTableListener(tableListener, 100);
 			conn.getNetDeviceIDs().addTableListener(tableListener, 100);
@@ -161,6 +165,7 @@ public class IPAddressNode extends NodeImpl {
 		synchronized(childLock) {
 			started = false;
 			conn.getIpAddresses().removeTableListener(tableListener);
+			conn.getIpAddressMonitoring().removeTableListener(tableListener);
 			conn.getNetBinds().removeTableListener(tableListener);
 			conn.getNetDevices().removeTableListener(tableListener);
 			conn.getNetDeviceIDs().removeTableListener(tableListener);
@@ -201,10 +206,11 @@ public class IPAddressNode extends NodeImpl {
 		boolean isPingable = isPingable(ipAddressesNode, _currentIpAddress);
 		boolean isLoopback = 
 			ipAddressesNode.netDeviceNode != null
-			&& ipAddressesNode.netDeviceNode.getNetDevice().getNetDeviceID().isLoopback();
-		InetAddress ip = _currentIpAddress.getExternalIpAddress();
+			&& ipAddressesNode.netDeviceNode.getNetDevice().getDeviceId().isLoopback();
+		InetAddress ip = _currentIpAddress.getExternalInetAddress();
 		if(ip == null) ip = _currentIpAddress.getInetAddress();
 		boolean hasNetBinds = ipAddressesNode.netDeviceNode != null && !NetBindsNode.getSettings(_currentIpAddress).isEmpty();
+		IpAddressMonitoring iam = _currentIpAddress.getMonitoring();
 
 		synchronized(childLock) {
 			if(started) {
@@ -239,6 +245,12 @@ public class IPAddressNode extends NodeImpl {
 					!isLoopback
 					// Skip private IP addresses
 					&& !(ip.isUniqueLocal() || ip.isLoopback())
+					// Must have DNS verification enabled
+					&& iam != null
+					&& (
+						iam.getVerifyDnsPtr()
+						|| iam.getVerifyDnsA()
+					)
 				) {
 					if(reverseDnsNode == null) {
 						reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
