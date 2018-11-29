@@ -140,11 +140,11 @@ public class IPAddressesNode extends NodeImpl {
 
 		List<IPAddress> ipAddresses;
 		if(netDeviceNode != null) {
-			NetDevice device = netDeviceNode.getNetDevice();
-			List<IPAddress> ndIPs = device.getIPAddresses();
+			NetDevice netDevice = netDeviceNode.getNetDevice();
+			List<IPAddress> ndIPs = netDevice.getIPAddresses();
 			ipAddresses = new ArrayList<>(ndIPs.size());
 			for(IPAddress ipAddress : ndIPs) {
-				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+device);
+				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+netDevice);
 				IpAddressMonitoring iam = ipAddress.getMonitoring();
 				if(iam != null && iam.getEnabled()) ipAddresses.add(ipAddress);
 			}

@@ -220,12 +220,12 @@ public class NetBindsNode extends NodeImpl {
 	 * The binds directly on the IP address plus the wildcard binds
 	 */
 	static List<NetMonitorSetting> getSettings(IPAddress ipAddress) throws IOException, SQLException {
-		NetDevice device = ipAddress.getDevice();
-		if(device == null) return Collections.emptyList();
+		NetDevice netDevice = ipAddress.getDevice();
+		if(netDevice == null) return Collections.emptyList();
 		List<NetBind> directNetBinds = ipAddress.getNetBinds();
 
 		// Find the wildcard IP address, if available
-		Server server = device.getServer();
+		Server server = netDevice.getServer();
 		IPAddress wildcard = null;
 		for(IPAddress ia : server.getIPAddresses()) {
 			if(ia.getInetAddress().isUnspecified()) {
