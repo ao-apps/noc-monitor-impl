@@ -5,10 +5,15 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.AOServer;
 import com.aoindustries.aoserv.client.NetDevice;
 import com.aoindustries.aoserv.client.NetDeviceID;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
+import com.aoindustries.table.Table;
+import com.aoindustries.table.TableListener;
+import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -28,22 +33,24 @@ public class NetDeviceNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final NetDevicesNode _networkDevicesNode;
-	private final NetDevice _netDevice;
+	private final NetDevice _device;
 	private final String _label;
 
+	private static class ChildLock {}
+	private final ChildLock childLock = new ChildLock();
 	private boolean started;
 
 	volatile private NetDeviceBitRateNode _netDeviceBitRateNode;
 	volatile private NetDeviceBondingNode _netDeviceBondingNode;
 	volatile private IPAddressesNode _ipAddressesNode;
 
-	NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice netDevice, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
+	NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice device, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
 		super(port, csf, ssf);
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		this._networkDevicesNode = networkDevicesNode;
-		this._netDevice = netDevice;
-		this._label = netDevice.getDeviceId().getName();
+		this._device = device;
+		this._label = device.getDeviceId().getName();
 	}
 
 	@Override
@@ -52,7 +59,7 @@ public class NetDeviceNode extends NodeImpl {
 	}
 
 	public NetDevice getNetDevice() {
-		return _netDevice;
+		return _device;
 	}
 
 	@Override
@@ -96,17 +103,71 @@ public class NetDeviceNode extends NodeImpl {
 		return _label;
 	}
 
+	private final TableListener tableListener = (Table<?> table) -> {
+		try {
+			verifyChildren();
+		} catch(IOException | SQLException err) {
+			throw new WrappedException(err);
+		}
+	};
+
 	void start() throws IOException, SQLException {
-		final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
-		synchronized(this) {
+		AOServConnector conn = _networkDevicesNode.serverNode.serversNode.rootNode.conn;
+		synchronized(childLock) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			// bit rate and network bonding monitoring only supported for AOServer
-			if(_networkDevicesNode.getServer().getAOServer()!=null) {
-				NetDeviceID netDeviceID = _netDevice.getDeviceId();
+			conn.getIpAddresses().addTableListener(tableListener, 100);
+			conn.getNetDevices().addTableListener(tableListener, 100);
+		}
+		verifyChildren();
+	}
+
+	void stop() {
+		RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
+		AOServConnector conn = rootNode.conn;
+		synchronized(childLock) {
+			started = false;
+			conn.getIpAddresses().removeTableListener(tableListener);
+			conn.getNetDevices().removeTableListener(tableListener);
+			if(_ipAddressesNode!=null) {
+				_ipAddressesNode.stop();
+				_ipAddressesNode = null;
+				rootNode.nodeRemoved();
+			}
+			if(_netDeviceBondingNode!=null) {
+				_netDeviceBondingNode.stop();
+				_netDeviceBondingNode = null;
+				rootNode.nodeRemoved();
+			}
+			if(_netDeviceBitRateNode!=null) {
+				_netDeviceBitRateNode.stop();
+				_netDeviceBitRateNode = null;
+				rootNode.nodeRemoved();
+			}
+		}
+	}
+
+	private void verifyChildren() throws RemoteException, IOException, SQLException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+
+		synchronized(childLock) {
+			if(!started) return;
+		}
+
+		RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
+
+		AOServer aoServer = _networkDevicesNode.getServer().getAOServer();
+		NetDevice currentNetDevice = _device.getTable().getConnector().getNetDevices().get(_device.getPkey());
+		NetDeviceID netDeviceID = currentNetDevice.getDeviceId();
+		boolean hasIpAddresses = !currentNetDevice.getIPAddresses().isEmpty();
+
+		synchronized(childLock) {
+			if(started) {
+				// bit rate and network bonding monitoring only supported for AOServer
 				if(
+					aoServer != null
 					// bit rate for non-loopback devices
-					!netDeviceID.isLoopback()
+					&& !netDeviceID.isLoopback()
 					// and non-BMC
 					&& !netDeviceID.getName().equals(NetDeviceID.BMC)
 				) {
@@ -115,49 +176,48 @@ public class NetDeviceNode extends NodeImpl {
 						_netDeviceBitRateNode.start();
 						rootNode.nodeAdded();
 					}
+				} else {
+					if(_netDeviceBitRateNode!=null) {
+						_netDeviceBitRateNode.stop();
+						_netDeviceBitRateNode = null;
+						rootNode.nodeRemoved();
+					}
 				}
 				// bonding
 				if(
-					_label.equals(NetDeviceID.BOND0)
-					|| _label.equals(NetDeviceID.BOND1)
-					|| _label.equals(NetDeviceID.BOND2)
+					aoServer != null
+					&& (
+						_label.equals(NetDeviceID.BOND0) // TODO: Flag for "net_devices.isBonded"
+						|| _label.equals(NetDeviceID.BOND1)
+						|| _label.equals(NetDeviceID.BOND2)
+					)
 				) {
 					if(_netDeviceBondingNode==null) {
 						_netDeviceBondingNode = new NetDeviceBondingNode(this, port, csf, ssf);
 						_netDeviceBondingNode.start();
 						rootNode.nodeAdded();
 					}
+				} else {
+					if(_netDeviceBondingNode!=null) {
+						_netDeviceBondingNode.stop();
+						_netDeviceBondingNode = null;
+						rootNode.nodeRemoved();
+					}
 				}
-			}
-
-			if(_ipAddressesNode==null) {
-				_ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
-				_ipAddressesNode.start();
-				rootNode.nodeAdded();
-			}
-		}
-	}
-
-	void stop() {
-		final RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
-		synchronized(this) {
-			started = false;
-			if(_ipAddressesNode!=null) {
-				_ipAddressesNode.stop();
-				_ipAddressesNode = null;
-				rootNode.nodeRemoved();
-			}
-
-			if(_netDeviceBondingNode!=null) {
-				_netDeviceBondingNode.stop();
-				_netDeviceBondingNode = null;
-				rootNode.nodeRemoved();
-			}
-
-			if(_netDeviceBitRateNode!=null) {
-				_netDeviceBitRateNode.stop();
-				_netDeviceBitRateNode = null;
-				rootNode.nodeRemoved();
+				// IP Addresses
+				if(hasIpAddresses) {
+					if(_ipAddressesNode==null) {
+						_ipAddressesNode = new IPAddressesNode(this, port, csf, ssf);
+						_ipAddressesNode.start();
+						rootNode.nodeAdded();
+					}
+				} else {
+					if(_ipAddressesNode!=null) {
+						_ipAddressesNode.stop();
+						_ipAddressesNode = null;
+						rootNode.nodeRemoved();
+					}
+				}
 			}
 		}
 	}

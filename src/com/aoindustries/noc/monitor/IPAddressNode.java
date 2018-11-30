@@ -191,7 +191,7 @@ public class IPAddressNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		final RootNodeImpl rootNode = ipAddressesNode.rootNode;
+		RootNodeImpl rootNode = ipAddressesNode.rootNode;
 
 		IPAddress _currentIpAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
 		boolean isPingable = isPingable(ipAddressesNode, _currentIpAddress);
