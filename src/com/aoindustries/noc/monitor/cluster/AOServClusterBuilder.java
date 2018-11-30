@@ -6,13 +6,13 @@
 package com.aoindustries.noc.monitor.cluster;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.aoserv.client.OperatingSystemVersion;
-import com.aoindustries.aoserv.client.PhysicalServer;
-import com.aoindustries.aoserv.client.Server;
-import com.aoindustries.aoserv.client.ServerFarm;
-import com.aoindustries.aoserv.client.VirtualDisk;
-import com.aoindustries.aoserv.client.VirtualServer;
+import com.aoindustries.aoserv.client.distribution.OperatingSystemVersion;
+import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
+import com.aoindustries.aoserv.client.infrastructure.ServerFarm;
+import com.aoindustries.aoserv.client.infrastructure.VirtualDisk;
+import com.aoindustries.aoserv.client.infrastructure.VirtualServer;
+import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.net.Server;
 import com.aoindustries.aoserv.client.validator.AccountingCode;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;

@@ -5,9 +5,9 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.IPAddress;
-import com.aoindustries.aoserv.client.IpAddressMonitoring;
-import com.aoindustries.aoserv.client.NetDevice;
+import com.aoindustries.aoserv.client.net.IPAddress;
+import com.aoindustries.aoserv.client.net.NetDevice;
+import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -140,11 +140,11 @@ public class IPAddressesNode extends NodeImpl {
 
 		List<IPAddress> ipAddresses;
 		if(netDeviceNode != null) {
-			NetDevice netDevice = netDeviceNode.getNetDevice();
-			List<IPAddress> ndIPs = netDevice.getIPAddresses();
+			NetDevice device = netDeviceNode.getNetDevice();
+			List<IPAddress> ndIPs = device.getIPAddresses();
 			ipAddresses = new ArrayList<>(ndIPs.size());
 			for(IPAddress ipAddress : ndIPs) {
-				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+netDevice);
+				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+device);
 				IpAddressMonitoring iam = ipAddress.getMonitoring();
 				if(iam != null && iam.getEnabled()) ipAddresses.add(ipAddress);
 			}

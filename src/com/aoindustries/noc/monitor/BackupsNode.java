@@ -5,12 +5,12 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.aoserv.client.BackupPartition;
-import com.aoindustries.aoserv.client.FailoverFileReplication;
-import com.aoindustries.aoserv.client.FailoverFileSchedule;
-import com.aoindustries.aoserv.client.Server;
-import com.aoindustries.aoserv.client.ServerFarm;
+import com.aoindustries.aoserv.client.backup.BackupPartition;
+import com.aoindustries.aoserv.client.backup.FailoverFileReplication;
+import com.aoindustries.aoserv.client.backup.FailoverFileSchedule;
+import com.aoindustries.aoserv.client.infrastructure.ServerFarm;
+import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.net.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;

@@ -5,10 +5,10 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.aoserv.client.FailoverFileLog;
-import com.aoindustries.aoserv.client.FailoverFileReplication;
-import com.aoindustries.aoserv.client.Server;
+import com.aoindustries.aoserv.client.backup.FailoverFileLog;
+import com.aoindustries.aoserv.client.backup.FailoverFileReplication;
+import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.net.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;

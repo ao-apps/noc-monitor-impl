@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.aoserv.client.Server;
+import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.net.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.IOException;
 import java.rmi.RemoteException;

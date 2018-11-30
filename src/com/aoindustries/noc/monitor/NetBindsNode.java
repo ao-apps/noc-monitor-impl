@@ -6,10 +6,10 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.aoserv.client.IPAddress;
-import com.aoindustries.aoserv.client.NetBind;
-import com.aoindustries.aoserv.client.NetDevice;
-import com.aoindustries.aoserv.client.Server;
+import com.aoindustries.aoserv.client.net.IPAddress;
+import com.aoindustries.aoserv.client.net.NetBind;
+import com.aoindustries.aoserv.client.net.NetDevice;
+import com.aoindustries.aoserv.client.net.Server;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
@@ -220,12 +220,12 @@ public class NetBindsNode extends NodeImpl {
 	 * The binds directly on the IP address plus the wildcard binds
 	 */
 	static List<NetMonitorSetting> getSettings(IPAddress ipAddress) throws IOException, SQLException {
-		NetDevice netDevice = ipAddress.getDevice();
-		if(netDevice == null) return Collections.emptyList();
+		NetDevice device = ipAddress.getDevice();
+		if(device == null) return Collections.emptyList();
 		List<NetBind> directNetBinds = ipAddress.getNetBinds();
 
 		// Find the wildcard IP address, if available
-		Server server = netDevice.getServer();
+		Server server = device.getServer();
 		IPAddress wildcard = null;
 		for(IPAddress ia : server.getIPAddresses()) {
 			if(ia.getInetAddress().isUnspecified()) {

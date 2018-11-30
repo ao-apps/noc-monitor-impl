@@ -1,12 +1,12 @@
 /*
- * Copyright 2008-2009, 2016 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor.cluster;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.aoserv.client.AOServer;
+import com.aoindustries.aoserv.client.linux.AOServer;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
 import com.aoindustries.aoserv.cluster.ProcessorArchitecture;

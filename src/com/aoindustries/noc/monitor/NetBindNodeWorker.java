@@ -5,9 +5,9 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.AOServer;
-import com.aoindustries.aoserv.client.NetBind;
-import com.aoindustries.aoserv.client.Server;
+import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.net.NetBind;
+import com.aoindustries.aoserv.client.net.Server;
 import com.aoindustries.lang.LocalizedIllegalArgumentException;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
