@@ -5,10 +5,10 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.backup.FailoverFileLog;
-import com.aoindustries.aoserv.client.backup.FailoverFileReplication;
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.backup.FileReplication;
+import com.aoindustries.aoserv.client.backup.FileReplicationLog;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Host;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
@@ -33,7 +33,7 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Object> {
+class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Object> {
 
 	private static final int HISTORY_SIZE = 100;
 
@@ -41,7 +41,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
 	 * One unique worker is made per persistence file (and should match the failoverFileReplication exactly)
 	 */
 	private static final Map<String, BackupNodeWorker> workerCache = new HashMap<>();
-	static BackupNodeWorker getWorker(File persistenceFile, FailoverFileReplication failoverFileReplication) throws IOException {
+	static BackupNodeWorker getWorker(File persistenceFile, FileReplication failoverFileReplication) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			BackupNodeWorker worker = workerCache.get(path);
@@ -56,9 +56,9 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private FailoverFileReplication failoverFileReplication;
+	final private FileReplication failoverFileReplication;
 
-	BackupNodeWorker(File persistenceFile, FailoverFileReplication failoverFileReplication) {
+	BackupNodeWorker(File persistenceFile, FileReplication failoverFileReplication) {
 		super(persistenceFile);
 		this.failoverFileReplication = failoverFileReplication;
 	}
@@ -150,21 +150,21 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
 	}
 
 	@Override
-	protected List<FailoverFileLog> getQueryResult() throws Exception {
+	protected List<FileReplicationLog> getQueryResult() throws Exception {
 		return failoverFileReplication.getFailoverFileLogs(HISTORY_SIZE);
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<FailoverFileLog> failoverFileLogs) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<FileReplicationLog> failoverFileLogs) throws Exception {
 		if(failoverFileLogs.isEmpty()) {
 			return locale -> Collections.emptyList();
 		} else {
-			Server server = failoverFileReplication.getServer();
-			AOServer aoServer = server.getAOServer();
+			Host server = failoverFileReplication.getServer();
+			Server aoServer = server.getAOServer();
 			TimeZone timeZone = aoServer==null ? null : aoServer.getTimeZone().getTimeZone();
 			List<Object> tableData = new ArrayList<>(failoverFileLogs.size()*6);
 			//int lineNum = 0;
-			for(FailoverFileLog failoverFileLog : failoverFileLogs) {
+			for(FileReplicationLog failoverFileLog : failoverFileLogs) {
 				//lineNum++;
 				Timestamp startTime = failoverFileLog.getStartTime();
 				tableData.add(new TimeWithTimeZone(startTime.getTime(), timeZone));
@@ -179,9 +179,9 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FailoverFileLog>,Objec
 	}
 
 	@Override
-	protected List<AlertLevel> getAlertLevels(List<FailoverFileLog> queryResult) {
+	protected List<AlertLevel> getAlertLevels(List<FileReplicationLog> queryResult) {
 		List<AlertLevel> alertLevels = new ArrayList<>(queryResult.size());
-		for(FailoverFileLog failoverFileLog : queryResult) {
+		for(FileReplicationLog failoverFileLog : queryResult) {
 			// If pass failed then it is HIGH, otherwise it is NONE
 			alertLevels.add(failoverFileLog.isSuccessful() ? AlertLevel.NONE : AlertLevel.MEDIUM);
 		}

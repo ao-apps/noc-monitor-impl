@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.LoadAverageResult;
@@ -26,7 +26,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 	 * One unique worker is made per persistence directory (and should match aoServer exactly)
 	 */
 	private static final Map<String, LoadAverageNodeWorker> workerCache = new HashMap<>();
-	static LoadAverageNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+	static LoadAverageNodeWorker getWorker(File persistenceDirectory, Server aoServer) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			LoadAverageNodeWorker worker = workerCache.get(path);
@@ -40,10 +40,10 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 		}
 	}
 
-	final private AOServer _aoServer;
-	private AOServer currentAOServer;
+	final private Server _aoServer;
+	private Server currentAOServer;
 
-	private LoadAverageNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+	private LoadAverageNodeWorker(File persistenceDirectory, Server aoServer) throws IOException {
 		super(new File(persistenceDirectory, "loadavg"), new LoadAverageResultSerializer());
 		this._aoServer = currentAOServer = aoServer;
 	}

@@ -13,7 +13,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 
 /**
- * The node for all MySQLDatabases on one MySQLServer.
+ * The node for all MySQLDatabases on one Server.
  *
  * @author  AO Industries, Inc.
  */

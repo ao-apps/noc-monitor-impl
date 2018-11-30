@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.linux.AOServer.MdMismatchReport;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.linux.Server.MdMismatchReport;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
@@ -36,7 +36,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	 * One unique worker is made per persistence file (and should match the aoServer exactly)
 	 */
 	private static final Map<String, MdMismatchWorker> workerCache = new HashMap<>();
-	static MdMismatchWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+	static MdMismatchWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			MdMismatchWorker worker = workerCache.get(path);
@@ -51,9 +51,9 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private AOServer aoServer;
+	final private Server aoServer;
 
-	MdMismatchWorker(File persistenceFile, AOServer aoServer) {
+	MdMismatchWorker(File persistenceFile, Server aoServer) {
 		super(persistenceFile);
 		this.aoServer = aoServer;
 	}
@@ -128,7 +128,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 			if(count == 0) {
 				alertLevel = AlertLevel.NONE;
 			} else {
-				if(report.getLevel() == AOServer.RaidLevel.raid1) {
+				if(report.getLevel() == Server.RaidLevel.raid1) {
 					// Allow small amount of mismatch for RAID1 only
 					alertLevel =
 						count >= RAID1_HIGH_THRESHOLD ? AlertLevel.HIGH

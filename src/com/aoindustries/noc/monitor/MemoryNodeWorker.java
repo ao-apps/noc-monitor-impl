@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.ApproximateDisplayExactSize;
@@ -37,7 +37,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 	 * One unique worker is made per persistence directory (and should match aoServer exactly)
 	 */
 	private static final Map<String, MemoryNodeWorker> workerCache = new HashMap<>();
-	static MemoryNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+	static MemoryNodeWorker getWorker(File persistenceDirectory, Server aoServer) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			MemoryNodeWorker worker = workerCache.get(path);
@@ -51,10 +51,10 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 		}
 	}
 
-	final private AOServer _aoServer;
-	private AOServer currentAOServer;
+	final private Server _aoServer;
+	private Server currentAOServer;
 
-	private MemoryNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+	private MemoryNodeWorker(File persistenceDirectory, Server aoServer) throws IOException {
 		super(new File(persistenceDirectory, "meminfo"), new MemoryResultSerializer());
 		this._aoServer = currentAOServer = aoServer;
 	}

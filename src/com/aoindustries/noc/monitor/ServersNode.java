@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.net.Host;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -115,9 +115,9 @@ abstract public class ServersNode extends NodeImpl {
 		}
 
 		// Get all the servers that have monitoring enabled
-		List<Server> allServers = rootNode.conn.getServers().getRows();
-		List<Server> servers = new ArrayList<>(allServers.size());
-		for(Server server : allServers) {
+		List<Host> allServers = rootNode.conn.getServers().getRows();
+		List<Host> servers = new ArrayList<>(allServers.size());
+		for(Host server : allServers) {
 			if(server.isMonitoringEnabled() && includeServer(server)) servers.add(server);
 		}
 		synchronized(serverNodes) {
@@ -126,7 +126,7 @@ abstract public class ServersNode extends NodeImpl {
 				Iterator<ServerNode> serverNodeIter = serverNodes.iterator();
 				while(serverNodeIter.hasNext()) {
 					ServerNode serverNode = serverNodeIter.next();
-					Server server = serverNode.getServer();
+					Host server = serverNode.getServer();
 					if(!servers.contains(server)) {
 						serverNode.stop();
 						serverNodeIter.remove();
@@ -135,7 +135,7 @@ abstract public class ServersNode extends NodeImpl {
 				}
 				// Add new ones
 				for(int c=0;c<servers.size();c++) {
-					Server server = servers.get(c);
+					Host server = servers.get(c);
 					if(c>=serverNodes.size() || !server.equals(serverNodes.get(c).getServer())) {
 						// Insert into proper index
 						ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
@@ -167,5 +167,5 @@ abstract public class ServersNode extends NodeImpl {
 		return dir;
 	}
 
-	abstract boolean includeServer(Server server) throws SQLException, IOException;
+	abstract boolean includeServer(Host server) throws SQLException, IOException;
 }

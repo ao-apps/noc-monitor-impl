@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.net.HttpParameters;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
@@ -20,11 +20,11 @@ import com.aoindustries.noc.monitor.portmon.PortMonitor;
  */
 public class AOServDaemonPortMonitor extends PortMonitor {
 
-	private final AOServer aoServer;
+	private final Server aoServer;
 	private final String appProtocol;
 	private final HttpParameters monitoringParameters;
 
-	public AOServDaemonPortMonitor(AOServer aoServer, InetAddress ipAddress, Port port, String appProtocol, HttpParameters monitoringParameters) {
+	public AOServDaemonPortMonitor(Server aoServer, InetAddress ipAddress, Port port, String appProtocol, HttpParameters monitoringParameters) {
 		super(ipAddress, port);
 		this.aoServer = aoServer;
 		this.appProtocol = appProtocol;

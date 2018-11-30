@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
@@ -49,7 +49,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	 * One unique worker is made per persistence file (and should match the aoServer exactly)
 	 */
 	private static final Map<String, HardDrivesTemperatureNodeWorker> workerCache = new HashMap<>();
-	static HardDrivesTemperatureNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+	static HardDrivesTemperatureNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			HardDrivesTemperatureNodeWorker worker = workerCache.get(path);
@@ -64,9 +64,9 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private AOServer aoServer;
+	final private Server aoServer;
 
-	HardDrivesTemperatureNodeWorker(File persistenceFile, AOServer aoServer) {
+	HardDrivesTemperatureNodeWorker(File persistenceFile, Server aoServer) {
 		super(persistenceFile);
 		this.aoServer = aoServer;
 	}

@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.pki.SslCertificate;
+import com.aoindustries.aoserv.client.pki.Certificate;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
@@ -26,7 +26,7 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate.Check>,Object> {
+class SslCertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check>,Object> {
 
 	private static final int NUM_COLS = 3;
 
@@ -39,7 +39,7 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	 * One unique worker is made per persistence file (and should match the sslCertificate exactly)
 	 */
 	private static final Map<String, SslCertificateNodeWorker> workerCache = new HashMap<>();
-	static SslCertificateNodeWorker getWorker(File persistenceFile, SslCertificate sslCertificate) throws IOException, SQLException {
+	static SslCertificateNodeWorker getWorker(File persistenceFile, Certificate sslCertificate) throws IOException, SQLException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			SslCertificateNodeWorker worker = workerCache.get(path);
@@ -54,9 +54,9 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private SslCertificate sslCertificate;
+	final private Certificate sslCertificate;
 
-	SslCertificateNodeWorker(File persistenceFile, SslCertificate sslCertificate) throws IOException, SQLException {
+	SslCertificateNodeWorker(File persistenceFile, Certificate sslCertificate) throws IOException, SQLException {
 		super(persistenceFile);
 		this.sslCertificate = sslCertificate;
 	}
@@ -118,14 +118,14 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	}
 
 	@Override
-	protected List<SslCertificate.Check> getQueryResult() throws Exception {
+	protected List<Certificate.Check> getQueryResult() throws Exception {
 		return sslCertificate.check();
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<SslCertificate.Check> results) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<Certificate.Check> results) throws Exception {
 		List<Object> tableData = new ArrayList<>(results.size() * NUM_COLS);
-		for(SslCertificate.Check result : results) {
+		for(Certificate.Check result : results) {
 			tableData.add(result.getCheck());
 			tableData.add(result.getValue());
 			tableData.add(result.getMessage());
@@ -134,9 +134,9 @@ class SslCertificateNodeWorker extends TableResultNodeWorker<List<SslCertificate
 	}
 
 	@Override
-	protected List<AlertLevel> getAlertLevels(List<SslCertificate.Check> results) {
+	protected List<AlertLevel> getAlertLevels(List<Certificate.Check> results) {
 		List<AlertLevel> alertLevels = new ArrayList<>(results.size());
-		for(SslCertificate.Check result : results) {
+		for(Certificate.Check result : results) {
 			alertLevels.add(AlertLevelUtils.getMonitoringAlertLevel(result.getAlertLevel()));
 		}
 		return alertLevels;

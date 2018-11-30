@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Monitors UPS status for an AOServer.
+ * Monitors UPS status for an Server.
  *
  * @author  AO Industries, Inc.
  */
@@ -23,9 +23,9 @@ public class UpsNode extends TableMultiResultNodeImpl<UpsResult> {
 
 	private static final long serialVersionUID = 1L;
 
-	private final AOServer _aoServer;
+	private final Server _aoServer;
 
-	UpsNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+	UpsNode(ServerNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
 			serverNode.serversNode.rootNode,
 			serverNode,

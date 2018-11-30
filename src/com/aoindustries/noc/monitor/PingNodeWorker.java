@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.net.IPAddress;
+import com.aoindustries.aoserv.client.net.IpAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.PingResult;
@@ -35,7 +35,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
 	 * One unique worker is made per persistence directory (and should match the IP address exactly)
 	 */
 	private static final Map<String, PingNodeWorker> workerCache = new HashMap<>();
-	static PingNodeWorker getWorker(File persistenceDirectory, IPAddress ipAddress) throws IOException {
+	static PingNodeWorker getWorker(File persistenceDirectory, IpAddress ipAddress) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		com.aoindustries.net.InetAddress ip = ipAddress.getInetAddress();
 		com.aoindustries.net.InetAddress externalIp = ipAddress.getExternalInetAddress();

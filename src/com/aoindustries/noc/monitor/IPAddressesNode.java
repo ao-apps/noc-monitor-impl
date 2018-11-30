@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.net.IPAddress;
-import com.aoindustries.aoserv.client.net.NetDevice;
+import com.aoindustries.aoserv.client.net.Device;
+import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -25,7 +25,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node of all IPAddresses per NetDevice.
+ * The node of all IPAddresses per Device.
  *
  * @author  AO Industries, Inc.
  */
@@ -138,21 +138,21 @@ public class IPAddressesNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<IPAddress> ipAddresses;
+		List<IpAddress> ipAddresses;
 		if(netDeviceNode != null) {
-			NetDevice device = netDeviceNode.getNetDevice();
-			List<IPAddress> ndIPs = device.getIPAddresses();
+			Device device = netDeviceNode.getNetDevice();
+			List<IpAddress> ndIPs = device.getIPAddresses();
 			ipAddresses = new ArrayList<>(ndIPs.size());
-			for(IPAddress ipAddress : ndIPs) {
-				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on NetDevice: "+device);
+			for(IpAddress ipAddress : ndIPs) {
+				if(ipAddress.getInetAddress().isUnspecified()) throw new AssertionError("Unspecified IP address on Device: "+device);
 				IpAddressMonitoring iam = ipAddress.getMonitoring();
 				if(iam != null && iam.getEnabled()) ipAddresses.add(ipAddress);
 			}
 		} else {
 			// Find all unallocated IP addresses, except the unspecified
-			List<IPAddress> allIPs = rootNode.conn.getIpAddresses().getRows();
+			List<IpAddress> allIPs = rootNode.conn.getIpAddresses().getRows();
 			ipAddresses = new ArrayList<>(allIPs.size());
-			for(IPAddress ip : allIPs) {
+			for(IpAddress ip : allIPs) {
 				if(
 					!ip.getInetAddress().isUnspecified()
 					&& ip.getDevice() == null
@@ -173,10 +173,10 @@ public class IPAddressesNode extends NodeImpl {
 				Iterator<IPAddressNode> ipAddressNodeIter = ipAddressNodes.iterator();
 				while(ipAddressNodeIter.hasNext()) {
 					IPAddressNode ipAddressNode = ipAddressNodeIter.next();
-					IPAddress oldIpAddress = ipAddressNode.getIPAddress();
+					IpAddress oldIpAddress = ipAddressNode.getIPAddress();
 					// Find the any new version of the IP address matching this node
-					IPAddress newIpAddress = null;
-					for(IPAddress ipAddress : ipAddresses) {
+					IpAddress newIpAddress = null;
+					for(IpAddress ipAddress : ipAddresses) {
 						if(ipAddress.equals(oldIpAddress)) {
 							newIpAddress = ipAddress;
 							break;
@@ -195,7 +195,7 @@ public class IPAddressesNode extends NodeImpl {
 				}
 				// Add new ones
 				for(int c=0;c<ipAddresses.size();c++) {
-					IPAddress ipAddress = ipAddresses.get(c);
+					IpAddress ipAddress = ipAddresses.get(c);
 					if(c>=ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIPAddress())) {
 						// Insert into proper index
 						IPAddressNode ipAddressNode = new IPAddressNode(this, ipAddress, port, csf, ssf);

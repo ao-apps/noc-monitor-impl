@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.backup.FailoverMySQLReplication;
-import com.aoindustries.aoserv.client.mysql.MySQLDatabase;
+import com.aoindustries.aoserv.client.backup.MysqlReplication;
+import com.aoindustries.aoserv.client.mysql.Database;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.TableStatus>,Object> {
+class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus>,Object> {
 
 	//private static final Logger logger = Logger.getLogger(MySQLDatabaseNodeWorker.class.getName());
 
@@ -34,7 +34,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 	 * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
 	 */
 	private static final Map<String, MySQLDatabaseNodeWorker> workerCache = new HashMap<>();
-	static MySQLDatabaseNodeWorker getWorker(File persistenceFile, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
+	static MySQLDatabaseNodeWorker getWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			MySQLDatabaseNodeWorker worker = workerCache.get(path);
@@ -49,13 +49,13 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private MySQLDatabase mysqlDatabase;
-	final private FailoverMySQLReplication mysqlSlave;
+	final private Database mysqlDatabase;
+	final private MysqlReplication mysqlSlave;
 	final boolean isSlowServer;
 	final private Object lastTableStatusesLock = new Object();
-	private List<MySQLDatabase.TableStatus> lastTableStatuses;
+	private List<Database.TableStatus> lastTableStatuses;
 
-	MySQLDatabaseNodeWorker(File persistenceFile, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave) throws IOException, SQLException {
+	MySQLDatabaseNodeWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
 		super(persistenceFile);
 		this.mysqlDatabase = mysqlDatabase;
 		this.mysqlSlave = mysqlSlave;
@@ -96,16 +96,16 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 	}
 
 	@Override
-	protected List<MySQLDatabase.TableStatus> getQueryResult() throws Exception {
-		List<MySQLDatabase.TableStatus> tableStatuses = mysqlDatabase.getTableStatus(mysqlSlave);
+	protected List<Database.TableStatus> getQueryResult() throws Exception {
+		List<Database.TableStatus> tableStatuses = mysqlDatabase.getTableStatus(mysqlSlave);
 		setLastTableStatuses(tableStatuses);
 		return tableStatuses;
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<MySQLDatabase.TableStatus> tableStatuses) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<Database.TableStatus> tableStatuses) throws Exception {
 		List<Object> tableData = new ArrayList<>(tableStatuses.size()*18);
-		for(MySQLDatabase.TableStatus tableStatus : tableStatuses) {
+		for(Database.TableStatus tableStatus : tableStatuses) {
 			tableData.add(tableStatus.getName());
 			tableData.add(tableStatus.getEngine());
 			tableData.add(tableStatus.getVersion());
@@ -128,7 +128,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 		return locale -> tableData;
 	}
 
-	private void setLastTableStatuses(List<MySQLDatabase.TableStatus> tableStatuses) {
+	private void setLastTableStatuses(List<Database.TableStatus> tableStatuses) {
 		synchronized(lastTableStatusesLock) {
 			this.lastTableStatuses = tableStatuses;
 			lastTableStatusesLock.notifyAll();
@@ -139,7 +139,7 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 	 * Gets the last table statuses.  May wait for the data to become available,
 	 * will not return null.  May wait for a very long time in some cases.
 	 */
-	List<MySQLDatabase.TableStatus> getLastTableStatuses() {
+	List<Database.TableStatus> getLastTableStatuses() {
 		synchronized(lastTableStatusesLock) {
 			while(lastTableStatuses==null) {
 				try {
@@ -168,9 +168,9 @@ class MySQLDatabaseNodeWorker extends TableResultNodeWorker<List<MySQLDatabase.T
 	}
 
 	@Override
-	protected List<AlertLevel> getAlertLevels(List<MySQLDatabase.TableStatus> tableStatuses) {
+	protected List<AlertLevel> getAlertLevels(List<Database.TableStatus> tableStatuses) {
 		List<AlertLevel> alertLevels = new ArrayList<>(tableStatuses.size());
-		for(MySQLDatabase.TableStatus tableStatus : tableStatuses) {
+		for(Database.TableStatus tableStatus : tableStatuses) {
 			AlertLevel alertLevel = AlertLevel.NONE;
 			// Could compare data length to max data length and warn, but max data length is incredibly high in MySQL 5.0+
 			alertLevels.add(alertLevel);

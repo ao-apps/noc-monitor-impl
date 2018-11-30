@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.backup.FailoverMySQLReplication;
-import com.aoindustries.aoserv.client.mysql.MySQLServer;
+import com.aoindustries.aoserv.client.backup.MysqlReplication;
+import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.aoserv.client.validator.MySQLServerName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -32,14 +32,14 @@ public class MySQLServerNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final MySQLServersNode _mysqlServersNode;
-	private final MySQLServer _mysqlServer;
+	private final Server _mysqlServer;
 	private final MySQLServerName _label;
 
 	private boolean started;
 	volatile private MySQLSlavesNode _mysqlSlavesNode;
 	volatile private MySQLDatabasesNode _mysqlDatabasesNode;
 
-	MySQLServerNode(MySQLServersNode mysqlServersNode, MySQLServer mysqlServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
+	MySQLServerNode(MySQLServersNode mysqlServersNode, Server mysqlServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
 		super(port, csf, ssf);
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -53,7 +53,7 @@ public class MySQLServerNode extends NodeImpl {
 		return _mysqlServersNode;
 	}
 
-	public MySQLServer getMySQLServer() {
+	public Server getMySQLServer() {
 		return _mysqlServer;
 	}
 
@@ -148,7 +148,7 @@ public class MySQLServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<FailoverMySQLReplication> failoverMySQLReplications = _mysqlServer.getFailoverMySQLReplications();
+		List<MysqlReplication> failoverMySQLReplications = _mysqlServer.getFailoverMySQLReplications();
 		synchronized(this) {
 			if(started) {
 				if(!failoverMySQLReplications.isEmpty()) {

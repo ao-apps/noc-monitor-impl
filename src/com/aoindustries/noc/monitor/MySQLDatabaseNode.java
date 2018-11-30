@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.backup.FailoverMySQLReplication;
-import com.aoindustries.aoserv.client.mysql.MySQLDatabase;
+import com.aoindustries.aoserv.client.backup.MysqlReplication;
+import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.aoserv.client.validator.MySQLDatabaseName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * The node for one MySQLDatabase.
+ * The node for one Database.
  *
  * @author  AO Industries, Inc.
  */
@@ -28,15 +28,15 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
 
 	final MySQLDatabaseNodeWorker databaseWorker;
 	final MySQLDatabasesNode mysqlDatabasesNode;
-	final MySQLDatabase mysqlDatabase;
-	private final FailoverMySQLReplication mysqlSlave;
+	final Database mysqlDatabase;
+	private final MysqlReplication mysqlSlave;
 	private final MySQLDatabaseName _label;
 
 	private boolean started;
 
 	volatile private MySQLCheckTablesNode mysqlCheckTablesNode;
 
-	MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, MySQLDatabase mysqlDatabase, FailoverMySQLReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+	MySQLDatabaseNode(MySQLDatabasesNode mysqlDatabasesNode, Database mysqlDatabase, MysqlReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
 			mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode,
 			mysqlDatabasesNode,
@@ -56,11 +56,11 @@ public class MySQLDatabaseNode extends TableResultNodeImpl {
 		this._label = mysqlDatabase.getName();
 	}
 
-	MySQLDatabase getMySQLDatabase() {
+	Database getMySQLDatabase() {
 		return mysqlDatabase;
 	}
 
-	FailoverMySQLReplication getMySQLSlave() {
+	MysqlReplication getMySQLSlave() {
 		return mysqlSlave;
 	}
 

@@ -6,8 +6,8 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.aoserv.client.account.BusinessAdministrator;
-import com.aoindustries.aoserv.client.signup.SignupRequest;
+import com.aoindustries.aoserv.client.account.Administrator;
+import com.aoindustries.aoserv.client.signup.Request;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
@@ -127,12 +127,12 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 		);
 
 		// Add the aoserv signups
-		for(SignupRequest request : conn.getSignupRequests()) {
+		for(Request request : conn.getSignupRequests()) {
 			tableData.add(request.getPackageDefinition().getBusiness().getAccounting());
 			tableData.add(request.getPkey());
 			tableData.add(new TimeWithTimeZone(request.getTime().getTime()));
 			tableData.add(request.getIpAddress());
-			BusinessAdministrator completedBy = request.getCompletedBy();
+			Administrator completedBy = request.getCompletedBy();
 			tableData.add(completedBy==null ? null : completedBy.getUsername().getUsername());
 			Timestamp completedTime = request.getCompletedTime();
 			tableData.add(completedTime==null ? null : new TimeWithTimeZone(completedTime.getTime()));

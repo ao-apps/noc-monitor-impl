@@ -11,8 +11,8 @@ import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
 import com.aoindustries.aoserv.client.infrastructure.ServerFarm;
 import com.aoindustries.aoserv.client.infrastructure.VirtualDisk;
 import com.aoindustries.aoserv.client.infrastructure.VirtualServer;
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.aoserv.client.validator.AccountingCode;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
@@ -101,10 +101,10 @@ public class AOServClusterBuilder {
 	private AOServClusterBuilder() {}
 
 	/**
-	 * Determines if the provide AOServer is an enabled Dom0.
+	 * Determines if the provide Server is an enabled Dom0.
 	 */
-	private static boolean isEnabledDom0(AOServer aoServer) throws SQLException, IOException {
-		Server server = aoServer.getServer();
+	private static boolean isEnabledDom0(Server aoServer) throws SQLException, IOException {
+		Host server = aoServer.getServer();
 		if(!server.isMonitoringEnabled()) return false;
 		OperatingSystemVersion osvObj = server.getOperatingSystemVersion();
 		if(osvObj==null) return false;
@@ -130,9 +130,9 @@ public class AOServClusterBuilder {
 	 */
 	public static SortedSet<Cluster> getClusters(
 		final AOServConnector conn,
-		final List<AOServer> aoServers,
+		final List<Server> aoServers,
 		final Map<String,Map<String,String>> hddModelReports,
-		final Map<String,AOServer.LvmReport> lvmReports,
+		final Map<String,Server.LvmReport> lvmReports,
 		final boolean useTarget
 	) throws SQLException, InterruptedException, ExecutionException, IOException {
 		List<ServerFarm> serverFarms = conn.getServerFarms().getRows();
@@ -142,7 +142,7 @@ public class AOServClusterBuilder {
 		for(final ServerFarm serverFarm : serverFarms) {
 			// Only create the cluster if there is at least one dom0 machine
 			boolean foundDom0 = false;
-			for(AOServer aoServer : aoServers) {
+			for(Server aoServer : aoServers) {
 				if(isEnabledDom0(aoServer)) {
 					if(aoServer.getServer().getServerFarm().equals(serverFarm)) {
 						foundDom0 = true;
@@ -174,9 +174,9 @@ public class AOServClusterBuilder {
 	public static Cluster getCluster(
 		AOServConnector conn,
 		ServerFarm serverFarm,
-		List<AOServer> aoServers,
+		List<Server> aoServers,
 		Map<String,Map<String,String>> hddModelReports,
-		Map<String,AOServer.LvmReport> lvmReports,
+		Map<String,Server.LvmReport> lvmReports,
 		boolean useTarget
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
 		final AccountingCode rootAccounting = conn.getBusinesses().getRootAccounting();
@@ -184,9 +184,9 @@ public class AOServClusterBuilder {
 		Cluster cluster = new Cluster(serverFarm.getName());
 
 		// Get the Dom0s
-		for(AOServer aoServer : aoServers) {
+		for(Server aoServer : aoServers) {
 			if(isEnabledDom0(aoServer)) {
-				Server server = aoServer.getServer();
+				Host server = aoServer.getServer();
 				if(server.getServerFarm().equals(serverFarm)) {
 					PhysicalServer physicalServer = server.getPhysicalServer();
 					String hostname = aoServer.getHostname().toString();
@@ -208,11 +208,11 @@ public class AOServClusterBuilder {
 					if(hddModelReport==null) throw new AssertionError("hddmodel report not found for "+hostname);
 					Set<String> addedDisks = new HashSet<>(hddModelReport.size()*4/3+1);
 					// Add physical volumes
-					AOServer.LvmReport lvmReport = lvmReports.get(hostname);
+					Server.LvmReport lvmReport = lvmReports.get(hostname);
 					if(lvmReport==null) throw new AssertionError("LvmReport not found for "+hostname);
-					for(Map.Entry<String,AOServer.LvmReport.PhysicalVolume> entry : lvmReport.getPhysicalVolumes().entrySet()) {
+					for(Map.Entry<String,Server.LvmReport.PhysicalVolume> entry : lvmReport.getPhysicalVolumes().entrySet()) {
 						String partition = entry.getKey();
-						AOServer.LvmReport.PhysicalVolume lvmPhysicalVolume = entry.getValue();
+						Server.LvmReport.PhysicalVolume lvmPhysicalVolume = entry.getValue();
 						// Count the number of digits on the right of partition
 						int digitCount = 0;
 						for(int c=partition.length()-1; c>=0; c--) {
@@ -253,13 +253,13 @@ public class AOServClusterBuilder {
 		}
 
 		// Get the DomUs
-		for(Server server : conn.getServers().getRows()) {
+		for(Host server : conn.getServers().getRows()) {
 			if(server.isMonitoringEnabled() && server.getServerFarm().equals(serverFarm)) {
 				// Should be either physical or virtual server
 				PhysicalServer physicalServer = server.getPhysicalServer();
 				VirtualServer virtualServer = server.getVirtualServer();
-				if(physicalServer==null && virtualServer==null) throw new SQLException("Server is neither a physical server nor a virtual server: "+server);
-				if(physicalServer!=null && virtualServer!=null) throw new SQLException("Server is both a physical server and a virtual server: "+server);
+				if(physicalServer==null && virtualServer==null) throw new SQLException("Host is neither a physical server nor a virtual server: "+server);
+				if(physicalServer!=null && virtualServer!=null) throw new SQLException("Host is both a physical server and a virtual server: "+server);
 				if(virtualServer!=null) {
 					// Must always be in the package with the same name as the root business
 					AccountingCode packageName = server.getPackage().getName();
@@ -306,13 +306,13 @@ public class AOServClusterBuilder {
 		final Locale locale,
 		final AOServConnector conn,
 		final SortedSet<Cluster> clusters,
-		final Map<String,List<AOServer.DrbdReport>> drbdReports,
-		final Map<String,AOServer.LvmReport> lvmReports
+		final Map<String,List<Server.DrbdReport>> drbdReports,
+		final Map<String,Server.LvmReport> lvmReports
 	) throws SQLException, ParseException, InterruptedException, ExecutionException, IOException {
-		//final List<AOServer> aoServers = conn.aoServers.getRows();
+		//final List<Server> aoServers = conn.aoServers.getRows();
 		//final Map<String,Map<String,String>> hddModelReports = getHddModelReports(aoServers, locale);
-		//final Map<String,List<AOServer.DrbdReport>> drbdReports = getDrbdReports(aoServers, locale);
-		//final Map<String,AOServer.LvmReport> lvmReports = getLvmReports(aoServers, locale);
+		//final Map<String,List<Server.DrbdReport>> drbdReports = getDrbdReports(aoServers, locale);
+		//final Map<String,Server.LvmReport> lvmReports = getLvmReports(aoServers, locale);
 
 		// Start concurrently
 		//SortedSet<Cluster> clusters = getClusters(conn, aoServers, hddModelReports, lvmReports);
@@ -336,13 +336,13 @@ public class AOServClusterBuilder {
 	 * Concurrently gets all of the DRBD reports for the entire cluster.  This doesn't perform
 	 * any sanity checks on the data, it merely parses it and ensures correct values.
 	 */
-	public static Map<String,List<AOServer.DrbdReport>> getDrbdReports(
-		final List<AOServer> aoServers,
+	public static Map<String,List<Server.DrbdReport>> getDrbdReports(
+		final List<Server> aoServers,
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
 		// Query concurrently for each of the drbdcstate's to get a good snapshot and determine primary/secondary locations
-		Map<String,Future<List<AOServer.DrbdReport>>> futures = new HashMap<>(aoServers.size()*4/3+1);
-		for(final AOServer aoServer : aoServers) {
+		Map<String,Future<List<Server.DrbdReport>>> futures = new HashMap<>(aoServers.size()*4/3+1);
+		for(final Server aoServer : aoServers) {
 			if(isEnabledDom0(aoServer)) {
 				futures.put(
 					aoServer.getHostname().toString(),
@@ -359,12 +359,12 @@ public class AOServClusterBuilder {
 	 * Concurrently gets all of the LVM reports for the all clusters.  This doesn't perform
 	 * any sanity checks on the data, it merely parses it and ensures correct values.
 	 */
-	public static Map<String,AOServer.LvmReport> getLvmReports(
-		final List<AOServer> aoServers,
+	public static Map<String,Server.LvmReport> getLvmReports(
+		final List<Server> aoServers,
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-		Map<String,Future<AOServer.LvmReport>> futures = new HashMap<>(aoServers.size()*4/3+1);
-		for(final AOServer aoServer : aoServers) {
+		Map<String,Future<Server.LvmReport>> futures = new HashMap<>(aoServers.size()*4/3+1);
+		for(final Server aoServer : aoServers) {
 			if(isEnabledDom0(aoServer)) {
 				futures.put(
 					aoServer.getHostname().toString(),
@@ -382,11 +382,11 @@ public class AOServClusterBuilder {
 	 * any sanity checks on the data, it merely parses it and ensures correct values.
 	 */
 	public static Map<String,Map<String,String>> getHddModelReports(
-		final List<AOServer> aoServers,
+		final List<Server> aoServers,
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
 		Map<String,Future<Map<String,String>>> futures = new HashMap<>(aoServers.size()*4/3+1);
-		for(final AOServer aoServer : aoServers) {
+		for(final Server aoServer : aoServers) {
 			if(isEnabledDom0(aoServer)) {
 				futures.put(
 					aoServer.getHostname().toString(),
@@ -406,8 +406,8 @@ public class AOServClusterBuilder {
 		Locale locale,
 		AOServConnector conn,
 		Cluster cluster,
-		Map<String,List<AOServer.DrbdReport>> drbdReports,
-		Map<String,AOServer.LvmReport> lvmReports
+		Map<String,List<Server.DrbdReport>> drbdReports,
+		Map<String,Server.LvmReport> lvmReports
 	) throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
 		final AccountingCode rootAccounting = conn.getBusinesses().getRootAccounting();
 
@@ -418,14 +418,14 @@ public class AOServClusterBuilder {
 
 		// Get and primary and secondary Dom0s from the DRBD report.
 		// Also performs sanity checks on all the DRBD information.
-		for(Map.Entry<String,List<AOServer.DrbdReport>> entry : drbdReports.entrySet()) {
+		for(Map.Entry<String,List<Server.DrbdReport>> entry : drbdReports.entrySet()) {
 			String dom0Hostname = entry.getKey();
 			int lineNum = 0;
-			for(AOServer.DrbdReport report : entry.getValue()) {
+			for(Server.DrbdReport report : entry.getValue()) {
 				lineNum++;
 				// Must be a virtual server
 				String domUHostname = report.getResourceHostname();
-				Server domUServer = conn.getServers().get(rootAccounting+"/"+domUHostname);
+				Host domUServer = conn.getServers().get(rootAccounting+"/"+domUHostname);
 				if(domUServer==null) throw new ParseException(
 					accessor.getMessage(
 						locale,
@@ -459,8 +459,8 @@ public class AOServClusterBuilder {
 					),
 					lineNum
 				);
-				AOServer.DrbdReport.Role localRole = report.getLocalRole();
-				if(localRole==AOServer.DrbdReport.Role.Primary) {
+				Server.DrbdReport.Role localRole = report.getLocalRole();
+				if(localRole==Server.DrbdReport.Role.Primary) {
 					// Is Primary
 					String previousValue = drbdPrimaryDom0s.put(domUHostname, dom0Hostname);
 					if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
@@ -473,7 +473,7 @@ public class AOServClusterBuilder {
 						),
 						lineNum
 					);
-				} else if(localRole==AOServer.DrbdReport.Role.Secondary) {
+				} else if(localRole==Server.DrbdReport.Role.Secondary) {
 					// Is Secondary
 					String previousValue = drbdSecondaryDom0s.put(domUHostname, dom0Hostname);
 					if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
@@ -519,7 +519,7 @@ public class AOServClusterBuilder {
 		for(Map.Entry<String,DomU> entry : cluster.getDomUs().entrySet()) {
 			String domUHostname = entry.getKey();
 			DomU domU = entry.getValue();
-			Server domUServer = conn.getServers().get(rootAccounting+"/"+domUHostname);
+			Host domUServer = conn.getServers().get(rootAccounting+"/"+domUHostname);
 			//VirtualServer domUVirtualServer = domUServer.getVirtualServer();
 
 			String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
@@ -553,7 +553,7 @@ public class AOServClusterBuilder {
 			for(DomUDisk domUDisk : domU.getDomUDisks().values()) {
 				// Must have been found once, and only once, on the primary server DRBD report
 				int foundCount = 0;
-				for(AOServer.DrbdReport report : drbdReports.get(primaryDom0Hostname)) {
+				for(Server.DrbdReport report : drbdReports.get(primaryDom0Hostname)) {
 					if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
 				}
 				if(foundCount!=1) throw new ParseException(
@@ -568,7 +568,7 @@ public class AOServClusterBuilder {
 
 				// Must have been found once, and only once, on the secondary server DRBD report
 				foundCount = 0;
-				for(AOServer.DrbdReport report : drbdReports.get(secondaryDom0Hostname)) {
+				for(Server.DrbdReport report : drbdReports.get(secondaryDom0Hostname)) {
 					if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
 				}
 				if(foundCount!=1) throw new ParseException(
@@ -594,14 +594,14 @@ public class AOServClusterBuilder {
 		// Look for any extra resources in LVM
 		{
 			// Make sure every volume group found in LVM equals a domUHostname that is either primary or secondary on that machine
-			for(Map.Entry<String,AOServer.LvmReport> entry : lvmReports.entrySet()) {
+			for(Map.Entry<String,Server.LvmReport> entry : lvmReports.entrySet()) {
 				String dom0Hostname = entry.getKey();
 				// Verify within this cluster only
 				if(cluster.getDom0s().containsKey(dom0Hostname)) {
-					AOServer.LvmReport lvmReport = entry.getValue();
-					for(Map.Entry<String,AOServer.LvmReport.VolumeGroup> vgEntry : lvmReport.getVolumeGroups().entrySet()) {
+					Server.LvmReport lvmReport = entry.getValue();
+					for(Map.Entry<String,Server.LvmReport.VolumeGroup> vgEntry : lvmReport.getVolumeGroups().entrySet()) {
 						String vgName = vgEntry.getKey();
-						AOServer.LvmReport.VolumeGroup volumeGroup = vgEntry.getValue();
+						Server.LvmReport.VolumeGroup volumeGroup = vgEntry.getValue();
 						// This should still validate the logical volumes in the off chance a virtual server is named "backup"
 						DomU domU = cluster.getDomU(vgName);
 						if(domU==null) {
@@ -637,34 +637,34 @@ public class AOServClusterBuilder {
 	private static List<PhysicalVolumeConfiguration> getPhysicalVolumeConfigurations(
 		Cluster cluster,
 		DomUDisk domUDisk,
-		Map<String,AOServer.LvmReport> lvmReports,
+		Map<String,Server.LvmReport> lvmReports,
 		String dom0Hostname
 	) {
-		AOServer.LvmReport lvmReport = lvmReports.get(dom0Hostname);
+		Server.LvmReport lvmReport = lvmReports.get(dom0Hostname);
 		if(lvmReport==null) throw new AssertionError("No lvm report found for "+dom0Hostname);
 		// Find the Dom0
 		Dom0 dom0 = cluster.getDom0(dom0Hostname);
 		if(dom0==null) throw new AssertionError("Dom0 not found: "+dom0Hostname);
 		// Should have a volume group equal to its hostname
 		String domUHostname = domUDisk.getDomUHostname();
-		AOServer.LvmReport.VolumeGroup volumeGroup = lvmReport.getVolumeGroup(domUHostname);
+		Server.LvmReport.VolumeGroup volumeGroup = lvmReport.getVolumeGroup(domUHostname);
 		if(volumeGroup==null) throw new AssertionError("No volume group named "+domUHostname+" found on "+dom0Hostname);
 		// Should have a logical volume named {device}-drbd
 		String logicalVolumeName = domUDisk.getDevice()+"-drbd";
-		AOServer.LvmReport.LogicalVolume logicalVolume = volumeGroup.getLogicalVolume(logicalVolumeName);
+		Server.LvmReport.LogicalVolume logicalVolume = volumeGroup.getLogicalVolume(logicalVolumeName);
 		if(logicalVolume==null) throw new AssertionError("No logical volume named "+logicalVolumeName+" found on "+dom0Hostname+":"+domUHostname);
 		// Each logical volume may have any number of segments
 		List<PhysicalVolumeConfiguration> configs = new ArrayList<>();
-		for(AOServer.LvmReport.Segment segment : logicalVolume.getSegments()) {
-			AOServer.LvmReport.SegmentType segmentType = segment.getSegtype();
-			if(segmentType!=AOServer.LvmReport.SegmentType.linear && segmentType!=AOServer.LvmReport.SegmentType.striped) {
+		for(Server.LvmReport.Segment segment : logicalVolume.getSegments()) {
+			Server.LvmReport.SegmentType segmentType = segment.getSegtype();
+			if(segmentType!=Server.LvmReport.SegmentType.linear && segmentType!=Server.LvmReport.SegmentType.striped) {
 				throw new AssertionError("Only linear and striped segments currently supported");
 			}
 			// This is somewhat of an over-simplication as it treats any striped segment as if each stripe is linearly appended.
 			// This should be close enough for the optimization purposes.
 			long firstLogicalExtent = segment.getSegStartPe();
 			// Each segment may have multiple stripes
-			for(AOServer.LvmReport.Stripe stripe : segment.getStripes()) {
+			for(Server.LvmReport.Stripe stripe : segment.getStripes()) {
 				assert stripe.getPhysicalVolume().getVolumeGroup().getVgName().equals(domUHostname) : "stripe.physicalVolume.volumeGroup.vgName!=domUHostname";
 				String partition = stripe.getPhysicalVolume().getPvName();
 				// Count the number of digits on the right of partition

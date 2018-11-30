@@ -6,8 +6,8 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Host;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -34,9 +34,9 @@ public class PhysicalServersNode extends ServersNode {
 	}
 
 	@Override
-	boolean includeServer(Server server) throws SQLException, IOException {
+	boolean includeServer(Host server) throws SQLException, IOException {
 		PhysicalServer physicalServer = server.getPhysicalServer();
-		AOServer aoServer = server.getAOServer();
+		Server aoServer = server.getAOServer();
 		return
 			physicalServer!=null && physicalServer.getRam()!=-1
 			// Ignore ao-box in fail-over

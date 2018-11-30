@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 by AO Industries, Inc.,
+ * Copyright 2014, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -15,7 +15,7 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
  */
 class AlertLevelUtils {
 
-	static AlertLevel getMonitoringAlertLevel(com.aoindustries.aoserv.client.AlertLevel aoservAlertLevel) {
+	static AlertLevel getMonitoringAlertLevel(com.aoindustries.aoserv.client.monitoring.AlertLevel aoservAlertLevel) {
 		if(aoservAlertLevel == null) return null;
 		switch(aoservAlertLevel) {
 			case NONE     : return AlertLevel.NONE;

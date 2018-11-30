@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.backup.FailoverMySQLReplication;
-import com.aoindustries.aoserv.client.mysql.MySQLServer;
+import com.aoindustries.aoserv.client.backup.MysqlReplication;
+import com.aoindustries.aoserv.client.mysql.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
@@ -27,7 +27,7 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>
 	 * One unique worker is made per persistence directory (and should match mysqlReplication exactly)
 	 */
 	private static final Map<String, MySQLSlaveStatusNodeWorker> workerCache = new HashMap<>();
-	static MySQLSlaveStatusNodeWorker getWorker(File persistenceDirectory, FailoverMySQLReplication mysqlReplication) throws IOException {
+	static MySQLSlaveStatusNodeWorker getWorker(File persistenceDirectory, MysqlReplication mysqlReplication) throws IOException {
 		File persistenceFile = new File(persistenceDirectory, "slave_status");
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
@@ -42,10 +42,10 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>
 		}
 	}
 
-	final private FailoverMySQLReplication _mysqlReplication;
-	private FailoverMySQLReplication currentFailoverMySQLReplication;
+	final private MysqlReplication _mysqlReplication;
+	private MysqlReplication currentFailoverMySQLReplication;
 
-	private MySQLSlaveStatusNodeWorker(File persistenceFile, FailoverMySQLReplication mysqlReplication) throws IOException {
+	private MySQLSlaveStatusNodeWorker(File persistenceFile, MysqlReplication mysqlReplication) throws IOException {
 		super(persistenceFile, new MySQLReplicationResultSerializer());
 		this._mysqlReplication = currentFailoverMySQLReplication = mysqlReplication;
 	}
@@ -59,9 +59,9 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>
 	protected List<String> getSample() throws Exception {
 		// Get the latest values
 		currentFailoverMySQLReplication = _mysqlReplication.getTable().getConnector().getFailoverMySQLReplications().get(_mysqlReplication.getPkey());
-		FailoverMySQLReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
+		MysqlReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
 		if(slaveStatus==null) throw new LocalizedSQLException(accessor, "MySQLSlaveStatusNodeWorker.slaveNotRunning");
-		MySQLServer.MasterStatus masterStatus = _mysqlReplication.getMySQLServer().getMasterStatus();
+		Server.MasterStatus masterStatus = _mysqlReplication.getMySQLServer().getMasterStatus();
 		if(masterStatus==null) throw new LocalizedSQLException(accessor, "MySQLSlaveStatusNodeWorker.masterNotRunning");
 		// Display the alert thresholds
 		int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();

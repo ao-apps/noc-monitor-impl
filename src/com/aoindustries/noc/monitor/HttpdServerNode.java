@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.HttpdServer;
+import com.aoindustries.aoserv.client.web.HttpdServer;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
 import java.io.File;

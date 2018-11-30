@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.lang.ObjectUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
@@ -25,7 +25,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node for all {@link HttpdServer} on one {@link AOServer}.
+ * The node for all {@link HttpdServer} on one {@link Server}.
  *
  * @author  AO Industries, Inc.
  */
@@ -36,11 +36,11 @@ public class HttpdServersNode extends NodeImpl {
 	private static final boolean DEBUG = false;
 
 	final ServerNode serverNode;
-	private final AOServer aoServer;
+	private final Server aoServer;
 	private final List<HttpdServerNode> httpdServerNodes = new ArrayList<>();
 	private boolean started;
 
-	HttpdServersNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	HttpdServersNode(ServerNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.serverNode = serverNode;
 		this.aoServer = aoServer;
@@ -51,7 +51,7 @@ public class HttpdServersNode extends NodeImpl {
 		return serverNode;
 	}
 
-	public AOServer getAOServer() {
+	public Server getAOServer() {
 		return aoServer;
 	}
 

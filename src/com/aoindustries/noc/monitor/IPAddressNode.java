@@ -6,7 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.aoserv.client.net.IPAddress;
+import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.net.InetAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
@@ -24,7 +24,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node per IPAddress.
+ * The node per IpAddress.
  *
  * @author  AO Industries, Inc.
  */
@@ -32,7 +32,7 @@ public class IPAddressNode extends NodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	static String getLabel(IPAddress ipAddress) {
+	static String getLabel(IpAddress ipAddress) {
 		InetAddress ip = ipAddress.getInetAddress();
 		InetAddress externalIp = ipAddress.getExternalInetAddress();
 		return
@@ -41,7 +41,7 @@ public class IPAddressNode extends NodeImpl {
 		;
 	}
 
-	static boolean isPingable(IPAddressesNode ipAddressesNode, IPAddress ipAddress) throws SQLException, IOException {
+	static boolean isPingable(IPAddressesNode ipAddressesNode, IpAddress ipAddress) throws SQLException, IOException {
 		// Private IPs and loopback IPs are not externally pingable
 		InetAddress ip = ipAddress.getInetAddress();
 		InetAddress externalIp = ipAddress.getExternalInetAddress();
@@ -54,7 +54,7 @@ public class IPAddressNode extends NodeImpl {
 	}
 
 	final IPAddressesNode ipAddressesNode;
-	private final IPAddress ipAddress;
+	private final IpAddress ipAddress;
 	private final String label;
 
 	private static class ChildLock {}
@@ -66,7 +66,7 @@ public class IPAddressNode extends NodeImpl {
 	volatile private DnsNode dnsNode;
 	volatile private BlacklistsNode blacklistsNode;
 
-	IPAddressNode(IPAddressesNode ipAddressesNode, IPAddress ipAddress, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
+	IPAddressNode(IPAddressesNode ipAddressesNode, IpAddress ipAddress, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
 		super(port, csf, ssf);
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -80,7 +80,7 @@ public class IPAddressNode extends NodeImpl {
 		return ipAddressesNode;
 	}
 
-	public IPAddress getIPAddress() {
+	public IpAddress getIPAddress() {
 		return ipAddress;
 	}
 
@@ -193,7 +193,7 @@ public class IPAddressNode extends NodeImpl {
 
 		RootNodeImpl rootNode = ipAddressesNode.rootNode;
 
-		IPAddress _currentIpAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
+		IpAddress _currentIpAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
 		boolean isPingable = isPingable(ipAddressesNode, _currentIpAddress);
 		boolean isLoopback = 
 			ipAddressesNode.netDeviceNode != null

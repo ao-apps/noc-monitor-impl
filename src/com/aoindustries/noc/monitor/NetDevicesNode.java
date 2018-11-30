@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.net.NetDevice;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.net.Device;
+import com.aoindustries.aoserv.client.net.Host;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -33,11 +33,11 @@ public class NetDevicesNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final ServerNode serverNode;
-	private final Server server;
+	private final Host server;
 	private final List<NetDeviceNode> netDeviceNodes = new ArrayList<>();
 	private boolean started;
 
-	NetDevicesNode(ServerNode serverNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	NetDevicesNode(ServerNode serverNode, Host server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.serverNode = serverNode;
 		this.server = server;
@@ -48,7 +48,7 @@ public class NetDevicesNode extends NodeImpl {
 		return serverNode;
 	}
 
-	public Server getServer() {
+	public Host getServer() {
 		return server;
 	}
 
@@ -126,11 +126,11 @@ public class NetDevicesNode extends NodeImpl {
 		}
 
 		// Filter only those that are enabled
-		List<NetDevice> netDevices;
+		List<Device> netDevices;
 		{
-			List<NetDevice> allDevices = server.getNetDevices();
+			List<Device> allDevices = server.getNetDevices();
 			netDevices = new ArrayList<>(allDevices.size());
-			for(NetDevice device : allDevices) {
+			for(Device device : allDevices) {
 				if(device.isMonitoringEnabled()) netDevices.add(device);
 			}
 		}
@@ -140,7 +140,7 @@ public class NetDevicesNode extends NodeImpl {
 				Iterator<NetDeviceNode> netDeviceNodeIter = netDeviceNodes.iterator();
 				while(netDeviceNodeIter.hasNext()) {
 					NetDeviceNode netDeviceNode = netDeviceNodeIter.next();
-					NetDevice device = netDeviceNode.getNetDevice();
+					Device device = netDeviceNode.getNetDevice();
 					if(!netDevices.contains(device)) {
 						netDeviceNode.stop();
 						netDeviceNodeIter.remove();
@@ -149,7 +149,7 @@ public class NetDevicesNode extends NodeImpl {
 				}
 				// Add new ones
 				for(int c=0;c<netDevices.size();c++) {
-					NetDevice device = netDevices.get(c);
+					Device device = netDevices.get(c);
 					if(c>=netDeviceNodes.size() || !device.equals(netDeviceNodes.get(c).getNetDevice())) {
 						// Insert into proper index
 						NetDeviceNode netDeviceNode = new NetDeviceNode(this, device, port, csf, ssf);

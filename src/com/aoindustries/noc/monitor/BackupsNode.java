@@ -6,11 +6,11 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.backup.BackupPartition;
-import com.aoindustries.aoserv.client.backup.FailoverFileReplication;
-import com.aoindustries.aoserv.client.backup.FailoverFileSchedule;
+import com.aoindustries.aoserv.client.backup.FileReplication;
+import com.aoindustries.aoserv.client.backup.FileReplicationSchedule;
 import com.aoindustries.aoserv.client.infrastructure.ServerFarm;
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Host;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -165,9 +165,9 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		final long startTime = System.currentTimeMillis();
 		final long startNanos = System.nanoTime();
 
-		List<FailoverFileReplication> failoverFileReplications = serverNode.getServer().getFailoverFileReplications();
-		Server server = serverNode.getServer();
-		AOServer aoServer = server.getAOServer();
+		List<FileReplication> failoverFileReplications = serverNode.getServer().getFailoverFileReplications();
+		Host server = serverNode.getServer();
+		Server aoServer = server.getAOServer();
 
 		// Determine if an aoServer is either in the "mob" server farm or has at least one active backup in that location
 		boolean missingMobBackup;
@@ -177,11 +177,11 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		} else {
 			ServerFarm sf = server.getServerFarm();
 			if(sf.getName().equals(AO_SERVER_REQUIRED_BACKUP_FARM)) {
-				// Server itself is in "mob" server farm
+				// Host itself is in "mob" server farm
 				missingMobBackup = false;
 			} else {
 				missingMobBackup = true;
-				for(FailoverFileReplication ffr : failoverFileReplications) {
+				for(FileReplication ffr : failoverFileReplications) {
 					if(ffr.getEnabled()) {
 						BackupPartition bp = ffr.getBackupPartition();
 						if(bp==null) {
@@ -236,7 +236,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 			Iterator<BackupNode> backupNodeIter = backupNodes.iterator();
 			while(backupNodeIter.hasNext()) {
 				BackupNode backupNode = backupNodeIter.next();
-				FailoverFileReplication failoverFileReplication = backupNode.getFailoverFileReplication();
+				FileReplication failoverFileReplication = backupNode.getFailoverFileReplication();
 				if(!failoverFileReplications.contains(failoverFileReplication)) {
 					backupNode.removeTableResultListener(this);
 					backupNode.stop();
@@ -246,7 +246,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 			}
 			// Add new ones
 			for(int c=0;c<failoverFileReplications.size();c++) {
-				FailoverFileReplication failoverFileReplication = failoverFileReplications.get(c);
+				FileReplication failoverFileReplication = failoverFileReplications.get(c);
 				if(c>=backupNodes.size() || !failoverFileReplication.equals(backupNodes.get(c).getFailoverFileReplication())) {
 					// Insert into proper index
 					BackupNode backupNode = new BackupNode(this, failoverFileReplication, port, csf, ssf);
@@ -285,12 +285,12 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 				List<Object> tableData = new ArrayList<>(failoverFileReplications.size()*7);
 				List<AlertLevel> alertLevels = new ArrayList<>(failoverFileReplications.size());
 				for(int c=0;c<failoverFileReplications.size();c++) {
-					FailoverFileReplication failoverFileReplication = failoverFileReplications.get(c);
+					FileReplication failoverFileReplication = failoverFileReplications.get(c);
 					BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
 					tableData.add(backupPartition==null ? "null" : backupPartition.getAOServer().getHostname());
 					tableData.add(backupPartition==null ? "null" : backupPartition.getPath());
 					StringBuilder times = new StringBuilder();
-					for(FailoverFileSchedule ffs : failoverFileReplication.getFailoverFileSchedules()) {
+					for(FileReplicationSchedule ffs : failoverFileReplication.getFailoverFileSchedules()) {
 						if(ffs.isEnabled()) {
 							if(times.length()>0) times.append(", ");
 							times.append(ffs.getHour()).append(':');

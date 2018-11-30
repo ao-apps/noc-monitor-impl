@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.net.NetDevice;
+import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.lang.EnumUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -31,7 +31,7 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 	 * One unique worker is made per persistence file (and should match the net device exactly)
 	 */
 	private static final Map<String, NetDeviceBondingNodeWorker> workerCache = new HashMap<>();
-	static NetDeviceBondingNodeWorker getWorker(File persistenceFile, NetDevice device) throws IOException {
+	static NetDeviceBondingNodeWorker getWorker(File persistenceFile, Device device) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			NetDeviceBondingNodeWorker worker = workerCache.get(path);
@@ -46,17 +46,17 @@ class NetDeviceBondingNodeWorker extends SingleResultNodeWorker {
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	volatile private NetDevice device;
+	volatile private Device device;
 
-	private NetDeviceBondingNodeWorker(File persistenceFile, NetDevice device) {
+	private NetDeviceBondingNodeWorker(File persistenceFile, Device device) {
 		super(persistenceFile);
 		this.device = device;
 	}
 
 	@Override
 	protected String getReport() throws IOException, SQLException {
-		// Get a new version of the NetDevice object
-		NetDevice newNetDevice = device.getTable().getConnector().getNetDevices().get(device.getPkey());
+		// Get a new version of the Device object
+		Device newNetDevice = device.getTable().getConnector().getNetDevices().get(device.getPkey());
 		if(newNetDevice!=null) device = newNetDevice;
 		// Get report from server
 		return device.getBondingReport();

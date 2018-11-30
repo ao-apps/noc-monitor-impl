@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.net.NetDevice;
+import com.aoindustries.aoserv.client.net.Device;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
@@ -38,7 +38,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 	 * One unique worker is made per persistence directory (and should match the net device exactly)
 	 */
 	private static final Map<String, NetDeviceBitRateNodeWorker> workerCache = new HashMap<>();
-	static NetDeviceBitRateNodeWorker getWorker(File persistenceDirectory, NetDevice device) throws IOException {
+	static NetDeviceBitRateNodeWorker getWorker(File persistenceDirectory, Device device) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			NetDeviceBitRateNodeWorker worker = workerCache.get(path);
@@ -53,10 +53,10 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private NetDevice _device;
-	private NetDevice _currentNetDevice;
+	final private Device _device;
+	private Device _currentNetDevice;
 
-	private NetDeviceBitRateNodeWorker(File persistenceDirectory, NetDevice device) throws IOException {
+	private NetDeviceBitRateNodeWorker(File persistenceDirectory, Device device) throws IOException {
 		super(new File(persistenceDirectory, "bit_rate"), new NetDeviceBitRateResultSerializer());
 		this._device = _currentNetDevice = device;
 	}
@@ -106,7 +106,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 				txPacketsPerSecond = -1;
 				rxPacketsPerSecond = -1;
 			} else if(lastStatsTime>=thisStatsTime) { // Time reset to the past
-				throw new Exception("Server time reset to the past");
+				throw new Exception("Host time reset to the past");
 			} else if(
 				// values of -1 indicate a server-side detected reset
 				thisTxBytes==-1 || thisTxBytes<lastTxBytes

@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.lang.EnumUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -31,7 +31,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 	 * One unique worker is made per persistence file (and should match the aoServer exactly)
 	 */
 	private static final Map<String, ThreeWareRaidNodeWorker> workerCache = new HashMap<>();
-	static ThreeWareRaidNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+	static ThreeWareRaidNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			ThreeWareRaidNodeWorker worker = workerCache.get(path);
@@ -46,9 +46,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private AOServer aoServer;
+	final private Server aoServer;
 
-	ThreeWareRaidNodeWorker(File persistenceFile, AOServer aoServer) {
+	ThreeWareRaidNodeWorker(File persistenceFile, Server aoServer) {
 		super(persistenceFile);
 		this.aoServer = aoServer;
 	}

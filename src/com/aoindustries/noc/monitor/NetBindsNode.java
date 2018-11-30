@@ -6,10 +6,10 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.aoserv.client.net.IPAddress;
-import com.aoindustries.aoserv.client.net.NetBind;
-import com.aoindustries.aoserv.client.net.NetDevice;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.net.Bind;
+import com.aoindustries.aoserv.client.net.Device;
+import com.aoindustries.aoserv.client.net.Host;
+import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
@@ -30,7 +30,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node per NetBind.
+ * The node per Bind.
  *
  * TODO: Add output of netstat -ln / ss -lnt here to detect extra ports.
  *
@@ -142,12 +142,12 @@ public class NetBindsNode extends NodeImpl {
 
 	static class NetMonitorSetting implements Comparable<NetMonitorSetting> {
 
-		private final Server server;
-		private final NetBind netBind;
+		private final Host server;
+		private final Bind netBind;
 		private final InetAddress ipAddress;
 		private final Port port;
 
-		private NetMonitorSetting(Server server, NetBind netBind, InetAddress ipAddress, Port port) {
+		private NetMonitorSetting(Host server, Bind netBind, InetAddress ipAddress, Port port) {
 			this.server = server;
 			this.netBind = netBind;
 			this.ipAddress = ipAddress;
@@ -156,7 +156,7 @@ public class NetBindsNode extends NodeImpl {
 
 		@Override
 		public int compareTo(NetMonitorSetting o) {
-			// Server
+			// Host
 			int diff = server.compareTo(o.server);
 			if(diff!=0) return diff;
 			// IP
@@ -190,13 +190,13 @@ public class NetBindsNode extends NodeImpl {
 		}
 
 		/**
-		 * Gets the Server for this port.
+		 * Gets the Host for this port.
 		 */
-		Server getServer() {
+		Host getServer() {
 			return server;
 		}
 
-		NetBind getNetBind() {
+		Bind getNetBind() {
 			return netBind;
 		}
 
@@ -219,27 +219,27 @@ public class NetBindsNode extends NodeImpl {
 	 * The list of net binds is:
 	 * The binds directly on the IP address plus the wildcard binds
 	 */
-	static List<NetMonitorSetting> getSettings(IPAddress ipAddress) throws IOException, SQLException {
-		NetDevice device = ipAddress.getDevice();
+	static List<NetMonitorSetting> getSettings(IpAddress ipAddress) throws IOException, SQLException {
+		Device device = ipAddress.getDevice();
 		if(device == null) return Collections.emptyList();
-		List<NetBind> directNetBinds = ipAddress.getNetBinds();
+		List<Bind> directNetBinds = ipAddress.getNetBinds();
 
 		// Find the wildcard IP address, if available
-		Server server = device.getServer();
-		IPAddress wildcard = null;
-		for(IPAddress ia : server.getIPAddresses()) {
+		Host server = device.getServer();
+		IpAddress wildcard = null;
+		for(IpAddress ia : server.getIPAddresses()) {
 			if(ia.getInetAddress().isUnspecified()) {
 				wildcard = ia;
 				break;
 			}
 		}
-		List<NetBind> wildcardNetBinds;
+		List<Bind> wildcardNetBinds;
 		if(wildcard==null) wildcardNetBinds = Collections.emptyList();
 		else wildcardNetBinds = server.getNetBinds(wildcard);
 
 		InetAddress inetaddress = ipAddress.getInetAddress();
 		List<NetMonitorSetting> netMonitorSettings = new ArrayList<>(directNetBinds.size() + wildcardNetBinds.size());
-		for(NetBind netBind : directNetBinds) {
+		for(Bind netBind : directNetBinds) {
 			if(netBind.isMonitoringEnabled() && !netBind.isDisabled()) {
 				netMonitorSettings.add(
 					new NetMonitorSetting(
@@ -251,7 +251,7 @@ public class NetBindsNode extends NodeImpl {
 				);
 			}
 		}
-		for(NetBind netBind : wildcardNetBinds) {
+		for(Bind netBind : wildcardNetBinds) {
 			if(netBind.isMonitoringEnabled() && !netBind.isDisabled()) {
 				netMonitorSettings.add(
 					new NetMonitorSetting(
@@ -276,7 +276,7 @@ public class NetBindsNode extends NodeImpl {
 
 		final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
 
-		IPAddress ipAddress = ipAddressNode.getIPAddress();
+		IpAddress ipAddress = ipAddressNode.getIPAddress();
 		ipAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
 		List<NetMonitorSetting> netMonitorSettings = getSettings(ipAddress);
 

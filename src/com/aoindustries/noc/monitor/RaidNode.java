@@ -6,7 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.distribution.OperatingSystemVersion;
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -27,7 +27,7 @@ public class RaidNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final ServerNode serverNode;
-	private final AOServer aoServer;
+	private final Server aoServer;
 
 	private boolean started;
 
@@ -36,7 +36,7 @@ public class RaidNode extends NodeImpl {
 	volatile private MdMismatchNode _mdMismatchNode;
 	volatile private DrbdNode _drbdNode;
 
-	RaidNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	RaidNode(ServerNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.serverNode = serverNode;
 		this.aoServer = aoServer;
@@ -47,7 +47,7 @@ public class RaidNode extends NodeImpl {
 		return serverNode;
 	}
 
-	public AOServer getAOServer() {
+	public Server getAOServer() {
 		return aoServer;
 	}
 

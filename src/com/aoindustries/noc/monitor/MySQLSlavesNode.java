@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.backup.FailoverMySQLReplication;
+import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -23,7 +23,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node for all FailoverMySQLReplications on one MySQLServer.
+ * The node for all FailoverMySQLReplications on one Server.
  *
  * @author  AO Industries, Inc.
  */
@@ -120,14 +120,14 @@ public class MySQLSlavesNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<FailoverMySQLReplication> mysqlReplications = mysqlServerNode.getMySQLServer().getFailoverMySQLReplications();
+		List<MysqlReplication> mysqlReplications = mysqlServerNode.getMySQLServer().getFailoverMySQLReplications();
 		synchronized(mysqlSlaveNodes) {
 			if(started) {
 				// Remove old ones
 				Iterator<MySQLSlaveNode> mysqlSlaveNodeIter = mysqlSlaveNodes.iterator();
 				while(mysqlSlaveNodeIter.hasNext()) {
 					MySQLSlaveNode mysqlSlaveNode = mysqlSlaveNodeIter.next();
-					FailoverMySQLReplication mysqlReplication = mysqlSlaveNode.getFailoverMySQLReplication();
+					MysqlReplication mysqlReplication = mysqlSlaveNode.getFailoverMySQLReplication();
 					if(!mysqlReplications.contains(mysqlReplication)) {
 						mysqlSlaveNode.stop();
 						mysqlSlaveNodeIter.remove();
@@ -136,7 +136,7 @@ public class MySQLSlavesNode extends NodeImpl {
 				}
 				// Add new ones
 				for(int c=0;c<mysqlReplications.size();c++) {
-					FailoverMySQLReplication mysqlReplication = mysqlReplications.get(c);
+					MysqlReplication mysqlReplication = mysqlReplications.get(c);
 					if(c>=mysqlSlaveNodes.size() || !mysqlReplication.equals(mysqlSlaveNodes.get(c).getFailoverMySQLReplication())) {
 						// Insert into proper index
 						MySQLSlaveNode mysqlSlaveNode = new MySQLSlaveNode(this, mysqlReplication, port, csf, ssf);

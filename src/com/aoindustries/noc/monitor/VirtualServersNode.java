@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Host;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -33,8 +33,8 @@ public class VirtualServersNode extends ServersNode {
 	}
 
 	@Override
-	boolean includeServer(Server server) throws SQLException, IOException {
-		AOServer aoServer = server.getAOServer();
+	boolean includeServer(Host server) throws SQLException, IOException {
+		Server aoServer = server.getAOServer();
 		return
 			// Is Xen dom0
 			server.getVirtualServer()!=null

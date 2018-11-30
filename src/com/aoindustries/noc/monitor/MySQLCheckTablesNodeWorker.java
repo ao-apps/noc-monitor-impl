@@ -5,9 +5,9 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.backup.FailoverMySQLReplication;
-import com.aoindustries.aoserv.client.mysql.MySQLDatabase;
-import com.aoindustries.aoserv.client.mysql.MySQLServer;
+import com.aoindustries.aoserv.client.backup.MysqlReplication;
+import com.aoindustries.aoserv.client.mysql.Database;
+import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.aoserv.client.validator.MySQLTableName;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -75,55 +75,55 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 
 	@Override
 	protected List<Object> getQueryResult() throws Exception {
-		MySQLDatabase mysqlDatabase = databaseNode.getMySQLDatabase();
-		FailoverMySQLReplication mysqlSlave = databaseNode.getMySQLSlave();
+		Database mysqlDatabase = databaseNode.getMySQLDatabase();
+		MysqlReplication mysqlSlave = databaseNode.getMySQLSlave();
 
 		// Don't check any table on MySQL 5.1+ information_schema database
-		if(mysqlDatabase.getName().equals(MySQLDatabase.INFORMATION_SCHEMA)) {
+		if(mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)) {
 			String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
 			if(
-				version.startsWith(MySQLServer.VERSION_5_1_PREFIX)
-				|| version.startsWith(MySQLServer.VERSION_5_6_PREFIX)
-				|| version.startsWith(MySQLServer.VERSION_5_7_PREFIX)
+				version.startsWith(Server.VERSION_5_1_PREFIX)
+				|| version.startsWith(Server.VERSION_5_6_PREFIX)
+				|| version.startsWith(Server.VERSION_5_7_PREFIX)
 			) return Collections.emptyList();
 		}
 
 		// Don't check any table on MySQL 5.6+ performance_schema database
-		if(mysqlDatabase.getName().equals(MySQLDatabase.PERFORMANCE_SCHEMA)) {
+		if(mysqlDatabase.getName().equals(Database.PERFORMANCE_SCHEMA)) {
 			String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
 			if(
-				version.startsWith(MySQLServer.VERSION_5_6_PREFIX)
-				|| version.startsWith(MySQLServer.VERSION_5_7_PREFIX)
+				version.startsWith(Server.VERSION_5_6_PREFIX)
+				|| version.startsWith(Server.VERSION_5_7_PREFIX)
 			) return Collections.emptyList();
 		}
 
 		// Don't check any table on MySQL 5.7+ sys database
-		if(mysqlDatabase.getName().equals(MySQLDatabase.SYS)) {
+		if(mysqlDatabase.getName().equals(Database.SYS)) {
 			String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
 			if(
-				version.startsWith(MySQLServer.VERSION_5_7_PREFIX)
+				version.startsWith(Server.VERSION_5_7_PREFIX)
 			) return Collections.emptyList();
 		}
 
-		List<MySQLDatabase.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
+		List<Database.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
 		if(lastTableStatuses.isEmpty()) return Collections.emptyList();
 		// Build the set of table names and types
 		List<MySQLTableName> tableNames = new ArrayList<>(lastTableStatuses.size());
-		Map<MySQLTableName,MySQLDatabase.Engine> tables = new HashMap<>(lastTableStatuses.size()*4/3+1);
-		for(MySQLDatabase.TableStatus lastTableStatus : lastTableStatuses) {
-			MySQLDatabase.Engine engine = lastTableStatus.getEngine();
+		Map<MySQLTableName,Database.Engine> tables = new HashMap<>(lastTableStatuses.size()*4/3+1);
+		for(Database.TableStatus lastTableStatus : lastTableStatuses) {
+			Database.Engine engine = lastTableStatus.getEngine();
 			if(
-				engine!=MySQLDatabase.Engine.CSV
-				&& engine!=MySQLDatabase.Engine.HEAP
-				&& engine!=MySQLDatabase.Engine.InnoDB
-				&& engine!=MySQLDatabase.Engine.MEMORY
-				&& engine!=MySQLDatabase.Engine.PERFORMANCE_SCHEMA
+				engine!=Database.Engine.CSV
+				&& engine!=Database.Engine.HEAP
+				&& engine!=Database.Engine.InnoDB
+				&& engine!=Database.Engine.MEMORY
+				&& engine!=Database.Engine.PERFORMANCE_SCHEMA
 				&& !(engine==null && "VIEW".equals(lastTableStatus.getComment()))
 			) {
 				MySQLTableName name = lastTableStatus.getName();
 				if(
 					// Skip the four expected non-checkable tables in information_schema
-					!mysqlDatabase.getName().equals(MySQLDatabase.INFORMATION_SCHEMA)
+					!mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)
 					|| (
 						!name.toString().equals("COLUMNS")
 						&& !name.toString().equals("ROUTINES")
@@ -136,10 +136,10 @@ class MySQLCheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Obje
 				}
 			}
 		}
-		List<MySQLDatabase.CheckTableResult> checkTableResults = mysqlDatabase.checkTables(mysqlSlave, tableNames);
+		List<Database.CheckTableResult> checkTableResults = mysqlDatabase.checkTables(mysqlSlave, tableNames);
 		List<Object> tableData = new ArrayList<>(checkTableResults.size()*5);
 
-		for(MySQLDatabase.CheckTableResult checkTableResult : checkTableResults) {
+		for(Database.CheckTableResult checkTableResult : checkTableResults) {
 			MySQLTableName table = checkTableResult.getTable();
 			tableData.add(table);
 			tableData.add(tables.get(table));

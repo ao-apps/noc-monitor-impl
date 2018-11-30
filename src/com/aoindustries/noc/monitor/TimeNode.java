@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.TimeResult;
 import java.io.IOException;
@@ -21,9 +21,9 @@ public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
 
 	private static final long serialVersionUID = 1L;
 
-	private final AOServer _aoServer;
+	private final Server _aoServer;
 
-	TimeNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+	TimeNode(ServerNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
 			serverNode.serversNode.rootNode,
 			serverNode,

@@ -6,7 +6,7 @@
 package com.aoindustries.noc.monitor.cluster;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
 import com.aoindustries.aoserv.cluster.ProcessorArchitecture;
@@ -372,11 +372,11 @@ public class ClusterResourceManagerTest extends TestCase {
 	protected void setUp() throws Exception {
 		conn = AOServConnector.getConnector(logger);
 		try {
-			List<AOServer> aoServers = conn.getAoServers().getRows();
+			List<Server> aoServers = conn.getAoServers().getRows();
 			Locale locale = Locale.getDefault();
 			Map<String,Map<String,String>> hddModelReports = AOServClusterBuilder.getHddModelReports(aoServers, locale);
-			Map<String,AOServer.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(aoServers, locale);
-			Map<String,List<AOServer.DrbdReport>> drbdReports = AOServClusterBuilder.getDrbdReports(aoServers, locale);
+			Map<String,Server.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(aoServers, locale);
+			Map<String,List<Server.DrbdReport>> drbdReports = AOServClusterBuilder.getDrbdReports(aoServers, locale);
 			SortedSet<Cluster> clusters = AOServClusterBuilder.getClusters(conn, aoServers, hddModelReports, lvmReports, USE_TARGET);
 			if(USE_TARGET) {
 				// See what happens if we add an additional server

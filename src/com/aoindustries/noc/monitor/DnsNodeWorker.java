@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.dns.DNSType;
-import com.aoindustries.aoserv.client.net.IPAddress;
+import com.aoindustries.aoserv.client.dns.RecordType;
+import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.net.InetAddress;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
@@ -63,7 +63,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 	 * One unique worker is made per persistence file (and should match the ipAddress exactly)
 	 */
 	private static final Map<String, DnsNodeWorker> workerCache = new HashMap<>();
-	static DnsNodeWorker getWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+	static DnsNodeWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			DnsNodeWorker worker = workerCache.get(path);
@@ -77,9 +77,9 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 		}
 	}
 
-	final private IPAddress ipAddress;
+	final private IpAddress ipAddress;
 
-	DnsNodeWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+	DnsNodeWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
 		super(persistenceFile);
 		this.ipAddress = ipAddress;
 	}
@@ -101,7 +101,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 
 	@Override
 	protected List<DnsQueryResult> getQueryResult() throws Exception {
-		IPAddress currentIPAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
+		IpAddress currentIPAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
 		IpAddressMonitoring iam = currentIPAddress.getMonitoring();
 		if(iam == null) return Collections.emptyList();
 		InetAddress ip = currentIPAddress.getExternalInetAddress();
@@ -115,7 +115,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 		boolean didHostnameAVerification = false;
 		// Reverse DNS
 		if(iam.getVerifyDnsPtr()) {
-			//String ptrQuery = IPAddress.getReverseDnsQuery(ip);
+			//String ptrQuery = IpAddress.getReverseDnsQuery(ip);
 			Name ptrQuery = ReverseMap.fromAddress(ip.toString());
 			long ptrStartNanos = System.nanoTime();
 			Lookup ptrLookup = new Lookup(ptrQuery, Type.PTR);
@@ -126,7 +126,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 			} else {
 				Record[] ptrRecords = ptrLookup.getAnswers();
 				if(ptrRecords.length==0) {
-					results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + DNSType.PTR +" records found", problemAlertLevel));
+					results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + RecordType.PTR +" records found", problemAlertLevel));
 				} else {
 					String ptrList;
 					boolean expectedHostnameFound = false;
@@ -143,7 +143,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 					}
 					boolean hasPtrResult = false;
 					if(ptrRecords.length > 1) {
-						results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + DNSType.PTR +" record found", problemAlertLevel));
+						results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + RecordType.PTR +" record found", problemAlertLevel));
 						hasPtrResult = true;
 					}
 					if(!expectedHostnameFound) {

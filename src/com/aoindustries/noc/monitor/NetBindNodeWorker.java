@@ -5,9 +5,9 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.net.NetBind;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Bind;
+import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.lang.LocalizedIllegalArgumentException;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
@@ -68,8 +68,8 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 	@Override
 	protected String getSample() throws Exception {
 		// Get the latest netBind for the appProtocol and monitoring parameters
-		NetBind netBind = netMonitorSetting.getNetBind();
-		NetBind currentNetBind = netBind.getTable().getConnector().getNetBinds().get(netBind.getPkey());
+		Bind netBind = netMonitorSetting.getNetBind();
+		Bind currentNetBind = netBind.getTable().getConnector().getNetBinds().get(netBind.getPkey());
 		Port netPort = netMonitorSetting.getPort();
 		// If loopback or private IP, make the monitoring request through the master->daemon channel
 		InetAddress ipAddress = netMonitorSetting.getIpAddress();
@@ -78,8 +78,8 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 			|| ipAddress.isLoopback()
 			|| netPort.getPort() == 25 // Port 25 cannot be monitored directly from several networks
 		) {
-			Server server = netMonitorSetting.getServer();
-			AOServer aoServer = server.getAOServer();
+			Host server = netMonitorSetting.getServer();
+			Server aoServer = server.getAOServer();
 			if(aoServer==null) throw new LocalizedIllegalArgumentException(accessor, "NetBindNodeWorker.server.notAOServer", server.toString());
 			portMonitor = new AOServDaemonPortMonitor(
 				aoServer,

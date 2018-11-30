@@ -7,7 +7,7 @@ package com.aoindustries.noc.monitor;
 
 import com.Ostermiller.util.CSVParse;
 import com.Ostermiller.util.CSVParser;
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
@@ -40,7 +40,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 	 * One unique worker is made per persistence file (and should match the aoServer exactly)
 	 */
 	private static final Map<String, FilesystemsNodeWorker> workerCache = new HashMap<>();
-	static FilesystemsNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+	static FilesystemsNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			FilesystemsNodeWorker worker = workerCache.get(path);
@@ -55,9 +55,9 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private AOServer aoServer;
+	final private Server aoServer;
 
-	FilesystemsNodeWorker(File persistenceFile, AOServer aoServer) {
+	FilesystemsNodeWorker(File persistenceFile, Server aoServer) {
 		super(persistenceFile);
 		this.aoServer = aoServer;
 	}

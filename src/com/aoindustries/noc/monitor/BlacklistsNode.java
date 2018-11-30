@@ -21,7 +21,7 @@ public class BlacklistsNode extends TableResultNodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	//private final IPAddress ipAddress;
+	//private final IpAddress ipAddress;
 
 	BlacklistsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(

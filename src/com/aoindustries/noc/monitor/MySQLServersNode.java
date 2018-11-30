@@ -5,8 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.mysql.MySQLServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -24,7 +23,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node for all MySQLServers on one AOServer.
+ * The node for all MySQLServers on one Server.
  *
  * @author  AO Industries, Inc.
  */
@@ -33,11 +32,11 @@ public class MySQLServersNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final ServerNode serverNode;
-	private final AOServer aoServer;
+	private final Server aoServer;
 	private final List<MySQLServerNode> mysqlServerNodes = new ArrayList<>();
 	private boolean started;
 
-	MySQLServersNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	MySQLServersNode(ServerNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.serverNode = serverNode;
 		this.aoServer = aoServer;
@@ -48,7 +47,7 @@ public class MySQLServersNode extends NodeImpl {
 		return serverNode;
 	}
 
-	public AOServer getAOServer() {
+	public Server getAOServer() {
 		return aoServer;
 	}
 
@@ -125,14 +124,14 @@ public class MySQLServersNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<MySQLServer> mysqlServers = aoServer.getMySQLServers();
+		List<com.aoindustries.aoserv.client.mysql.Server> mysqlServers = aoServer.getMySQLServers();
 		synchronized(mysqlServerNodes) {
 			if(started) {
 				// Remove old ones
 				Iterator<MySQLServerNode> mysqlServerNodeIter = mysqlServerNodes.iterator();
 				while(mysqlServerNodeIter.hasNext()) {
 					MySQLServerNode mysqlServerNode = mysqlServerNodeIter.next();
-					MySQLServer mysqlServer = mysqlServerNode.getMySQLServer();
+					com.aoindustries.aoserv.client.mysql.Server mysqlServer = mysqlServerNode.getMySQLServer();
 					if(!mysqlServers.contains(mysqlServer)) {
 						mysqlServerNode.stop();
 						mysqlServerNodeIter.remove();
@@ -141,7 +140,7 @@ public class MySQLServersNode extends NodeImpl {
 				}
 				// Add new ones
 				for(int c=0;c<mysqlServers.size();c++) {
-					MySQLServer mysqlServer = mysqlServers.get(c);
+					com.aoindustries.aoserv.client.mysql.Server mysqlServer = mysqlServers.get(c);
 					if(c>=mysqlServerNodes.size() || !mysqlServer.equals(mysqlServerNodes.get(c).getMySQLServer())) {
 						// Insert into proper index
 						MySQLServerNode mysqlServerNode = new MySQLServerNode(this, mysqlServer, port, csf, ssf);

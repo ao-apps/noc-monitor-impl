@@ -6,10 +6,9 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.backup.BackupPartition;
-import com.aoindustries.aoserv.client.backup.FailoverFileReplication;
-import com.aoindustries.aoserv.client.backup.FailoverMySQLReplication;
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.mysql.MySQLServer;
+import com.aoindustries.aoserv.client.backup.FileReplication;
+import com.aoindustries.aoserv.client.backup.MysqlReplication;
+import com.aoindustries.aoserv.client.mysql.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -21,7 +20,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * The node for all FailoverMySQLReplications on one MySQLServer.
+ * The node for all FailoverMySQLReplications on one Server.
  *
  * @author  AO Industries, Inc.
  */
@@ -30,7 +29,7 @@ public class MySQLSlaveNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final MySQLSlavesNode mysqlSlavesNode;
-	private final FailoverMySQLReplication _mysqlReplication;
+	private final MysqlReplication _mysqlReplication;
 	private final String _label;
 
 	private boolean started;
@@ -38,25 +37,25 @@ public class MySQLSlaveNode extends NodeImpl {
 	volatile private MySQLSlaveStatusNode _mysqlSlaveStatusNode;
 	volatile private MySQLDatabasesNode _mysqlDatabasesNode;
 
-	MySQLSlaveNode(MySQLSlavesNode mysqlSlavesNode, FailoverMySQLReplication mysqlReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
+	MySQLSlaveNode(MySQLSlavesNode mysqlSlavesNode, MysqlReplication mysqlReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
 		super(port, csf, ssf);
 		this.mysqlSlavesNode = mysqlSlavesNode;
 		this._mysqlReplication = mysqlReplication;
-		FailoverFileReplication replication = mysqlReplication.getFailoverFileReplication();
+		FileReplication replication = mysqlReplication.getFailoverFileReplication();
 		if(replication!=null) {
 			// replication-based
-			AOServer aoServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
-			MySQLServer mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
+			com.aoindustries.aoserv.client.linux.Server aoServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
+			Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
 			BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
 			this._label = bp.getAOServer().getHostname()+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
 		} else {
 			// ao_server-based
-			MySQLServer mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
+			Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
 			this._label = mysqlReplication.getAOServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
 		}
 	}
 
-	FailoverMySQLReplication getFailoverMySQLReplication() {
+	MysqlReplication getFailoverMySQLReplication() {
 		return _mysqlReplication;
 	}
 

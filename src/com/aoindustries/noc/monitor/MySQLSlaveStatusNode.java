@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * The replication status per FailoverMySQLReplication.
+ * The replication status per MysqlReplication.
  *
  * @author  AO Industries, Inc.
  */

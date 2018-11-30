@@ -7,9 +7,8 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.distribution.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.mysql.MySQLServer;
-import com.aoindustries.aoserv.client.net.Server;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -35,7 +34,7 @@ public class ServerNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final ServersNode serversNode;
-	private final Server _server;
+	private final Host _server;
 	private final int _pack;
 	private final String _name;
 	private final String _label;
@@ -54,7 +53,7 @@ public class ServerNode extends NodeImpl {
 	volatile private MemoryNode _memoryNode;
 	volatile private TimeNode _timeNode;
 
-	ServerNode(ServersNode serversNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
+	ServerNode(ServersNode serversNode, Host server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
 		super(port, csf, ssf);
 		this.serversNode = serversNode;
 		this._server = server;
@@ -68,7 +67,7 @@ public class ServerNode extends NodeImpl {
 		return serversNode;
 	}
 
-	public Server getServer() {
+	public Host getServer() {
 		return _server;
 	}
 
@@ -278,7 +277,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		List<HttpdServer> httpdServers = aoServer==null ? null : aoServer.getHttpdServers();
 		synchronized(this) {
 			if(started) {
@@ -308,8 +307,8 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
-		List<MySQLServer> mysqlServers = aoServer==null ? null : aoServer.getMySQLServers();
+		Server aoServer = _server.getAOServer();
+		List<com.aoindustries.aoserv.client.mysql.Server> mysqlServers = aoServer==null ? null : aoServer.getMySQLServers();
 		synchronized(this) {
 			if(started) {
 				if(mysqlServers!=null && !mysqlServers.isEmpty()) {
@@ -338,7 +337,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		OperatingSystemVersion osvObj = _server.getOperatingSystemVersion();
 		int osv = osvObj==null ? -1 : osvObj.getPkey();
 		synchronized(this) {
@@ -376,7 +375,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		synchronized(this) {
 			if(started) {
 				if(aoServer==null) {
@@ -405,7 +404,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		int numCerts = aoServer == null ? 0 : aoServer.getSslCertificates().size();
 		synchronized(this) {
 			if(started) {
@@ -435,7 +434,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		PhysicalServer physicalServer = _server.getPhysicalServer();
 		synchronized(this) {
 			if(started) {
@@ -469,7 +468,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		synchronized(this) {
 			if(started) {
 				if(aoServer==null) {
@@ -498,7 +497,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		synchronized(this) {
 			if(started) {
 				if(aoServer==null) {
@@ -527,7 +526,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		synchronized(this) {
 			if(started) {
 				if(aoServer==null) {
@@ -556,7 +555,7 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		AOServer aoServer = _server.getAOServer();
+		Server aoServer = _server.getAOServer();
 		synchronized(this) {
 			if(started) {
 				if(aoServer == null) {

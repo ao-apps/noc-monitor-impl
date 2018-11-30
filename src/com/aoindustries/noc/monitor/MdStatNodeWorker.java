@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.lang.EnumUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -38,7 +38,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 	 * One unique worker is made per persistence file (and should match the aoServer exactly)
 	 */
 	private static final Map<String, MdStatNodeWorker> workerCache = new HashMap<>();
-	static MdStatNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException {
+	static MdStatNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			MdStatNodeWorker worker = workerCache.get(path);
@@ -53,9 +53,9 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private AOServer aoServer;
+	final private Server aoServer;
 
-	MdStatNodeWorker(File persistenceFile, AOServer aoServer) {
+	MdStatNodeWorker(File persistenceFile, Server aoServer) {
 		super(persistenceFile);
 		this.aoServer = aoServer;
 	}

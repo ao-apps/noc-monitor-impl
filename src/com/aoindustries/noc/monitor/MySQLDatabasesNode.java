@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.mysql.MySQLDatabase;
+import com.aoindustries.aoserv.client.mysql.Database;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -23,7 +23,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node for all MySQLDatabases on one MySQLServer.
+ * The node for all MySQLDatabases on one Server.
  *
  * @author  AO Industries, Inc.
  */
@@ -128,14 +128,14 @@ public class MySQLDatabasesNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<MySQLDatabase> mysqlDatabases = mysqlServerNode.getMySQLServer().getMySQLDatabases();
+		List<Database> mysqlDatabases = mysqlServerNode.getMySQLServer().getMySQLDatabases();
 		synchronized(mysqlDatabaseNodes) {
 			if(started) {
 				// Remove old ones
 				Iterator<MySQLDatabaseNode> mysqlDatabaseNodeIter = mysqlDatabaseNodes.iterator();
 				while(mysqlDatabaseNodeIter.hasNext()) {
 					MySQLDatabaseNode mysqlDatabaseNode = mysqlDatabaseNodeIter.next();
-					MySQLDatabase mysqlDatabase = mysqlDatabaseNode.getMySQLDatabase();
+					Database mysqlDatabase = mysqlDatabaseNode.getMySQLDatabase();
 					if(!mysqlDatabases.contains(mysqlDatabase)) {
 						mysqlDatabaseNode.stop();
 						mysqlDatabaseNodeIter.remove();
@@ -144,7 +144,7 @@ public class MySQLDatabasesNode extends NodeImpl {
 				}
 				// Add new ones
 				for(int c=0;c<mysqlDatabases.size();c++) {
-					MySQLDatabase mysqlDatabase = mysqlDatabases.get(c);
+					Database mysqlDatabase = mysqlDatabases.get(c);
 					if(c>=mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
 						// Insert into proper index
 						MySQLDatabaseNode mysqlDatabaseNode = new MySQLDatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null, port, csf, ssf);

@@ -6,9 +6,9 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.net.NetDevice;
-import com.aoindustries.aoserv.client.net.NetDeviceID;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Device;
+import com.aoindustries.aoserv.client.net.DeviceId;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -33,7 +33,7 @@ public class NetDeviceNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final NetDevicesNode _networkDevicesNode;
-	private final NetDevice _device;
+	private final Device _device;
 	private final String _label;
 
 	private static class ChildLock {}
@@ -44,7 +44,7 @@ public class NetDeviceNode extends NodeImpl {
 	volatile private NetDeviceBondingNode _netDeviceBondingNode;
 	volatile private IPAddressesNode _ipAddressesNode;
 
-	NetDeviceNode(NetDevicesNode networkDevicesNode, NetDevice device, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
+	NetDeviceNode(NetDevicesNode networkDevicesNode, Device device, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
 		super(port, csf, ssf);
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -58,7 +58,7 @@ public class NetDeviceNode extends NodeImpl {
 		return _networkDevicesNode;
 	}
 
-	public NetDevice getNetDevice() {
+	public Device getNetDevice() {
 		return _device;
 	}
 
@@ -156,20 +156,20 @@ public class NetDeviceNode extends NodeImpl {
 
 		RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
 
-		AOServer aoServer = _networkDevicesNode.getServer().getAOServer();
-		NetDevice currentNetDevice = _device.getTable().getConnector().getNetDevices().get(_device.getPkey());
-		NetDeviceID netDeviceID = currentNetDevice.getDeviceId();
+		Server aoServer = _networkDevicesNode.getServer().getAOServer();
+		Device currentNetDevice = _device.getTable().getConnector().getNetDevices().get(_device.getPkey());
+		DeviceId netDeviceID = currentNetDevice.getDeviceId();
 		boolean hasIpAddresses = !currentNetDevice.getIPAddresses().isEmpty();
 
 		synchronized(childLock) {
 			if(started) {
-				// bit rate and network bonding monitoring only supported for AOServer
+				// bit rate and network bonding monitoring only supported for Server
 				if(
 					aoServer != null
 					// bit rate for non-loopback devices
 					&& !netDeviceID.isLoopback()
 					// and non-BMC
-					&& !netDeviceID.getName().equals(NetDeviceID.BMC)
+					&& !netDeviceID.getName().equals(DeviceId.BMC)
 				) {
 					if(_netDeviceBitRateNode==null) {
 						_netDeviceBitRateNode = new NetDeviceBitRateNode(this, port, csf, ssf);
@@ -187,9 +187,9 @@ public class NetDeviceNode extends NodeImpl {
 				if(
 					aoServer != null
 					&& (
-						_label.equals(NetDeviceID.BOND0) // TODO: Flag for "net_devices.isBonded"
-						|| _label.equals(NetDeviceID.BOND1)
-						|| _label.equals(NetDeviceID.BOND2)
+						_label.equals(DeviceId.BOND0) // TODO: Flag for "net_devices.isBonded"
+						|| _label.equals(DeviceId.BOND1)
+						|| _label.equals(DeviceId.BOND2)
 					)
 				) {
 					if(_netDeviceBondingNode==null) {

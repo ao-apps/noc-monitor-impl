@@ -5,9 +5,9 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.net.IPAddress;
-import com.aoindustries.aoserv.client.net.NetDevice;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.net.Device;
+import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.net.AddressFamily;
 import com.aoindustries.net.DomainName;
@@ -166,7 +166,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			if(ip==null) ip = ipAddress.getInetAddress();
 			AddressFamily addressFamily = ip.getAddressFamily();
 			if(addressFamily != AddressFamily.INET) throw new UnsupportedOperationException("Address family not yet implemented: " + addressFamily);
-			int bits = IPAddress.getIntForIPAddress(ip.toString());
+			int bits = IpAddress.getIntForIPAddress(ip.toString());
 			this.query =
 				new StringBuilder(16+basename.length())
 				.append(bits&255)
@@ -322,10 +322,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			else a = (ARecord)aRecords[RootNodeImpl.random.nextInt(aRecords.length)];
 			InetAddress address = a.getAddress();
 			// Make call from the daemon from privileged port
-			NetDevice device = ipAddress.getDevice();
-			if(device==null) throw new SQLException(ipAddress+": NetDevice not found");
-			AOServer aoServer = device.getServer().getAOServer();
-			if(aoServer==null) throw new SQLException(ipAddress+": AOServer not found");
+			Device device = ipAddress.getDevice();
+			if(device==null) throw new SQLException(ipAddress+": Device not found");
+			Server aoServer = device.getServer().getAOServer();
+			if(aoServer==null) throw new SQLException(ipAddress+": Server not found");
 			com.aoindustries.net.InetAddress addressIp = com.aoindustries.net.InetAddress.valueOf(address.getHostAddress());
 			String statusLine = aoServer.checkSmtpBlacklist(ipAddress.getInetAddress(), addressIp);
 			// Return results
@@ -346,7 +346,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	 * One unique worker is made per persistence file (and should match the ipAddress exactly)
 	 */
 	private static final Map<String, BlacklistsNodeWorker> workerCache = new HashMap<>();
-	static BlacklistsNodeWorker getWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+	static BlacklistsNodeWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			BlacklistsNodeWorker worker = workerCache.get(path);
@@ -361,7 +361,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private IPAddress ipAddress;
+	final private IpAddress ipAddress;
 	final private List<BlacklistLookup> lookups;
 
 	private static DnsBlacklist[] addUnique(DnsBlacklist ... blacklists) {
@@ -381,7 +381,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		return unique.values().toArray(new DnsBlacklist[unique.size()]);
 	}
 
-	BlacklistsNodeWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+	BlacklistsNodeWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
 		super(persistenceFile);
 		this.ipAddress = ipAddress;
 		// Build the list of lookups
@@ -1066,7 +1066,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// </editor-fold>
 		);
 		//InetAddress ip = ipAddress.getInetAddress();
-		NetDevice device;
+		Device device;
 		IpAddressMonitoring iam;
 		boolean checkSmtpBlacklist =
 			//!"64.62.174.125".equals(ip)

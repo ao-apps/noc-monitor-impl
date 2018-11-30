@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.pki.SslCertificate;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.pki.Certificate;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -31,11 +31,11 @@ public class SslCertificatesNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final ServerNode serverNode;
-	private final AOServer aoServer;
+	private final Server aoServer;
 	private final List<SslCertificateNode> sslCertificateNodes = new ArrayList<>();
 	private boolean started;
 
-	SslCertificatesNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	SslCertificatesNode(ServerNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.serverNode = serverNode;
 		this.aoServer = aoServer;
@@ -46,7 +46,7 @@ public class SslCertificatesNode extends NodeImpl {
 		return serverNode;
 	}
 
-	public AOServer getAOServer() {
+	public Server getAOServer() {
 		return aoServer;
 	}
 
@@ -125,17 +125,17 @@ public class SslCertificatesNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<SslCertificate> sslCertificates = aoServer.getSslCertificates();
+		List<Certificate> sslCertificates = aoServer.getSslCertificates();
 		synchronized(sslCertificateNodes) {
 			if(started) {
 				// Remove old ones
 				Iterator<SslCertificateNode> sslCertificateNodeIter = sslCertificateNodes.iterator();
 				while(sslCertificateNodeIter.hasNext()) {
 					SslCertificateNode sslCertificateNode = sslCertificateNodeIter.next();
-					SslCertificate sslCertificate = sslCertificateNode.getSslCertificate();
+					Certificate sslCertificate = sslCertificateNode.getSslCertificate();
 					// Find matching new state
-					SslCertificate newCert = null;
-					for(SslCertificate cert : sslCertificates) {
+					Certificate newCert = null;
+					for(Certificate cert : sslCertificates) {
 						if(cert.equals(sslCertificate)) {
 							newCert = cert;
 							break;
@@ -154,7 +154,7 @@ public class SslCertificatesNode extends NodeImpl {
 				}
 				// Add new ones
 				for(int c = 0; c < sslCertificates.size(); c++) {
-					SslCertificate sslCertificate = sslCertificates.get(c);
+					Certificate sslCertificate = sslCertificates.get(c);
 					if(c >= sslCertificateNodes.size() || !sslCertificate.equals(sslCertificateNodes.get(c).getSslCertificate())) {
 						// Insert into proper index
 						SslCertificateNode sslCertificateNode = new SslCertificateNode(this, sslCertificate, port, csf, ssf);

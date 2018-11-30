@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -25,13 +25,13 @@ public class HardDrivesNode extends NodeImpl {
 	private static final long serialVersionUID = 1L;
 
 	final ServerNode serverNode;
-	private final AOServer _aoServer;
+	private final Server _aoServer;
 
 	private boolean started;
 
 	volatile private HardDrivesTemperatureNode _hardDriveTemperatureNode;
 
-	HardDrivesNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	HardDrivesNode(ServerNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.serverNode = serverNode;
 		this._aoServer = aoServer;
@@ -42,7 +42,7 @@ public class HardDrivesNode extends NodeImpl {
 		return serverNode;
 	}
 
-	public AOServer getAOServer() {
+	public Server getAOServer() {
 		return _aoServer;
 	}
 

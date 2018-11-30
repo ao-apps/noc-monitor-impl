@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
@@ -59,7 +59,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 	 * One unique worker is made per persistence directory (and should match aoServer exactly)
 	 */
 	private static final Map<String, UpsNodeWorker> workerCache = new HashMap<>();
-	static UpsNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+	static UpsNodeWorker getWorker(File persistenceDirectory, Server aoServer) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			UpsNodeWorker worker = workerCache.get(path);
@@ -73,9 +73,9 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 		}
 	}
 
-	final private AOServer _aoServer;
+	final private Server _aoServer;
 
-	private UpsNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+	private UpsNodeWorker(File persistenceDirectory, Server aoServer) throws IOException {
 		super(new File(persistenceDirectory, "ups"), new UpsResultSerializer());
 		this._aoServer = aoServer;
 	}

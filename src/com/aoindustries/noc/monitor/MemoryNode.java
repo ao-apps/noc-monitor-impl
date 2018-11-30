@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.MemoryResult;
 import java.io.IOException;
@@ -21,9 +21,9 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
 	private static final long serialVersionUID = 1L;
 
-	//private final AOServer _aoServer;
+	//private final Server _aoServer;
 
-	MemoryNode(ServerNode serverNode, AOServer aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+	MemoryNode(ServerNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
 			serverNode.serversNode.rootNode,
 			serverNode,

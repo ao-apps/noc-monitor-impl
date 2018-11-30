@@ -5,8 +5,8 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
-import com.aoindustries.aoserv.client.linux.AOServer.DrbdReport;
+import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.aoserv.client.linux.Server.DrbdReport;
 import com.aoindustries.lang.ObjectUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -48,7 +48,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	 * One unique worker is made per persistence file (and should match the aoServer exactly)
 	 */
 	private static final Map<String, DrbdNodeWorker> workerCache = new HashMap<>();
-	static DrbdNodeWorker getWorker(File persistenceFile, AOServer aoServer) throws IOException, SQLException {
+	static DrbdNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException, SQLException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			DrbdNodeWorker worker = workerCache.get(path);
@@ -63,10 +63,10 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private AOServer aoServer;
+	final private Server aoServer;
 	final private TimeZone timeZone;
 
-	DrbdNodeWorker(File persistenceFile, AOServer aoServer) throws IOException, SQLException {
+	DrbdNodeWorker(File persistenceFile, Server aoServer) throws IOException, SQLException {
 		super(persistenceFile);
 		this.aoServer = aoServer;
 		this.timeZone = aoServer.getTimeZone().getTimeZone();

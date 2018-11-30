@@ -6,7 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.backup.BackupPartition;
-import com.aoindustries.aoserv.client.backup.FailoverFileReplication;
+import com.aoindustries.aoserv.client.backup.FileReplication;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -25,10 +25,10 @@ public class BackupNode extends TableResultNodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	final private FailoverFileReplication failoverFileReplication;
+	final private FileReplication failoverFileReplication;
 	final private String label;
 
-	BackupNode(BackupsNode backupsNode, FailoverFileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+	BackupNode(BackupsNode backupsNode, FileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
 			backupsNode.serverNode.serversNode.rootNode,
 			backupsNode,
@@ -50,7 +50,7 @@ public class BackupNode extends TableResultNodeImpl {
 		);
 	}
 
-	FailoverFileReplication getFailoverFileReplication() {
+	FileReplication getFailoverFileReplication() {
 		return failoverFileReplication;
 	}
 

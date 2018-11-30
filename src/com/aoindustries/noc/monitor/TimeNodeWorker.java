@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.linux.AOServer;
+import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TimeResult;
@@ -38,7 +38,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult
 	 * One unique worker is made per persistence directory (and should match aoServer exactly)
 	 */
 	private static final Map<String, TimeNodeWorker> workerCache = new HashMap<>();
-	static TimeNodeWorker getWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+	static TimeNodeWorker getWorker(File persistenceDirectory, Server aoServer) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			TimeNodeWorker worker = workerCache.get(path);
@@ -52,10 +52,10 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult
 		}
 	}
 
-	final private AOServer _aoServer;
-	private AOServer currentAOServer;
+	final private Server _aoServer;
+	private Server currentAOServer;
 
-	private TimeNodeWorker(File persistenceDirectory, AOServer aoServer) throws IOException {
+	private TimeNodeWorker(File persistenceDirectory, Server aoServer) throws IOException {
 		super(new File(persistenceDirectory, "time"), new TimeResultSerializer());
 		this._aoServer = currentAOServer = aoServer;
 	}

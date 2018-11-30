@@ -5,7 +5,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.pki.SslCertificate;
+import com.aoindustries.aoserv.client.pki.Certificate;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -21,14 +21,14 @@ public class SslCertificateNode extends TableResultNodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	private final SslCertificate _sslCertificate;
+	private final Certificate _sslCertificate;
 	private final String _label;
 
-	static String getLabel(SslCertificate cert) throws IOException, SQLException {
+	static String getLabel(Certificate cert) throws IOException, SQLException {
 		return cert.getCommonName().getName();
 	}
 
-	SslCertificateNode(SslCertificatesNode sslCertificatesNode, SslCertificate sslCertificate, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+	SslCertificateNode(SslCertificatesNode sslCertificatesNode, Certificate sslCertificate, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
 			sslCertificatesNode.serverNode.serversNode.rootNode,
 			sslCertificatesNode,
@@ -49,7 +49,7 @@ public class SslCertificateNode extends TableResultNodeImpl {
 		return _label;
 	}
 
-	public SslCertificate getSslCertificate() {
+	public Certificate getSslCertificate() {
 		return _sslCertificate;
 	}
 }
