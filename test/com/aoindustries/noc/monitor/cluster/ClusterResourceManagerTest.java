@@ -63,7 +63,7 @@ where
   or coalesce(vs.minimum_processor_speed::text, 'NULL')!=coalesce(vs.minimum_processor_speed_target::text, 'NULL')
   or vs.processor_cores!=vs.processor_cores_target
   or vs.processor_weight!=vs.processor_weight_target
-order by reverse_hostname(se.name);
+order by net."Host.reverseFqdn"(se.name);
 
 
 select
@@ -79,7 +79,7 @@ from
 where
   coalesce(vd.minimum_disk_speed::text, 'NULL')!=coalesce(vd.minimum_disk_speed_target::text, 'NULL')
   or coalesce(vd.weight::text, 'NULL')!=coalesce(vd.weight_target::text, 'NULL')
-order by reverse_hostname(se.name), vd.device;
+order by net."Host.reverseFqdn"(se.name), vd.device;
 
  * @author  AO Industries, Inc.
  */

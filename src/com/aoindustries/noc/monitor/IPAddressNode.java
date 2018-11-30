@@ -63,7 +63,7 @@ public class IPAddressNode extends NodeImpl {
 
 	volatile private PingNode pingNode;
 	volatile private NetBindsNode netBindsNode;
-	volatile private ReverseDnsNode reverseDnsNode;
+	volatile private DnsNode dnsNode;
 	volatile private BlacklistsNode blacklistsNode;
 
 	IPAddressNode(IPAddressesNode ipAddressesNode, IPAddress ipAddress, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
@@ -94,7 +94,7 @@ public class IPAddressNode extends NodeImpl {
 		return getSnapshot(
 			this.pingNode,
 			this.netBindsNode,
-			this.reverseDnsNode,
+			this.dnsNode,
 			this.blacklistsNode
 		);
 	}
@@ -108,7 +108,7 @@ public class IPAddressNode extends NodeImpl {
 			AlertLevelUtils.getMaxAlertLevel(
 				this.pingNode,
 				this.netBindsNode,
-				this.reverseDnsNode,
+				this.dnsNode,
 				this.blacklistsNode
 			)
 		);
@@ -166,9 +166,9 @@ public class IPAddressNode extends NodeImpl {
 				blacklistsNode = null;
 				rootNode.nodeRemoved();
 			}
-			if(reverseDnsNode != null) {
-				reverseDnsNode.stop();
-				reverseDnsNode = null;
+			if(dnsNode != null) {
+				dnsNode.stop();
+				dnsNode = null;
 				rootNode.nodeRemoved();
 			}
 			if(netBindsNode != null) {
@@ -239,15 +239,15 @@ public class IPAddressNode extends NodeImpl {
 						|| iam.getVerifyDnsA()
 					)
 				) {
-					if(reverseDnsNode == null) {
-						reverseDnsNode = new ReverseDnsNode(this, port, csf, ssf);
-						reverseDnsNode.start();
+					if(dnsNode == null) {
+						dnsNode = new DnsNode(this, port, csf, ssf);
+						dnsNode.start();
 						rootNode.nodeAdded();
 					}
 				} else {
-					if(reverseDnsNode != null) {
-						reverseDnsNode.stop();
-						reverseDnsNode = null;
+					if(dnsNode != null) {
+						dnsNode.stop();
+						dnsNode = null;
 						rootNode.nodeRemoved();
 					}
 				}

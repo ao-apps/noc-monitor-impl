@@ -35,22 +35,22 @@ import org.xbill.DNS.ReverseMap;
 import org.xbill.DNS.Type;
 
 /**
- * The workers for reverse DNS monitoring.
+ * The workers for DNS monitoring.
  *
  * @author  AO Industries, Inc.
  */
-class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWorker.ReverseDnsQueryResult>,Object> {
+class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryResult>,Object> {
 
-	private static final Logger logger = Logger.getLogger(ReverseDnsNodeWorker.class.getName());
+	private static final Logger logger = Logger.getLogger(DnsNodeWorker.class.getName());
 
-	static class ReverseDnsQueryResult {
+	static class DnsQueryResult {
 		final String query;
 		final long latency;
 		final String result;
 		final String message;
 		final AlertLevel alertLevel;
 
-		ReverseDnsQueryResult(String query, long latency, String result, String message, AlertLevel alertLevel) {
+		DnsQueryResult(String query, long latency, String result, String message, AlertLevel alertLevel) {
 			this.query = query;
 			this.latency = latency;
 			this.result = result;
@@ -62,13 +62,13 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 	/**
 	 * One unique worker is made per persistence file (and should match the ipAddress exactly)
 	 */
-	private static final Map<String, ReverseDnsNodeWorker> workerCache = new HashMap<>();
-	static ReverseDnsNodeWorker getWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+	private static final Map<String, DnsNodeWorker> workerCache = new HashMap<>();
+	static DnsNodeWorker getWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
-			ReverseDnsNodeWorker worker = workerCache.get(path);
+			DnsNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new ReverseDnsNodeWorker(persistenceFile, ipAddress);
+				worker = new DnsNodeWorker(persistenceFile, ipAddress);
 				workerCache.put(path, worker);
 			} else {
 				if(!worker.ipAddress.equals(ipAddress)) throw new AssertionError("worker.ipAddress!=ipAddress: "+worker.ipAddress+"!="+ipAddress);
@@ -79,7 +79,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 
 	final private IPAddress ipAddress;
 
-	ReverseDnsNodeWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
+	DnsNodeWorker(File persistenceFile, IPAddress ipAddress) throws IOException, SQLException {
 		super(persistenceFile);
 		this.ipAddress = ipAddress;
 	}
@@ -92,15 +92,15 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(
-			accessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.query"),
-			accessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.latency"),
-			accessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.result"),
-			accessor.getMessage(locale, "ReverseDnsNodeWorker.columnHeader.message")
+			accessor.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
+			accessor.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
+			accessor.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
+			accessor.getMessage(locale, "DnsNodeWorker.columnHeader.message")
 		);
 	}
 
 	@Override
-	protected List<ReverseDnsQueryResult> getQueryResult() throws Exception {
+	protected List<DnsQueryResult> getQueryResult() throws Exception {
 		IPAddress currentIPAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
 		IpAddressMonitoring iam = currentIPAddress.getMonitoring();
 		if(iam == null) return Collections.emptyList();
@@ -111,7 +111,7 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 		// Priority is higher when assigned, lower when unassigned
 		final AlertLevel problemAlertLevel = currentIPAddress.getDevice() != null ? AlertLevel.MEDIUM : AlertLevel.LOW;
 		StringBuilder SB = new StringBuilder();
-		List<ReverseDnsQueryResult> results = new ArrayList<>();
+		List<DnsQueryResult> results = new ArrayList<>();
 		boolean didHostnameAVerification = false;
 		// Reverse DNS
 		if(iam.getVerifyDnsPtr()) {
@@ -122,11 +122,11 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 			ptrLookup.run();
 			long ptrLatency = System.nanoTime()-ptrStartNanos;
 			if(ptrLookup.getResult()!=Lookup.SUCCESSFUL) {
-				results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrLookup.getErrorString(), "", problemAlertLevel));
+				results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrLookup.getErrorString(), "", problemAlertLevel));
 			} else {
 				Record[] ptrRecords = ptrLookup.getAnswers();
 				if(ptrRecords.length==0) {
-					results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + DNSType.PTR +" records found", problemAlertLevel));
+					results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + DNSType.PTR +" records found", problemAlertLevel));
 				} else {
 					String ptrList;
 					boolean expectedHostnameFound = false;
@@ -143,15 +143,15 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 					}
 					boolean hasPtrResult = false;
 					if(ptrRecords.length > 1) {
-						results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + DNSType.PTR +" record found", problemAlertLevel));
+						results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + DNSType.PTR +" record found", problemAlertLevel));
 						hasPtrResult = true;
 					}
 					if(!expectedHostnameFound) {
-						results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "Hostname not in results: "+expectedHostname, problemAlertLevel));
+						results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "Hostname not in results: "+expectedHostname, problemAlertLevel));
 						hasPtrResult = true;
 					}
 					if(!hasPtrResult) {
-						results.add(new ReverseDnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "", AlertLevel.NONE));
+						results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "", AlertLevel.NONE));
 					}
 					if(iam.getVerifyDnsA()) {
 						// Lookup each A record, making sure one of its IP addresses is the current IP
@@ -171,17 +171,17 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 		return results;
 	}
 
-	private static void verifyDnsA(Name target, List<ReverseDnsQueryResult> results, AlertLevel problemAlertLevel, StringBuilder SB, InetAddress ip) {
+	private static void verifyDnsA(Name target, List<DnsQueryResult> results, AlertLevel problemAlertLevel, StringBuilder SB, InetAddress ip) {
 		long aStartNanos = System.nanoTime();
 		Lookup aLookup = new Lookup(target, Type.A);
 		aLookup.run();
 		long aLatency = System.nanoTime() - aStartNanos;
 		if(aLookup.getResult()!=Lookup.SUCCESSFUL) {
-			results.add(new ReverseDnsQueryResult(target.toString(), aLatency, aLookup.getErrorString(), "", problemAlertLevel));
+			results.add(new DnsQueryResult(target.toString(), aLatency, aLookup.getErrorString(), "", problemAlertLevel));
 		} else {
 			Record[] aRecords = aLookup.getAnswers();
 			if(aRecords.length==0) {
-				results.add(new ReverseDnsQueryResult(target.toString(), aLatency, "", "No A records found", problemAlertLevel));
+				results.add(new DnsQueryResult(target.toString(), aLatency, "", "No A records found", problemAlertLevel));
 			} else {
 				String ipList;
 				boolean ipFound = false;
@@ -205,15 +205,15 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 					aMessage = "";
 					aAlertLevel = AlertLevel.NONE;
 				}
-				results.add(new ReverseDnsQueryResult(target.toString(), aLatency, ipList, aMessage, aAlertLevel));
+				results.add(new DnsQueryResult(target.toString(), aLatency, ipList, aMessage, aAlertLevel));
 			}
 		}
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<ReverseDnsQueryResult> results) throws Exception {
+	protected SerializableFunction<Locale,List<Object>> getTableData(List<DnsQueryResult> results) throws Exception {
 		List<Object> tableData = new ArrayList<>(results.size()*4);
-		for(ReverseDnsQueryResult result : results) {
+		for(DnsQueryResult result : results) {
 			tableData.add(result.query);
 			tableData.add(new NanoInterval(result.latency));
 			tableData.add(result.result);
@@ -223,9 +223,9 @@ class ReverseDnsNodeWorker extends TableResultNodeWorker<List<ReverseDnsNodeWork
 	}
 
 	@Override
-	protected List<AlertLevel> getAlertLevels(List<ReverseDnsQueryResult> results) {
+	protected List<AlertLevel> getAlertLevels(List<DnsQueryResult> results) {
 		List<AlertLevel> alertLevels = new ArrayList<>(results.size());
-		for(ReverseDnsQueryResult result : results) alertLevels.add(result.alertLevel);
+		for(DnsQueryResult result : results) alertLevels.add(result.alertLevel);
 		return alertLevels;
 	}
 

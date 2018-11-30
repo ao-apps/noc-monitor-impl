@@ -13,22 +13,21 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 
 /**
- * The node for the reverse DNS monitoring.
+ * The node for the DNS monitoring.
  *
  * @author  AO Industries, Inc.
  */
-public class ReverseDnsNode extends TableResultNodeImpl {
+public class DnsNode extends TableResultNodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
 	//private final IPAddress ipAddress;
 
-	// TODO: Rename "VerifyDnsNode", since can operate in A-only verification?
-	ReverseDnsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+	DnsNode(IPAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
 			ipAddressNode.ipAddressesNode.rootNode,
 			ipAddressNode,
-			ReverseDnsNodeWorker.getWorker(
+			DnsNodeWorker.getWorker(
 				new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
 				ipAddressNode.getIPAddress()
 			),
@@ -41,6 +40,6 @@ public class ReverseDnsNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "ReverseDnsNode.label");
+		return accessor.getMessage(rootNode.locale, "DnsNode.label");
 	}
 }
