@@ -81,6 +81,14 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 	}
 
 	/**
+	 * React quickly to UPS alerts, but still ramp-up for errors.
+	 */
+	@Override
+	protected boolean isIncrementalRampUp(boolean isError) {
+		return isError;
+	}
+
+	/**
 	 * Keep approximately one week of results.
 	 */
 	@Override

@@ -150,6 +150,21 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 		}
 	}
 
+	/**
+	 * Enables incremental alert level ramp-up, where the node's alert level
+	 * is only incremented one step at a time per monitoring pass.  This makes
+	 * the resource more tolerant of intermittent problems, at the cost of
+	 * slower reaction time.
+	 *
+	 * @implSpec  Enabled by default
+	 *
+	 * @see  SingleResultNodeWorker#isIncrementalRampUp(boolean)
+	 * @see  TableResultNodeWorker#isIncrementalRampUp(boolean)
+	 */
+	protected boolean isIncrementalRampUp(boolean isError) {
+		return true;
+	}
+
 	@Override
 	final public void run() {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
@@ -234,14 +249,14 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
 			AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
 			AlertLevel newAlertLevel;
-			if(maxAlertLevel==AlertLevel.UNKNOWN) {
+			if(maxAlertLevel == AlertLevel.UNKNOWN) {
 				newAlertLevel = AlertLevel.UNKNOWN;
-			} else if(maxAlertLevel.compareTo(curAlertLevel)<0) {
+			} else if(maxAlertLevel.compareTo(curAlertLevel) < 0) {
 				// If maxAlertLevel < current, drop current to be the max
 				newAlertLevel = maxAlertLevel;
-			} else if(curAlertLevel.compareTo(maxAlertLevel)<0) {
+			} else if(isIncrementalRampUp(error != null) && curAlertLevel.compareTo(maxAlertLevel) < 0) {
 				// If current < maxAlertLevel, increment by one
-				newAlertLevel = AlertLevel.values()[curAlertLevel.ordinal()+1];
+				newAlertLevel = AlertLevel.fromOrdinal(curAlertLevel.ordinal() + 1);
 			} else {
 				newAlertLevel = maxAlertLevel;
 			}

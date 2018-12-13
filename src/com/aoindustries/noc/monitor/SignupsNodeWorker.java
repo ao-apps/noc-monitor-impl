@@ -55,6 +55,14 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	}
 
 	/**
+	 * React quickly to signups, but still ramp-up for errors.
+	 */
+	@Override
+	protected boolean isIncrementalRampUp(boolean isError) {
+		return isError;
+	}
+
+	/**
 	 * Determines the alert message for the provided result.
 	 */
 	@Override
