@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
 import java.io.IOException;
@@ -70,6 +71,11 @@ public class UnallocatedNode extends NodeImpl {
 	@Override
 	public String getAlertMessage() {
 		return null;
+	}
+
+	@Override
+	public AlertCategory getAlertCategory() {
+		return AlertCategory.MONITORING;
 	}
 
 	@Override

@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import com.aoindustries.noc.monitor.common.AlertCategory;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -25,6 +26,11 @@ public class VirtualServersNode extends ServersNode {
 
 	VirtualServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(rootNode, port, csf, ssf);
+	}
+
+	@Override
+	public AlertCategory getAlertCategory() {
+		return AlertCategory.MONITORING;
 	}
 
 	@Override

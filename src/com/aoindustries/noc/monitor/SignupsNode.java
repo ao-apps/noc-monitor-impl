@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import com.aoindustries.noc.monitor.common.AlertCategory;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -32,6 +33,11 @@ public class SignupsNode extends TableResultNodeImpl {
 			csf,
 			ssf
 		);
+	}
+
+	@Override
+	public AlertCategory getAlertCategory() {
+		return AlertCategory.SIGNUP;
 	}
 
 	@Override

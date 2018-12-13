@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor;
 
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
 import com.aoindustries.util.AoCollections;
@@ -172,11 +173,23 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	@Override
 	abstract public String getAlertMessage();
 
+	/**
+	 * Defaults to the alert category of the parent node.
+	 *
+	 * @see  #getParent()
+	 *
+	 * @throws  NullPointerException when there is no parent
+	 */
 	@Override
-	abstract public String getLabel();
+	public AlertCategory getAlertCategory() {
+		return getParent().getAlertCategory();
+	}
 
 	@Override
 	abstract public boolean getAllowsChildren();
+
+	@Override
+	abstract public String getLabel();
 
 	/**
 	 * The default toString is the label.

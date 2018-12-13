@@ -7,8 +7,9 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import com.aoindustries.noc.monitor.common.AlertCategory;
+import com.aoindustries.noc.monitor.common.AlertChange;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.AlertLevelChange;
 import com.aoindustries.noc.monitor.common.NodeSnapshot;
 import com.aoindustries.noc.monitor.common.RootNode;
 import com.aoindustries.noc.monitor.common.TreeListener;
@@ -206,6 +207,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	}
 
 	@Override
+	public AlertCategory getAlertCategory() {
+		return AlertCategory.UNCATEGORIZED;
+	}
+
+	@Override
 	public String getLabel() {
 		return accessor.getMessage(locale, "RootNode.label");
 	}
@@ -382,13 +388,13 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 		final private TreeListener treeListener;
 
-		private List<AlertLevelChange> queuedChanges;
+		private List<AlertChange> queuedChanges;
 
 		NodeAlertLevelChangedSignaler(TreeListener treeListener) {
 			this.treeListener = treeListener;
 		}
 
-		void nodeAlertLevelChanged(AlertLevelChange change) {
+		void nodeAlertLevelChanged(AlertChange change) {
 			synchronized(treeListeners) {
 				if(queuedChanges==null) queuedChanges = new ArrayList<>();
 				queuedChanges.add(change);
@@ -400,7 +406,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 			boolean removed = false;
 			try {
 				while(true) {
-					List<AlertLevelChange> changes;
+					List<AlertChange> changes;
 					synchronized(treeListeners) {
 						if(queuedChanges==null) {
 							nodeAlertLevelChangedSignalers.remove(treeListener);
@@ -410,7 +416,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						changes = queuedChanges;
 						queuedChanges = null;
 					}
-					treeListener.nodeAlertLevelChanged(changes);
+					treeListener.nodeAlertChanged(changes);
 					try {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
@@ -474,16 +480,18 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	 * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
 	 * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
 	 */
-	void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
+	void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage, AlertCategory oldAlertCategory, AlertCategory newAlertCategory) throws RemoteException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		if(oldAlertLevel != newAlertLevel) {
-			AlertLevelChange change = new AlertLevelChange(
+			AlertChange change = new AlertChange(
 				node,
 				node.getFullPath(locale),
 				oldAlertLevel,
 				newAlertLevel,
-				alertMessage
+				alertMessage,
+				oldAlertCategory,
+				newAlertCategory
 			);
 			synchronized(treeListeners) {
 				for(TreeListener treeListener : treeListeners) {
@@ -499,6 +507,17 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Uses the {@link AlertCategory} of the node for both {@code oldAlertCategory} and {@code newAlertCategory}.
+	 *
+	 * @see  #nodeAlertLevelChanged(com.aoindustries.noc.monitor.NodeImpl, com.aoindustries.noc.monitor.common.AlertLevel, com.aoindustries.noc.monitor.common.AlertLevel, java.lang.String)
+	 */
+	void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
+		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+		AlertCategory alertCategory = node.getAlertCategory();
+		nodeAlertLevelChanged(node, oldAlertLevel, newAlertLevel, alertMessage, alertCategory, alertCategory);
 	}
 
 	@Override
