@@ -114,7 +114,7 @@ public class IPAddressesNode extends NodeImpl {
 		synchronized(ipAddressNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			rootNode.conn.getIpAddresses().addTableListener(tableListener, 100);
+			rootNode.conn.getNet().getIpAddresses().addTableListener(tableListener, 100);
 		}
 		verifyIPAddresses();
 	}
@@ -122,7 +122,7 @@ public class IPAddressesNode extends NodeImpl {
 	void stop() {
 		synchronized(ipAddressNodes) {
 			started = false;
-			rootNode.conn.getIpAddresses().removeTableListener(tableListener);
+			rootNode.conn.getNet().getIpAddresses().removeTableListener(tableListener);
 			for(IPAddressNode ipAddressNode : ipAddressNodes) {
 				ipAddressNode.stop();
 				rootNode.nodeRemoved();
@@ -150,7 +150,7 @@ public class IPAddressesNode extends NodeImpl {
 			}
 		} else {
 			// Find all unallocated IP addresses, except the unspecified
-			List<IpAddress> allIPs = rootNode.conn.getIpAddresses().getRows();
+			List<IpAddress> allIPs = rootNode.conn.getNet().getIpAddresses().getRows();
 			ipAddresses = new ArrayList<>(allIPs.size());
 			for(IpAddress ip : allIPs) {
 				if(

@@ -109,7 +109,7 @@ public class MySQLServerNode extends NodeImpl {
 		synchronized(this) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			rootNode.conn.getFailoverMySQLReplications().addTableListener(tableListener, 100);
+			rootNode.conn.getBackup().getFailoverMySQLReplications().addTableListener(tableListener, 100);
 		}
 		verifyFailoverMySQLReplications();
 		synchronized(this) {

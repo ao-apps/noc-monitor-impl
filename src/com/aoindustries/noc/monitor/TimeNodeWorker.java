@@ -68,7 +68,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult
 	@Override
 	protected MilliInterval getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().getConnector().getAoServers().get(_aoServer.getPkey());
+		currentAOServer = _aoServer.getTable().getConnector().getLinux().getAoServers().get(_aoServer.getPkey());
 
 		long requestTime = System.currentTimeMillis();
 		long startNanos = System.nanoTime();

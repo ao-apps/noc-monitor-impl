@@ -105,15 +105,15 @@ public class NetBindsNode extends NodeImpl {
 		synchronized(netBindNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			conn.getHttpdJBossSites().addTableListener(tableListener, 100);
-			conn.getHttpdSharedTomcats().addTableListener(tableListener, 100);
-			conn.getHttpdSites().addTableListener(tableListener, 100);
-			conn.getHttpdTomcatSites().addTableListener(tableListener, 100);
-			conn.getHttpdTomcatStdSites().addTableListener(tableListener, 100);
-			conn.getHttpdWorkers().addTableListener(tableListener, 100);
-			conn.getIpAddresses().addTableListener(tableListener, 100);
-			conn.getNetBinds().addTableListener(tableListener, 100);
-			conn.getNetDevices().addTableListener(tableListener, 100);
+			conn.getWeb_jboss().getHttpdJBossSites().addTableListener(tableListener, 100);
+			conn.getWeb_tomcat().getHttpdSharedTomcats().addTableListener(tableListener, 100);
+			conn.getWeb().getHttpdSites().addTableListener(tableListener, 100);
+			conn.getWeb_tomcat().getHttpdTomcatSites().addTableListener(tableListener, 100);
+			conn.getWeb_tomcat().getHttpdTomcatStdSites().addTableListener(tableListener, 100);
+			conn.getWeb_tomcat().getHttpdWorkers().addTableListener(tableListener, 100);
+			conn.getNet().getIpAddresses().addTableListener(tableListener, 100);
+			conn.getNet().getNetBinds().addTableListener(tableListener, 100);
+			conn.getNet().getNetDevices().addTableListener(tableListener, 100);
 		}
 		verifyNetBinds();
 	}
@@ -123,15 +123,15 @@ public class NetBindsNode extends NodeImpl {
 		AOServConnector conn = rootNode.conn;
 		synchronized(netBindNodes) {
 			started = false;
-			conn.getHttpdJBossSites().removeTableListener(tableListener);
-			conn.getHttpdSharedTomcats().removeTableListener(tableListener);
-			conn.getHttpdSites().removeTableListener(tableListener);
-			conn.getHttpdTomcatSites().removeTableListener(tableListener);
-			conn.getHttpdTomcatStdSites().removeTableListener(tableListener);
-			conn.getHttpdWorkers().removeTableListener(tableListener);
-			conn.getIpAddresses().removeTableListener(tableListener);
-			conn.getNetBinds().removeTableListener(tableListener);
-			conn.getNetDevices().removeTableListener(tableListener);
+			conn.getWeb_jboss().getHttpdJBossSites().removeTableListener(tableListener);
+			conn.getWeb_tomcat().getHttpdSharedTomcats().removeTableListener(tableListener);
+			conn.getWeb().getHttpdSites().removeTableListener(tableListener);
+			conn.getWeb_tomcat().getHttpdTomcatSites().removeTableListener(tableListener);
+			conn.getWeb_tomcat().getHttpdTomcatStdSites().removeTableListener(tableListener);
+			conn.getWeb_tomcat().getHttpdWorkers().removeTableListener(tableListener);
+			conn.getNet().getIpAddresses().removeTableListener(tableListener);
+			conn.getNet().getNetBinds().removeTableListener(tableListener);
+			conn.getNet().getNetDevices().removeTableListener(tableListener);
 			for(NetBindNode netBindNode : netBindNodes) {
 				netBindNode.stop();
 				rootNode.nodeRemoved();
@@ -277,7 +277,7 @@ public class NetBindsNode extends NodeImpl {
 		final RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
 
 		IpAddress ipAddress = ipAddressNode.getIPAddress();
-		ipAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
+		ipAddress = ipAddress.getTable().getConnector().getNet().getIpAddresses().get(ipAddress.getPkey());
 		List<NetMonitorSetting> netMonitorSettings = getSettings(ipAddress);
 
 		synchronized(netBindNodes) {

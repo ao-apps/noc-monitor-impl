@@ -69,7 +69,7 @@ class NetBindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult>
 	protected String getSample() throws Exception {
 		// Get the latest netBind for the appProtocol and monitoring parameters
 		Bind netBind = netMonitorSetting.getNetBind();
-		Bind currentNetBind = netBind.getTable().getConnector().getNetBinds().get(netBind.getPkey());
+		Bind currentNetBind = netBind.getTable().getConnector().getNet().getNetBinds().get(netBind.getPkey());
 		Port netPort = netMonitorSetting.getPort();
 		// If loopback or private IP, make the monitoring request through the master->daemon channel
 		InetAddress ipAddress = netMonitorSetting.getIpAddress();

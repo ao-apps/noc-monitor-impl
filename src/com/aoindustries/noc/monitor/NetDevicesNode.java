@@ -101,7 +101,7 @@ public class NetDevicesNode extends NodeImpl {
 		synchronized(netDeviceNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
+			serverNode.serversNode.rootNode.conn.getNet().getNetDevices().addTableListener(tableListener, 100);
 		}
 		verifyDevices();
 	}
@@ -109,7 +109,7 @@ public class NetDevicesNode extends NodeImpl {
 	void stop() {
 		synchronized(netDeviceNodes) {
 			started = false;
-			serverNode.serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
+			serverNode.serversNode.rootNode.conn.getNet().getNetDevices().removeTableListener(tableListener);
 			for(NetDeviceNode netDeviceNode : netDeviceNodes) {
 				netDeviceNode.stop();
 				serverNode.serversNode.rootNode.nodeRemoved();

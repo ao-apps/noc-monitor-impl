@@ -123,8 +123,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		synchronized(backupNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.serversNode.rootNode.conn.getFailoverFileReplications().addTableListener(tableListener, 100);
-			serverNode.serversNode.rootNode.conn.getFailoverFileSchedules().addTableListener(tableListener, 100);
+			serverNode.serversNode.rootNode.conn.getBackup().getFailoverFileReplications().addTableListener(tableListener, 100);
+			serverNode.serversNode.rootNode.conn.getBackup().getFailoverFileSchedules().addTableListener(tableListener, 100);
 		}
 		verifyBackups();
 	}
@@ -132,8 +132,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 	void stop() {
 		synchronized(backupNodes) {
 			started = false;
-			serverNode.serversNode.rootNode.conn.getFailoverFileSchedules().removeTableListener(tableListener);
-			serverNode.serversNode.rootNode.conn.getFailoverFileReplications().removeTableListener(tableListener);
+			serverNode.serversNode.rootNode.conn.getBackup().getFailoverFileSchedules().removeTableListener(tableListener);
+			serverNode.serversNode.rootNode.conn.getBackup().getFailoverFileReplications().removeTableListener(tableListener);
 			for(BackupNode backupNode : backupNodes) {
 				backupNode.removeTableResultListener(this);
 				backupNode.stop();

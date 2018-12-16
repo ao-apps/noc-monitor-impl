@@ -59,7 +59,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 	@Override
 	protected List<Integer> getSample() throws Exception {
 		// Get the latest limits
-		currentHttpdServer = _httpdServer.getTable().getConnector().getHttpdServers().get(_httpdServer.getPkey());
+		currentHttpdServer = _httpdServer.getTable().getConnector().getWeb().getHttpdServers().get(_httpdServer.getPkey());
 		int concurrency = currentHttpdServer.getConcurrency();
 		return Arrays.asList(
 			concurrency,

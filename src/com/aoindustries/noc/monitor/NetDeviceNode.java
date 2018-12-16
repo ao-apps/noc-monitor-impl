@@ -116,8 +116,8 @@ public class NetDeviceNode extends NodeImpl {
 		synchronized(childLock) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			conn.getIpAddresses().addTableListener(tableListener, 100);
-			conn.getNetDevices().addTableListener(tableListener, 100);
+			conn.getNet().getIpAddresses().addTableListener(tableListener, 100);
+			conn.getNet().getNetDevices().addTableListener(tableListener, 100);
 		}
 		verifyChildren();
 	}
@@ -127,8 +127,8 @@ public class NetDeviceNode extends NodeImpl {
 		AOServConnector conn = rootNode.conn;
 		synchronized(childLock) {
 			started = false;
-			conn.getIpAddresses().removeTableListener(tableListener);
-			conn.getNetDevices().removeTableListener(tableListener);
+			conn.getNet().getIpAddresses().removeTableListener(tableListener);
+			conn.getNet().getNetDevices().removeTableListener(tableListener);
 			if(_ipAddressesNode!=null) {
 				_ipAddressesNode.stop();
 				_ipAddressesNode = null;
@@ -157,7 +157,7 @@ public class NetDeviceNode extends NodeImpl {
 		RootNodeImpl rootNode = _networkDevicesNode.serverNode.serversNode.rootNode;
 
 		Server aoServer = _networkDevicesNode.getServer().getAOServer();
-		Device currentNetDevice = _device.getTable().getConnector().getNetDevices().get(_device.getPkey());
+		Device currentNetDevice = _device.getTable().getConnector().getNet().getNetDevices().get(_device.getPkey());
 		DeviceId netDeviceID = currentNetDevice.getDeviceId();
 		boolean hasIpAddresses = !currentNetDevice.getIPAddresses().isEmpty();
 

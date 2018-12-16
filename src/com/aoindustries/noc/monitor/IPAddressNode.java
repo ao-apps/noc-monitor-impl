@@ -140,12 +140,12 @@ public class IPAddressNode extends NodeImpl {
 		synchronized(childLock) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			conn.getIpAddresses().addTableListener(tableListener, 100);
-			conn.getIpAddressMonitoring().addTableListener(tableListener, 100);
-			conn.getNetBinds().addTableListener(tableListener, 100);
-			conn.getNetDevices().addTableListener(tableListener, 100);
-			conn.getNetDeviceIDs().addTableListener(tableListener, 100);
-			conn.getServers().addTableListener(tableListener, 100);
+			conn.getNet().getIpAddresses().addTableListener(tableListener, 100);
+			conn.getNet_monitoring().getIpAddressMonitoring().addTableListener(tableListener, 100);
+			conn.getNet().getNetBinds().addTableListener(tableListener, 100);
+			conn.getNet().getNetDevices().addTableListener(tableListener, 100);
+			conn.getNet().getNetDeviceIDs().addTableListener(tableListener, 100);
+			conn.getNet().getServers().addTableListener(tableListener, 100);
 		}
 		verifyChildren();
 	}
@@ -155,12 +155,12 @@ public class IPAddressNode extends NodeImpl {
 		AOServConnector conn = rootNode.conn;
 		synchronized(childLock) {
 			started = false;
-			conn.getIpAddresses().removeTableListener(tableListener);
-			conn.getIpAddressMonitoring().removeTableListener(tableListener);
-			conn.getNetBinds().removeTableListener(tableListener);
-			conn.getNetDevices().removeTableListener(tableListener);
-			conn.getNetDeviceIDs().removeTableListener(tableListener);
-			conn.getServers().removeTableListener(tableListener);
+			conn.getNet().getIpAddresses().removeTableListener(tableListener);
+			conn.getNet_monitoring().getIpAddressMonitoring().removeTableListener(tableListener);
+			conn.getNet().getNetBinds().removeTableListener(tableListener);
+			conn.getNet().getNetDevices().removeTableListener(tableListener);
+			conn.getNet().getNetDeviceIDs().removeTableListener(tableListener);
+			conn.getNet().getServers().removeTableListener(tableListener);
 			if(blacklistsNode != null) {
 				blacklistsNode.stop();
 				blacklistsNode = null;
@@ -193,7 +193,7 @@ public class IPAddressNode extends NodeImpl {
 
 		RootNodeImpl rootNode = ipAddressesNode.rootNode;
 
-		IpAddress _currentIpAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
+		IpAddress _currentIpAddress = ipAddress.getTable().getConnector().getNet().getIpAddresses().get(ipAddress.getPkey());
 		boolean isPingable = isPingable(ipAddressesNode, _currentIpAddress);
 		boolean isLoopback = 
 			ipAddressesNode.netDeviceNode != null

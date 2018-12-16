@@ -99,8 +99,8 @@ public class SslCertificatesNode extends NodeImpl {
 		synchronized(sslCertificateNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.serversNode.rootNode.conn.getSslCertificates().addTableListener(tableListener, 100);
-			serverNode.serversNode.rootNode.conn.getSslCertificateNames().addTableListener(tableListener, 100);
+			serverNode.serversNode.rootNode.conn.getPki().getSslCertificates().addTableListener(tableListener, 100);
+			serverNode.serversNode.rootNode.conn.getPki().getSslCertificateNames().addTableListener(tableListener, 100);
 		}
 		verifySslCertificates();
 	}
@@ -108,8 +108,8 @@ public class SslCertificatesNode extends NodeImpl {
 	void stop() {
 		synchronized(sslCertificateNodes) {
 			started = false;
-			serverNode.serversNode.rootNode.conn.getSslCertificateNames().removeTableListener(tableListener);
-			serverNode.serversNode.rootNode.conn.getSslCertificates().removeTableListener(tableListener);
+			serverNode.serversNode.rootNode.conn.getPki().getSslCertificateNames().removeTableListener(tableListener);
+			serverNode.serversNode.rootNode.conn.getPki().getSslCertificates().removeTableListener(tableListener);
 			for(SslCertificateNode sslCertificateNode : sslCertificateNodes) {
 				sslCertificateNode.stop();
 				serverNode.serversNode.rootNode.nodeRemoved();

@@ -94,8 +94,8 @@ public class MySQLSlavesNode extends NodeImpl {
 		synchronized(mysqlSlaveNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getFailoverFileReplications().addTableListener(tableListener, 100);
-			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getFailoverMySQLReplications().addTableListener(tableListener, 100);
+			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getBackup().getFailoverFileReplications().addTableListener(tableListener, 100);
+			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getBackup().getFailoverMySQLReplications().addTableListener(tableListener, 100);
 		}
 		verifyMySQLSlaves();
 	}
@@ -103,8 +103,8 @@ public class MySQLSlavesNode extends NodeImpl {
 	void stop() {
 		synchronized(mysqlSlaveNodes) {
 			started = false;
-			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getFailoverFileReplications().removeTableListener(tableListener);
-			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getFailoverMySQLReplications().removeTableListener(tableListener);
+			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getBackup().getFailoverFileReplications().removeTableListener(tableListener);
+			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getBackup().getFailoverMySQLReplications().removeTableListener(tableListener);
 			for(MySQLSlaveNode mysqlSlaveNode : mysqlSlaveNodes) {
 				mysqlSlaveNode.stop();
 				mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();

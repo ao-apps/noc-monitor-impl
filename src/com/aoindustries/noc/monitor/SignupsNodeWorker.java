@@ -135,7 +135,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 		);
 
 		// Add the aoserv signups
-		for(Request request : conn.getSignupRequests()) {
+		for(Request request : conn.getSignup().getSignupRequests()) {
 			tableData.add(request.getPackageDefinition().getBusiness().getAccounting());
 			tableData.add(request.getPkey());
 			tableData.add(new TimeWithTimeZone(request.getTime().getTime()));

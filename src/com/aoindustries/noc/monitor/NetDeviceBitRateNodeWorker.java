@@ -80,7 +80,7 @@ class NetDeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>
 	@Override
 	protected List<Object> getSample() throws Exception {
 		// Get the latest object
-		_currentNetDevice = _device.getTable().getConnector().getNetDevices().get(_device.getPkey());
+		_currentNetDevice = _device.getTable().getConnector().getNet().getNetDevices().get(_device.getPkey());
 
 		// Get the current state
 		String stats = _currentNetDevice.getStatisticsReport();

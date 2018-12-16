@@ -101,7 +101,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 
 	@Override
 	protected List<DnsQueryResult> getQueryResult() throws Exception {
-		IpAddress currentIPAddress = ipAddress.getTable().getConnector().getIpAddresses().get(ipAddress.getPkey());
+		IpAddress currentIPAddress = ipAddress.getTable().getConnector().getNet().getIpAddresses().get(ipAddress.getPkey());
 		IpAddressMonitoring iam = currentIPAddress.getMonitoring();
 		if(iam == null) return Collections.emptyList();
 		InetAddress ip = currentIPAddress.getExternalInetAddress();

@@ -58,7 +58,7 @@ class MySQLSlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>
 	@Override
 	protected List<String> getSample() throws Exception {
 		// Get the latest values
-		currentFailoverMySQLReplication = _mysqlReplication.getTable().getConnector().getFailoverMySQLReplications().get(_mysqlReplication.getPkey());
+		currentFailoverMySQLReplication = _mysqlReplication.getTable().getConnector().getBackup().getFailoverMySQLReplications().get(_mysqlReplication.getPkey());
 		MysqlReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
 		if(slaveStatus==null) throw new LocalizedSQLException(accessor, "MySQLSlaveStatusNodeWorker.slaveNotRunning");
 		Server.MasterStatus masterStatus = _mysqlReplication.getMySQLServer().getMasterStatus();

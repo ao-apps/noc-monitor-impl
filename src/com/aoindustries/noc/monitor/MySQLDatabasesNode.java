@@ -104,7 +104,7 @@ public class MySQLDatabasesNode extends NodeImpl {
 		synchronized(mysqlDatabaseNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getMysqlDatabases().addTableListener(tableListener, 100);
+			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getMysql().getMysqlDatabases().addTableListener(tableListener, 100);
 		}
 		verifyMySQLDatabases();
 	}
@@ -112,7 +112,7 @@ public class MySQLDatabasesNode extends NodeImpl {
 	void stop() {
 		synchronized(mysqlDatabaseNodes) {
 			started = false;
-			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getMysqlDatabases().removeTableListener(tableListener);
+			mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.conn.getMysql().getMysqlDatabases().removeTableListener(tableListener);
 			for(MySQLDatabaseNode mysqlDatabaseNode : mysqlDatabaseNodes) {
 				mysqlDatabaseNode.stop();
 				mysqlServerNode._mysqlServersNode.serverNode.serversNode.rootNode.nodeRemoved();

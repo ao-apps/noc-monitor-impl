@@ -155,13 +155,13 @@ public class ServerNode extends NodeImpl {
 		synchronized(this) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serversNode.rootNode.conn.getAoServers().addTableListener(tableListener, 100);
-			serversNode.rootNode.conn.getNetDevices().addTableListener(tableListener, 100);
-			serversNode.rootNode.conn.getHttpdServers().addTableListener(tableListener, 100);
-			serversNode.rootNode.conn.getMysqlServers().addTableListener(tableListener, 100);
-			serversNode.rootNode.conn.getPhysicalServers().addTableListener(tableListener, 100);
-			serversNode.rootNode.conn.getServers().addTableListener(tableListener, 100);
-			serversNode.rootNode.conn.getSslCertificates().addTableListener(tableListener, 100);
+			serversNode.rootNode.conn.getLinux().getAoServers().addTableListener(tableListener, 100);
+			serversNode.rootNode.conn.getNet().getNetDevices().addTableListener(tableListener, 100);
+			serversNode.rootNode.conn.getWeb().getHttpdServers().addTableListener(tableListener, 100);
+			serversNode.rootNode.conn.getMysql().getMysqlServers().addTableListener(tableListener, 100);
+			serversNode.rootNode.conn.getInfrastructure().getPhysicalServers().addTableListener(tableListener, 100);
+			serversNode.rootNode.conn.getNet().getServers().addTableListener(tableListener, 100);
+			serversNode.rootNode.conn.getPki().getSslCertificates().addTableListener(tableListener, 100);
 			if(_backupsNode==null) {
 				_backupsNode = new BackupsNode(this, port, csf, ssf);
 				_backupsNode.start();
@@ -187,13 +187,13 @@ public class ServerNode extends NodeImpl {
 	void stop() {
 		synchronized(this) {
 			started = false;
-			serversNode.rootNode.conn.getAoServers().removeTableListener(tableListener);
-			serversNode.rootNode.conn.getNetDevices().removeTableListener(tableListener);
-			serversNode.rootNode.conn.getHttpdServers().removeTableListener(tableListener);
-			serversNode.rootNode.conn.getMysqlServers().removeTableListener(tableListener);
-			serversNode.rootNode.conn.getPhysicalServers().removeTableListener(tableListener);
-			serversNode.rootNode.conn.getServers().removeTableListener(tableListener);
-			serversNode.rootNode.conn.getSslCertificates().removeTableListener(tableListener);
+			serversNode.rootNode.conn.getLinux().getAoServers().removeTableListener(tableListener);
+			serversNode.rootNode.conn.getNet().getNetDevices().removeTableListener(tableListener);
+			serversNode.rootNode.conn.getWeb().getHttpdServers().removeTableListener(tableListener);
+			serversNode.rootNode.conn.getMysql().getMysqlServers().removeTableListener(tableListener);
+			serversNode.rootNode.conn.getInfrastructure().getPhysicalServers().removeTableListener(tableListener);
+			serversNode.rootNode.conn.getNet().getServers().removeTableListener(tableListener);
+			serversNode.rootNode.conn.getPki().getSslCertificates().removeTableListener(tableListener);
 			if(_timeNode!=null) {
 				_timeNode.stop();
 				_timeNode = null;

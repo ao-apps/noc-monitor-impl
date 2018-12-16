@@ -104,7 +104,7 @@ public class HttpdServersNode extends NodeImpl {
 		synchronized(httpdServerNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.serversNode.rootNode.conn.getHttpdServers().addTableListener(tableListener, 100);
+			serverNode.serversNode.rootNode.conn.getWeb().getHttpdServers().addTableListener(tableListener, 100);
 		}
 		verifyHttpdServers();
 	}
@@ -112,7 +112,7 @@ public class HttpdServersNode extends NodeImpl {
 	void stop() {
 		synchronized(httpdServerNodes) {
 			started = false;
-			serverNode.serversNode.rootNode.conn.getHttpdServers().removeTableListener(tableListener);
+			serverNode.serversNode.rootNode.conn.getWeb().getHttpdServers().removeTableListener(tableListener);
 			for(HttpdServerNode httpdServerNode : httpdServerNodes) {
 				httpdServerNode.stop();
 				serverNode.serversNode.rootNode.nodeRemoved();

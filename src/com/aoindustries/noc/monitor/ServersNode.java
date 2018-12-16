@@ -90,7 +90,7 @@ abstract public class ServersNode extends NodeImpl {
 		synchronized(serverNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			rootNode.conn.getServers().addTableListener(tableListener, 100);
+			rootNode.conn.getNet().getServers().addTableListener(tableListener, 100);
 		}
 		verifyServers();
 	}
@@ -98,7 +98,7 @@ abstract public class ServersNode extends NodeImpl {
 	final void stop() {
 		synchronized(serverNodes) {
 			started = false;
-			rootNode.conn.getServers().removeTableListener(tableListener);
+			rootNode.conn.getNet().getServers().removeTableListener(tableListener);
 			for(ServerNode serverNode : serverNodes) {
 				serverNode.stop();
 				rootNode.nodeRemoved();
@@ -115,7 +115,7 @@ abstract public class ServersNode extends NodeImpl {
 		}
 
 		// Get all the servers that have monitoring enabled
-		List<Host> allServers = rootNode.conn.getServers().getRows();
+		List<Host> allServers = rootNode.conn.getNet().getServers().getRows();
 		List<Host> servers = new ArrayList<>(allServers.size());
 		for(Host server : allServers) {
 			if(server.isMonitoringEnabled() && includeServer(server)) servers.add(server);
