@@ -146,7 +146,7 @@ public class IpAddressNode extends NodeImpl {
 			if(started) throw new IllegalStateException();
 			started = true;
 			conn.getNet().getIpAddress().addTableListener(tableListener, 100);
-			conn.getNet_monitoring().getIpAddressMonitoring().addTableListener(tableListener, 100);
+			conn.getNet().getMonitoring().getIpAddressMonitoring().addTableListener(tableListener, 100);
 			conn.getNet().getBind().addTableListener(tableListener, 100);
 			conn.getNet().getDevice().addTableListener(tableListener, 100);
 			conn.getNet().getDeviceId().addTableListener(tableListener, 100);
@@ -161,7 +161,7 @@ public class IpAddressNode extends NodeImpl {
 		synchronized(childLock) {
 			started = false;
 			conn.getNet().getIpAddress().removeTableListener(tableListener);
-			conn.getNet_monitoring().getIpAddressMonitoring().removeTableListener(tableListener);
+			conn.getNet().getMonitoring().getIpAddressMonitoring().removeTableListener(tableListener);
 			conn.getNet().getBind().removeTableListener(tableListener);
 			conn.getNet().getDevice().removeTableListener(tableListener);
 			conn.getNet().getDeviceId().removeTableListener(tableListener);
