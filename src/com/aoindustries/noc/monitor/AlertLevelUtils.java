@@ -13,9 +13,9 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
  *
  * @author  AO Industries, Inc.
  */
-class AlertLevelUtils {
+public class AlertLevelUtils {
 
-	static AlertLevel getMonitoringAlertLevel(com.aoindustries.aoserv.client.monitoring.AlertLevel aoservAlertLevel) {
+	public static AlertLevel getMonitoringAlertLevel(com.aoindustries.aoserv.client.monitoring.AlertLevel aoservAlertLevel) {
 		if(aoservAlertLevel == null) return null;
 		switch(aoservAlertLevel) {
 			case NONE     : return AlertLevel.NONE;
@@ -32,7 +32,7 @@ class AlertLevelUtils {
 	 * Gets the greatest alert level found in a collection of nodes and the
 	 * given starting value.
 	 */
-	static AlertLevel getMaxAlertLevel(AlertLevel level, Iterable<? extends NodeImpl> nodes) {
+	public static AlertLevel getMaxAlertLevel(AlertLevel level, Iterable<? extends NodeImpl> nodes) {
 		for(NodeImpl node : nodes) {
 			level = EnumUtils.max(level, node.getAlertLevel());
 		}
@@ -42,7 +42,7 @@ class AlertLevelUtils {
 	/**
 	 * Gets the greatest alert level found in a collection of nodes.
 	 */
-	static AlertLevel getMaxAlertLevel(Iterable<? extends NodeImpl> nodes) {
+	public static AlertLevel getMaxAlertLevel(Iterable<? extends NodeImpl> nodes) {
 		return getMaxAlertLevel(AlertLevel.NONE, nodes);
 	}
 
@@ -50,7 +50,7 @@ class AlertLevelUtils {
 	 * Gets the greatest alert level between a node and a
 	 * given starting value.  If the node is null, alert level is unchanged.
 	 */
-	static AlertLevel getMaxAlertLevel(AlertLevel level, NodeImpl node) {
+	public static AlertLevel getMaxAlertLevel(AlertLevel level, NodeImpl node) {
 		if(node != null) {
 			level = EnumUtils.max(level, node.getAlertLevel());
 		}
@@ -61,7 +61,7 @@ class AlertLevelUtils {
 	 * Gets the alert level for a node.
 	 * If the node is null, alert level is NONE.
 	 */
-	static AlertLevel getMaxAlertLevel(NodeImpl node) {
+	public static AlertLevel getMaxAlertLevel(NodeImpl node) {
 		return node==null ? AlertLevel.NONE : node.getAlertLevel();
 	}
 
@@ -69,7 +69,7 @@ class AlertLevelUtils {
 	 * Gets the greatest alert level of any node.
 	 * If all nodes are null, alert level is NONE.
 	 */
-	static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2) {
+	public static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2) {
         AlertLevel level = AlertLevel.NONE;
         level = getMaxAlertLevel(level, node1);
         level = getMaxAlertLevel(level, node2);
@@ -80,7 +80,7 @@ class AlertLevelUtils {
 	 * Gets the greatest alert level of any node.
 	 * If all nodes are null, alert level is NONE.
 	 */
-	static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2, NodeImpl node3) {
+	public static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2, NodeImpl node3) {
         AlertLevel level = AlertLevel.NONE;
         level = getMaxAlertLevel(level, node1);
         level = getMaxAlertLevel(level, node2);
@@ -92,7 +92,7 @@ class AlertLevelUtils {
 	 * Gets the greatest alert level of any node.
 	 * If all nodes are null, alert level is NONE.
 	 */
-	static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2, NodeImpl node3, NodeImpl node4) {
+	public static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2, NodeImpl node3, NodeImpl node4) {
         AlertLevel level = AlertLevel.NONE;
         level = getMaxAlertLevel(level, node1);
         level = getMaxAlertLevel(level, node2);
@@ -105,7 +105,7 @@ class AlertLevelUtils {
 	 * Gets the greatest alert level of any node.
 	 * If all nodes are null, alert level is NONE.
 	 */
-	static AlertLevel getMaxAlertLevel(NodeImpl ... nodes) {
+	public static AlertLevel getMaxAlertLevel(NodeImpl ... nodes) {
         AlertLevel level = AlertLevel.NONE;
 		for(NodeImpl node : nodes) {
 	        level = getMaxAlertLevel(level, node);

@@ -28,7 +28,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract class SingleResultNodeWorker implements Runnable {
+public abstract class SingleResultNodeWorker implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
 
@@ -46,7 +46,7 @@ abstract class SingleResultNodeWorker implements Runnable {
 
 	final protected File persistenceFile;
 
-	SingleResultNodeWorker(File persistenceFile) {
+	protected SingleResultNodeWorker(File persistenceFile) {
 		this.persistenceFile = persistenceFile;
 	}
 

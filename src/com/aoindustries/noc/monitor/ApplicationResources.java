@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2009, 2016 by AO Industries, Inc.,
+ * Copyright 2007-2009, 2016, 2018 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -39,5 +39,6 @@ public final class ApplicationResources extends EditableResourceBundle {
 		);
 	}
 
-	static final ApplicationResourcesAccessor accessor = ApplicationResourcesAccessor.getInstance(bundleSet.getBaseName());
+	// TODO: Not public once split per-package
+	public static final ApplicationResourcesAccessor accessor = ApplicationResourcesAccessor.getInstance(bundleSet.getBaseName());
 }

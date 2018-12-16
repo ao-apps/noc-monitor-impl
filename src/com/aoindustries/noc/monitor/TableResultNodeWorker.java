@@ -31,7 +31,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract class TableResultNodeWorker<QR,TD> implements Runnable {
+abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
 
@@ -49,7 +49,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 
 	final protected File persistenceFile;
 
-	TableResultNodeWorker(File persistenceFile) {
+	protected TableResultNodeWorker(File persistenceFile) {
 		this.persistenceFile = persistenceFile;
 	}
 
@@ -57,7 +57,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 		return lastResult;
 	}
 
-	final AlertLevel getAlertLevel() {
+	public final AlertLevel getAlertLevel() {
 		return alertLevel;
 	}
 
@@ -299,7 +299,7 @@ abstract class TableResultNodeWorker<QR,TD> implements Runnable {
 	 * Determines the alert level and message for the provided result.  This result may also represent the error state.
 	 * The error state will always have columns=1, rows=1, and tableData.size()==1
 	 */
-	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result);
+	public abstract AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result);
 
 	/**
 	 * Gets the number of columns in the table data.

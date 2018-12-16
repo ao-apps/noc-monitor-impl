@@ -33,13 +33,13 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
 	private static final long serialVersionUID = 1L;
 
-	final RootNodeImpl rootNode;
+	public final RootNodeImpl rootNode;
 	final NodeImpl parent;
 	final TableMultiResultNodeWorker<?,R> worker;
 
 	final private List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<>();
 
-	TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?,R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	protected TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?,R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.rootNode = rootNode;
 		this.parent = parent;
@@ -73,11 +73,11 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
 
-	final void start() {
+	public final void start() {
 		worker.addTableMultiResultNodeImpl(this);
 	}
 
-	final void stop() {
+	public final void stop() {
 		worker.removeTableMultiResultNodeImpl(this);
 	}
 

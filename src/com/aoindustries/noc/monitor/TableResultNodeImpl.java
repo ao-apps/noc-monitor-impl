@@ -34,13 +34,13 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 
 	private static final long serialVersionUID = 1L;
 
-	final RootNodeImpl rootNode;
+	public final RootNodeImpl rootNode;
 	final NodeImpl parent;
-	final TableResultNodeWorker<?,?> worker;
+	protected final TableResultNodeWorker<?,?> worker;
 
 	final private List<TableResultListener> tableResultListeners = new ArrayList<>();
 
-	TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?,?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	protected TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?,?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.rootNode = rootNode;
 		this.parent = parent;
@@ -74,11 +74,11 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
 
-	void start() throws IOException {
+	public void start() throws IOException {
 		worker.addTableResultNodeImpl(this);
 	}
 
-	void stop() {
+	public void stop() {
 		worker.removeTableResultNodeImpl(this);
 	}
 

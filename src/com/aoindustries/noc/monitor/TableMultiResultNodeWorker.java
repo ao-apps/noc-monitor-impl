@@ -55,7 +55,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implements Runnable {
+public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
@@ -72,7 +72,7 @@ abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implemen
 
 	final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
 
-	TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
+	protected TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
 		this.results = new PersistentLinkedList<>(
 			PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
 			//new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),

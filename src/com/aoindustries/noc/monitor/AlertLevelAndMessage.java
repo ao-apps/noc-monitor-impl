@@ -14,29 +14,29 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class AlertLevelAndMessage {
+public class AlertLevelAndMessage {
 
 	/**
 	 * An alert level and message with no alert and no message.
 	 */
-	static final AlertLevelAndMessage NONE = new AlertLevelAndMessage(AlertLevel.NONE, null);
+	public static final AlertLevelAndMessage NONE = new AlertLevelAndMessage(AlertLevel.NONE, null);
 
 	final private AlertLevel alertLevel;
 	final private Function<Locale,String> alertMessage;
 
-	AlertLevelAndMessage(AlertLevel alertLevel, Function<Locale,String> alertMessage) {
+	public AlertLevelAndMessage(AlertLevel alertLevel, Function<Locale,String> alertMessage) {
 		this.alertLevel = alertLevel;
 		this.alertMessage = alertMessage;
 	}
 
-	AlertLevel getAlertLevel() {
+	public AlertLevel getAlertLevel() {
 		return alertLevel;
 	}
 
 	/**
 	 * Gets the alert message or <code>null</code> for none.
 	 */
-	Function<Locale, String> getAlertMessage() {
+	public Function<Locale, String> getAlertMessage() {
 		return alertMessage;
 	}
 
@@ -44,7 +44,7 @@ class AlertLevelAndMessage {
 	 * Gets a new alert level and message if a higher alert level, otherwise returns
 	 * this alert level and message.
 	 */
-	AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Function<Locale,String> newAlertMessage) {
+	public AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Function<Locale,String> newAlertMessage) {
 		int diff = newAlertLevel.compareTo(this.alertLevel);
 		if(diff > 0) return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
 		if(

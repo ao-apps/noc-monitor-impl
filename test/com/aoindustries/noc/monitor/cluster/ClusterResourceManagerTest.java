@@ -372,7 +372,7 @@ public class ClusterResourceManagerTest extends TestCase {
 	protected void setUp() throws Exception {
 		conn = AOServConnector.getConnector(logger);
 		try {
-			List<Server> aoServers = conn.getLinux().getAoServers().getRows();
+			List<Server> aoServers = conn.getLinux().getServer().getRows();
 			Locale locale = Locale.getDefault();
 			Map<String,Map<String,String>> hddModelReports = AOServClusterBuilder.getHddModelReports(aoServers, locale);
 			Map<String,Server.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(aoServers, locale);

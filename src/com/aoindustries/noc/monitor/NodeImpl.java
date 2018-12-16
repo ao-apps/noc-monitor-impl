@@ -33,7 +33,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	final protected RMIClientSocketFactory csf;
 	final protected RMIServerSocketFactory ssf;
 
-	NodeImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	protected NodeImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.port = port;
 		this.csf = csf;
@@ -49,7 +49,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	/**
 	 * For thread safety and encapsulation, returns an unmodifiable copy of the list.
 	 */
-	static <E extends NodeImpl> List<E> getSnapshot(List<E> children) {
+	protected static <E extends NodeImpl> List<E> getSnapshot(List<E> children) {
 		return AoCollections.unmodifiableCopyList(children);
 	}
 
@@ -57,7 +57,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * For thread safety and encapsulation, returns an unmodifiable copy of the list.
 	 * Any null child is skipped.
 	 */
-	static <E extends NodeImpl> List<E> getSnapshot(
+	protected static <E extends NodeImpl> List<E> getSnapshot(
 		E child
 	) {
 		if(child==null) return Collections.emptyList();
@@ -68,7 +68,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * For thread safety and encapsulation, returns an unmodifiable copy of the list.
 	 * Any null child is skipped.
 	 */
-	static <E extends NodeImpl> List<E> getSnapshot(
+	protected static <E extends NodeImpl> List<E> getSnapshot(
 		E child1,
 		E child2
 	) {
@@ -84,7 +84,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * For thread safety and encapsulation, returns an unmodifiable copy of the list.
 	 * Any null child is skipped.
 	 */
-	static <E extends NodeImpl> List<E> getSnapshot(
+	protected static <E extends NodeImpl> List<E> getSnapshot(
 		E child1,
 		E child2,
 		E child3
@@ -103,7 +103,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * For thread safety and encapsulation, returns an unmodifiable copy of the list.
 	 * Any null child is skipped.
 	 */
-	static <E extends NodeImpl> List<E> getSnapshot(
+	protected static <E extends NodeImpl> List<E> getSnapshot(
 		E child1,
 		E child2,
 		E child3,
@@ -126,7 +126,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * Any null child is skipped.
 	 */
 	@SafeVarargs
-	static <E extends NodeImpl> List<E> getSnapshot(E ... children) {
+	protected static <E extends NodeImpl> List<E> getSnapshot(E ... children) {
 		List<E> list = new ArrayList<>(children.length);
 		for(E child : children) {
 			if(child != null) list.add(child);
@@ -138,7 +138,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * Every node may optionally constrain the maximum alert level for itself and all of
 	 * its children.
 	 */
-	AlertLevel getMaxAlertLevel() {
+	protected AlertLevel getMaxAlertLevel() {
 		return AlertLevel.UNKNOWN;
 	}
 
@@ -147,7 +147,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * node or any of its parents.  Will reduce the level to not exceed
 	 * any maximum.
 	 */
-	AlertLevel constrainAlertLevel(AlertLevel level) {
+	protected AlertLevel constrainAlertLevel(AlertLevel level) {
 		if(level == AlertLevel.NONE) return AlertLevel.NONE;
 		NodeImpl node = this;
 		do {

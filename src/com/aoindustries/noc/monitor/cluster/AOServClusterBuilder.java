@@ -135,7 +135,7 @@ public class AOServClusterBuilder {
 		final Map<String,Server.LvmReport> lvmReports,
 		final boolean useTarget
 	) throws SQLException, InterruptedException, ExecutionException, IOException {
-		List<ServerFarm> serverFarms = conn.getInfrastructure().getServerFarms().getRows();
+		List<ServerFarm> serverFarms = conn.getInfrastructure().getServerFarm().getRows();
 
 		// Start concurrently
 		List<Future<Cluster>> futures = new ArrayList<>(serverFarms.size());
@@ -179,7 +179,7 @@ public class AOServClusterBuilder {
 		Map<String,Server.LvmReport> lvmReports,
 		boolean useTarget
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-		final AccountingCode rootAccounting = conn.getAccount().getBusinesses().getRootAccounting();
+		final AccountingCode rootAccounting = conn.getAccount().getAccount().getRootAccounting();
 
 		Cluster cluster = new Cluster(serverFarm.getName());
 
@@ -253,18 +253,18 @@ public class AOServClusterBuilder {
 		}
 
 		// Get the DomUs
-		for(Host server : conn.getNet().getServers().getRows()) {
-			if(server.isMonitoringEnabled() && server.getServerFarm().equals(serverFarm)) {
+		for(Host host : conn.getNet().getHost().getRows()) {
+			if(host.isMonitoringEnabled() && host.getServerFarm().equals(serverFarm)) {
 				// Should be either physical or virtual server
-				PhysicalServer physicalServer = server.getPhysicalServer();
-				VirtualServer virtualServer = server.getVirtualServer();
-				if(physicalServer==null && virtualServer==null) throw new SQLException("Host is neither a physical server nor a virtual server: "+server);
-				if(physicalServer!=null && virtualServer!=null) throw new SQLException("Host is both a physical server and a virtual server: "+server);
+				PhysicalServer physicalServer = host.getPhysicalServer();
+				VirtualServer virtualServer = host.getVirtualServer();
+				if(physicalServer==null && virtualServer==null) throw new SQLException("Host is neither a physical server nor a virtual server: "+host);
+				if(physicalServer!=null && virtualServer!=null) throw new SQLException("Host is both a physical server and a virtual server: "+host);
 				if(virtualServer!=null) {
 					// Must always be in the package with the same name as the root business
-					AccountingCode packageName = server.getPackage().getName();
+					AccountingCode packageName = host.getPackage().getName();
 					if(!packageName.equals(rootAccounting)) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
-					String hostname = server.getName();
+					String hostname = host.getName();
 					cluster = cluster.addDomU(
 						hostname,
 						useTarget ? virtualServer.getPrimaryRamTarget() : virtualServer.getPrimaryRam(),
@@ -409,7 +409,7 @@ public class AOServClusterBuilder {
 		Map<String,List<Server.DrbdReport>> drbdReports,
 		Map<String,Server.LvmReport> lvmReports
 	) throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
-		final AccountingCode rootAccounting = conn.getAccount().getBusinesses().getRootAccounting();
+		final AccountingCode rootAccounting = conn.getAccount().getAccount().getRootAccounting();
 
 		ClusterConfiguration clusterConfiguration = new ClusterConfiguration(cluster);
 
@@ -425,7 +425,7 @@ public class AOServClusterBuilder {
 				lineNum++;
 				// Must be a virtual server
 				String domUHostname = report.getResourceHostname();
-				Host domUServer = conn.getNet().getServers().get(rootAccounting+"/"+domUHostname);
+				Host domUServer = conn.getNet().getHost().get(rootAccounting+"/"+domUHostname);
 				if(domUServer==null) throw new ParseException(
 					accessor.getMessage(
 						locale,
@@ -519,7 +519,7 @@ public class AOServClusterBuilder {
 		for(Map.Entry<String,DomU> entry : cluster.getDomUs().entrySet()) {
 			String domUHostname = entry.getKey();
 			DomU domU = entry.getValue();
-			Host domUServer = conn.getNet().getServers().get(rootAccounting+"/"+domUHostname);
+			Host domUServer = conn.getNet().getHost().get(rootAccounting+"/"+domUHostname);
 			//VirtualServer domUVirtualServer = domUServer.getVirtualServer();
 
 			String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);

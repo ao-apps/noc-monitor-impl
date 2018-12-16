@@ -33,13 +33,13 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 
 	private static final long serialVersionUID = 1L;
 
-	protected final RootNodeImpl rootNode;
+	public final RootNodeImpl rootNode;
 	protected final NodeImpl parent;
 	private final SingleResultNodeWorker worker;
 
 	final private List<SingleResultListener> singleResultListeners = new ArrayList<>();
 
-	SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	protected SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.rootNode = rootNode;
 		this.parent = parent;
@@ -73,11 +73,11 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
 
-	final void start() {
+	public final void start() {
 		worker.addSingleResultNodeImpl(this);
 	}
 
-	final void stop() {
+	public final void stop() {
 		worker.removeSingleResultNodeImpl(this);
 	}
 

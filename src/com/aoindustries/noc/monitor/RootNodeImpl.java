@@ -13,6 +13,11 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NodeSnapshot;
 import com.aoindustries.noc.monitor.common.RootNode;
 import com.aoindustries.noc.monitor.common.TreeListener;
+import com.aoindustries.noc.monitor.infrastructure.PhysicalServersNode;
+import com.aoindustries.noc.monitor.infrastructure.VirtualServersNode;
+import com.aoindustries.noc.monitor.net.OtherDevicesNode;
+import com.aoindustries.noc.monitor.net.UnallocatedNode;
+import com.aoindustries.noc.monitor.signup.SignupsNode;
 import com.aoindustries.util.ErrorPrinter;
 import com.aoindustries.util.concurrent.Executors;
 import java.io.File;
@@ -146,8 +151,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		}
 	}
 
-	final Locale locale;
-	final AOServConnector conn;
+	public final Locale locale;
+	public final AOServConnector conn;
 
 	volatile private OtherDevicesNode otherDevicesNode;
 	volatile private PhysicalServersNode physicalServersNode;
@@ -438,7 +443,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	 * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
 	 * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
 	 */
-	void nodeAdded() {
+	public void nodeAdded() {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		synchronized(treeListeners) {
@@ -460,7 +465,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	 * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
 	 * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
 	 */
-	void nodeRemoved() {
+	public void nodeRemoved() {
 		synchronized(treeListeners) {
 			for(TreeListener treeListener : treeListeners) {
 				NodeRemovedSignaler nodeRemovedSignaler = nodeRemovedSignalers.get(treeListener);
@@ -514,7 +519,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	 *
 	 * @see  #nodeAlertLevelChanged(com.aoindustries.noc.monitor.NodeImpl, com.aoindustries.noc.monitor.common.AlertLevel, com.aoindustries.noc.monitor.common.AlertLevel, java.lang.String)
 	 */
-	void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
+	public void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 		AlertCategory alertCategory = node.getAlertCategory();
 		nodeAlertLevelChanged(node, oldAlertLevel, newAlertLevel, alertMessage, alertCategory, alertCategory);
@@ -528,7 +533,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	/**
 	 * Gets the top-level persistence directory.
 	 */
-	File getPersistenceDirectory() throws IOException {
+	public File getPersistenceDirectory() throws IOException {
 		File dir = new File("persistence");
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
@@ -555,7 +560,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	private static int lastStartupDelay15;
 	private static final Object lastStartupDelay15Lock = new Object();
-	static int getNextStartupDelayFifteenMinutes() {
+	public static int getNextStartupDelayFifteenMinutes() {
 		synchronized(lastStartupDelay15Lock) {
 			lastStartupDelay15= (lastStartupDelay15+15037)%(15*60000);
 			return lastStartupDelay15;
