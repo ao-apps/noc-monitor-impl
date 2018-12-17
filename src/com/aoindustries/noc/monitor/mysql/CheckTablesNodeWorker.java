@@ -8,7 +8,7 @@ package com.aoindustries.noc.monitor.mysql;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.aoserv.client.mysql.Server;
-import com.aoindustries.aoserv.client.validator.MySQLTableName;
+import com.aoindustries.aoserv.client.mysql.Table_Name;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
@@ -110,8 +110,8 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 		List<Database.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
 		if(lastTableStatuses.isEmpty()) return Collections.emptyList();
 		// Build the set of table names and types
-		List<MySQLTableName> tableNames = new ArrayList<>(lastTableStatuses.size());
-		Map<MySQLTableName,Database.Engine> tables = new HashMap<>(lastTableStatuses.size()*4/3+1);
+		List<Table_Name> tableNames = new ArrayList<>(lastTableStatuses.size());
+		Map<Table_Name,Database.Engine> tables = new HashMap<>(lastTableStatuses.size()*4/3+1);
 		for(Database.TableStatus lastTableStatus : lastTableStatuses) {
 			Database.Engine engine = lastTableStatus.getEngine();
 			if(
@@ -122,7 +122,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 				&& engine!=Database.Engine.PERFORMANCE_SCHEMA
 				&& !(engine==null && "VIEW".equals(lastTableStatus.getComment()))
 			) {
-				MySQLTableName name = lastTableStatus.getName();
+				Table_Name name = lastTableStatus.getName();
 				if(
 					// Skip the four expected non-checkable tables in information_schema
 					!mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)
@@ -142,7 +142,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 		List<Object> tableData = new ArrayList<>(checkTableResults.size()*5);
 
 		for(Database.CheckTableResult checkTableResult : checkTableResults) {
-			MySQLTableName table = checkTableResult.getTable();
+			Table_Name table = checkTableResult.getTable();
 			tableData.add(table);
 			tableData.add(tables.get(table));
 			tableData.add(new MilliInterval(checkTableResult.getDuration()));

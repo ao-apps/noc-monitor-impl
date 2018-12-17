@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor.mysql;
 
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Server;
-import com.aoindustries.aoserv.client.validator.MySQLServerName;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
@@ -36,7 +35,7 @@ public class ServerNode extends NodeImpl {
 
 	final ServersNode _mysqlServersNode;
 	private final Server _mysqlServer;
-	private final MySQLServerName _label;
+	private final Server.Name _label;
 
 	private boolean started;
 	volatile private SlavesNode _mysqlSlavesNode;

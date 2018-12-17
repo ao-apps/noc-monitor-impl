@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor.mysql;
 
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
-import com.aoindustries.aoserv.client.validator.MySQLDatabaseName;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
@@ -32,7 +31,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 	final DatabasesNode mysqlDatabasesNode;
 	final Database mysqlDatabase;
 	private final MysqlReplication mysqlSlave;
-	private final MySQLDatabaseName _label;
+	private final Database.Name _label;
 
 	private boolean started;
 

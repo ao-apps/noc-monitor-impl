@@ -6,6 +6,7 @@
 package com.aoindustries.noc.monitor.cluster;
 
 import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.account.Account;
 import com.aoindustries.aoserv.client.distribution.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
 import com.aoindustries.aoserv.client.infrastructure.ServerFarm;
@@ -13,7 +14,6 @@ import com.aoindustries.aoserv.client.infrastructure.VirtualDisk;
 import com.aoindustries.aoserv.client.infrastructure.VirtualServer;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
-import com.aoindustries.aoserv.client.validator.AccountingCode;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
 import com.aoindustries.aoserv.cluster.Dom0;
@@ -179,7 +179,7 @@ public class AOServClusterBuilder {
 		Map<String,Server.LvmReport> lvmReports,
 		boolean useTarget
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-		final AccountingCode rootAccounting = conn.getAccount().getAccount().getRootAccounting();
+		final Account.Name rootAccounting = conn.getAccount().getAccount().getRootAccount_name();
 
 		Cluster cluster = new Cluster(serverFarm.getName());
 
@@ -262,7 +262,7 @@ public class AOServClusterBuilder {
 				if(physicalServer!=null && virtualServer!=null) throw new SQLException("Host is both a physical server and a virtual server: "+host);
 				if(virtualServer!=null) {
 					// Must always be in the package with the same name as the root business
-					AccountingCode packageName = host.getPackage().getName();
+					Account.Name packageName = host.getPackage().getName();
 					if(!packageName.equals(rootAccounting)) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
 					String hostname = host.getName();
 					cluster = cluster.addDomU(
@@ -409,7 +409,7 @@ public class AOServClusterBuilder {
 		Map<String,List<Server.DrbdReport>> drbdReports,
 		Map<String,Server.LvmReport> lvmReports
 	) throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
-		final AccountingCode rootAccounting = conn.getAccount().getAccount().getRootAccounting();
+		final Account.Name rootAccounting = conn.getAccount().getAccount().getRootAccount_name();
 
 		ClusterConfiguration clusterConfiguration = new ClusterConfiguration(cluster);
 
