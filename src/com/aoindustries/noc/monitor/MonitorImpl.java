@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016, 2017, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -132,6 +132,9 @@ import java.util.logging.Logger;
  *
  * Process Monitoring
  *      Any process linked to libraries or binaries that do not match current on-disk: This might mean a process needs restarted to have latest security updates.
+ *
+ * PostgreSQL and MySQL concurrency monitoring, too, like Apache instances
+ *      Certain application pool sizes, too, such as Tomcat and custom applications (aoserv-master)?
  *
  * @author  AO Industries, Inc.
  */
