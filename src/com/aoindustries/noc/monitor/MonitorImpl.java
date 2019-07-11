@@ -136,6 +136,9 @@ import java.util.logging.Logger;
  * PostgreSQL and MySQL concurrency monitoring, too, like Apache instances
  *      Certain application pool sizes, too, such as Tomcat and custom applications (aoserv-master)?
  *
+ * Tomcat Manager monitoring
+ * JMX
+ *
  * @author  AO Industries, Inc.
  */
 public class MonitorImpl extends UnicastRemoteObject implements Monitor {
