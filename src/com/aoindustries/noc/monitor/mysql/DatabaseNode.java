@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2016, 2017, 2018 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -39,7 +39,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 
 	DatabaseNode(DatabasesNode mysqlDatabasesNode, Database mysqlDatabase, MysqlReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
-			mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode,
+			mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
 			mysqlDatabasesNode,
 			DatabaseNodeWorker.getWorker(
 				new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName()+".show_full_tables"),
@@ -99,7 +99,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.locale,
+						mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)
@@ -117,7 +117,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 			if(mysqlCheckTablesNode==null) {
 				mysqlCheckTablesNode = new CheckTablesNode(this, port, csf, ssf);
 				mysqlCheckTablesNode.start();
-				mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.nodeAdded();
+				mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
 			}
 			super.start();
 		}
@@ -131,7 +131,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 			if(mysqlCheckTablesNode!=null) {
 				mysqlCheckTablesNode.stop();
 				mysqlCheckTablesNode = null;
-				mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.nodeRemoved();
+				mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 		}
 	}

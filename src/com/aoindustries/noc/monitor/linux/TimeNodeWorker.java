@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -37,29 +37,29 @@ import java.util.Map;
 class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult> {
 
 	/**
-	 * One unique worker is made per persistence directory (and should match aoServer exactly)
+	 * One unique worker is made per persistence directory (and should match linuxServer exactly)
 	 */
 	private static final Map<String, TimeNodeWorker> workerCache = new HashMap<>();
-	static TimeNodeWorker getWorker(File persistenceDirectory, Server aoServer) throws IOException {
+	static TimeNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			TimeNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new TimeNodeWorker(persistenceDirectory, aoServer);
+				worker = new TimeNodeWorker(persistenceDirectory, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
+				if(!worker._linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker._linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
-	final private Server _aoServer;
-	private Server currentAOServer;
+	final private Server _linuxServer;
+	private Server currentLinuxServer;
 
-	private TimeNodeWorker(File persistenceDirectory, Server aoServer) throws IOException {
+	private TimeNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		super(new File(persistenceDirectory, "time"), new TimeResultSerializer());
-		this._aoServer = currentAOServer = aoServer;
+		this._linuxServer = currentLinuxServer = linuxServer;
 	}
 
 	@Override
@@ -70,11 +70,11 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult
 	@Override
 	protected MilliInterval getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().getConnector().getLinux().getServer().get(_aoServer.getPkey());
+		currentLinuxServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());
 
 		long requestTime = System.currentTimeMillis();
 		long startNanos = System.nanoTime();
-		long systemTime = currentAOServer.getSystemTimeMillis();
+		long systemTime = currentLinuxServer.getSystemTimeMillis();
 		long latency = System.nanoTime() - startNanos;
 		long lRemainder = latency % 2000000;
 		long skew = systemTime - (requestTime + latency/2000000);

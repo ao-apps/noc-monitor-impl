@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -47,14 +47,14 @@ public class SlaveNode extends NodeImpl {
 		FileReplication replication = mysqlReplication.getFailoverFileReplication();
 		if(replication!=null) {
 			// replication-based
-			com.aoindustries.aoserv.client.linux.Server aoServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
+			com.aoindustries.aoserv.client.linux.Server linuxServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
 			Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
 			BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
-			this._label = bp.getAOServer().getHostname()+":"+bp.getPath()+"/"+aoServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
+			this._label = bp.getLinuxServer().getHostname()+":"+bp.getPath()+"/"+linuxServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
 		} else {
 			// ao_server-based
 			Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
-			this._label = mysqlReplication.getAOServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
+			this._label = mysqlReplication.getLinuxServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
 		}
 	}
 
@@ -117,7 +117,7 @@ public class SlaveNode extends NodeImpl {
 	}
 
 	void start() throws IOException, SQLException {
-		RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode;
+		RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode;
 		synchronized(this) {
 			if(started) throw new IllegalStateException();
 			started = true;
@@ -135,7 +135,7 @@ public class SlaveNode extends NodeImpl {
 	}
 
 	void stop() {
-		RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode;
+		RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode;
 		synchronized(this) {
 			started = false;
 			if(_mysqlSlaveStatusNode!=null) {
@@ -158,7 +158,7 @@ public class SlaveNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.locale,
+						mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

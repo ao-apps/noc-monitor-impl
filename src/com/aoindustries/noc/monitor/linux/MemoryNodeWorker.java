@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -36,29 +36,29 @@ import java.util.Map;
 class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDisplayExactSize>,MemoryResult> {
 
 	/**
-	 * One unique worker is made per persistence directory (and should match aoServer exactly)
+	 * One unique worker is made per persistence directory (and should match linuxServer exactly)
 	 */
 	private static final Map<String, MemoryNodeWorker> workerCache = new HashMap<>();
-	static MemoryNodeWorker getWorker(File persistenceDirectory, Server aoServer) throws IOException {
+	static MemoryNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			MemoryNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new MemoryNodeWorker(persistenceDirectory, aoServer);
+				worker = new MemoryNodeWorker(persistenceDirectory, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
+				if(!worker._linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker._linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
-	final private Server _aoServer;
+	final private Server _linuxServer;
 	private Server currentAOServer;
 
-	private MemoryNodeWorker(File persistenceDirectory, Server aoServer) throws IOException {
+	private MemoryNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		super(new File(persistenceDirectory, "meminfo"), new MemoryResultSerializer());
-		this._aoServer = currentAOServer = aoServer;
+		this._linuxServer = currentAOServer = linuxServer;
 	}
 
 	@Override
@@ -69,7 +69,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 	@Override
 	protected List<ApproximateDisplayExactSize> getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().getConnector().getLinux().getServer().get(_aoServer.getPkey());
+		currentAOServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());
 		String meminfo = currentAOServer.getMemInfoReport();
 		long memTotal = -1;
 		long memFree = -1;

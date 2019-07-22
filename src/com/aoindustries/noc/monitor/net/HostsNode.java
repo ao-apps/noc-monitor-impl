@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -36,7 +36,7 @@ abstract public class HostsNode extends NodeImpl {
 
 	public final RootNodeImpl rootNode;
 
-	private final List<HostNode> serverNodes = new ArrayList<>();
+	private final List<HostNode> hostNodes = new ArrayList<>();
 	private boolean started;
 
 	protected HostsNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -56,8 +56,8 @@ abstract public class HostsNode extends NodeImpl {
 
 	@Override
 	final public List<HostNode> getChildren() {
-		synchronized(serverNodes) {
-			return getSnapshot(serverNodes);
+		synchronized(hostNodes) {
+			return getSnapshot(hostNodes);
 		}
 	}
 
@@ -67,8 +67,8 @@ abstract public class HostsNode extends NodeImpl {
 	@Override
 	final public AlertLevel getAlertLevel() {
 		AlertLevel level;
-		synchronized(serverNodes) {
-			level = AlertLevelUtils.getMaxAlertLevel(serverNodes);
+		synchronized(hostNodes) {
+			level = AlertLevelUtils.getMaxAlertLevel(hostNodes);
 		}
 		return constrainAlertLevel(level);
 	}
@@ -90,7 +90,7 @@ abstract public class HostsNode extends NodeImpl {
 	};
 
 	final public void start() throws IOException, SQLException {
-		synchronized(serverNodes) {
+		synchronized(hostNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
 			rootNode.conn.getNet().getHost().addTableListener(tableListener, 100);
@@ -99,51 +99,51 @@ abstract public class HostsNode extends NodeImpl {
 	}
 
 	final void stop() {
-		synchronized(serverNodes) {
+		synchronized(hostNodes) {
 			started = false;
 			rootNode.conn.getNet().getHost().removeTableListener(tableListener);
-			for(HostNode serverNode : serverNodes) {
-				serverNode.stop();
+			for(HostNode hostNode : hostNodes) {
+				hostNode.stop();
 				rootNode.nodeRemoved();
 			}
-			serverNodes.clear();
+			hostNodes.clear();
 		}
 	}
 
 	private void verifyServers() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		synchronized(serverNodes) {
+		synchronized(hostNodes) {
 			if(!started) return;
 		}
 
 		// Get all the servers that have monitoring enabled
-		List<Host> allServers = rootNode.conn.getNet().getHost().getRows();
-		List<Host> servers = new ArrayList<>(allServers.size());
-		for(Host server : allServers) {
-			if(server.isMonitoringEnabled() && includeServer(server)) servers.add(server);
+		List<Host> allHosts = rootNode.conn.getNet().getHost().getRows();
+		List<Host> hosts = new ArrayList<>(allHosts.size());
+		for(Host host : allHosts) {
+			if(host.isMonitoringEnabled() && includeHost(host)) hosts.add(host);
 		}
-		synchronized(serverNodes) {
+		synchronized(hostNodes) {
 			if(started) {
 				// Remove old ones
-				Iterator<HostNode> serverNodeIter = serverNodes.iterator();
-				while(serverNodeIter.hasNext()) {
-					HostNode serverNode = serverNodeIter.next();
-					Host server = serverNode.getHost();
-					if(!servers.contains(server)) {
-						serverNode.stop();
-						serverNodeIter.remove();
+				Iterator<HostNode> hostNodeIter = hostNodes.iterator();
+				while(hostNodeIter.hasNext()) {
+					HostNode hostNode = hostNodeIter.next();
+					Host host = hostNode.getHost();
+					if(!hosts.contains(host)) {
+						hostNode.stop();
+						hostNodeIter.remove();
 						rootNode.nodeRemoved();
 					}
 				}
 				// Add new ones
-				for(int c=0;c<servers.size();c++) {
-					Host server = servers.get(c);
-					if(c>=serverNodes.size() || !server.equals(serverNodes.get(c).getHost())) {
+				for(int c=0;c<hosts.size();c++) {
+					Host host = hosts.get(c);
+					if(c>=hostNodes.size() || !host.equals(hostNodes.get(c).getHost())) {
 						// Insert into proper index
-						HostNode serverNode = new HostNode(this, server, port, csf, ssf);
-						serverNodes.add(c, serverNode);
-						serverNode.start();
+						HostNode hostNode = new HostNode(this, host, port, csf, ssf);
+						hostNodes.add(c, hostNode);
+						hostNode.start();
 						rootNode.nodeAdded();
 					}
 				}
@@ -170,5 +170,5 @@ abstract public class HostsNode extends NodeImpl {
 		return dir;
 	}
 
-	abstract protected boolean includeServer(Host server) throws SQLException, IOException;
+	abstract protected boolean includeHost(Host host) throws SQLException, IOException;
 }

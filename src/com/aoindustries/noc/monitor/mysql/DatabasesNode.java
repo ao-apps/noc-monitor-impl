@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -91,7 +91,7 @@ public class DatabasesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.locale, "MySQLDatabasesNode.label");
+		return accessor.getMessage(mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale, "MySQLDatabasesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -106,7 +106,7 @@ public class DatabasesNode extends NodeImpl {
 		synchronized(mysqlDatabaseNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.conn.getMysql().getDatabase().addTableListener(tableListener, 100);
+			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getMysql().getDatabase().addTableListener(tableListener, 100);
 		}
 		verifyMySQLDatabases();
 	}
@@ -114,10 +114,10 @@ public class DatabasesNode extends NodeImpl {
 	void stop() {
 		synchronized(mysqlDatabaseNodes) {
 			started = false;
-			mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.conn.getMysql().getDatabase().removeTableListener(tableListener);
+			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getMysql().getDatabase().removeTableListener(tableListener);
 			for(DatabaseNode mysqlDatabaseNode : mysqlDatabaseNodes) {
 				mysqlDatabaseNode.stop();
-				mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.nodeRemoved();
+				mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			mysqlDatabaseNodes.clear();
 		}
@@ -141,7 +141,7 @@ public class DatabasesNode extends NodeImpl {
 					if(!mysqlDatabases.contains(mysqlDatabase)) {
 						mysqlDatabaseNode.stop();
 						mysqlDatabaseNodeIter.remove();
-						mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.nodeRemoved();
+						mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
 					}
 				}
 				// Add new ones
@@ -152,7 +152,7 @@ public class DatabasesNode extends NodeImpl {
 						DatabaseNode mysqlDatabaseNode = new DatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null, port, csf, ssf);
 						mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
 						mysqlDatabaseNode.start();
-						mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.nodeAdded();
+						mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
 					}
 				}
 			}
@@ -165,7 +165,7 @@ public class DatabasesNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode.locale,
+						mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

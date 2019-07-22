@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 by AO Industries, Inc.,
+ * Copyright 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -33,24 +33,24 @@ public class CertificatesNode extends NodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	final HostNode serverNode;
-	private final Server aoServer;
+	final HostNode hostNode;
+	private final Server linuxServer;
 	private final List<CertificateNode> sslCertificateNodes = new ArrayList<>();
 	private boolean started;
 
-	public CertificatesNode(HostNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	public CertificatesNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
-		this.serverNode = serverNode;
-		this.aoServer = aoServer;
+		this.hostNode = hostNode;
+		this.linuxServer = linuxServer;
 	}
 
 	@Override
 	public HostNode getParent() {
-		return serverNode;
+		return hostNode;
 	}
 
 	public Server getAOServer() {
-		return aoServer;
+		return linuxServer;
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class CertificatesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(serverNode.hostsNode.rootNode.locale, "SslCertificatesNode.label");
+		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "SslCertificatesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -102,8 +102,8 @@ public class CertificatesNode extends NodeImpl {
 		synchronized(sslCertificateNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.hostsNode.rootNode.conn.getPki().getCertificate().addTableListener(tableListener, 100);
-			serverNode.hostsNode.rootNode.conn.getPki().getCertificateName().addTableListener(tableListener, 100);
+			hostNode.hostsNode.rootNode.conn.getPki().getCertificate().addTableListener(tableListener, 100);
+			hostNode.hostsNode.rootNode.conn.getPki().getCertificateName().addTableListener(tableListener, 100);
 		}
 		verifySslCertificates();
 	}
@@ -111,11 +111,11 @@ public class CertificatesNode extends NodeImpl {
 	public void stop() {
 		synchronized(sslCertificateNodes) {
 			started = false;
-			serverNode.hostsNode.rootNode.conn.getPki().getCertificateName().removeTableListener(tableListener);
-			serverNode.hostsNode.rootNode.conn.getPki().getCertificate().removeTableListener(tableListener);
+			hostNode.hostsNode.rootNode.conn.getPki().getCertificateName().removeTableListener(tableListener);
+			hostNode.hostsNode.rootNode.conn.getPki().getCertificate().removeTableListener(tableListener);
 			for(CertificateNode sslCertificateNode : sslCertificateNodes) {
 				sslCertificateNode.stop();
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			sslCertificateNodes.clear();
 		}
@@ -128,7 +128,7 @@ public class CertificatesNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<Certificate> sslCertificates = aoServer.getSslCertificates();
+		List<Certificate> sslCertificates = linuxServer.getSslCertificates();
 		synchronized(sslCertificateNodes) {
 			if(started) {
 				// Remove old ones
@@ -152,7 +152,7 @@ public class CertificatesNode extends NodeImpl {
 					) {
 						sslCertificateNode.stop();
 						sslCertificateNodeIter.remove();
-						serverNode.hostsNode.rootNode.nodeRemoved();
+						hostNode.hostsNode.rootNode.nodeRemoved();
 					}
 				}
 				// Add new ones
@@ -163,26 +163,25 @@ public class CertificatesNode extends NodeImpl {
 						CertificateNode sslCertificateNode = new CertificateNode(this, sslCertificate, port, csf, ssf);
 						sslCertificateNodes.add(c, sslCertificateNode);
 						sslCertificateNode.start();
-						serverNode.hostsNode.rootNode.nodeAdded();
+						hostNode.hostsNode.rootNode.nodeAdded();
 					}
 				}
 				// Prune any extra nodes that can happen when they are reordered
 				while(sslCertificateNodes.size() > sslCertificates.size()) {
 					CertificateNode sslCertificateNode = sslCertificateNodes.remove(sslCertificateNodes.size() - 1);
 					sslCertificateNode.stop();
-					serverNode.hostsNode.rootNode.nodeRemoved();
+					hostNode.hostsNode.rootNode.nodeRemoved();
 				}
 			}
 		}
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(serverNode.getPersistenceDirectory(), "ssl_certificates");
+		File dir = new File(hostNode.getPersistenceDirectory(), "ssl_certificates");
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
-						serverNode.hostsNode.rootNode.locale,
+					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

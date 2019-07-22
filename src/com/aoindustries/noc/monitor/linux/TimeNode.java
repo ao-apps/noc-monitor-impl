@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -23,21 +23,21 @@ public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Server _aoServer;
+	private final Server _linuxServer;
 
-	public TimeNode(HostNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+	public TimeNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
-			serverNode.hostsNode.rootNode,
-			serverNode,
+			hostNode.hostsNode.rootNode,
+			hostNode,
 			TimeNodeWorker.getWorker(
-				serverNode.getPersistenceDirectory(),
-				aoServer
+				hostNode.getPersistenceDirectory(),
+				linuxServer
 			),
 			port,
 			csf,
 			ssf
 		);
-		this._aoServer = aoServer;
+		this._linuxServer = linuxServer;
 	}
 
 	@Override

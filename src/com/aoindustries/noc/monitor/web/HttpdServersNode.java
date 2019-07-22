@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 by AO Industries, Inc.,
+ * Copyright 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor.web;
 
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.web.HttpdServer;
-import com.aoindustries.lang.ObjectUtils;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
@@ -25,6 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.SwingUtilities;
 
 /**
@@ -38,24 +38,24 @@ public class HttpdServersNode extends NodeImpl {
 
 	private static final boolean DEBUG = false;
 
-	final HostNode serverNode;
-	private final Server aoServer;
+	final HostNode hostNode;
+	private final Server linuxServer;
 	private final List<HttpdServerNode> httpdServerNodes = new ArrayList<>();
 	private boolean started;
 
-	public HttpdServersNode(HostNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	public HttpdServersNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
-		this.serverNode = serverNode;
-		this.aoServer = aoServer;
+		this.hostNode = hostNode;
+		this.linuxServer = linuxServer;
 	}
 
 	@Override
 	public HostNode getParent() {
-		return serverNode;
+		return hostNode;
 	}
 
 	public Server getAOServer() {
-		return aoServer;
+		return linuxServer;
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class HttpdServersNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(serverNode.hostsNode.rootNode.locale, "HttpdServersNode.label");
+		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "HttpdServersNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -107,7 +107,7 @@ public class HttpdServersNode extends NodeImpl {
 		synchronized(httpdServerNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.hostsNode.rootNode.conn.getWeb().getHttpdServer().addTableListener(tableListener, 100);
+			hostNode.hostsNode.rootNode.conn.getWeb().getHttpdServer().addTableListener(tableListener, 100);
 		}
 		verifyHttpdServers();
 	}
@@ -115,10 +115,10 @@ public class HttpdServersNode extends NodeImpl {
 	public void stop() {
 		synchronized(httpdServerNodes) {
 			started = false;
-			serverNode.hostsNode.rootNode.conn.getWeb().getHttpdServer().removeTableListener(tableListener);
+			hostNode.hostsNode.rootNode.conn.getWeb().getHttpdServer().removeTableListener(tableListener);
 			for(HttpdServerNode httpdServerNode : httpdServerNodes) {
 				httpdServerNode.stop();
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			httpdServerNodes.clear();
 		}
@@ -132,7 +132,7 @@ public class HttpdServersNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<HttpdServer> httpdServers = aoServer.getHttpdServers();
+		List<HttpdServer> httpdServers = linuxServer.getHttpdServers();
 		if(DEBUG) System.err.println("httpdServers = " + httpdServers);
 		synchronized(httpdServerNodes) {
 			if(started) {
@@ -145,7 +145,7 @@ public class HttpdServersNode extends NodeImpl {
 					boolean hasMatch = false;
 					for(HttpdServer httpdServer : httpdServers) {
 						if(httpdServer.equals(existingHttpdServer)) {
-							if(ObjectUtils.equals(httpdServer.getName(), existingHttpdServer.getName())) {
+							if(Objects.equals(httpdServer.getName(), existingHttpdServer.getName())) {
 								if(DEBUG) System.err.println("Found with matching name " + existingHttpdServer.getName() + ", keeping node");
 								hasMatch = true;
 							} else {
@@ -159,7 +159,7 @@ public class HttpdServersNode extends NodeImpl {
 					if(!hasMatch) {
 						httpdServerNode.stop();
 						httpdServerNodeIter.remove();
-						serverNode.hostsNode.rootNode.nodeRemoved();
+						hostNode.hostsNode.rootNode.nodeRemoved();
 					}
 				}
 				// Add new ones
@@ -176,7 +176,7 @@ public class HttpdServersNode extends NodeImpl {
 							if(DEBUG) System.err.println("Starting node for " + httpdServer.getName());
 							httpdServerNode.start();
 							if(DEBUG) System.err.println("Notifying added for " + httpdServer.getName());
-							serverNode.hostsNode.rootNode.nodeAdded();
+							hostNode.hostsNode.rootNode.nodeAdded();
 						} catch(IOException | RuntimeException e) {
 							if(DEBUG) e.printStackTrace(System.err);
 							throw e;
@@ -188,12 +188,11 @@ public class HttpdServersNode extends NodeImpl {
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(serverNode.getPersistenceDirectory(), "httpd_servers");
+		File dir = new File(hostNode.getPersistenceDirectory(), "httpd_servers");
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
-						serverNode.hostsNode.rootNode.locale,
+					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -372,12 +372,12 @@ public class ClusterResourceManagerTest extends TestCase {
 	protected void setUp() throws Exception {
 		conn = AOServConnector.getConnector(logger);
 		try {
-			List<Server> aoServers = conn.getLinux().getServer().getRows();
+			List<Server> linuxServers = conn.getLinux().getServer().getRows();
 			Locale locale = Locale.getDefault();
-			Map<String,Map<String,String>> hddModelReports = AOServClusterBuilder.getHddModelReports(aoServers, locale);
-			Map<String,Server.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(aoServers, locale);
-			Map<String,List<Server.DrbdReport>> drbdReports = AOServClusterBuilder.getDrbdReports(aoServers, locale);
-			SortedSet<Cluster> clusters = AOServClusterBuilder.getClusters(conn, aoServers, hddModelReports, lvmReports, USE_TARGET);
+			Map<String,Map<String,String>> hddModelReports = AOServClusterBuilder.getHddModelReports(linuxServers, locale);
+			Map<String,Server.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(linuxServers, locale);
+			Map<String,List<Server.DrbdReport>> drbdReports = AOServClusterBuilder.getDrbdReports(linuxServers, locale);
+			SortedSet<Cluster> clusters = AOServClusterBuilder.getClusters(conn, linuxServers, hddModelReports, lvmReports, USE_TARGET);
 			if(USE_TARGET) {
 				// See what happens if we add an additional server
 				clusters = addDrivesXen9071(clusters, true, true);

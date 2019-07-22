@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 by AO Industries, Inc.,
+ * Copyright 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -27,7 +27,7 @@ public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult>
 
 	HttpdServerNode(HttpdServersNode httpdServersNode, HttpdServer httpdServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
-			httpdServersNode.serverNode.hostsNode.rootNode,
+			httpdServersNode.hostNode.hostsNode.rootNode,
 			httpdServersNode,
 			HttpdServerNodeWorker.getWorker(
 				new File(httpdServersNode.getPersistenceDirectory(), Integer.toString(httpdServer.getPkey())),

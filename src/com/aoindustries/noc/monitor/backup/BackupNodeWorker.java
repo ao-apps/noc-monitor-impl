@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, 2009, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008, 2009, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -161,9 +161,9 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 		if(failoverFileLogs.isEmpty()) {
 			return locale -> Collections.emptyList();
 		} else {
-			Host server = failoverFileReplication.getServer();
-			Server aoServer = server.getAOServer();
-			TimeZone timeZone = aoServer==null ? null : aoServer.getTimeZone().getTimeZone();
+			Host host = failoverFileReplication.getHost();
+			Server linuxServer = host.getLinuxServer();
+			TimeZone timeZone = linuxServer==null ? null : linuxServer.getTimeZone().getTimeZone();
 			List<Object> tableData = new ArrayList<>(failoverFileLogs.size()*6);
 			//int lineNum = 0;
 			for(FileReplicationLog failoverFileLog : failoverFileLogs) {

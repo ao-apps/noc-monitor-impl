@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, 2009, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008, 2009, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -32,7 +32,7 @@ public class BackupNode extends TableResultNodeImpl {
 
 	BackupNode(BackupsNode backupsNode, FileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
-			backupsNode.serverNode.hostsNode.rootNode,
+			backupsNode.hostNode.hostsNode.rootNode,
 			backupsNode,
 			BackupNodeWorker.getWorker(
 				new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
@@ -47,7 +47,7 @@ public class BackupNode extends TableResultNodeImpl {
 		this.label = accessor.getMessage(
 			rootNode.locale,
 			"BackupNode.label",
-			backupPartition==null ? "null" : backupPartition.getAOServer().getHostname(),
+			backupPartition==null ? "null" : backupPartition.getLinuxServer().getHostname(),
 			backupPartition==null ? "null" : backupPartition.getPath()
 		);
 	}

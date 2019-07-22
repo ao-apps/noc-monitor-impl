@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2015, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2015, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,7 +7,6 @@ package com.aoindustries.noc.monitor.infrastructure;
 
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.DrbdReport;
-import com.aoindustries.lang.ObjectUtils;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
@@ -25,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -47,31 +47,31 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	private static final int OUT_OF_SYNC_HIGH_THRESHOLD = 512;
 
 	/**
-	 * One unique worker is made per persistence file (and should match the aoServer exactly)
+	 * One unique worker is made per persistence file (and should match the linuxServer exactly)
 	 */
 	private static final Map<String, DrbdNodeWorker> workerCache = new HashMap<>();
-	static DrbdNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException, SQLException {
+	static DrbdNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException, SQLException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			DrbdNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new DrbdNodeWorker(persistenceFile, aoServer);
+				worker = new DrbdNodeWorker(persistenceFile, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
+				if(!worker.linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker.linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server aoServer;
+	final private Server linuxServer;
 	final private TimeZone timeZone;
 
-	DrbdNodeWorker(File persistenceFile, Server aoServer) throws IOException, SQLException {
+	DrbdNodeWorker(File persistenceFile, Server linuxServer) throws IOException, SQLException {
 		super(persistenceFile);
-		this.aoServer = aoServer;
-		this.timeZone = aoServer.getTimeZone().getTimeZone();
+		this.linuxServer = linuxServer;
+		this.timeZone = linuxServer.getTimeZone().getTimeZone();
 	}
 
 	/**
@@ -134,7 +134,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 
 	@Override
 	protected List<DrbdReport> getQueryResult() throws Exception {
-		return aoServer.getDrbdReport();
+		return linuxServer.getDrbdReport();
 	}
 
 	@Override
@@ -143,7 +143,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 		for(DrbdReport report : reports) {
 			tableData.add(report.getDevice());
 			tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
-			tableData.add(ObjectUtils.toString(report.getConnectionState()));
+			tableData.add(Objects.toString(report.getConnectionState(), null));
 			DrbdReport.DiskState localDiskState = report.getLocalDiskState();
 			DrbdReport.DiskState remoteDiskState = report.getRemoteDiskState();
 			tableData.add(localDiskState==null && remoteDiskState==null ? null : (localDiskState+"/"+remoteDiskState));

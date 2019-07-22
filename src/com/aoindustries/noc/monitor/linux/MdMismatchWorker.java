@@ -1,5 +1,5 @@
 /*
- * Copyright 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -35,29 +35,29 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	private static final int RAID1_LOW_THRESHOLD = 1;
 
 	/**
-	 * One unique worker is made per persistence file (and should match the aoServer exactly)
+	 * One unique worker is made per persistence file (and should match the linuxServer exactly)
 	 */
 	private static final Map<String, MdMismatchWorker> workerCache = new HashMap<>();
-	static MdMismatchWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
+	static MdMismatchWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			MdMismatchWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new MdMismatchWorker(persistenceFile, aoServer);
+				worker = new MdMismatchWorker(persistenceFile, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
+				if(!worker.linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker.linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server aoServer;
+	final private Server linuxServer;
 
-	MdMismatchWorker(File persistenceFile, Server aoServer) {
+	MdMismatchWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);
-		this.aoServer = aoServer;
+		this.linuxServer = linuxServer;
 	}
 
 	/**
@@ -107,7 +107,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 
 	@Override
 	protected List<MdMismatchReport> getQueryResult() throws Exception {
-		return aoServer.getMdMismatchReport();
+		return linuxServer.getMdMismatchReport();
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2012, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2009-2012, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -26,7 +26,7 @@ public class SlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicationRe
 
 	SlaveStatusNode(SlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
-			mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode,
+			mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
 			mysqlSlaveNode,
 			SlaveStatusNodeWorker.getWorker(
 				mysqlSlaveNode.getPersistenceDirectory(),

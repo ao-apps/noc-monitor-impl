@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -34,24 +34,24 @@ public class DevicesNode extends NodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	final HostNode serverNode;
-	private final Host server;
+	final HostNode hostNode;
+	private final Host host;
 	private final List<DeviceNode> netDeviceNodes = new ArrayList<>();
 	private boolean started;
 
-	DevicesNode(HostNode serverNode, Host server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	DevicesNode(HostNode hostNode, Host host, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
-		this.serverNode = serverNode;
-		this.server = server;
+		this.hostNode = hostNode;
+		this.host = host;
 	}
 
 	@Override
 	public HostNode getParent() {
-		return serverNode;
+		return hostNode;
 	}
 
-	public Host getServer() {
-		return server;
+	public Host getHost() {
+		return host;
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class DevicesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(serverNode.hostsNode.rootNode.locale, "NetDevicesNode.label");
+		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "NetDevicesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -103,7 +103,7 @@ public class DevicesNode extends NodeImpl {
 		synchronized(netDeviceNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.hostsNode.rootNode.conn.getNet().getDevice().addTableListener(tableListener, 100);
+			hostNode.hostsNode.rootNode.conn.getNet().getDevice().addTableListener(tableListener, 100);
 		}
 		verifyDevices();
 	}
@@ -111,10 +111,10 @@ public class DevicesNode extends NodeImpl {
 	void stop() {
 		synchronized(netDeviceNodes) {
 			started = false;
-			serverNode.hostsNode.rootNode.conn.getNet().getDevice().removeTableListener(tableListener);
+			hostNode.hostsNode.rootNode.conn.getNet().getDevice().removeTableListener(tableListener);
 			for(DeviceNode netDeviceNode : netDeviceNodes) {
 				netDeviceNode.stop();
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			netDeviceNodes.clear();
 		}
@@ -130,7 +130,7 @@ public class DevicesNode extends NodeImpl {
 		// Filter only those that are enabled
 		List<Device> netDevices;
 		{
-			List<Device> allDevices = server.getNetDevices();
+			List<Device> allDevices = host.getNetDevices();
 			netDevices = new ArrayList<>(allDevices.size());
 			for(Device device : allDevices) {
 				if(device.isMonitoringEnabled()) netDevices.add(device);
@@ -146,7 +146,7 @@ public class DevicesNode extends NodeImpl {
 					if(!netDevices.contains(device)) {
 						netDeviceNode.stop();
 						netDeviceNodeIter.remove();
-						serverNode.hostsNode.rootNode.nodeRemoved();
+						hostNode.hostsNode.rootNode.nodeRemoved();
 					}
 				}
 				// Add new ones
@@ -157,7 +157,7 @@ public class DevicesNode extends NodeImpl {
 						DeviceNode netDeviceNode = new DeviceNode(this, device, port, csf, ssf);
 						netDeviceNodes.add(c, netDeviceNode);
 						netDeviceNode.start();
-						serverNode.hostsNode.rootNode.nodeAdded();
+						hostNode.hostsNode.rootNode.nodeAdded();
 					}
 				}
 			}
@@ -165,12 +165,11 @@ public class DevicesNode extends NodeImpl {
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(serverNode.getPersistenceDirectory(), "net_devices");
+		File dir = new File(hostNode.getPersistenceDirectory(), "net_devices");
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
-						serverNode.hostsNode.rootNode.locale,
+					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

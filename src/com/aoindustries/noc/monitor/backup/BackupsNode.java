@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -56,7 +56,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 	 */
 	private static final String AO_SERVER_REQUIRED_BACKUP_FARM = "mob";
 
-	final HostNode serverNode;
+	final HostNode hostNode;
 	private final List<BackupNode> backupNodes = new ArrayList<>();
 	private boolean started;
 
@@ -65,14 +65,14 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
 	final private List<TableResultListener> tableResultListeners = new ArrayList<>();
 
-	public BackupsNode(HostNode serverNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	public BackupsNode(HostNode hostNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
-		this.serverNode = serverNode;
+		this.hostNode = hostNode;
 	}
 
 	@Override
 	public HostNode getParent() {
-		return serverNode;
+		return hostNode;
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(serverNode.hostsNode.rootNode.locale, "BackupsNode.label");
+		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -127,8 +127,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		synchronized(backupNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.hostsNode.rootNode.conn.getBackup().getFileReplication().addTableListener(tableListener, 100);
-			serverNode.hostsNode.rootNode.conn.getBackup().getFileReplicationSchedule().addTableListener(tableListener, 100);
+			hostNode.hostsNode.rootNode.conn.getBackup().getFileReplication().addTableListener(tableListener, 100);
+			hostNode.hostsNode.rootNode.conn.getBackup().getFileReplicationSchedule().addTableListener(tableListener, 100);
 		}
 		verifyBackups();
 	}
@@ -136,12 +136,12 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 	public void stop() {
 		synchronized(backupNodes) {
 			started = false;
-			serverNode.hostsNode.rootNode.conn.getBackup().getFileReplicationSchedule().removeTableListener(tableListener);
-			serverNode.hostsNode.rootNode.conn.getBackup().getFileReplication().removeTableListener(tableListener);
+			hostNode.hostsNode.rootNode.conn.getBackup().getFileReplicationSchedule().removeTableListener(tableListener);
+			hostNode.hostsNode.rootNode.conn.getBackup().getFileReplication().removeTableListener(tableListener);
 			for(BackupNode backupNode : backupNodes) {
 				backupNode.removeTableResultListener(this);
 				backupNode.stop();
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			backupNodes.clear();
 		}
@@ -169,17 +169,17 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		final long startTime = System.currentTimeMillis();
 		final long startNanos = System.nanoTime();
 
-		List<FileReplication> failoverFileReplications = serverNode.getHost().getFailoverFileReplications();
-		Host server = serverNode.getHost();
-		Server aoServer = server.getAOServer();
+		List<FileReplication> failoverFileReplications = hostNode.getHost().getFailoverFileReplications();
+		Host host = hostNode.getHost();
+		Server linuxServer = host.getLinuxServer();
 
-		// Determine if an aoServer is either in the "mob" server farm or has at least one active backup in that location
+		// Determine if a linuxServer is either in the "mob" server farm or has at least one active backup in that location
 		boolean missingMobBackup;
-		if(aoServer==null) {
+		if(linuxServer==null) {
 			// mobile backup not required for non-AO boxes
 			missingMobBackup = false;
 		} else {
-			ServerFarm sf = server.getServerFarm();
+			ServerFarm sf = host.getServerFarm();
 			if(sf.getName().equals(AO_SERVER_REQUIRED_BACKUP_FARM)) {
 				// Host itself is in "mob" server farm
 				missingMobBackup = false;
@@ -192,7 +192,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 							missingMobBackup = false;
 							break;
 						} else {
-							if(bp.getAOServer().getServer().getServerFarm().getName().equals(AO_SERVER_REQUIRED_BACKUP_FARM)) {
+							if(bp.getLinuxServer().getHost().getServerFarm().getName().equals(AO_SERVER_REQUIRED_BACKUP_FARM)) {
 								// Has at least one enabled replication in Mobile
 								missingMobBackup = false;
 								break;
@@ -205,7 +205,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
 		// Handle local alert level for missing backups
 		AlertLevel newAlertLevel =
-			failoverFileReplications.isEmpty() && aoServer!=null // Only AOServers require backups
+			failoverFileReplications.isEmpty() && linuxServer!=null // Only AOServers require backups
 			? AlertLevel.MEDIUM
 			: missingMobBackup
 				? AlertLevel.LOW
@@ -221,14 +221,14 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 			if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
 			String newAlertLevelMessage =
 				failoverFileReplications.isEmpty()
-				? accessor.getMessage(serverNode.hostsNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
+				? accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
 				: missingMobBackup
-					? accessor.getMessage(serverNode.hostsNode.rootNode.locale, "BackupsNode.missingMobBackup")
-					: accessor.getMessage(serverNode.hostsNode.rootNode.locale, "BackupsNode.backupsConfigured")
+					? accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.missingMobBackup")
+					: accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.backupsConfigured")
 			;
 			alertLevel = newAlertLevel;
 			if(oldAlertLevel!=newAlertLevel) {
-				serverNode.hostsNode.rootNode.nodeAlertLevelChanged(
+				hostNode.hostsNode.rootNode.nodeAlertLevelChanged(
 					this,
 					constrainAlertLevel(oldAlertLevel),
 					constrainAlertLevel(newAlertLevel),
@@ -245,7 +245,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					backupNode.removeTableResultListener(this);
 					backupNode.stop();
 					backupNodeIter.remove();
-					serverNode.hostsNode.rootNode.nodeRemoved();
+					hostNode.hostsNode.rootNode.nodeRemoved();
 				}
 			}
 			// Add new ones
@@ -256,7 +256,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					BackupNode backupNode = new BackupNode(this, failoverFileReplication, port, csf, ssf);
 					backupNodes.add(c, backupNode);
 					backupNode.start();
-					serverNode.hostsNode.rootNode.nodeAdded();
+					hostNode.hostsNode.rootNode.nodeAdded();
 					backupNode.addTableResultListener(this);
 				}
 			}
@@ -272,7 +272,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					1,
 					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
 					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.noBackupsConfigured")),
-					Collections.singletonList(aoServer==null ? AlertLevel.NONE : AlertLevel.MEDIUM)
+					Collections.singletonList(linuxServer==null ? AlertLevel.NONE : AlertLevel.MEDIUM)
 				);
 			} else if(missingMobBackup) {
 				newResult = new TableResult(
@@ -291,7 +291,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 				for(int c=0;c<failoverFileReplications.size();c++) {
 					FileReplication failoverFileReplication = failoverFileReplications.get(c);
 					BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
-					tableData.add(backupPartition==null ? "null" : backupPartition.getAOServer().getHostname());
+					tableData.add(backupPartition==null ? "null" : backupPartition.getLinuxServer().getHostname());
 					tableData.add(backupPartition==null ? "null" : backupPartition.getPath());
 					StringBuilder times = new StringBuilder();
 					for(FileReplicationSchedule ffs : failoverFileReplication.getFailoverFileSchedules()) {
@@ -306,14 +306,14 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					tableData.add(times.toString());
 					Long bitRate = failoverFileReplication.getBitRate();
 					if(bitRate==null) {
-						tableData.add(accessor.getMessage(serverNode.hostsNode.rootNode.locale, "BackupsNode.bitRate.unlimited"));
+						tableData.add(accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate.unlimited"));
 					} else {
-						tableData.add(accessor.getMessage(serverNode.hostsNode.rootNode.locale, "BackupsNode.bitRate", bitRate));
+						tableData.add(accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate", bitRate));
 					}
 					if(failoverFileReplication.getUseCompression()) {
-						tableData.add(accessor.getMessage(serverNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.true"));
+						tableData.add(accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.true"));
 					} else {
-						tableData.add(accessor.getMessage(serverNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.false"));
+						tableData.add(accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.false"));
 					}
 					tableData.add(failoverFileReplication.getRetention().getDisplay());
 					BackupNode backupNode = backupNodes.get(c);
@@ -324,7 +324,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					} else {
 						AlertLevelAndMessage alertLevelAndMessage = backupNode.getAlertLevelAndMessage(backupNodeResult);
 						Function<Locale,String> alertMessage = alertLevelAndMessage.getAlertMessage();
-						tableData.add(alertMessage == null ? null : alertMessage.apply(serverNode.hostsNode.rootNode.locale));
+						tableData.add(alertMessage == null ? null : alertMessage.apply(hostNode.hostsNode.rootNode.locale));
 						alertLevels.add(alertLevelAndMessage.getAlertLevel());
 					}
 				}
@@ -353,12 +353,11 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(serverNode.getPersistenceDirectory(), "failover_file_replications");
+		File dir = new File(hostNode.getPersistenceDirectory(), "failover_file_replications");
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
-						serverNode.hostsNode.rootNode.locale,
+					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

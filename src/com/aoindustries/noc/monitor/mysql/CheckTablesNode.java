@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2014, 2018 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -27,7 +27,7 @@ public class CheckTablesNode extends TableResultNodeImpl {
 
 	CheckTablesNode(DatabaseNode mysqlDatabaseNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
-			mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.serverNode.hostsNode.rootNode,
+			mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
 			mysqlDatabaseNode,
 			CheckTablesNodeWorker.getWorker(
 				mysqlDatabaseNode,

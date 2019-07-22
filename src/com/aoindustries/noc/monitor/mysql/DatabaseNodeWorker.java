@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2009, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -61,7 +61,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 		super(persistenceFile);
 		this.mysqlDatabase = mysqlDatabase;
 		this.mysqlSlave = mysqlSlave;
-		String hostname = mysqlDatabase.getMySQLServer().getAoServer().getHostname().toString();
+		String hostname = mysqlDatabase.getMySQLServer().getLinuxServer().getHostname().toString();
 		this.isSlowServer =
 			hostname.equals("www.swimconnection.com")
 			// || hostname.equals("www1.leagle.com")

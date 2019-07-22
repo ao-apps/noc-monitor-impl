@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2016, 2017, 2018 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -80,11 +80,11 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
 			|| ipAddress.isLoopback()
 			|| netPort.getPort() == 25 // Port 25 cannot be monitored directly from several networks
 		) {
-			Host server = netMonitorSetting.getServer();
-			Server aoServer = server.getAOServer();
-			if(aoServer==null) throw new LocalizedIllegalArgumentException(accessor, "NetBindNodeWorker.server.notAOServer", server.toString());
+			Host host = netMonitorSetting.getServer();
+			Server linuxServer = host.getLinuxServer();
+			if(linuxServer==null) throw new LocalizedIllegalArgumentException(accessor, "NetBindNodeWorker.host.notLinuxServer", host.toString());
 			portMonitor = new AOServDaemonPortMonitor(
-				aoServer,
+				linuxServer,
 				ipAddress,
 				netPort,
 				currentNetBind.getAppProtocol().getProtocol(),

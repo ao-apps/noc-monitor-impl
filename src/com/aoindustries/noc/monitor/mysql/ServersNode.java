@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -34,24 +34,24 @@ public class ServersNode extends NodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	final HostNode serverNode;
-	private final Server aoServer;
+	final HostNode hostNode;
+	private final Server linuxServer;
 	private final List<ServerNode> mysqlServerNodes = new ArrayList<>();
 	private boolean started;
 
-	public ServersNode(HostNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	public ServersNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
-		this.serverNode = serverNode;
-		this.aoServer = aoServer;
+		this.hostNode = hostNode;
+		this.linuxServer = linuxServer;
 	}
 
 	@Override
 	public HostNode getParent() {
-		return serverNode;
+		return hostNode;
 	}
 
 	public Server getAOServer() {
-		return aoServer;
+		return linuxServer;
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class ServersNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(serverNode.hostsNode.rootNode.locale, "MySQLServersNode.label");
+		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "MySQLServersNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -103,7 +103,7 @@ public class ServersNode extends NodeImpl {
 		synchronized(mysqlServerNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
-			serverNode.hostsNode.rootNode.conn.getMysql().getServer().addTableListener(tableListener, 100);
+			hostNode.hostsNode.rootNode.conn.getMysql().getServer().addTableListener(tableListener, 100);
 		}
 		verifyMySQLServers();
 	}
@@ -111,10 +111,10 @@ public class ServersNode extends NodeImpl {
 	public void stop() {
 		synchronized(mysqlServerNodes) {
 			started = false;
-			serverNode.hostsNode.rootNode.conn.getMysql().getServer().removeTableListener(tableListener);
+			hostNode.hostsNode.rootNode.conn.getMysql().getServer().removeTableListener(tableListener);
 			for(ServerNode mysqlServerNode : mysqlServerNodes) {
 				mysqlServerNode.stop();
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			mysqlServerNodes.clear();
 		}
@@ -127,7 +127,7 @@ public class ServersNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<com.aoindustries.aoserv.client.mysql.Server> mysqlServers = aoServer.getMySQLServers();
+		List<com.aoindustries.aoserv.client.mysql.Server> mysqlServers = linuxServer.getMySQLServers();
 		synchronized(mysqlServerNodes) {
 			if(started) {
 				// Remove old ones
@@ -138,7 +138,7 @@ public class ServersNode extends NodeImpl {
 					if(!mysqlServers.contains(mysqlServer)) {
 						mysqlServerNode.stop();
 						mysqlServerNodeIter.remove();
-						serverNode.hostsNode.rootNode.nodeRemoved();
+						hostNode.hostsNode.rootNode.nodeRemoved();
 					}
 				}
 				// Add new ones
@@ -149,7 +149,7 @@ public class ServersNode extends NodeImpl {
 						ServerNode mysqlServerNode = new ServerNode(this, mysqlServer, port, csf, ssf);
 						mysqlServerNodes.add(c, mysqlServerNode);
 						mysqlServerNode.start();
-						serverNode.hostsNode.rootNode.nodeAdded();
+						hostNode.hostsNode.rootNode.nodeAdded();
 					}
 				}
 			}
@@ -157,12 +157,11 @@ public class ServersNode extends NodeImpl {
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(serverNode.getPersistenceDirectory(), "mysql_servers");
+		File dir = new File(hostNode.getPersistenceDirectory(), "mysql_servers");
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
-						serverNode.hostsNode.rootNode.locale,
+					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

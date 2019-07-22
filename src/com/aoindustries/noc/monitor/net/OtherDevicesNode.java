@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -41,16 +41,16 @@ public class OtherDevicesNode extends HostsNode {
 	}
 
 	@Override
-	protected boolean includeServer(Host server) throws SQLException, IOException {
-		PhysicalServer physicalServer = server.getPhysicalServer();
-		Server aoServer = server.getAOServer();
+	protected boolean includeHost(Host host) throws SQLException, IOException {
+		PhysicalServer physicalServer = host.getPhysicalServer();
+		Server linuxServer = host.getLinuxServer();
 		return
 			// Is not a physical server
 			(physicalServer==null || physicalServer.getRam()==-1)
 			// Is not a Xen dom0
-			&& server.getVirtualServer()==null
+			&& host.getVirtualServer()==null
 			// Is not an ao-box in fail-over
-			&& (aoServer==null || aoServer.getFailoverServer()==null)
+			&& (linuxServer==null || linuxServer.getFailoverServer()==null)
 		;
 	}
 }

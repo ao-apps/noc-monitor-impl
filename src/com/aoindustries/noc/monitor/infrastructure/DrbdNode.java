@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -25,7 +25,7 @@ public class DrbdNode extends TableResultNodeImpl {
 
 	public DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
-			raidNode.serverNode.hostsNode.rootNode,
+			raidNode.hostNode.hostsNode.rootNode,
 			raidNode,
 			DrbdNodeWorker.getWorker(
 				new File(raidNode.getPersistenceDirectory(), "drbdstatus"),

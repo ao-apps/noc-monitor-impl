@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016, 2017, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -145,13 +145,13 @@ public class BindsNode extends NodeImpl {
 
 	static class NetMonitorSetting implements Comparable<NetMonitorSetting> {
 
-		private final Host server;
+		private final Host host;
 		private final Bind netBind;
 		private final InetAddress ipAddress;
 		private final Port port;
 
-		private NetMonitorSetting(Host server, Bind netBind, InetAddress ipAddress, Port port) {
-			this.server = server;
+		private NetMonitorSetting(Host host, Bind netBind, InetAddress ipAddress, Port port) {
+			this.host = host;
 			this.netBind = netBind;
 			this.ipAddress = ipAddress;
 			this.port = port;
@@ -160,7 +160,7 @@ public class BindsNode extends NodeImpl {
 		@Override
 		public int compareTo(NetMonitorSetting o) {
 			// Host
-			int diff = server.compareTo(o.server);
+			int diff = host.compareTo(o.host);
 			if(diff!=0) return diff;
 			// IP
 			diff = ipAddress.compareTo(o.ipAddress);
@@ -176,7 +176,7 @@ public class BindsNode extends NodeImpl {
 			NetMonitorSetting other = (NetMonitorSetting)O;
 			return
 				port==other.port
-				&& server.equals(other.server)
+				&& host.equals(other.host)
 				&& netBind.equals(other.netBind)
 				&& ipAddress.equals(other.ipAddress)
 			;
@@ -185,7 +185,7 @@ public class BindsNode extends NodeImpl {
 		@Override
 		public int hashCode() {
 			int hash = 7;
-			hash = 11 * hash + server.hashCode();
+			hash = 11 * hash + host.hashCode();
 			hash = 11 * hash + netBind.hashCode();
 			hash = 11 * hash + ipAddress.hashCode();
 			hash = 11 * hash + port.hashCode();
@@ -196,7 +196,7 @@ public class BindsNode extends NodeImpl {
 		 * Gets the Host for this port.
 		 */
 		Host getServer() {
-			return server;
+			return host;
 		}
 
 		Bind getNetBind() {
@@ -228,9 +228,9 @@ public class BindsNode extends NodeImpl {
 		List<Bind> directNetBinds = ipAddress.getNetBinds();
 
 		// Find the wildcard IP address, if available
-		Host server = device.getServer();
+		Host host = device.getHost();
 		IpAddress wildcard = null;
-		for(IpAddress ia : server.getIPAddresses()) {
+		for(IpAddress ia : host.getIPAddresses()) {
 			if(ia.getInetAddress().isUnspecified()) {
 				wildcard = ia;
 				break;
@@ -238,7 +238,7 @@ public class BindsNode extends NodeImpl {
 		}
 		List<Bind> wildcardNetBinds;
 		if(wildcard==null) wildcardNetBinds = Collections.emptyList();
-		else wildcardNetBinds = server.getNetBinds(wildcard);
+		else wildcardNetBinds = host.getNetBinds(wildcard);
 
 		InetAddress inetaddress = ipAddress.getInetAddress();
 		List<NetMonitorSetting> netMonitorSettings = new ArrayList<>(directNetBinds.size() + wildcardNetBinds.size());
@@ -246,7 +246,7 @@ public class BindsNode extends NodeImpl {
 			if(netBind.isMonitoringEnabled() && !netBind.isDisabled()) {
 				netMonitorSettings.add(
 					new NetMonitorSetting(
-						server,
+						host,
 						netBind,
 						inetaddress,
 						netBind.getPort()
@@ -258,7 +258,7 @@ public class BindsNode extends NodeImpl {
 			if(netBind.isMonitoringEnabled() && !netBind.isDisabled()) {
 				netMonitorSettings.add(
 					new NetMonitorSetting(
-						server,
+						host,
 						netBind,
 						inetaddress,
 						netBind.getPort()

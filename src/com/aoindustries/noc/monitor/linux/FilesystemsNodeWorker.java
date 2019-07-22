@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2017, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -39,29 +39,29 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 	private static final Logger logger = Logger.getLogger(FilesystemsNodeWorker.class.getName());
 
 	/**
-	 * One unique worker is made per persistence file (and should match the aoServer exactly)
+	 * One unique worker is made per persistence file (and should match the linuxServer exactly)
 	 */
 	private static final Map<String, FilesystemsNodeWorker> workerCache = new HashMap<>();
-	static FilesystemsNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
+	static FilesystemsNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			FilesystemsNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new FilesystemsNodeWorker(persistenceFile, aoServer);
+				worker = new FilesystemsNodeWorker(persistenceFile, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
+				if(!worker.linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker.linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server aoServer;
+	final private Server linuxServer;
 
-	FilesystemsNodeWorker(File persistenceFile, Server aoServer) {
+	FilesystemsNodeWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);
-		this.aoServer = aoServer;
+		this.linuxServer = linuxServer;
 	}
 
 	/**
@@ -132,7 +132,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 
 	@Override
 	protected List<String> getQueryResult() throws Exception {
-		String report = aoServer.getFilesystemsCsvReport();
+		String report = linuxServer.getFilesystemsCsvReport();
 
 		CSVParse csvParser = new CSVParser(new CharArrayReader(report.toCharArray()));
 		try {
@@ -259,7 +259,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 
 		// Check for disk space percent
 		{
-			String hostname = aoServer.getHostname().toString();
+			String hostname = linuxServer.getHostname().toString();
 			String mountpoint = tableData.get(index).toString();
 			String use = tableData.get(index+5).toString();
 			if(!use.endsWith("%")) throw new IOException("use doesn't end with '%': "+use);

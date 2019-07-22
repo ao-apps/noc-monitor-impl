@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -27,26 +27,26 @@ public class HardDrivesNode extends NodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	final HostNode serverNode;
-	private final Server _aoServer;
+	final HostNode hostNode;
+	private final Server _linuxServer;
 
 	private boolean started;
 
 	volatile private HardDrivesTemperatureNode _hardDriveTemperatureNode;
 
-	public HardDrivesNode(HostNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	public HardDrivesNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
-		this.serverNode = serverNode;
-		this._aoServer = aoServer;
+		this.hostNode = hostNode;
+		this._linuxServer = linuxServer;
 	}
 
 	@Override
 	public HostNode getParent() {
-		return serverNode;
+		return hostNode;
 	}
 
-	public Server getAOServer() {
-		return _aoServer;
+	public Server getLinuxServer() {
+		return _linuxServer;
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class HardDrivesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(serverNode.hostsNode.rootNode.locale, "HardDrivesNode.label");
+		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "HardDrivesNode.label");
 	}
 
 	public void start() throws IOException {
@@ -91,7 +91,7 @@ public class HardDrivesNode extends NodeImpl {
 			if(_hardDriveTemperatureNode==null) {
 				_hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
 				_hardDriveTemperatureNode.start();
-				serverNode.hostsNode.rootNode.nodeAdded();
+				hostNode.hostsNode.rootNode.nodeAdded();
 			}
 		}
 	}
@@ -102,18 +102,17 @@ public class HardDrivesNode extends NodeImpl {
 			if(_hardDriveTemperatureNode!=null) {
 				_hardDriveTemperatureNode.stop();
 				_hardDriveTemperatureNode = null;
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 		}
 	}
 
 	File getPersistenceDirectory() throws IOException {
-		File dir = new File(serverNode.getPersistenceDirectory(), "hard_drives");
+		File dir = new File(hostNode.getPersistenceDirectory(), "hard_drives");
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
-						serverNode.hostsNode.rootNode.locale,
+					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

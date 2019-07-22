@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -23,7 +23,7 @@ public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRate
 
 	DeviceBitRateNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
-			netDeviceNode._networkDevicesNode.serverNode.hostsNode.rootNode,
+			netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
 			netDeviceNode,
 			DeviceBitRateNodeWorker.getWorker(
 				netDeviceNode.getPersistenceDirectory(),

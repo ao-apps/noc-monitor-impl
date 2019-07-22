@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2016, 2017, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -103,10 +103,10 @@ public class AOServClusterBuilder {
 	/**
 	 * Determines if the provide Server is an enabled Dom0.
 	 */
-	private static boolean isEnabledDom0(Server aoServer) throws SQLException, IOException {
-		Host server = aoServer.getServer();
-		if(!server.isMonitoringEnabled()) return false;
-		OperatingSystemVersion osvObj = server.getOperatingSystemVersion();
+	private static boolean isEnabledDom0(Server linuxServer) throws SQLException, IOException {
+		Host host = linuxServer.getHost();
+		if(!host.isMonitoringEnabled()) return false;
+		OperatingSystemVersion osvObj = host.getOperatingSystemVersion();
 		if(osvObj==null) return false;
 		int osv = osvObj.getPkey();
 		if(
@@ -115,10 +115,10 @@ public class AOServClusterBuilder {
 			&& osv != OperatingSystemVersion.CENTOS_7_DOM0_X86_64
 		) return false;
 		// This should be a physical server and not a virtual server
-		PhysicalServer physicalServer = server.getPhysicalServer();
-		if(physicalServer==null) throw new SQLException("Dom0 server is not a physical server: "+aoServer);
-		VirtualServer virtualServer = server.getVirtualServer();
-		if(virtualServer!=null) throw new SQLException("Dom0 server is a virtual server: "+aoServer);
+		PhysicalServer physicalServer = host.getPhysicalServer();
+		if(physicalServer==null) throw new SQLException("Dom0 server is not a physical server: "+linuxServer);
+		VirtualServer virtualServer = host.getVirtualServer();
+		if(virtualServer!=null) throw new SQLException("Dom0 server is a virtual server: "+linuxServer);
 		return true;
 	}
 
@@ -130,7 +130,7 @@ public class AOServClusterBuilder {
 	 */
 	public static SortedSet<Cluster> getClusters(
 		final AOServConnector conn,
-		final List<Server> aoServers,
+		final List<Server> linuxServers,
 		final Map<String,Map<String,String>> hddModelReports,
 		final Map<String,Server.LvmReport> lvmReports,
 		final boolean useTarget
@@ -142,9 +142,9 @@ public class AOServClusterBuilder {
 		for(final ServerFarm serverFarm : serverFarms) {
 			// Only create the cluster if there is at least one dom0 machine
 			boolean foundDom0 = false;
-			for(Server aoServer : aoServers) {
-				if(isEnabledDom0(aoServer)) {
-					if(aoServer.getServer().getServerFarm().equals(serverFarm)) {
+			for(Server linuxServer : linuxServers) {
+				if(isEnabledDom0(linuxServer)) {
+					if(linuxServer.getHost().getServerFarm().equals(serverFarm)) {
 						foundDom0 = true;
 						break;
 					}
@@ -152,7 +152,7 @@ public class AOServClusterBuilder {
 			}
 			if(foundDom0) {
 				futures.add(
-					RootNodeImpl.executors.getUnbounded().submit(() -> getCluster(conn, serverFarm, aoServers, hddModelReports, lvmReports, useTarget))
+					RootNodeImpl.executors.getUnbounded().submit(() -> getCluster(conn, serverFarm, linuxServers, hddModelReports, lvmReports, useTarget))
 				);
 			}
 		}
@@ -174,7 +174,7 @@ public class AOServClusterBuilder {
 	public static Cluster getCluster(
 		AOServConnector conn,
 		ServerFarm serverFarm,
-		List<Server> aoServers,
+		List<Server> linuxServers,
 		Map<String,Map<String,String>> hddModelReports,
 		Map<String,Server.LvmReport> lvmReports,
 		boolean useTarget
@@ -184,18 +184,18 @@ public class AOServClusterBuilder {
 		Cluster cluster = new Cluster(serverFarm.getName());
 
 		// Get the Dom0s
-		for(Server aoServer : aoServers) {
-			if(isEnabledDom0(aoServer)) {
-				Host server = aoServer.getServer();
-				if(server.getServerFarm().equals(serverFarm)) {
-					PhysicalServer physicalServer = server.getPhysicalServer();
-					String hostname = aoServer.getHostname().toString();
+		for(Server linuxServer : linuxServers) {
+			if(isEnabledDom0(linuxServer)) {
+				Host host = linuxServer.getHost();
+				if(host.getServerFarm().equals(serverFarm)) {
+					PhysicalServer physicalServer = host.getPhysicalServer();
+					String hostname = linuxServer.getHostname().toString();
 					cluster = cluster.addDom0(
 						hostname,
 						/*rack,*/
 						physicalServer.getRam(),
 						ProcessorType.valueOf(physicalServer.getProcessorType().getType()),
-						ProcessorArchitecture.valueOf(server.getOperatingSystemVersion().getArchitecture(conn).getName().toUpperCase(Locale.ENGLISH)),
+						ProcessorArchitecture.valueOf(host.getOperatingSystemVersion().getArchitecture(conn).getName().toUpperCase(Locale.ENGLISH)),
 						physicalServer.getProcessorSpeed(),
 						physicalServer.getProcessorCores(),
 						physicalServer.getSupportsHvm()
@@ -261,9 +261,9 @@ public class AOServClusterBuilder {
 				if(physicalServer==null && virtualServer==null) throw new SQLException("Host is neither a physical server nor a virtual server: "+host);
 				if(physicalServer!=null && virtualServer!=null) throw new SQLException("Host is both a physical server and a virtual server: "+host);
 				if(virtualServer!=null) {
-					// Must always be in the package with the same name as the root business
+					// Must always be in the package with the same name as the root account
 					Account.Name packageName = host.getPackage().getName();
-					if(!packageName.equals(rootAccounting)) throw new SQLException("All virtual servers should have a package name equal to the root business name: servers.package.name!=root_business.accounting: "+packageName+"!="+rootAccounting);
+					if(!packageName.equals(rootAccounting)) throw new SQLException("All virtual servers should have a package name equal to the root account name: servers.package.name!=root_account.accounting: "+packageName+"!="+rootAccounting);
 					String hostname = host.getName();
 					cluster = cluster.addDomU(
 						hostname,
@@ -309,13 +309,13 @@ public class AOServClusterBuilder {
 		final Map<String,List<Server.DrbdReport>> drbdReports,
 		final Map<String,Server.LvmReport> lvmReports
 	) throws SQLException, ParseException, InterruptedException, ExecutionException, IOException {
-		//final List<Server> aoServers = conn.aoServers.getRows();
-		//final Map<String,Map<String,String>> hddModelReports = getHddModelReports(aoServers, locale);
-		//final Map<String,List<Server.DrbdReport>> drbdReports = getDrbdReports(aoServers, locale);
-		//final Map<String,Server.LvmReport> lvmReports = getLvmReports(aoServers, locale);
+		//final List<Server> linuxServers = conn.linuxServers.getRows();
+		//final Map<String,Map<String,String>> hddModelReports = getHddModelReports(linuxServers, locale);
+		//final Map<String,List<Server.DrbdReport>> drbdReports = getDrbdReports(linuxServers, locale);
+		//final Map<String,Server.LvmReport> lvmReports = getLvmReports(linuxServers, locale);
 
 		// Start concurrently
-		//SortedSet<Cluster> clusters = getClusters(conn, aoServers, hddModelReports, lvmReports);
+		//SortedSet<Cluster> clusters = getClusters(conn, linuxServers, hddModelReports, lvmReports);
 		List<Future<ClusterConfiguration>> futures = new ArrayList<>(clusters.size());
 		for(final Cluster cluster : clusters) {
 			futures.add(
@@ -337,16 +337,16 @@ public class AOServClusterBuilder {
 	 * any sanity checks on the data, it merely parses it and ensures correct values.
 	 */
 	public static Map<String,List<Server.DrbdReport>> getDrbdReports(
-		final List<Server> aoServers,
+		final List<Server> linuxServers,
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
 		// Query concurrently for each of the drbdcstate's to get a good snapshot and determine primary/secondary locations
-		Map<String,Future<List<Server.DrbdReport>>> futures = new HashMap<>(aoServers.size()*4/3+1);
-		for(final Server aoServer : aoServers) {
-			if(isEnabledDom0(aoServer)) {
+		Map<String,Future<List<Server.DrbdReport>>> futures = new HashMap<>(linuxServers.size()*4/3+1);
+		for(final Server linuxServer : linuxServers) {
+			if(isEnabledDom0(linuxServer)) {
 				futures.put(
-					aoServer.getHostname().toString(),
-					RootNodeImpl.executors.getUnbounded().submit(aoServer::getDrbdReport)
+					linuxServer.getHostname().toString(),
+					RootNodeImpl.executors.getUnbounded().submit(linuxServer::getDrbdReport)
 				);
 			}
 		}
@@ -360,15 +360,15 @@ public class AOServClusterBuilder {
 	 * any sanity checks on the data, it merely parses it and ensures correct values.
 	 */
 	public static Map<String,Server.LvmReport> getLvmReports(
-		final List<Server> aoServers,
+		final List<Server> linuxServers,
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-		Map<String,Future<Server.LvmReport>> futures = new HashMap<>(aoServers.size()*4/3+1);
-		for(final Server aoServer : aoServers) {
-			if(isEnabledDom0(aoServer)) {
+		Map<String,Future<Server.LvmReport>> futures = new HashMap<>(linuxServers.size()*4/3+1);
+		for(final Server linuxServer : linuxServers) {
+			if(isEnabledDom0(linuxServer)) {
 				futures.put(
-					aoServer.getHostname().toString(),
-					RootNodeImpl.executors.getUnbounded().submit(aoServer::getLvmReport)
+					linuxServer.getHostname().toString(),
+					RootNodeImpl.executors.getUnbounded().submit(linuxServer::getLvmReport)
 				);
 			}
 		}
@@ -382,15 +382,15 @@ public class AOServClusterBuilder {
 	 * any sanity checks on the data, it merely parses it and ensures correct values.
 	 */
 	public static Map<String,Map<String,String>> getHddModelReports(
-		final List<Server> aoServers,
+		final List<Server> linuxServers,
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-		Map<String,Future<Map<String,String>>> futures = new HashMap<>(aoServers.size()*4/3+1);
-		for(final Server aoServer : aoServers) {
-			if(isEnabledDom0(aoServer)) {
+		Map<String,Future<Map<String,String>>> futures = new HashMap<>(linuxServers.size()*4/3+1);
+		for(final Server linuxServer : linuxServers) {
+			if(isEnabledDom0(linuxServer)) {
 				futures.put(
-					aoServer.getHostname().toString(),
-					RootNodeImpl.executors.getUnbounded().submit(aoServer::getHddModelReport)
+					linuxServer.getHostname().toString(),
+					RootNodeImpl.executors.getUnbounded().submit(linuxServer::getHddModelReport)
 				);
 			}
 		}

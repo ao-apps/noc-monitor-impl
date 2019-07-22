@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -31,8 +31,8 @@ public class RaidNode extends NodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	public final HostNode serverNode;
-	private final Server aoServer;
+	public final HostNode hostNode;
+	private final Server linuxServer;
 
 	private boolean started;
 
@@ -41,19 +41,19 @@ public class RaidNode extends NodeImpl {
 	volatile private MdMismatchNode _mdMismatchNode;
 	volatile private DrbdNode _drbdNode;
 
-	public RaidNode(HostNode serverNode, Server aoServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	public RaidNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
-		this.serverNode = serverNode;
-		this.aoServer = aoServer;
+		this.hostNode = hostNode;
+		this.linuxServer = linuxServer;
 	}
 
 	@Override
 	public HostNode getParent() {
-		return serverNode;
+		return hostNode;
 	}
 
 	public Server getAOServer() {
-		return aoServer;
+		return linuxServer;
 	}
 
 	@Override
@@ -96,13 +96,13 @@ public class RaidNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(serverNode.hostsNode.rootNode.locale, "RaidNode.label");
+		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "RaidNode.label");
 	}
 
 	public void start() throws IOException, SQLException {
 		// TODO: Operating system versions can change on-the-fly:
 		// We only have 3ware cards in xen outers
-		int osv = aoServer.getServer().getOperatingSystemVersion().getPkey();
+		int osv = linuxServer.getHost().getOperatingSystemVersion().getPkey();
 		synchronized(this) {
 			if(started) throw new IllegalStateException();
 			started = true;
@@ -113,19 +113,19 @@ public class RaidNode extends NodeImpl {
 				if(_threeWareRaidNode==null) {
 					_threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
 					_threeWareRaidNode.start();
-					serverNode.hostsNode.rootNode.nodeAdded();
+					hostNode.hostsNode.rootNode.nodeAdded();
 				}
 			}
 			// Any machine may have MD RAID (at least until all services run in Xen outers)
 			if(_mdStatNode==null) {
 				_mdStatNode = new MdStatNode(this, port, csf, ssf);
 				_mdStatNode.start();
-				serverNode.hostsNode.rootNode.nodeAdded();
+				hostNode.hostsNode.rootNode.nodeAdded();
 			}
 			if(_mdMismatchNode==null) {
 				_mdMismatchNode = new MdMismatchNode(this, port, csf, ssf);
 				_mdMismatchNode.start();
-				serverNode.hostsNode.rootNode.nodeAdded();
+				hostNode.hostsNode.rootNode.nodeAdded();
 			}
 			// We only run DRBD in xen outers
 			if(
@@ -136,7 +136,7 @@ public class RaidNode extends NodeImpl {
 				if(_drbdNode==null) {
 					_drbdNode = new DrbdNode(this, port, csf, ssf);
 					_drbdNode.start();
-					serverNode.hostsNode.rootNode.nodeAdded();
+					hostNode.hostsNode.rootNode.nodeAdded();
 				}
 			}
 		}
@@ -148,33 +148,32 @@ public class RaidNode extends NodeImpl {
 			if(_threeWareRaidNode!=null) {
 				_threeWareRaidNode.stop();
 				_threeWareRaidNode = null;
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			if(_mdStatNode!=null) {
 				_mdStatNode.stop();
 				_mdStatNode = null;
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			if(_mdMismatchNode!=null) {
 				_mdMismatchNode.stop();
 				_mdMismatchNode = null;
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 			if(_drbdNode!=null) {
 				_drbdNode.stop();
 				_drbdNode = null;
-				serverNode.hostsNode.rootNode.nodeRemoved();
+				hostNode.hostsNode.rootNode.nodeRemoved();
 			}
 		}
 	}
 
 	public File getPersistenceDirectory() throws IOException {
-		File dir = new File(serverNode.getPersistenceDirectory(), "raid");
+		File dir = new File(hostNode.getPersistenceDirectory(), "raid");
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
-						serverNode.hostsNode.rootNode.locale,
+					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

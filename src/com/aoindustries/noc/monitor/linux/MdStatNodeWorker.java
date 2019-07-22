@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -37,34 +37,34 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 	}
 
 	/**
-	 * One unique worker is made per persistence file (and should match the aoServer exactly)
+	 * One unique worker is made per persistence file (and should match the linuxServer exactly)
 	 */
 	private static final Map<String, MdStatNodeWorker> workerCache = new HashMap<>();
-	static MdStatNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
+	static MdStatNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			MdStatNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new MdStatNodeWorker(persistenceFile, aoServer);
+				worker = new MdStatNodeWorker(persistenceFile, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
+				if(!worker.linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker.linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server aoServer;
+	final private Server linuxServer;
 
-	MdStatNodeWorker(File persistenceFile, Server aoServer) {
+	MdStatNodeWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);
-		this.aoServer = aoServer;
+		this.linuxServer = linuxServer;
 	}
 
 	@Override
 	protected String getReport() throws IOException, SQLException {
-		return aoServer.getMdStatReport();
+		return linuxServer.getMdStatReport();
 	}
 
 	/**
@@ -189,11 +189,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 										final AlertLevel alertLevel;
 										final Function<Locale,String> alertMessage;
 										if(lastRaidLevel==RaidLevel.RAID1) {
-											if(upCount==1 && downCount==0) {
-												// xen917-4.fc.aoindustries.com has a bad drive we don't fix, this is normal for it
-												/*if(aoServer.getHostname().toString().equals("xen917-4.fc.aoindustries.com")) alertLevel = AlertLevel.NONE;
-												else*/ alertLevel = AlertLevel.MEDIUM;
-											}
+											if(upCount==1 && downCount==0) alertLevel = AlertLevel.MEDIUM;
 											else if(downCount==0) alertLevel = AlertLevel.NONE;
 											else if(upCount>=3) alertLevel = AlertLevel.LOW;
 											else if(upCount==2) alertLevel = AlertLevel.MEDIUM;

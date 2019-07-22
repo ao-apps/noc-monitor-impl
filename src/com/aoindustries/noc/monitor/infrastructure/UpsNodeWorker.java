@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, 2013, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2012, 2013, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -58,28 +58,28 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 	private static final float HIGH_ITEMP = 35; // Was 30 for a long time, but ups907 jumped from 28.5 to 32.4 in mid March 2014.
 
 	/**
-	 * One unique worker is made per persistence directory (and should match aoServer exactly)
+	 * One unique worker is made per persistence directory (and should match linuxServer exactly)
 	 */
 	private static final Map<String, UpsNodeWorker> workerCache = new HashMap<>();
-	static UpsNodeWorker getWorker(File persistenceDirectory, Server aoServer) throws IOException {
+	static UpsNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			UpsNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new UpsNodeWorker(persistenceDirectory, aoServer);
+				worker = new UpsNodeWorker(persistenceDirectory, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
+				if(!worker._linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker._linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
-	final private Server _aoServer;
+	final private Server _linuxServer;
 
-	private UpsNodeWorker(File persistenceDirectory, Server aoServer) throws IOException {
+	private UpsNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		super(new File(persistenceDirectory, "ups"), new UpsResultSerializer());
-		this._aoServer = aoServer;
+		this._linuxServer = linuxServer;
 	}
 
 	/**
@@ -100,7 +100,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 
 	@Override
 	protected UpsStatus getSample() throws Exception {
-		return new UpsStatus(_aoServer.getUpsStatus());
+		return new UpsStatus(_linuxServer.getUpsStatus());
 	}
 
 	@Override

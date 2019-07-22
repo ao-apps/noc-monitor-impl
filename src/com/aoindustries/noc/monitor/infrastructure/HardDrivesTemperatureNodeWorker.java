@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -48,29 +48,29 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	;
 
 	/**
-	 * One unique worker is made per persistence file (and should match the aoServer exactly)
+	 * One unique worker is made per persistence file (and should match the linuxServer exactly)
 	 */
 	private static final Map<String, HardDrivesTemperatureNodeWorker> workerCache = new HashMap<>();
-	static HardDrivesTemperatureNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
+	static HardDrivesTemperatureNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			HardDrivesTemperatureNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new HardDrivesTemperatureNodeWorker(persistenceFile, aoServer);
+				worker = new HardDrivesTemperatureNodeWorker(persistenceFile, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
+				if(!worker.linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker.linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server aoServer;
+	final private Server linuxServer;
 
-	HardDrivesTemperatureNodeWorker(File persistenceFile, Server aoServer) {
+	HardDrivesTemperatureNodeWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);
-		this.aoServer = aoServer;
+		this.linuxServer = linuxServer;
 	}
 
 	/**
@@ -116,7 +116,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 
 	@Override
 	protected List<String> getQueryResult() throws Exception {
-		String report = aoServer.getHddTempReport();
+		String report = linuxServer.getHddTempReport();
 		List<String> lines = StringUtility.splitLines(report);
 		List<String> tableData = new ArrayList<>(lines.size()*3);
 		int lineNum = 0;
@@ -160,7 +160,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 				boolean parsed;
 				if(value.endsWith(" C")) {
 					// A few hard drives read much differently than other drives, offset the thresholds here
-//					String hostname = aoServer.getHostname().toString();
+//					String hostname = linuxServer.getHostname().toString();
 //					String device = tableData.get(index);
 					int offset;
 //                    if(

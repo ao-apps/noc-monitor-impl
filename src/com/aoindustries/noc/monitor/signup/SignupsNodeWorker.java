@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2015, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2015, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -138,7 +138,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 
 		// Add the aoserv signups
 		for(Request request : conn.getSignup().getRequest()) {
-			tableData.add(request.getPackageDefinition().getBusiness().getName());
+			tableData.add(request.getPackageDefinition().getAccount().getName());
 			tableData.add(request.getPkey());
 			tableData.add(new TimeWithTimeZone(request.getTime().getTime()));
 			tableData.add(request.getIpAddress());

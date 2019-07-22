@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2014, 2016, 2017, 2018 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -107,7 +107,7 @@ public class ServerNode extends NodeImpl {
 	};
 
 	void start() throws IOException, SQLException {
-		RootNodeImpl rootNode = _mysqlServersNode.serverNode.hostsNode.rootNode;
+		RootNodeImpl rootNode = _mysqlServersNode.hostNode.hostsNode.rootNode;
 		synchronized(this) {
 			if(started) throw new IllegalStateException();
 			started = true;
@@ -128,7 +128,7 @@ public class ServerNode extends NodeImpl {
 	void stop() {
 		synchronized(this) {
 			started = false;
-			RootNodeImpl rootNode = _mysqlServersNode.serverNode.hostsNode.rootNode;
+			RootNodeImpl rootNode = _mysqlServersNode.hostNode.hostsNode.rootNode;
 			if(_mysqlSlavesNode!=null) {
 				_mysqlSlavesNode.stop();
 				_mysqlSlavesNode = null;
@@ -157,13 +157,13 @@ public class ServerNode extends NodeImpl {
 					if(_mysqlSlavesNode==null) {
 						_mysqlSlavesNode = new SlavesNode(this, port, csf, ssf);
 						_mysqlSlavesNode.start();
-						_mysqlServersNode.serverNode.hostsNode.rootNode.nodeAdded();
+						_mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
 					}
 				} else {
 					if(_mysqlSlavesNode!=null) {
 						_mysqlSlavesNode.stop();
 						_mysqlSlavesNode = null;
-						_mysqlServersNode.serverNode.hostsNode.rootNode.nodeRemoved();
+						_mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
 					}
 				}
 			}
@@ -176,7 +176,7 @@ public class ServerNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						_mysqlServersNode.serverNode.hostsNode.rootNode.locale,
+						_mysqlServersNode.hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

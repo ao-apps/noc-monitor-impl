@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -23,11 +23,11 @@ public class HardDrivesTemperatureNode extends TableResultNodeImpl {
 
 	HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
-			hardDrivesNode.serverNode.hostsNode.rootNode,
+			hardDrivesNode.hostNode.hostsNode.rootNode,
 			hardDrivesNode,
 			HardDrivesTemperatureNodeWorker.getWorker(
 				new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
-				hardDrivesNode.getAOServer()
+				hardDrivesNode.getLinuxServer()
 			),
 			port,
 			csf,

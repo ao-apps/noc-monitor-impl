@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -25,29 +25,29 @@ import java.util.Map;
 class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,LoadAverageResult> {
 
 	/**
-	 * One unique worker is made per persistence directory (and should match aoServer exactly)
+	 * One unique worker is made per persistence directory (and should match linuxServer exactly)
 	 */
 	private static final Map<String, LoadAverageNodeWorker> workerCache = new HashMap<>();
-	static LoadAverageNodeWorker getWorker(File persistenceDirectory, Server aoServer) throws IOException {
+	static LoadAverageNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
 		synchronized(workerCache) {
 			LoadAverageNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new LoadAverageNodeWorker(persistenceDirectory, aoServer);
+				worker = new LoadAverageNodeWorker(persistenceDirectory, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker._aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker._aoServer+"!="+aoServer);
+				if(!worker._linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker._linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
-	final private Server _aoServer;
+	final private Server _linuxServer;
 	private Server currentAOServer;
 
-	private LoadAverageNodeWorker(File persistenceDirectory, Server aoServer) throws IOException {
+	private LoadAverageNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		super(new File(persistenceDirectory, "loadavg"), new LoadAverageResultSerializer());
-		this._aoServer = currentAOServer = aoServer;
+		this._linuxServer = currentAOServer = linuxServer;
 	}
 
 	@Override
@@ -58,7 +58,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>,Load
 	@Override
 	protected List<Number> getSample() throws Exception {
 		// Get the latest limits
-		currentAOServer = _aoServer.getTable().getConnector().getLinux().getServer().get(_aoServer.getPkey());
+		currentAOServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());
 		String loadavg = currentAOServer.getLoadAvgReport();
 		int pos1 = loadavg.indexOf(' ');
 		if(pos1==-1) throw new ParseException("Unable to find first space in loadavg", 0);

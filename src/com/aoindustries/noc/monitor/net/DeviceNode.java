@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012, 2014, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -115,7 +115,7 @@ public class DeviceNode extends NodeImpl {
 	};
 
 	void start() throws IOException, SQLException {
-		AOServConnector conn = _networkDevicesNode.serverNode.hostsNode.rootNode.conn;
+		AOServConnector conn = _networkDevicesNode.hostNode.hostsNode.rootNode.conn;
 		synchronized(childLock) {
 			if(started) throw new IllegalStateException();
 			started = true;
@@ -126,7 +126,7 @@ public class DeviceNode extends NodeImpl {
 	}
 
 	void stop() {
-		RootNodeImpl rootNode = _networkDevicesNode.serverNode.hostsNode.rootNode;
+		RootNodeImpl rootNode = _networkDevicesNode.hostNode.hostsNode.rootNode;
 		AOServConnector conn = rootNode.conn;
 		synchronized(childLock) {
 			started = false;
@@ -157,9 +157,9 @@ public class DeviceNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		RootNodeImpl rootNode = _networkDevicesNode.serverNode.hostsNode.rootNode;
+		RootNodeImpl rootNode = _networkDevicesNode.hostNode.hostsNode.rootNode;
 
-		Server aoServer = _networkDevicesNode.getServer().getAOServer();
+		Server linuxServer = _networkDevicesNode.getHost().getLinuxServer();
 		Device currentNetDevice = _device.getTable().getConnector().getNet().getDevice().get(_device.getPkey());
 		DeviceId netDeviceID = currentNetDevice.getDeviceId();
 		boolean hasIpAddresses = !currentNetDevice.getIPAddresses().isEmpty();
@@ -168,7 +168,7 @@ public class DeviceNode extends NodeImpl {
 			if(started) {
 				// bit rate and network bonding monitoring only supported for Server
 				if(
-					aoServer != null
+					linuxServer != null
 					// bit rate for non-loopback devices
 					&& !netDeviceID.isLoopback()
 					// and non-BMC
@@ -188,7 +188,7 @@ public class DeviceNode extends NodeImpl {
 				}
 				// bonding
 				if(
-					aoServer != null
+					linuxServer != null
 					&& (
 						_label.equals(DeviceId.BOND0) // TODO: Flag for "net_devices.isBonded"
 						|| _label.equals(DeviceId.BOND1)
@@ -231,7 +231,7 @@ public class DeviceNode extends NodeImpl {
 			if(!dir.mkdir()) {
 				throw new IOException(
 					accessor.getMessage(
-						_networkDevicesNode.serverNode.hostsNode.rootNode.locale,
+						_networkDevicesNode.hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

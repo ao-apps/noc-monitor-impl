@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2015, 2016, 2017, 2018 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -327,10 +327,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Make call from the daemon from privileged port
 			Device device = ipAddress.getDevice();
 			if(device==null) throw new SQLException(ipAddress+": Device not found");
-			Server aoServer = device.getServer().getAOServer();
-			if(aoServer==null) throw new SQLException(ipAddress+": Server not found");
+			Server linuxServer = device.getHost().getLinuxServer();
+			if(linuxServer==null) throw new SQLException(ipAddress+": Server not found");
 			com.aoindustries.net.InetAddress addressIp = com.aoindustries.net.InetAddress.valueOf(address.getHostAddress());
-			String statusLine = aoServer.checkSmtpBlacklist(ipAddress.getInetAddress(), addressIp);
+			String statusLine = linuxServer.checkSmtpBlacklist(ipAddress.getInetAddress(), addressIp);
 			// Return results
 			long endNanos = System.nanoTime();
 			AlertLevel alertLevel;
@@ -1082,7 +1082,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			((iam = ipAddress.getMonitoring()) != null)
 			&& iam.getCheckBlacklistsOverSmtp()
 			&& (device = ipAddress.getDevice()) != null
-			&& device.getServer().getAOServer() != null
+			&& device.getHost().getLinuxServer() != null
 		;
 		lookups = new ArrayList<>(checkSmtpBlacklist ? (rblBlacklists.length + 6) : rblBlacklists.length);
 		lookups.addAll(Arrays.asList(rblBlacklists));

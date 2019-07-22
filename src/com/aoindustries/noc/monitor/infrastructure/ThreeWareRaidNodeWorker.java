@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -30,34 +30,34 @@ import java.util.function.Function;
 class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 
 	/**
-	 * One unique worker is made per persistence file (and should match the aoServer exactly)
+	 * One unique worker is made per persistence file (and should match the linuxServer exactly)
 	 */
 	private static final Map<String, ThreeWareRaidNodeWorker> workerCache = new HashMap<>();
-	static ThreeWareRaidNodeWorker getWorker(File persistenceFile, Server aoServer) throws IOException {
+	static ThreeWareRaidNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
 		String path = persistenceFile.getCanonicalPath();
 		synchronized(workerCache) {
 			ThreeWareRaidNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				worker = new ThreeWareRaidNodeWorker(persistenceFile, aoServer);
+				worker = new ThreeWareRaidNodeWorker(persistenceFile, linuxServer);
 				workerCache.put(path, worker);
 			} else {
-				if(!worker.aoServer.equals(aoServer)) throw new AssertionError("worker.aoServer!=aoServer: "+worker.aoServer+"!="+aoServer);
+				if(!worker.linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker.linuxServer+"!="+linuxServer);
 			}
 			return worker;
 		}
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server aoServer;
+	final private Server linuxServer;
 
-	ThreeWareRaidNodeWorker(File persistenceFile, Server aoServer) {
+	ThreeWareRaidNodeWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);
-		this.aoServer = aoServer;
+		this.linuxServer = linuxServer;
 	}
 
 	@Override
 	protected String getReport() throws IOException, SQLException {
-		return aoServer.get3wareRaidReport();
+		return linuxServer.get3wareRaidReport();
 	}
 
 	/**
