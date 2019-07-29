@@ -41,6 +41,10 @@ import java.util.logging.Logger;
  *                /virtual
  *
  * TODO:
+ *
+ * monitor available entropy
+ * monitor master stats, including shared entropy pool
+ *
  * watch route scripts on gw1/gw2 pairs making sure consistent with each other
  * watchdog to detect failure between RMI client and server
  *     handle failed RMI
