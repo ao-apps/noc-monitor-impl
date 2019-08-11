@@ -1,12 +1,12 @@
 /*
- * Copyright 2018 by AO Industries, Inc.,
+ * Copyright 2018, 2019 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor.web;
 
-import com.aoindustries.io.CompressedDataInputStream;
-import com.aoindustries.io.CompressedDataOutputStream;
+import com.aoindustries.io.stream.StreamableInput;
+import com.aoindustries.io.stream.StreamableOutput;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
 import com.aoindustries.util.persistent.BufferedSerializer;
@@ -23,7 +23,7 @@ public class HttpdServerResultSerializer extends BufferedSerializer<HttpdServerR
 
 	@Override
 	protected void serialize(HttpdServerResult value, ByteArrayOutputStream buffer) throws IOException {
-		try (CompressedDataOutputStream out = new CompressedDataOutputStream(buffer)) {
+		try (StreamableOutput out = new StreamableOutput(buffer)) {
 			out.writeCompressedInt(VERSION);
 			out.writeLong(value.getTime());
 			out.writeLong(value.getLatency());
@@ -43,7 +43,7 @@ public class HttpdServerResultSerializer extends BufferedSerializer<HttpdServerR
 
 	@Override
 	public HttpdServerResult deserialize(InputStream rawIn) throws IOException {
-		try (CompressedDataInputStream in = new CompressedDataInputStream(rawIn)) {
+		try (StreamableInput in = new StreamableInput(rawIn)) {
 			int version = in.readCompressedInt();
 			if(version == 1) {
 				long time = in.readLong();
