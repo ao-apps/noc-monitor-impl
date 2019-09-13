@@ -21,6 +21,9 @@ import java.util.logging.Logger;
 /**
  * The main starting point for the monitor.
  *
+ * TODO: DNS lookups via dnsjava, cycle through all DNS entries slowly
+ *       ns1.aoindustries.com failed today (2019-09-13), so this is bumped up the list
+ *
  * TODO: bind/named: rndc status
  *
  * TODO: Monitor PDU load levels
