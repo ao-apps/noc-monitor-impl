@@ -23,6 +23,8 @@ import java.util.logging.Logger;
  *
  * TODO: DNS lookups via dnsjava, cycle through all DNS entries slowly
  *       ns1.aoindustries.com failed today (2019-09-13), so this is bumped up the list
+ *       During this failure, TCP connections were stalled 15 seconds, then successful.
+ *           So monitoring for connections taking over 10 seconds might also catch this failure mode.
  *
  * TODO: bind/named: rndc status
  *
