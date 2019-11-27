@@ -146,7 +146,10 @@ import java.util.logging.Logger;
  *      Certain application pool sizes, too, such as Tomcat and custom applications (aoserv-master)?
  *
  * Tomcat Manager monitoring
- * JMX
+ *    JMX
+ *
+ * Tomcat Log file monitoring (watch tomcat log files for key things like OutOfMemoryError and "Too many open files" (and translations?)
+ * Watch the jvm_crashes.log file?
  *
  * @author  AO Industries, Inc.
  */
