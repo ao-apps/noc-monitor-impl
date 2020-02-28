@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -103,8 +103,10 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 	 * is only incremented one step at a time per monitoring pass.  This makes
 	 * the resource more tolerant of intermittent problems, at the cost of
 	 * slower reaction time.
-	 *
-	 * @implSpec  Enabled by default
+	 * <p>
+	 * <b>Implementation Note:</b><br />
+	 * Enabled by default
+	 * </p>
 	 *
 	 * @see  SingleResultNodeWorker#isIncrementalRampUp(boolean)
 	 * @see  TableMultiResultNodeWorker#isIncrementalRampUp(boolean)

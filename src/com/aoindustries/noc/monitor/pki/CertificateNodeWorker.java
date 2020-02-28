@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -34,7 +34,10 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 	private static final int NUM_COLS = 3;
 
 	/**
-	 * @implNote  This is 5 minutes more than "CERTBOT_CACHE_DURATION" in aoserv-daemon/SslCertificateManager.java
+	 * <p>
+	 * <b>Implementation Note:</b><br />
+	 * This is 5 minutes more than "CERTBOT_CACHE_DURATION" in aoserv-daemon/SslCertificateManager.java
+	 * </p>
 	 */
 	private static final long NONE_SLEEP_DELAY = 60L * 60 * 1000;
 
