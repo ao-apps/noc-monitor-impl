@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2017, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -16,7 +16,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.Locale;
-import java.util.logging.Logger;
 
 /**
  * The main starting point for the monitor.
@@ -155,8 +154,6 @@ import java.util.logging.Logger;
  */
 public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 
-	private static final Logger logger = Logger.getLogger(MonitorImpl.class.getName());
-
 	private static final long serialVersionUID = 1L;
 
 	final private int port;
@@ -172,7 +169,7 @@ public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 
 	@Override
 	public RootNode login(Locale locale, User.Name username, String password) throws IOException, SQLException {
-		AOServConnector connector=AOServConnector.getConnector(username, password, logger);
+		AOServConnector connector = AOServConnector.getConnector(username, password);
 		connector.testConnect();
 		return RootNodeImpl.getRootNode(locale, connector, port, csf, ssf);
 	}

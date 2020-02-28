@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -370,7 +370,7 @@ public class ClusterResourceManagerTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		conn = AOServConnector.getConnector(logger);
+		conn = AOServConnector.getConnector();
 		try {
 			List<Server> linuxServers = conn.getLinux().getServer().getRows();
 			Locale locale = Locale.getDefault();
