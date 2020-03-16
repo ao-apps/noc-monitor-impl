@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2014, 2016, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,12 +7,12 @@ package com.aoindustries.noc.monitor.linux;
 
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.lang.EnumUtils;
+import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.SingleResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
-import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -100,7 +100,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 			);
 		}
 		String report = result.getReport();
-		List<String> lines = StringUtility.splitLines(report);
+		List<String> lines = Strings.splitLines(report);
 		RaidLevel lastRaidLevel = null;
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
 		Function<Locale,String> highestAlertMessage = null;

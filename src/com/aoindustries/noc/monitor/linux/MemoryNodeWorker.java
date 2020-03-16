@@ -1,18 +1,18 @@
 /*
- * Copyright 2008-2012, 2016, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008-2012, 2016, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor.linux;
 
 import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.ApproximateDisplayExactSize;
 import com.aoindustries.noc.monitor.common.MemoryResult;
-import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -78,7 +78,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 		long swapTotal = -1;
 		long swapFree = -1;
 
-		List<String> lines = StringUtility.splitLines(meminfo);
+		List<String> lines = Strings.splitLines(meminfo);
 		for(String line : lines) {
 			if(line.endsWith(" kB")) { //throw new ParseException("Line doesn't end with \" kB\": "+line, 0);
 				line = line.substring(0, line.length()-3);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, 2009, 2016, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008, 2009, 2016, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,6 +9,7 @@ import com.aoindustries.aoserv.client.backup.FileReplication;
 import com.aoindustries.aoserv.client.backup.FileReplicationLog;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
+import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
@@ -16,7 +17,6 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
-import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -170,10 +170,10 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 				//lineNum++;
 				Timestamp startTime = failoverFileLog.getStartTime();
 				tableData.add(new TimeWithTimeZone(startTime.getTime(), timeZone));
-				tableData.add(StringUtility.getTimeLengthString(failoverFileLog.getEndTime().getTime() - startTime.getTime()));
+				tableData.add(Strings.getTimeLengthString(failoverFileLog.getEndTime().getTime() - startTime.getTime()));
 				tableData.add(failoverFileLog.getScanned());
 				tableData.add(failoverFileLog.getUpdated());
-				tableData.add(StringUtility.getApproximateSize(failoverFileLog.getBytes()));
+				tableData.add(Strings.getApproximateSize(failoverFileLog.getBytes()));
 				tableData.add(failoverFileLog.isSuccessful());
 			}
 			return locale -> tableData;

@@ -1,17 +1,17 @@
 /*
- * Copyright 2008-2013, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2008-2013, 2016, 2018, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor.net;
 
 import com.aoindustries.aoserv.client.net.Device;
+import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
-import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -86,7 +86,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,Ne
 
 		// Get the current state
 		String stats = _currentNetDevice.getStatisticsReport();
-		List<String> lines = StringUtility.splitLines(stats);
+		List<String> lines = Strings.splitLines(stats);
 		if(lines.size()!=5) throw new ParseException("Should have five lines in the stats, have "+lines.size(), 0);
 		long thisStatsTime = Long.parseLong(lines.get(0));
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013, 2016, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2012-2013, 2016, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -9,8 +9,8 @@ import com.aoindustries.io.stream.StreamableInput;
 import com.aoindustries.io.stream.StreamableOutput;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
+import com.aoindustries.persistence.BufferedSerializer;
 import com.aoindustries.sql.MilliInterval;
-import com.aoindustries.util.persistent.BufferedSerializer;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;

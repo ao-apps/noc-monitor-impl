@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2017, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,13 +8,13 @@ package com.aoindustries.noc.monitor.linux;
 import com.Ostermiller.util.CSVParse;
 import com.Ostermiller.util.CSVParser;
 import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
-import com.aoindustries.util.StringUtility;
 import com.aoindustries.util.i18n.ThreadLocale;
 import java.io.CharArrayReader;
 import java.io.File;
@@ -164,9 +164,9 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 				if(line.length!=15) throw new IOException("line.length!=15: "+line.length);
 				tableData.add(line[0]); // mountpoint
 				tableData.add(line[1]); // device
-				tableData.add(StringUtility.getApproximateSize(Long.parseLong(line[2]))); // bytes
-				tableData.add(StringUtility.getApproximateSize(Long.parseLong(line[3]))); // used
-				tableData.add(StringUtility.getApproximateSize(Long.parseLong(line[4]))); // free
+				tableData.add(Strings.getApproximateSize(Long.parseLong(line[2]))); // bytes
+				tableData.add(Strings.getApproximateSize(Long.parseLong(line[3]))); // used
+				tableData.add(Strings.getApproximateSize(Long.parseLong(line[4]))); // free
 				tableData.add(line[5]); // use
 				//tableData.add(line[6]); // inodes
 				//tableData.add(line[7]); // iused

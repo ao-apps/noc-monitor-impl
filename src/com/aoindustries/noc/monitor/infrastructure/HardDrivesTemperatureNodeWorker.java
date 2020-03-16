@@ -1,11 +1,12 @@
 /*
- * Copyright 2008-2009, 2016, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor.infrastructure;
 
 import com.aoindustries.aoserv.client.linux.Server;
+import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
@@ -13,7 +14,6 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.text.LocalizedParseException;
-import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -117,12 +117,12 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	@Override
 	protected List<String> getQueryResult() throws Exception {
 		String report = linuxServer.getHddTempReport();
-		List<String> lines = StringUtility.splitLines(report);
+		List<String> lines = Strings.splitLines(report);
 		List<String> tableData = new ArrayList<>(lines.size()*3);
 		int lineNum = 0;
 		for(String line : lines) {
 			lineNum++;
-			List<String> values = StringUtility.splitString(line, ':');
+			List<String> values = Strings.splitString(line, ':');
 			if(values.size()!=3) {
 				throw new LocalizedParseException(
 					lineNum,

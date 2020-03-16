@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2016, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2016, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,12 +7,12 @@ package com.aoindustries.noc.monitor.infrastructure;
 
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.lang.EnumUtils;
+import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.SingleResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
-import com.aoindustries.util.StringUtility;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -81,7 +81,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
 		Function<Locale,String> highestAlertMessage = null;
 		if(!"\nNo controller found.\nMake sure appropriate AMCC/3ware device driver(s) are loaded.\n\n".equals(report)) {
-			List<String> lines = StringUtility.splitLines(report);
+			List<String> lines = Strings.splitLines(report);
 			// Should have at least four lines
 			if(lines.size()<4) {
 				return new AlertLevelAndMessage(
@@ -129,7 +129,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 			for(int c=3; c<lines.size(); c++) {
 				String line = lines.get(c);
 				if(line.length()>0) {
-					List<String> values = StringUtility.splitStringCommaSpace(line);
+					List<String> values = Strings.splitStringCommaSpace(line);
 					if(values.size()!=9) {
 						return new AlertLevelAndMessage(
 							AlertLevel.CRITICAL,

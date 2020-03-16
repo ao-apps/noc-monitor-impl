@@ -1,16 +1,16 @@
 /*
- * Copyright 2012-2013, 2016, 2018 by AO Industries, Inc.,
+ * Copyright 2012-2013, 2016, 2018, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
 package com.aoindustries.noc.monitor.infrastructure;
 
+import com.aoindustries.lang.Strings;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import com.aoindustries.sql.MilliInterval;
 import com.aoindustries.text.LocalizedParseException;
-import com.aoindustries.util.StringUtility;
 import java.text.ParseException;
 
 /**
@@ -131,7 +131,7 @@ class UpsStatus {
 		float _itemp = Float.NaN;
 
 		// Parse the status
-		for(String line : StringUtility.splitLines(upsStatus)) {
+		for(String line : Strings.splitLines(upsStatus)) {
 			int colonPos = line.indexOf(':');
 			if(colonPos==-1) throw new LocalizedParseException(0, accessor, "UpsStatus.parse.noColon", line);
 			String name = line.substring(0, colonPos).trim();
