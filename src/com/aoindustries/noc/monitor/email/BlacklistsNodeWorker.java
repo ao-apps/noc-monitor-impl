@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,7 +77,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	/**
 	 * The resolver timeout in milliseconds.
 	 */
-	private static final int RESOLVER_TIMEOUT = 5 * 1000;
+	private static final Duration RESOLVER_TIMEOUT = Duration.ofSeconds(5);
 
 	/**
 	 * The number of milliseconds to wait before trying a timed-out lookup.
@@ -132,7 +133,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		inCache.setMaxCache(300);
 		inCache.setMaxNCache(300);
 		Resolver resolver = Lookup.getDefaultResolver();
-		resolver.setTimeout(RESOLVER_TIMEOUT/1000, RESOLVER_TIMEOUT%1000);
+		resolver.setTimeout(RESOLVER_TIMEOUT);
 		if(logger.isLoggable(Level.FINE)) {
 			logger.log(Level.FINE, "maxCache={0}", inCache.getMaxCache());
 			logger.log(Level.FINE, "maxEntries={0}", inCache.getMaxEntries());
