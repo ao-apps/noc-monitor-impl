@@ -122,7 +122,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 		int lineNum = 0;
 		for(String line : lines) {
 			lineNum++;
-			List<String> values = Strings.splitString(line, ':');
+			List<String> values = Strings.split(line, ':');
 			if(values.size()!=3) {
 				throw new LocalizedParseException(
 					lineNum,

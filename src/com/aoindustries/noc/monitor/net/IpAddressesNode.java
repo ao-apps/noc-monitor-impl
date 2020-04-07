@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009, 2014, 2016, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2008-2009, 2014, 2016, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -8,6 +8,7 @@ package com.aoindustries.noc.monitor.net;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
+import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
@@ -15,7 +16,6 @@ import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
-import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;

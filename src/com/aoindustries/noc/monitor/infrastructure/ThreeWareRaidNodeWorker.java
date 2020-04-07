@@ -129,7 +129,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 			for(int c=3; c<lines.size(); c++) {
 				String line = lines.get(c);
 				if(line.length()>0) {
-					List<String> values = Strings.splitStringCommaSpace(line);
+					List<String> values = Strings.splitCommaSpace(line);
 					if(values.size()!=9) {
 						return new AlertLevelAndMessage(
 							AlertLevel.CRITICAL,

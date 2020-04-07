@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, 2014, 2016, 2017, 2018, 2019 by AO Industries, Inc.,
+ * Copyright 2009, 2014, 2016, 2017, 2018, 2019, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -7,6 +7,7 @@ package com.aoindustries.noc.monitor.mysql;
 
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Server;
+import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
@@ -14,7 +15,6 @@ import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
-import com.aoindustries.util.WrappedException;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
