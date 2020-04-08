@@ -137,9 +137,9 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						newRootNode.start();
 					} catch(ThreadDeath TD) {
 						throw TD;
-					} catch(RuntimeException | IOException | SQLException err) {
-						ErrorPrinter.printStackTraces(err);
-						logger.log(Level.SEVERE, null, err);
+					} catch(Throwable t) {
+						ErrorPrinter.printStackTraces(t);
+						logger.log(Level.SEVERE, null, t);
 					}
 				});
 				rootNodeCache.put(key, newRootNode);
@@ -228,30 +228,35 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		if(otherDevicesNode==null) {
+			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new OtherDevicesNode");
 			otherDevicesNode = new OtherDevicesNode(this, port, csf, ssf);
 			otherDevicesNode.start();
 			nodeAdded();
 		}
 
 		if(physicalServersNode==null) {
+			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new PhysicalServersNode");
 			physicalServersNode = new PhysicalServersNode(this, port, csf, ssf);
 			physicalServersNode.start();
 			nodeAdded();
 		}
 
 		if(virtualServersNode==null) {
+			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new VirtualServersNode");
 			virtualServersNode = new VirtualServersNode(this, port, csf, ssf);
 			virtualServersNode.start();
 			nodeAdded();
 		}
 
 		if(unallocatedNode==null) {
+			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new UnallocatedNode");
 			unallocatedNode = new UnallocatedNode(this, port, csf, ssf);
 			unallocatedNode.start();
 			nodeAdded();
 		}
 
 		if(signupsNode==null) {
+			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new SignupsNode");
 			signupsNode = new SignupsNode(this, port, csf, ssf);
 			signupsNode.start();
 			nodeAdded();
