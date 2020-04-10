@@ -100,9 +100,9 @@ order by net."Host.reverseFqdn"(se.name), vd.device;
 
  * @author  AO Industries, Inc.
  */
-public class ClusterResourceManagerTest extends TestCase {
+public class ClusterResourceManagerTODO extends TestCase {
 
-	private static final Logger logger = Logger.getLogger(ClusterResourceManagerTest.class.getName());
+	private static final Logger logger = Logger.getLogger(ClusterResourceManagerTODO.class.getName());
 
 	private static final boolean FIND_SHORTEST_PATH = true;
 
@@ -115,7 +115,7 @@ public class ClusterResourceManagerTest extends TestCase {
 	private AOServConnector conn;
 	private SortedSet<ClusterConfiguration> clusterConfigurations;
 
-	public ClusterResourceManagerTest(String testName) {
+	public ClusterResourceManagerTODO(String testName) {
 		super(testName);
 	}
 
@@ -423,7 +423,7 @@ public class ClusterResourceManagerTest extends TestCase {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite(ClusterResourceManagerTest.class);
+		TestSuite suite = new TestSuite(ClusterResourceManagerTODO.class);
 		return suite;
 	}
 
