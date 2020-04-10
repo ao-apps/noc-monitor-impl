@@ -52,7 +52,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 
 	/**
 	 * <p>
-	 * <b>Implementation Note:</b><br />
+	 * <b>Implementation Note:</b><br>
 	 * This is 5 minutes more than "CERTBOT_CACHE_DURATION" in aoserv-daemon/SslCertificateManager.java
 	 * </p>
 	 */

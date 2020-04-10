@@ -173,7 +173,7 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 	 * the resource more tolerant of intermittent problems, at the cost of
 	 * slower reaction time.
 	 * <p>
-	 * <b>Implementation Note:</b><br />
+	 * <b>Implementation Note:</b><br>
 	 * Enabled by default
 	 * </p>
 	 *
