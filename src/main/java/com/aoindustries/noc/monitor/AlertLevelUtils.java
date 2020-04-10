@@ -1,5 +1,5 @@
 /*
- * Copyright 2014, 2018 by AO Industries, Inc.,
+ * Copyright 2014, 2018, 2020 by AO Industries, Inc.,
  * 7262 Bull Pen Cir, Mobile, Alabama, 36695, U.S.A.
  * All rights reserved.
  */
@@ -70,10 +70,10 @@ public class AlertLevelUtils {
 	 * If all nodes are null, alert level is NONE.
 	 */
 	public static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2) {
-        AlertLevel level = AlertLevel.NONE;
-        level = getMaxAlertLevel(level, node1);
-        level = getMaxAlertLevel(level, node2);
-        return level;
+		AlertLevel level = AlertLevel.NONE;
+		level = getMaxAlertLevel(level, node1);
+		level = getMaxAlertLevel(level, node2);
+		return level;
 	}
 
 	/**
@@ -81,11 +81,11 @@ public class AlertLevelUtils {
 	 * If all nodes are null, alert level is NONE.
 	 */
 	public static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2, NodeImpl node3) {
-        AlertLevel level = AlertLevel.NONE;
-        level = getMaxAlertLevel(level, node1);
-        level = getMaxAlertLevel(level, node2);
-        level = getMaxAlertLevel(level, node3);
-        return level;
+		AlertLevel level = AlertLevel.NONE;
+		level = getMaxAlertLevel(level, node1);
+		level = getMaxAlertLevel(level, node2);
+		level = getMaxAlertLevel(level, node3);
+		return level;
 	}
 
 	/**
@@ -93,12 +93,12 @@ public class AlertLevelUtils {
 	 * If all nodes are null, alert level is NONE.
 	 */
 	public static AlertLevel getMaxAlertLevel(NodeImpl node1, NodeImpl node2, NodeImpl node3, NodeImpl node4) {
-        AlertLevel level = AlertLevel.NONE;
-        level = getMaxAlertLevel(level, node1);
-        level = getMaxAlertLevel(level, node2);
-        level = getMaxAlertLevel(level, node3);
-        level = getMaxAlertLevel(level, node4);
-        return level;
+		AlertLevel level = AlertLevel.NONE;
+		level = getMaxAlertLevel(level, node1);
+		level = getMaxAlertLevel(level, node2);
+		level = getMaxAlertLevel(level, node3);
+		level = getMaxAlertLevel(level, node4);
+		return level;
 	}
 
 	/**
@@ -106,11 +106,11 @@ public class AlertLevelUtils {
 	 * If all nodes are null, alert level is NONE.
 	 */
 	public static AlertLevel getMaxAlertLevel(NodeImpl ... nodes) {
-        AlertLevel level = AlertLevel.NONE;
+		AlertLevel level = AlertLevel.NONE;
 		for(NodeImpl node : nodes) {
-	        level = getMaxAlertLevel(level, node);
+			level = getMaxAlertLevel(level, node);
 		}
-        return level;
+		return level;
 	}
 
 	private AlertLevelUtils() {
