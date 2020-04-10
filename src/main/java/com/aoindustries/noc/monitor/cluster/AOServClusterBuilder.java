@@ -178,7 +178,7 @@ public class AOServClusterBuilder {
 		return Collections.unmodifiableSortedSet(
 			ConcurrentUtils.getAll(
 				futures,
-				new TreeSet<Cluster>()
+				new TreeSet<>()
 			)
 		);
 	}
@@ -344,7 +344,7 @@ public class AOServClusterBuilder {
 		return Collections.unmodifiableSortedSet(
 			ConcurrentUtils.getAll(
 				futures,
-				new TreeSet<ClusterConfiguration>()
+				new TreeSet<>()
 			)
 		);
 	}

@@ -45,6 +45,7 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * The workers for DRBD.
@@ -123,7 +124,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 					Long outOfSync = (Long)tableData.get(index + 6);
 					highestAlertMessage = locale -> ThreadLocale.set(
 						locale,
-						(ThreadLocale.Supplier<String>)() -> device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync
+						(Supplier<String>)() -> device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync
 					);
 				}
 			}

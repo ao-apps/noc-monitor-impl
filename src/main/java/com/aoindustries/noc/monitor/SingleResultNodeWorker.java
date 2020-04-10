@@ -34,6 +34,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -151,7 +152,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 			} catch(Exception err) {
 				error = locale -> ThreadLocale.set(
 					locale,
-					(ThreadLocale.Supplier<String>)() -> {
+					(Supplier<String>)() -> {
 						String msg = err.getLocalizedMessage();
 						if(msg == null || msg.isEmpty()) msg = err.toString();
 						return msg;

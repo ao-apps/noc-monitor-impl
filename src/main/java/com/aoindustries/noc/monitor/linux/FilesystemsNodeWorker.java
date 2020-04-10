@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -103,7 +104,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 						AlertLevel.CRITICAL,
 						locale -> ThreadLocale.set(
 							locale,
-							(ThreadLocale.Supplier<String>)() -> {
+							(Supplier<String>)() -> {
 								String msg = err.getLocalizedMessage();
 								if(msg == null || msg.isEmpty()) msg = err.toString();
 								return msg;
@@ -149,6 +150,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 
 	@Override
 	protected List<String> getQueryResult() throws Exception {
+		@SuppressWarnings("deprecation")
 		String report = linuxServer.getFilesystemsCsvReport();
 
 		CSVParse csvParser = new CSVParser(new CharArrayReader(report.toCharArray()));

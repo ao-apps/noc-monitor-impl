@@ -26,7 +26,6 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
-import com.aoindustries.net.AddressFamily;
 import com.aoindustries.net.DomainName;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
@@ -180,13 +179,14 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			this(basename, AlertLevel.LOW);
 		}
 
+		@SuppressWarnings("deprecation")
 		DnsBlacklist(String basename, AlertLevel maxAlertLevel) {
 			this.basename = basename;
 			this.maxAlertLevel = maxAlertLevel;
 			com.aoindustries.net.InetAddress ip = ipAddress.getExternalInetAddress();
 			if(ip==null) ip = ipAddress.getInetAddress();
-			AddressFamily addressFamily = ip.getAddressFamily();
-			if(addressFamily != AddressFamily.INET) throw new UnsupportedOperationException("Address family not yet implemented: " + addressFamily);
+			com.aoindustries.net.AddressFamily addressFamily = ip.getAddressFamily();
+			if(addressFamily != com.aoindustries.net.AddressFamily.INET) throw new UnsupportedOperationException("Address family not yet implemented: " + addressFamily);
 			int bits = IpAddress.getIntForIPAddress(ip.toString());
 			this.query =
 				new StringBuilder(16+basename.length())

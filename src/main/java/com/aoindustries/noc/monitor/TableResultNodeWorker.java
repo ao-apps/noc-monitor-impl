@@ -37,6 +37,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -172,7 +173,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 				);
 				tableData = locale -> ThreadLocale.set(
 					locale,
-					(ThreadLocale.Supplier<List<String>>)() -> {
+					(Supplier<List<String>>)() -> {
 						String msg = err.getLocalizedMessage();
 						if(msg == null || msg.isEmpty()) msg = err.toString();
 						return Collections.singletonList(
