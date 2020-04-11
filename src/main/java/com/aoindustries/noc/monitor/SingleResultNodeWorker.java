@@ -23,8 +23,8 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.SerializableFunction;
 import com.aoindustries.noc.monitor.common.SingleResult;
+import com.aoindustries.util.function.SerializableFunction;
 import com.aoindustries.util.i18n.ThreadLocale;
 import java.io.File;
 import java.util.ArrayList;
