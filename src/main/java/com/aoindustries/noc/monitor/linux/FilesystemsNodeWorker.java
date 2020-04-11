@@ -254,7 +254,6 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 
 		// Check for disk space percent
 		{
-			String hostname = linuxServer.getHostname().toString();
 			String mountpoint = tableData.get(index).toString();
 			String use = tableData.get(index+5).toString();
 			if(!use.endsWith("%")) throw new IOException("use doesn't end with '%': "+use);
