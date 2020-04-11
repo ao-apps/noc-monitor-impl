@@ -52,7 +52,7 @@ public final class ApplicationResources extends EditableResourceBundle {
 		super(
 			new Locale(""),
 			bundleSet,
-			new File(System.getProperty("user.home")+"/maven2/ao/noc-monitor/src/com/aoindustries/noc/monitor/ApplicationResources.properties")
+			new File(System.getProperty("user.home")+"/maven2/ao/noc/monitor/impl/src/main/resources/com/aoindustries/noc/monitor/ApplicationResources.properties")
 		);
 	}
 
