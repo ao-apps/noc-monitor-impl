@@ -122,7 +122,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 				<groupId>com.aoindustries</groupId><artifactId>aoserv-client</artifactId><version>1.84.1${POST-SNAPSHOT}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.aoindustries</groupId><artifactId>aoserv-cluster</artifactId><version>1.84.1-SNAPSHOT<!-- ${POST-SNAPSHOT} --></version>
+				<groupId>com.aoindustries</groupId><artifactId>aoserv-cluster</artifactId><version>1.84.1${POST-SNAPSHOT}</version>
 			</dependency>
 			<dependency>
 				<groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><version>${dnsjava.dnsjava.version}</version>
