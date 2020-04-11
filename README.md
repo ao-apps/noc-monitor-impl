@@ -24,9 +24,9 @@
 Implementation of [Network Operations Center Monitoring](https://github.com/aoindustries/noc-monitor).
 
 ## Project Links
-* [Project Home](https://aoindustries.com/noc-monitor-impl/)
-* [Changelog](https://aoindustries.com/noc-monitor-impl/changelog)
-* [API Docs](https://aoindustries.com/noc-monitor-impl/apidocs/)
+* [Project Home](https://aoindustries.com/noc/monitor/impl/)
+* [Changelog](https://aoindustries.com/noc/monitor/impl/changelog)
+* [API Docs](https://aoindustries.com/noc/monitor/impl/apidocs/)
 * [Maven Central Repository](https://search.maven.org/artifact/com.aoindustries/noc-monitor-impl)
 * [GitHub](https://github.com/aoindustries/noc-monitor-impl)
 
