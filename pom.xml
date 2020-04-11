@@ -82,7 +82,6 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 								<link>https://javadoc.io/doc/dnsjava/dnsjava/${dnsjava.dnsjava.version}/</link>
 								<link>https://aoindustries.com/noc/monitor/api/apidocs/</link>
 								<link>https://aoindustries.com/noc/monitor/portmon/apidocs/</link>
-								<link>https://ostermiller.org/utils/doc/</link>
 							</links>
 						</configuration>
 					</plugin>
@@ -134,9 +133,6 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 			<dependency>
 				<groupId>com.aoindustries</groupId><artifactId>noc-monitor-portmon</artifactId><version>1.0.0-SNAPSHOT<!-- ${POST-SNAPSHOT} --></version>
 			</dependency>
-			<dependency>
-				<groupId>org.ostermiller</groupId><artifactId>utils</artifactId><version>1.07.00</version>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -182,9 +178,6 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 		</dependency>
 		<dependency>
 			<groupId>com.aoindustries</groupId><artifactId>noc-monitor-portmon</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ostermiller</groupId><artifactId>utils</artifactId>
 		</dependency>
 	</dependencies>
 </project>

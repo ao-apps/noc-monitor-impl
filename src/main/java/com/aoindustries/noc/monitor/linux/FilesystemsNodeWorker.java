@@ -22,8 +22,6 @@
  */
 package com.aoindustries.noc.monitor.linux;
 
-import com.Ostermiller.util.CSVParse;
-import com.Ostermiller.util.CSVParser;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -38,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -122,9 +121,11 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 		return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
 	}
 
+	private static final int COLUMNS = 12;
+
 	@Override
 	protected int getColumns() {
-		return 12;
+		return COLUMNS;
 	}
 
 	@Override
@@ -148,59 +149,34 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 		);
 	}
 
+	private static final String toPercentString(Byte b) {
+		return (b == null) ? "" : (b + "%");
+	}
+
 	@Override
 	protected List<String> getQueryResult() throws Exception {
-		@SuppressWarnings("deprecation")
-		String report = linuxServer.getFilesystemsCsvReport();
+		Collection<Server.FilesystemReport> report = linuxServer.getFilesystemsReport().values();
 
-		CSVParse csvParser = new CSVParser(new CharArrayReader(report.toCharArray()));
-		try {
-			// Skip the columns
-			String[] line = csvParser.getLine();
-			if(line==null) throw new IOException("No lines from report");
-			if(line.length!=15) throw new IOException("First line of report doesn't have 15 columns: "+line.length);
-			if(
-				!"mountpoint".equals(line[0])
-				|| !"device".equals(line[1])
-				|| !"bytes".equals(line[2])
-				|| !"used".equals(line[3])
-				|| !"free".equals(line[4])
-				|| !"use".equals(line[5])
-				|| !"inodes".equals(line[6])
-				|| !"iused".equals(line[7])
-				|| !"ifree".equals(line[8])
-				|| !"iuse".equals(line[9])
-				|| !"fstype".equals(line[10])
-				|| !"mountoptions".equals(line[11])
-				|| !"extstate".equals(line[12])
-				|| !"extmaxmount".equals(line[13])
-				|| !"extchkint".equals(line[14])
-			) throw new IOException("First line is not the expected column labels");
-
-			// Read the report, line-by-line
-			List<String> tableData = new ArrayList<>(90); // Most servers don't have more than 6 filesystems
-			while((line=csvParser.getLine())!=null) {
-				if(line.length!=15) throw new IOException("line.length!=15: "+line.length);
-				tableData.add(line[0]); // mountpoint
-				tableData.add(line[1]); // device
-				tableData.add(Strings.getApproximateSize(Long.parseLong(line[2]))); // bytes
-				tableData.add(Strings.getApproximateSize(Long.parseLong(line[3]))); // used
-				tableData.add(Strings.getApproximateSize(Long.parseLong(line[4]))); // free
-				tableData.add(line[5]); // use
-				//tableData.add(line[6]); // inodes
-				//tableData.add(line[7]); // iused
-				//tableData.add(line[8]); // ifree
-				tableData.add(line[9]); // iuse
-				tableData.add(line[10]); // fstype
-				tableData.add(line[11]); // mountoptions
-				tableData.add(line[12]); // extstate
-				tableData.add(line[13]); // extmaxmount
-				tableData.add(line[14]); // extchkint
-			}
-			return tableData;
-		} finally {
-			csvParser.close();
+		// Read the report, line-by-line
+		List<String> tableData = new ArrayList<>(report.size() * COLUMNS);
+		for(Server.FilesystemReport fs : report) {
+			tableData.add(fs.getMountPoint()); // mountpoint
+			tableData.add(fs.getDevice()); // device
+			tableData.add(Strings.getApproximateSize(fs.getBytes())); // bytes
+			tableData.add(Strings.getApproximateSize(fs.getUsed())); // used
+			tableData.add(Strings.getApproximateSize(fs.getFree())); // free
+			tableData.add(toPercentString(fs.getUse())); // use
+			//tableData.add(line[6]); // inodes
+			//tableData.add(line[7]); // iused
+			//tableData.add(line[8]); // ifree
+			tableData.add(toPercentString(fs.getInodeUse())); // iuse
+			tableData.add(fs.getFsType()); // fstype
+			tableData.add(fs.getMountOptions()); // mountoptions
+			tableData.add(fs.getExtState()); // extstate
+			tableData.add(fs.getExtMaxMount()); // extmaxmount
+			tableData.add(fs.getExtCheckInterval()); // extchkint
 		}
+		return tableData;
 	}
 
 	@Override
