@@ -82,6 +82,8 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 								<link>https://javadoc.io/doc/dnsjava/dnsjava/${dnsjava.dnsjava.version}/</link>
 								<link>https://aoindustries.com/noc/monitor/api/apidocs/</link>
 								<link>https://aoindustries.com/noc/monitor/portmon/apidocs/</link>
+								<!-- Test Direct -->
+								<link>https://junit.org/junit4/javadoc/latest/</link>
 							</links>
 						</configuration>
 					</plugin>
