@@ -39,7 +39,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 		<description.html><![CDATA[Implementation of <a target="${javadoc.target}" href="https://aoindustries.com/noc/monitor/">Network Operations Center Monitoring</a>.]]></description.html>
 		<shortTitle>Impl</shortTitle>
 		<!-- Dependencies -->
-		<dnsjava.dnsjava.version>3.1.0</dnsjava.dnsjava.version>
+		<dnsjava.version>3.1.0</dnsjava.version>
 	</properties>
 
 	<name>NOC Monitor Impl</name>
@@ -65,26 +65,163 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 			<build>
 				<plugins>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId><artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack.offlinkLinks</id>
+								<phase>generate-sources</phase>
+								<goals><goal>unpack</goal></goals>
+								<configuration>
+									<artifactItems>
+										<!-- Direct -->
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>ao-collections</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/ao-collections</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>ao-concurrent</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/ao-concurrent</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>ao-dbc</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/ao-dbc</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>ao-lang</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/ao-lang</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>ao-net-types</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/ao-net-types</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>ao-persistence</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/ao-persistence</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>aocode-public</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/aocode-public</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>aoserv-client</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/aoserv-client</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>aoserv-cluster</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/aoserv-cluster</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>dnsjava</groupId><artifactId>dnsjava</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/dnsjava/dnsjava</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>noc-monitor-api</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/noc-monitor-api</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>com.aoindustries</groupId><artifactId>noc-monitor-portmon</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/noc-monitor-portmon</outputDirectory>
+										</artifactItem>
+										<!-- Test Direct -->
+										<artifactItem>
+											<groupId>junit</groupId><artifactId>junit</artifactId>
+											<classifier>javadoc</classifier><includes>element-list, package-list</includes>
+											<outputDirectory>${project.build.directory}/offlineLinks/junit/junit</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
 						<groupId>org.apache.maven.plugins</groupId><artifactId>maven-javadoc-plugin</artifactId>
 						<configuration>
 							<links>
 								<link>${javadoc.link.javase}</link>
 								<!-- Direct -->
-								<link>https://aoindustries.com/ao-collections/apidocs/</link>
-								<link>https://aoindustries.com/ao-concurrent/apidocs/</link>
-								<link>https://aoindustries.com/ao-dbc/apidocs/</link>
-								<link>https://aoindustries.com/ao-lang/apidocs/</link>
-								<link>https://aoindustries.com/ao-net-types/apidocs/</link>
-								<link>https://aoindustries.com/ao-persistence/apidocs/</link>
-								<link>https://aoindustries.com/aocode-public/apidocs/</link>
-								<link>https://aoindustries.com/aoserv/client/apidocs/</link>
-								<link>https://aoindustries.com/aoserv/cluster/apidocs/</link>
-								<link>https://javadoc.io/doc/dnsjava/dnsjava/${dnsjava.dnsjava.version}/</link>
-								<link>https://aoindustries.com/noc/monitor/api/apidocs/</link>
-								<link>https://aoindustries.com/noc/monitor/portmon/apidocs/</link>
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>ao-collections</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>ao-concurrent</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>ao-dbc</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>ao-lang</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>ao-net-types</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>ao-persistence</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>aocode-public</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>aoserv-client</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>aoserv-cluster</artifactId> -->
+								<!-- offlineLink: <groupId>dnsjava</groupId><artifactId>dnsjava</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>noc-monitor-api</artifactId> -->
+								<!-- offlineLink: <groupId>com.aoindustries</groupId><artifactId>noc-monitor-portmon</artifactId> -->
 								<!-- Test Direct -->
-								<link>https://junit.org/junit4/javadoc/latest/</link>
+								<!-- offlineLink: <groupId>junit</groupId><artifactId>junit</artifactId> -->
 							</links>
+							<offlineLinks>
+								<!-- Direct -->
+								<offlineLink>
+									<url>https://aoindustries.com/ao-collections/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/ao-collections</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/ao-concurrent/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/ao-concurrent</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/ao-dbc/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/ao-dbc</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/ao-lang/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/ao-lang</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/ao-net-types/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/ao-net-types</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/ao-persistence/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/ao-persistence</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/aocode-public/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/aocode-public</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/aoserv/client/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/aoserv-client</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/aoserv/cluster/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/aoserv-cluster</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://javadoc.io/doc/dnsjava/dnsjava/${dnsjava.dnsjava.version}/</url>
+									<location>${project.build.directory}/offlineLinks/dnsjava/dnsjava</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/noc/monitor/api/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/noc-monitor-api</location>
+								</offlineLink>
+								<offlineLink>
+									<url>https://aoindustries.com/noc/monitor/portmon/apidocs/</url>
+									<location>${project.build.directory}/offlineLinks/com.aoindustries/noc-monitor-portmon</location>
+								</offlineLink>
+								<!-- Test Direct -->
+								<offlineLink>
+									<url>https://junit.org/junit4/javadoc/latest/</url>
+									<location>${project.build.directory}/offlineLinks/junit/junit</location>
+								</offlineLink>
+							</offlineLinks>
 						</configuration>
 					</plugin>
 				</plugins>
@@ -123,7 +260,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 				<groupId>com.aoindustries</groupId><artifactId>aoserv-cluster</artifactId><version>1.84.1${POST-SNAPSHOT}</version>
 			</dependency>
 			<dependency>
-				<groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><version>${dnsjava.dnsjava.version}</version>
+				<groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><version>${dnsjava.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.aoindustries</groupId><artifactId>noc-monitor-api</artifactId><version>1.0.0${POST-SNAPSHOT}</version>
