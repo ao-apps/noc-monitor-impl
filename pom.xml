@@ -29,7 +29,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 		<relativePath>../../../ao-oss-parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>com.aoindustries</groupId><artifactId>noc-monitor-impl</artifactId><version>1.0.0-POST-SNAPSHOT</version>
+	<groupId>com.aoindustries</groupId><artifactId>noc-monitor-impl</artifactId><version>1.0.4-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<properties>
@@ -227,7 +227,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 				<groupId>com.aoindustries</groupId><artifactId>ao-dbc</artifactId><version>1.4.0${POST-SNAPSHOT}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.aoindustries</groupId><artifactId>ao-lang</artifactId><version>4.3.1${POST-SNAPSHOT}</version>
+				<groupId>com.aoindustries</groupId><artifactId>ao-lang</artifactId><version>4.4.0-SNAPSHOT<!-- ${POST-SNAPSHOT} --></version>
 			</dependency>
 			<dependency>
 				<groupId>com.aoindustries</groupId><artifactId>ao-net-types</artifactId><version>1.2.1${POST-SNAPSHOT}</version>
@@ -239,7 +239,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 				<groupId>com.aoindustries</groupId><artifactId>aocode-public</artifactId><version>4.1.0${POST-SNAPSHOT}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.aoindustries</groupId><artifactId>aoserv-client</artifactId><version>1.84.6${POST-SNAPSHOT}</version>
+				<groupId>com.aoindustries</groupId><artifactId>aoserv-client</artifactId><version>1.84.8-SNAPSHOT<!-- ${POST-SNAPSHOT} --></version>
 			</dependency>
 			<dependency>
 				<groupId>com.aoindustries</groupId><artifactId>aoserv-cluster</artifactId><version>1.84.1${POST-SNAPSHOT}</version>

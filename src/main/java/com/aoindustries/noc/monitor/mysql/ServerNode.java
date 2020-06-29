@@ -22,7 +22,6 @@
  */
 package com.aoindustries.noc.monitor.mysql;
 
-import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
@@ -129,6 +128,7 @@ public class ServerNode extends NodeImpl {
 			if(started) throw new IllegalStateException();
 			started = true;
 			rootNode.conn.getBackup().getMysqlReplication().addTableListener(tableListener, 100);
+			rootNode.conn.getNet().getHost().addTableListener(tableListener, 100);
 		}
 		verifyFailoverMySQLReplications();
 		synchronized(this) {
@@ -143,9 +143,12 @@ public class ServerNode extends NodeImpl {
 	}
 
 	void stop() {
+		RootNodeImpl rootNode = _mysqlServersNode.hostNode.hostsNode.rootNode;
 		synchronized(this) {
 			started = false;
-			RootNodeImpl rootNode = _mysqlServersNode.hostNode.hostsNode.rootNode;
+			// TODO: Review for other missing removeTableListener
+			rootNode.conn.getBackup().getMysqlReplication().removeTableListener(tableListener);
+			rootNode.conn.getNet().getHost().removeTableListener(tableListener);
 			if(_mysqlSlavesNode!=null) {
 				_mysqlSlavesNode.stop();
 				_mysqlSlavesNode = null;
@@ -167,10 +170,11 @@ public class ServerNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<MysqlReplication> failoverMySQLReplications = _mysqlServer.getFailoverMySQLReplications();
+		boolean hasMysqlReplication = _mysqlServer.getFailoverMySQLReplications().stream()
+			.anyMatch(mysqlReplication -> WrappedException.wrapChecked(mysqlReplication::isMonitoringEnabled));
 		synchronized(this) {
 			if(started) {
-				if(!failoverMySQLReplications.isEmpty()) {
+				if(hasMysqlReplication) {
 					if(_mysqlSlavesNode==null) {
 						_mysqlSlavesNode = new SlavesNode(this, port, csf, ssf);
 						_mysqlSlavesNode.start();

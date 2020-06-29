@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.SwingUtilities;
 
 /**
@@ -115,6 +116,7 @@ public class SlavesNode extends NodeImpl {
 			started = true;
 			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getBackup().getFileReplication().addTableListener(tableListener, 100);
 			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getBackup().getMysqlReplication().addTableListener(tableListener, 100);
+			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getNet().getHost().addTableListener(tableListener, 100);
 		}
 		verifyMySQLSlaves();
 	}
@@ -124,6 +126,7 @@ public class SlavesNode extends NodeImpl {
 			started = false;
 			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getBackup().getFileReplication().removeTableListener(tableListener);
 			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getBackup().getMysqlReplication().removeTableListener(tableListener);
+			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getNet().getHost().removeTableListener(tableListener);
 			for(SlaveNode mysqlSlaveNode : mysqlSlaveNodes) {
 				mysqlSlaveNode.stop();
 				mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
@@ -139,7 +142,9 @@ public class SlavesNode extends NodeImpl {
 			if(!started) return;
 		}
 
-		List<MysqlReplication> mysqlReplications = mysqlServerNode.getMySQLServer().getFailoverMySQLReplications();
+		List<MysqlReplication> mysqlReplications = mysqlServerNode.getMySQLServer().getFailoverMySQLReplications().stream()
+			.filter(mysqlReplication -> WrappedException.wrapChecked(mysqlReplication::isMonitoringEnabled))
+			.collect(Collectors.toList());
 		synchronized(mysqlSlaveNodes) {
 			if(started) {
 				// Remove old ones
