@@ -39,7 +39,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 		<description.html><![CDATA[Implementation of <a target="${javadoc.target}" href="https://aoindustries.com/noc/monitor/">Network Operations Center Monitoring</a>.]]></description.html>
 		<shortTitle>Impl</shortTitle>
 		<!-- Dependencies -->
-		<dnsjava.version>3.1.0</dnsjava.version>
+		<dnsjava.version>3.2.1</dnsjava.version>
 	</properties>
 
 	<name>NOC Monitor Impl</name>
