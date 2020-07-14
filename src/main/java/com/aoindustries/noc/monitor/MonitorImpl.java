@@ -167,6 +167,8 @@ import java.util.Locale;
  * Tomcat Log file monitoring (watch tomcat log files for key things like OutOfMemoryError and "Too many open files" (and translations?)
  * Watch the jvm_crashes.log file?
  *
+ * Integrate NOC with Amazon Cloud Watch
+ *
  * @author  AO Industries, Inc.
  */
 public class MonitorImpl extends UnicastRemoteObject implements Monitor {
