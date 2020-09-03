@@ -134,6 +134,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 	}
 
 	@Override
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	final public void run() {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -143,8 +144,6 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 		try {
 			long startMillis = System.currentTimeMillis();
 			long startNanos = System.nanoTime();
-
-			lastSuccessful = false;
 
 			AlertLevel curAlertLevel = alertLevel;
 			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
@@ -161,7 +160,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 				columns = getColumns();
 				rows = successfulTableData.apply(Locale.getDefault()).size() / columns; // TODO: Is possible to delay getting number of rows until locale known?
 				columnHeaders = getColumnHeaders();
-				alertLevels = getAlertLevels(queryResult);
+				alertLevels = Collections.unmodifiableList(getAlertLevels(queryResult));
 				isError = false;
 				lastSuccessful = true;
 				tableData = successfulTableData;
@@ -234,8 +233,11 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 					}
 				}
 			}
-		} catch(Exception err) {
-			logger.log(Level.SEVERE, null, err);
+		} catch(ThreadDeath TD) {
+			lastSuccessful = false;
+			throw TD;
+		} catch(Throwable t) {
+			logger.log(Level.SEVERE, null, t);
 			lastSuccessful = false;
 		} finally {
 			// Reschedule next timer task if still running

@@ -100,6 +100,7 @@ order by net."Host.reverseFqdn"(se.name), vd.device;
 
  * @author  AO Industries, Inc.
  */
+@SuppressWarnings("UseOfSystemOutOrSystemErr")
 public class ClusterResourceManagerTODO extends TestCase {
 
 	private static final Logger logger = Logger.getLogger(ClusterResourceManagerTODO.class.getName());
@@ -429,7 +430,9 @@ public class ClusterResourceManagerTODO extends TestCase {
 
 	public void testAnalyzeCluster() throws Exception {
 		List<AnalyzedClusterConfiguration> analyzedClusterConfigurations = new ArrayList<>(clusterConfigurations.size());
-		for(ClusterConfiguration clusterConfiguration : clusterConfigurations) analyzedClusterConfigurations.add(new AnalyzedClusterConfiguration(clusterConfiguration));
+		for(ClusterConfiguration clusterConfiguration : clusterConfigurations) {
+			analyzedClusterConfigurations.add(new AnalyzedClusterConfiguration(clusterConfiguration));
+		}
 		PrintWriter out = new PrintWriter(System.out);
 		try {
 			AnalyzedClusterConfigurationPrinter.print(analyzedClusterConfigurations, out, AlertLevel.NONE);

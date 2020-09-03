@@ -72,7 +72,9 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
 	};
 	private static final Map<String,Integer> commonResultsMap = new HashMap<>(commonResults.length*4/3+1);
 	static {
-		for(int c=0;c<commonResults.length;c++) commonResultsMap.put(commonResults[c], c);
+		for(int c = 0; c < commonResults.length; c++) {
+			commonResultsMap.put(commonResults[c], c);
+		}
 	}
 
 	private static final String MESSAGE_ACCEPTED_SUFFIX = " Message accepted for delivery";

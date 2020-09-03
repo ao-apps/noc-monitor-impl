@@ -84,6 +84,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 	}
 
 	@Override
+	@SuppressWarnings("AssignmentToForLoopParameter")
 	protected List<ApproximateDisplayExactSize> getSample() throws Exception {
 		// Get the latest limits
 		currentAOServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());

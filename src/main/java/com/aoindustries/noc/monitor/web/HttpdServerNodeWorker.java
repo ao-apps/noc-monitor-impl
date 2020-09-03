@@ -34,13 +34,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author  AO Industries, Inc.
  */
 class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,HttpdServerResult> {
 
-	private static final boolean DEBUG = false;
+	private static final Logger logger = Logger.getLogger(HttpdServerNodeWorker.class.getName());
 
 	/**
 	 * One unique worker is made per persistence file (and should match httpdServer exactly)
@@ -51,11 +53,11 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 		synchronized(workerCache) {
 			HttpdServerNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
-				if(DEBUG) System.err.println("Creating new worker for " + httpdServer.getName());
+				if(logger.isLoggable(Level.FINE)) logger.fine("Creating new worker for " + httpdServer.getName());
 				worker = new HttpdServerNodeWorker(persistenceFile, httpdServer);
 				workerCache.put(path, worker);
 			} else {
-				if(DEBUG) System.err.println("Found existing worker for " + httpdServer.getName());
+				if(logger.isLoggable(Level.FINER)) logger.finer("Found existing worker for " + httpdServer.getName());
 				if(!worker._httpdServer.equals(httpdServer)) throw new AssertionError("worker.httpdServer!=httpdServer: "+worker._httpdServer+"!="+httpdServer);
 			}
 			return worker;

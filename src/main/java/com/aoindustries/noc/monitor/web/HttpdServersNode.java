@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -51,9 +53,9 @@ import javax.swing.SwingUtilities;
  */
 public class HttpdServersNode extends NodeImpl {
 
-	private static final long serialVersionUID = 1L;
+	private static final Logger logger = Logger.getLogger(HttpdServersNode.class.getName());
 
-	private static final boolean DEBUG = false;
+	private static final long serialVersionUID = 1L;
 
 	final HostNode hostNode;
 	private final Server linuxServer;
@@ -141,7 +143,6 @@ public class HttpdServersNode extends NodeImpl {
 		}
 	}
 
-	@SuppressWarnings("deprecation") // Java 1.7: Do not suppress
 	private void verifyHttpdServers() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -150,7 +151,7 @@ public class HttpdServersNode extends NodeImpl {
 		}
 
 		List<HttpdServer> httpdServers = linuxServer.getHttpdServers();
-		if(DEBUG) System.err.println("httpdServers = " + httpdServers);
+		if(logger.isLoggable(Level.FINER)) logger.finer("httpdServers = " + httpdServers);
 		synchronized(httpdServerNodes) {
 			if(started) {
 				// Remove old ones
@@ -163,10 +164,10 @@ public class HttpdServersNode extends NodeImpl {
 					for(HttpdServer httpdServer : httpdServers) {
 						if(httpdServer.equals(existingHttpdServer)) {
 							if(Objects.equals(httpdServer.getName(), existingHttpdServer.getName())) {
-								if(DEBUG) System.err.println("Found with matching name " + existingHttpdServer.getName() + ", keeping node");
+								if(logger.isLoggable(Level.FINER)) logger.finer("Found with matching name " + existingHttpdServer.getName() + ", keeping node");
 								hasMatch = true;
 							} else {
-								if(DEBUG) System.err.println("Name changed from " + existingHttpdServer.getName() + " to " + httpdServer.getName() + ", removing node");
+								if(logger.isLoggable(Level.FINE)) logger.fine("Name changed from " + existingHttpdServer.getName() + " to " + httpdServer.getName() + ", removing node");
 								// Name changed, remove old node
 								// matches remains false
 							}
@@ -183,19 +184,19 @@ public class HttpdServersNode extends NodeImpl {
 				for(int c = 0; c < httpdServers.size(); c++) {
 					HttpdServer httpdServer = httpdServers.get(c);
 					if(c >= httpdServerNodes.size() || !httpdServer.equals(httpdServerNodes.get(c).getHttpdServer())) {
-						if(DEBUG) System.err.println("Adding node for " + httpdServer.getName());
+						if(logger.isLoggable(Level.FINER)) logger.finer("Adding node for " + httpdServer.getName());
 						try {
 							// Insert into proper index
-							if(DEBUG) System.err.println("Creating node for " + httpdServer.getName());
+							if(logger.isLoggable(Level.FINER)) logger.finer("Creating node for " + httpdServer.getName());
 							HttpdServerNode httpdServerNode = new HttpdServerNode(this, httpdServer, port, csf, ssf);
-							if(DEBUG) System.err.println("Adding node to list for " + httpdServer.getName());
+							if(logger.isLoggable(Level.FINER)) logger.finer("Adding node to list for " + httpdServer.getName());
 							httpdServerNodes.add(c, httpdServerNode);
-							if(DEBUG) System.err.println("Starting node for " + httpdServer.getName());
+							if(logger.isLoggable(Level.FINER)) logger.finer("Starting node for " + httpdServer.getName());
 							httpdServerNode.start();
-							if(DEBUG) System.err.println("Notifying added for " + httpdServer.getName());
+							if(logger.isLoggable(Level.FINE)) logger.fine("Notifying added for " + httpdServer.getName());
 							hostNode.hostsNode.rootNode.nodeAdded();
 						} catch(IOException | RuntimeException e) {
-							if(DEBUG) e.printStackTrace(System.err);
+							logger.log(Level.SEVERE, null, e);
 							throw e;
 						}
 					}

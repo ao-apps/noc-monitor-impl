@@ -31,7 +31,6 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.util.function.SerializableFunction;
 import com.aoindustries.util.i18n.ThreadLocale;
-import java.io.CharArrayReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -149,7 +148,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 		);
 	}
 
-	private static final String toPercentString(Byte b) {
+	private static String toPercentString(Byte b) {
 		return (b == null) ? "" : (b + "%");
 	}
 

@@ -361,7 +361,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 						accessor.getMessage(locale, "BackupsNode.columnHeaders.status")
 					),
 					locale -> tableData,
-					alertLevels
+					Collections.unmodifiableList(alertLevels)
 				);
 			}
 			lastResult = newResult;

@@ -64,8 +64,6 @@ class BackgroundWriter {
 
 	private static final Logger logger = Logger.getLogger(BackgroundWriter.class.getName());
 
-	private static final boolean DEBUG = false;
-
 	private static class QueueEntry {
 
 		private final File newPersistenceFile;
@@ -86,11 +84,12 @@ class BackgroundWriter {
 	/**
 	 * Queues the object for write.  No defensive copy of the object is made - do not change after giving to this method.
 	 */
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) throws IOException {
 		QueueEntry queueEntry = new QueueEntry(newPersistenceFile, serializable, gzip);
 		synchronized(queue) {
 			if(queue.put(persistenceFile, queueEntry)!=null) {
-				if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Updating existing in queue");
+				logger.finer("DEBUG: BackgroundWriter: Updating existing in queue");
 			}
 			if(!running) {
 				RootNodeImpl.executors.getUnbounded().submit(() -> {
@@ -103,7 +102,7 @@ class BackgroundWriter {
 							Iterator<Map.Entry<File,QueueEntry>> iter = queue.entrySet().iterator();
 							if(!iter.hasNext()) {
 								running = false;
-								if(DEBUG) System.out.println("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
+								logger.finer("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
 								return;
 							}
 							Map.Entry<File,QueueEntry> first = iter.next();
@@ -123,8 +122,10 @@ class BackgroundWriter {
 								oout.writeObject(queueEntry1.object);
 							}
 							FileUtils.renameAllowNonAtomic(queueEntry1.newPersistenceFile, persistenceFile1);
-						}catch(Exception err) {
-							logger.log(Level.SEVERE, null, err);
+						} catch(ThreadDeath td) {
+							throw td;
+						} catch(Throwable t) {
+							logger.log(Level.SEVERE, null, t);
 						}
 					}
 				});

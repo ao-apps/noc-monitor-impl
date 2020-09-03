@@ -68,8 +68,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
-	private static final boolean DEBUG = false;
-
 	/**
 	 * Shared random number generator.
 	 */
@@ -134,6 +132,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	private static final Map<RootNodeCacheKey, RootNodeImpl> rootNodeCache = new HashMap<>();
 
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	static RootNodeImpl getRootNode(
 		Locale locale,
 		AOServConnector connector,
@@ -145,11 +144,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		synchronized(rootNodeCache) {
 			RootNodeImpl rootNode = rootNodeCache.get(key);
 			if(rootNode==null) {
-				if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Making new rootNode");
+				logger.fine("Making new rootNode");
 				final RootNodeImpl newRootNode = new RootNodeImpl(locale, connector, port, csf, ssf);
 				// Start as a background task
 				executors.getUnbounded().submit(() -> {
-					if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Running start() in background task");
+					logger.finer("Running start() in background task");
 					try {
 						newRootNode.start();
 					} catch(ThreadDeath TD) {
@@ -162,7 +161,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 				rootNodeCache.put(key, newRootNode);
 				rootNode = newRootNode;
 			} else {
-				if(DEBUG) System.err.println("DEBUG: RootNodeImpl: Reusing existing rootNode");
+				logger.finer("Reusing existing rootNode");
 			}
 			return rootNode;
 		}
@@ -245,35 +244,35 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		if(otherDevicesNode==null) {
-			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new OtherDevicesNode");
+			logger.fine("new OtherDevicesNode");
 			otherDevicesNode = new OtherDevicesNode(this, port, csf, ssf);
 			otherDevicesNode.start();
 			nodeAdded();
 		}
 
 		if(physicalServersNode==null) {
-			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new PhysicalServersNode");
+			logger.fine("new PhysicalServersNode");
 			physicalServersNode = new PhysicalServersNode(this, port, csf, ssf);
 			physicalServersNode.start();
 			nodeAdded();
 		}
 
 		if(virtualServersNode==null) {
-			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new VirtualServersNode");
+			logger.fine("new VirtualServersNode");
 			virtualServersNode = new VirtualServersNode(this, port, csf, ssf);
 			virtualServersNode.start();
 			nodeAdded();
 		}
 
 		if(unallocatedNode==null) {
-			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new UnallocatedNode");
+			logger.fine("new UnallocatedNode");
 			unallocatedNode = new UnallocatedNode(this, port, csf, ssf);
 			unallocatedNode.start();
 			nodeAdded();
 		}
 
 		if(signupsNode==null) {
-			if(DEBUG) System.err.println("DEBUG: RootNodeImpl: start: new SignupsNode");
+			logger.fine("new SignupsNode");
 			signupsNode = new SignupsNode(this, port, csf, ssf);
 			signupsNode.start();
 			nodeAdded();
@@ -325,6 +324,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		}
 
 		@Override
+		@SuppressWarnings("SleepWhileInLoop")
 		public void run() {
 			boolean removed = false;
 			try {
@@ -377,6 +377,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		}
 
 		@Override
+		@SuppressWarnings("SleepWhileInLoop")
 		public void run() {
 			boolean removed = false;
 			try {
@@ -429,6 +430,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		}
 
 		@Override
+		@SuppressWarnings("SleepWhileInLoop")
 		public void run() {
 			boolean removed = false;
 			try {

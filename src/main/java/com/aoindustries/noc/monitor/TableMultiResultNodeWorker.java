@@ -195,8 +195,6 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 			long startMillis = System.currentTimeMillis();
 			long startNanos = System.nanoTime();
 
-			lastSuccessful = false;
-
 			AlertLevel curAlertLevel = alertLevel;
 			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
 

@@ -131,6 +131,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 	}
 
 	@Override
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	final public void run() {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -206,8 +207,10 @@ public abstract class SingleResultNodeWorker implements Runnable {
 					}
 				}
 			}
-		} catch(Exception err) {
-			logger.log(Level.SEVERE, null, err);
+		} catch(ThreadDeath td) {
+			throw td;
+		} catch(Throwable t) {
+			logger.log(Level.SEVERE, null, t);
 			lastSuccessful = false;
 		} finally {
 			// Reschedule next timer task if still running

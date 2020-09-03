@@ -147,6 +147,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 		return locale -> tableData;
 	}
 
+	@SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter") // Passed unmodifiable
 	private void setLastTableStatuses(List<Database.TableStatus> tableStatuses) {
 		synchronized(lastTableStatusesLock) {
 			this.lastTableStatuses = tableStatuses;
@@ -158,6 +159,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 	 * Gets the last table statuses.  May wait for the data to become available,
 	 * will not return null.  May wait for a very long time in some cases.
 	 */
+	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
 	List<Database.TableStatus> getLastTableStatuses() {
 		synchronized(lastTableStatusesLock) {
 			while(lastTableStatuses==null) {
