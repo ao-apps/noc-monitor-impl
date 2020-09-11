@@ -256,7 +256,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 						Record[] answers = txtLookup.getAnswers();
 						if(answers.length>0) {
 							StringBuilder SB = new StringBuilder(ip);
-							for(Record record : answers) SB.append(" - ").append(record.rdataToString());
+							for(Record record : answers) {
+								SB.append(" - ").append(record.rdataToString());
+							}
 							result = SB.toString();
 						} else {
 							result = ip.intern();
@@ -1141,7 +1143,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	private final Map<String,BlacklistQueryResult> queryResultCache = new HashMap<>();
 
 	@Override
-	@SuppressWarnings({"ThrowableResultIgnored", "UseSpecificCatch", "TooBroadCatch"})
+	@SuppressWarnings({"ThrowableResultIgnored", "UseSpecificCatch", "TooBroadCatch", "SleepWhileInLoop"})
 	protected List<BlacklistQueryResult> getQueryResult() throws Exception {
 		// Run each query in parallel
 		List<Long> startTimes = new ArrayList<>(lookups.size());
@@ -1269,7 +1271,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	@Override
 	protected List<AlertLevel> getAlertLevels(List<BlacklistQueryResult> queryResult) {
 		List<AlertLevel> alertLevels = new ArrayList<>(queryResult.size());
-		for(BlacklistQueryResult result : queryResult) alertLevels.add(result.alertLevel);
+		for(BlacklistQueryResult result : queryResult) {
+			alertLevels.add(result.alertLevel);
+		}
 		return alertLevels;
 	}
 

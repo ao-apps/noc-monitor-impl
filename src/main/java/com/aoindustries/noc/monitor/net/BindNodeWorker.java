@@ -34,12 +34,13 @@ import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetBindResult;
 import com.aoindustries.noc.monitor.portmon.PortMonitor;
-import com.aoindustries.util.ErrorPrinter;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @see NetBindNode
@@ -47,6 +48,8 @@ import java.util.concurrent.Future;
  * @author  AO Industries, Inc.
  */
 class BindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
+
+	private static final Logger logger = Logger.getLogger(BindNodeWorker.class.getName());
 
 	/**
 	 * One unique worker is made per persistence file (and should match the NetMonitorSetting)
@@ -69,10 +72,10 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
 		} catch(ThreadDeath td) {
 			throw td;
 		} catch(Error | RuntimeException | IOException err) {
-			ErrorPrinter.printStackTraces(err);
+			logger.log(Level.SEVERE, null, err);
 			throw err;
 		} catch(Throwable t) {
-			ErrorPrinter.printStackTraces(t);
+			logger.log(Level.SEVERE, null, t);
 			throw new IOException(t);
 		}
 	}

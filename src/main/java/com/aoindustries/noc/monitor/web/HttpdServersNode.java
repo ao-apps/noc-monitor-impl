@@ -143,6 +143,7 @@ public class HttpdServersNode extends NodeImpl {
 		}
 	}
 
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	private void verifyHttpdServers() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -195,9 +196,11 @@ public class HttpdServersNode extends NodeImpl {
 							httpdServerNode.start();
 							if(logger.isLoggable(Level.FINE)) logger.fine("Notifying added for " + httpdServer.getName());
 							hostNode.hostsNode.rootNode.nodeAdded();
-						} catch(IOException | RuntimeException e) {
-							logger.log(Level.SEVERE, null, e);
-							throw e;
+						} catch(ThreadDeath td) {
+							throw td;
+						} catch(Throwable t) {
+							logger.log(Level.SEVERE, null, t);
+							throw t;
 						}
 					}
 				}
