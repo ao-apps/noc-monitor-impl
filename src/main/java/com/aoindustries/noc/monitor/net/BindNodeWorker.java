@@ -52,6 +52,7 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
 	 * One unique worker is made per persistence file (and should match the NetMonitorSetting)
 	 */
 	private static final Map<String, BindNodeWorker> workerCache = new HashMap<>();
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	static BindNodeWorker getWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
 		try {
 			String path = persistenceFile.getCanonicalPath();
@@ -65,9 +66,14 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
 				}
 				return worker;
 			}
-		} catch(RuntimeException | IOException err) {
+		} catch(ThreadDeath td) {
+			throw td;
+		} catch(Error | RuntimeException | IOException err) {
 			ErrorPrinter.printStackTraces(err);
 			throw err;
+		} catch(Throwable t) {
+			ErrorPrinter.printStackTraces(t);
+			throw new IOException(t);
 		}
 	}
 

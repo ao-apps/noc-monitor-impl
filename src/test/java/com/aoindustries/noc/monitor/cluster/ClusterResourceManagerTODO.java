@@ -41,10 +41,7 @@ import com.aoindustries.aoserv.cluster.optimize.LinearHeuristicFunction;
 import com.aoindustries.aoserv.cluster.optimize.ListElement;
 import com.aoindustries.aoserv.cluster.optimize.SimpleHeuristicFunction;
 import com.aoindustries.aoserv.cluster.optimize.Transition;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +49,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
@@ -387,6 +383,7 @@ public class ClusterResourceManagerTODO extends TestCase {
 	}
 
 	@Override
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	protected void setUp() throws Exception {
 		conn = AOServConnector.getConnector();
 		try {
@@ -411,7 +408,7 @@ public class ClusterResourceManagerTODO extends TestCase {
 			// TODO: Because can't enforce disk weights, can only control through allocation
 			// TODO: Allocate and check disks matched by weight.
 			clusterConfigurations = AOServClusterBuilder.getClusterConfigurations(Locale.getDefault(), conn, clusters, drbdReports, lvmReports);
-		} catch(RuntimeException | IOException | SQLException | InterruptedException | ExecutionException | ParseException err) {
+		} catch(Exception err) {
 			logger.log(Level.SEVERE, null, err);
 			throw err;
 		}

@@ -34,7 +34,6 @@ import com.aoindustries.util.i18n.ThreadLocale;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -116,9 +115,11 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 			synchronized(results) {
 				return Collections.unmodifiableList(new ArrayList<>(results));
 			}
-		//} catch(RuntimeException err) {
-		//    ErrorPrinter.printStackTraces(err);
-		//    throw err;
+		//} catch(ThreadDeath td) {
+		//    throw td;
+		//} catch(Throwable t) {
+		//    ErrorPrinter.printStackTraces(t);
+		//    throw t;
 		//}
 	}
 
@@ -186,6 +187,7 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 	}
 
 	@Override
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	final public void run() {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
@@ -295,8 +297,10 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 					}
 				}
 			}
-		} catch(RuntimeException | RemoteException err) {
-			logger.log(Level.SEVERE, null, err);
+		} catch(ThreadDeath td) {
+			throw td;
+		} catch(Throwable t) {
+			logger.log(Level.SEVERE, null, t);
 			lastSuccessful = false;
 		} finally {
 			// Reschedule next timer task if still running

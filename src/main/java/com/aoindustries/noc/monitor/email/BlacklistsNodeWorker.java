@@ -26,6 +26,7 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
+import com.aoindustries.lang.Throwables;
 import com.aoindustries.net.DomainName;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
@@ -49,7 +50,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -1141,6 +1141,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	private final Map<String,BlacklistQueryResult> queryResultCache = new HashMap<>();
 
 	@Override
+	@SuppressWarnings({"ThrowableResultIgnored", "UseSpecificCatch", "TooBroadCatch"})
 	protected List<BlacklistQueryResult> getQueryResult() throws Exception {
 		// Run each query in parallel
 		List<Long> startTimes = new ArrayList<>(lookups.size());
@@ -1222,12 +1223,18 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), "Timeout in queue, timeoutRemaining = " + new NanoInterval(timeoutRemainingNanos), AlertLevel.UNKNOWN);
 					// Queue timeouts are not cached
 					cacheResult = false;
-				} catch(ThreadDeath TD) {
-					throw TD;
-				} catch(InterruptedException | ExecutionException | RuntimeException e) {
+				} catch(ThreadDeath td) {
+					try {
+						future.cancel(false);
+					} catch(Throwable t) {
+						Throwables.addSuppressed(td, t);
+					}
+					throw td;
+				} catch(Throwable t) {
 					future.cancel(false);
-					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), e.getMessage(), lookup.getMaxAlertLevel());
+					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), t.getMessage(), lookup.getMaxAlertLevel());
 					cacheResult = true;
+					logger.log(Level.FINE, null, t); // TODO: Log all others that are put into result without full stack trace
 					/*
 					if(e instanceof InterruptedException) {
 						// Restore the interrupted status
