@@ -1229,7 +1229,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 					try {
 						future.cancel(false);
 					} catch(Throwable t) {
-						Throwables.addSuppressed(td, t);
+						Throwable t2 = Throwables.addSuppressed(td, t);
+						assert t2 == td;
 					}
 					throw td;
 				} catch(Throwable t) {

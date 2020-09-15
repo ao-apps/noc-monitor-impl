@@ -26,6 +26,7 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Bind;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.lang.LocalizedIllegalArgumentException;
+import com.aoindustries.lang.Throwables;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -71,12 +72,9 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
 			}
 		} catch(ThreadDeath td) {
 			throw td;
-		} catch(Error | RuntimeException | IOException err) {
-			logger.log(Level.SEVERE, null, err);
-			throw err;
 		} catch(Throwable t) {
 			logger.log(Level.SEVERE, null, t);
-			throw new IOException(t);
+			throw Throwables.wrap(t, IOException.class, IOException::new);
 		}
 	}
 
