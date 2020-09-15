@@ -171,7 +171,7 @@ public class ServerNode extends NodeImpl {
 		}
 
 		boolean hasMysqlReplication = _mysqlServer.getFailoverMySQLReplications().stream()
-			.anyMatch(mysqlReplication -> WrappedException.wrapChecked(mysqlReplication::isMonitoringEnabled));
+			.anyMatch(mysqlReplication -> WrappedException.call(mysqlReplication::isMonitoringEnabled));
 		synchronized(this) {
 			if(started) {
 				if(hasMysqlReplication) {

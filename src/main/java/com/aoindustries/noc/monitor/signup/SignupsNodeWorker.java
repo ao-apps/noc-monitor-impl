@@ -135,20 +135,19 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 
 	@Override
 	protected List<Object> getQueryResult() throws Exception {
+		List<Object> tableData = new ArrayList<>();
 		// Add the old signup forms
-		final List<Object> tableData = WebSiteDatabase.getDatabase().executeQuery(
+		WebSiteDatabase.getDatabase().query(
 			(ResultSet results) -> {
-				List<Object> tableData1 = new ArrayList<>();
 				while (results.next()) {
-					tableData1.add("aoweb");
-					tableData1.add(results.getInt("pkey"));
-					tableData1.add(new TimeWithTimeZone(results.getTimestamp("time").getTime()));
-					tableData1.add(results.getString("ip_address"));
-					tableData1.add(results.getString("completed_by"));
+					tableData.add("aoweb");
+					tableData.add(results.getInt("pkey"));
+					tableData.add(new TimeWithTimeZone(results.getTimestamp("time").getTime()));
+					tableData.add(results.getString("ip_address"));
+					tableData.add(results.getString("completed_by"));
 					Timestamp completedTime = results.getTimestamp("completed_time");
-					tableData1.add(completedTime==null ? null : new TimeWithTimeZone(completedTime.getTime()));
+					tableData.add(completedTime==null ? null : new TimeWithTimeZone(completedTime.getTime()));
 				}
-				return tableData1;
 			},
 			"select * from signup_requests order by time"
 		);

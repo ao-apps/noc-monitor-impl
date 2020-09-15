@@ -143,7 +143,7 @@ public class SlavesNode extends NodeImpl {
 		}
 
 		List<MysqlReplication> mysqlReplications = mysqlServerNode.getMySQLServer().getFailoverMySQLReplications().stream()
-			.filter(mysqlReplication -> WrappedException.wrapChecked(mysqlReplication::isMonitoringEnabled))
+			.filter(mysqlReplication -> WrappedException.call(mysqlReplication::isMonitoringEnabled))
 			.collect(Collectors.toList());
 		synchronized(mysqlSlaveNodes) {
 			if(started) {

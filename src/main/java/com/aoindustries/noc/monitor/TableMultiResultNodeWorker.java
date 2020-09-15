@@ -43,7 +43,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -222,9 +221,9 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 				alertLevelAndMessage = new AlertLevelAndMessage(
 					// Don't downgrade UNKNOWN to CRITICAL on error
 					EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-					locale -> ThreadLocale.set(
+					locale -> ThreadLocale.supply(
 						locale,
-						(Supplier<String>)() -> {
+						() -> {
 							String msg = err.getLocalizedMessage();
 							if(msg == null || msg.isEmpty()) msg = err.toString();
 							return accessor.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);

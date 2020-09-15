@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,9 +99,9 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 					logger.log(Level.SEVERE, null, err);
 					alam = new AlertLevelAndMessage(
 						AlertLevel.CRITICAL,
-						locale -> ThreadLocale.set(
+						locale -> ThreadLocale.supply(
 							locale,
-							(Supplier<String>)() -> {
+							() -> {
 								String msg = err.getLocalizedMessage();
 								if(msg == null || msg.isEmpty()) msg = err.toString();
 								return msg;

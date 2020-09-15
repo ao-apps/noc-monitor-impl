@@ -36,7 +36,6 @@ import com.aoindustries.noc.monitor.infrastructure.VirtualServersNode;
 import com.aoindustries.noc.monitor.net.OtherDevicesNode;
 import com.aoindustries.noc.monitor.net.UnallocatedNode;
 import com.aoindustries.noc.monitor.signup.SignupsNode;
-import com.aoindustries.util.ErrorPrinter;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -154,7 +153,6 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 					} catch(ThreadDeath TD) {
 						throw TD;
 					} catch(Throwable t) {
-						ErrorPrinter.printStackTraces(t);
 						logger.log(Level.SEVERE, null, t);
 					}
 				});
