@@ -41,6 +41,7 @@ import com.aoindustries.aoserv.cluster.PhysicalVolume;
 import com.aoindustries.aoserv.cluster.PhysicalVolumeConfiguration;
 import com.aoindustries.aoserv.cluster.ProcessorArchitecture;
 import com.aoindustries.aoserv.cluster.ProcessorType;
+import com.aoindustries.collections.AoCollections;
 import com.aoindustries.concurrent.ConcurrentUtils;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import static com.aoindustries.noc.monitor.cluster.ApplicationResourcesAccessor.accessor;
@@ -50,7 +51,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -223,7 +223,7 @@ public class AOServClusterBuilder {
 					// Add Dom0Disks when first needed for a physical volume
 					Map<String,String> hddModelReport = hddModelReports.get(hostname);
 					if(hddModelReport==null) throw new AssertionError("hddmodel report not found for "+hostname);
-					Set<String> addedDisks = new HashSet<>(hddModelReport.size()*4/3+1);
+					Set<String> addedDisks = AoCollections.newHashSet(hddModelReport.size());
 					// Add physical volumes
 					Server.LvmReport lvmReport = lvmReports.get(hostname);
 					if(lvmReport==null) throw new AssertionError("LvmReport not found for "+hostname);
@@ -358,7 +358,7 @@ public class AOServClusterBuilder {
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
 		// Query concurrently for each of the drbdcstate's to get a good snapshot and determine primary/secondary locations
-		Map<String,Future<List<Server.DrbdReport>>> futures = new HashMap<>(linuxServers.size()*4/3+1);
+		Map<String,Future<List<Server.DrbdReport>>> futures = AoCollections.newHashMap(linuxServers.size());
 		for(final Server linuxServer : linuxServers) {
 			if(isEnabledDom0(linuxServer)) {
 				futures.put(
@@ -380,7 +380,7 @@ public class AOServClusterBuilder {
 		final List<Server> linuxServers,
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-		Map<String,Future<Server.LvmReport>> futures = new HashMap<>(linuxServers.size()*4/3+1);
+		Map<String,Future<Server.LvmReport>> futures = AoCollections.newHashMap(linuxServers.size());
 		for(final Server linuxServer : linuxServers) {
 			if(isEnabledDom0(linuxServer)) {
 				futures.put(
@@ -402,7 +402,7 @@ public class AOServClusterBuilder {
 		final List<Server> linuxServers,
 		final Locale locale
 	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
-		Map<String,Future<Map<String,String>>> futures = new HashMap<>(linuxServers.size()*4/3+1);
+		Map<String,Future<Map<String,String>>> futures = AoCollections.newHashMap(linuxServers.size());
 		for(final Server linuxServer : linuxServers) {
 			if(isEnabledDom0(linuxServer)) {
 				futures.put(

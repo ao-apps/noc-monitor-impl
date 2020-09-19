@@ -26,6 +26,7 @@ import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.aoserv.client.mysql.Table_Name;
+import com.aoindustries.collections.AoCollections;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
@@ -128,7 +129,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 		if(lastTableStatuses.isEmpty()) return Collections.emptyList();
 		// Build the set of table names and types
 		List<Table_Name> tableNames = new ArrayList<>(lastTableStatuses.size());
-		Map<Table_Name,Database.Engine> tables = new HashMap<>(lastTableStatuses.size()*4/3+1);
+		Map<Table_Name,Database.Engine> tables = AoCollections.newHashMap(lastTableStatuses.size());
 		for(Database.TableStatus lastTableStatus : lastTableStatuses) {
 			Database.Engine engine = lastTableStatus.getEngine();
 			if(

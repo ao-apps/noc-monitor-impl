@@ -221,7 +221,7 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 				alertLevelAndMessage = new AlertLevelAndMessage(
 					// Don't downgrade UNKNOWN to CRITICAL on error
 					EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-					locale -> ThreadLocale.supply(
+					locale -> ThreadLocale.call(
 						locale,
 						() -> {
 							String msg = err.getLocalizedMessage();

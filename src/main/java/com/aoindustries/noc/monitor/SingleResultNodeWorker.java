@@ -150,7 +150,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 				if(report==null) throw new NullPointerException("report is null");
 				lastSuccessful = true;
 			} catch(Exception err) {
-				error = locale -> ThreadLocale.supply(
+				error = locale -> ThreadLocale.call(
 					locale,
 					() -> {
 						String msg = err.getLocalizedMessage();

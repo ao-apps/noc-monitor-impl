@@ -22,6 +22,7 @@
  */
 package com.aoindustries.noc.monitor.net;
 
+import com.aoindustries.collections.AoCollections;
 import com.aoindustries.io.stream.StreamableInput;
 import com.aoindustries.io.stream.StreamableOutput;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -30,7 +31,6 @@ import com.aoindustries.persistence.BufferedSerializer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -70,7 +70,7 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
 		"Connected successfully (SSL disabled)",
 		"Connected successfully over SSL"
 	};
-	private static final Map<String,Integer> commonResultsMap = new HashMap<>(commonResults.length*4/3+1);
+	private static final Map<String,Integer> commonResultsMap = AoCollections.newHashMap(commonResults.length);
 	static {
 		for(int c = 0; c < commonResults.length; c++) {
 			commonResultsMap.put(commonResults[c], c);

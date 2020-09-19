@@ -44,7 +44,7 @@ public class BlacklistsNodeWorkerTest extends TestCase {
 		/*
 		// Make sure there are no duplicates
 		System.out.println("Total of "+BlacklistsNodeWorker.rblBlacklists.length+" RBL blacklists");
-		Set<String> basenames = new HashSet<String>(BlacklistsNodeWorker.rblBlacklists.length*4/3+1);
+		Set<String> basenames = AoCollections.newHashSet(BlacklistsNodeWorker.rblBlacklists.length);
 		for(BlacklistsNodeWorker.RblBlacklist rblBlacklist : BlacklistsNodeWorker.rblBlacklists) {
 			if(!basenames.add(rblBlacklist.basename)) {
 				System.err.println(rblBlacklist.basename);

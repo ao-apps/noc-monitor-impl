@@ -26,6 +26,7 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
+import com.aoindustries.collections.AoCollections;
 import com.aoindustries.lang.Throwables;
 import com.aoindustries.net.DomainName;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -388,7 +389,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	final private List<BlacklistLookup> lookups;
 
 	private static DnsBlacklist[] addUnique(DnsBlacklist ... blacklists) {
-		Map<String,DnsBlacklist> unique = new HashMap<>(blacklists.length*4/3+1);
+		Map<String,DnsBlacklist> unique = AoCollections.newHashMap(blacklists.length);
 		for(DnsBlacklist blacklist : blacklists) {
 			String basename = blacklist.getBaseName();
 			DnsBlacklist existing = unique.get(basename);

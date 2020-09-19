@@ -137,7 +137,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	protected List<Object> getQueryResult() throws Exception {
 		List<Object> tableData = new ArrayList<>();
 		// Add the old signup forms
-		WebSiteDatabase.getDatabase().query(
+		WebSiteDatabase.getDatabase().queryRun(
 			(ResultSet results) -> {
 				while (results.next()) {
 					tableData.add("aoweb");

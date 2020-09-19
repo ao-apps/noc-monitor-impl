@@ -99,7 +99,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 					logger.log(Level.SEVERE, null, err);
 					alam = new AlertLevelAndMessage(
 						AlertLevel.CRITICAL,
-						locale -> ThreadLocale.supply(
+						locale -> ThreadLocale.call(
 							locale,
 							() -> {
 								String msg = err.getLocalizedMessage();

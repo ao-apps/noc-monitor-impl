@@ -121,7 +121,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 					String roles = (String)tableData.get(index + 4);
 					TimeWithTimeZone lastVerified = (TimeWithTimeZone)tableData.get(index + 5);
 					Long outOfSync = (Long)tableData.get(index + 6);
-					highestAlertMessage = locale -> ThreadLocale.supply(
+					highestAlertMessage = locale -> ThreadLocale.call(
 						locale,
 						() -> device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync
 					);

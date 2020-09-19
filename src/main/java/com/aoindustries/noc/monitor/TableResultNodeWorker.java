@@ -169,7 +169,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 				columnHeaders = locale -> Collections.singletonList(
 					accessor.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
 				);
-				tableData = locale -> ThreadLocale.supply(
+				tableData = locale -> ThreadLocale.call(
 					locale,
 					() -> {
 						String msg = err.getLocalizedMessage();
