@@ -276,7 +276,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 			</dependency>
 			<!-- Test Direct -->
 			<dependency>
-				<groupId>junit</groupId><artifactId>junit</artifactId><version>4.13</version>
+				<groupId>junit</groupId><artifactId>junit</artifactId><version>4.13.1</version>
 			</dependency>
 			<!-- Test Transitive -->
 			<dependency>
