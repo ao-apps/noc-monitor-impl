@@ -37,7 +37,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 		shortTitle="Changelog"
 		tocLevels="1"
 		datePublished="2020-04-11T01:35:38-05:00"
-		dateModified="2020-06-30T17:50:15-05:00"
+		dateModified="2020-11-30T01:21:22-06:00"
 	>
 		<!-- The current snapshot, unreleased version -->
 		<c:set var="version" value="@{com.aoindustries:noc-monitor-impl:pom.version}" />
@@ -52,7 +52,16 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 				groupId="@{project.groupId}"
 				artifactId="@{documented.artifactId}"
 				scmUrl="@{project.scm.url}"
-			/>
+			>
+				<ul>
+					<li>Updated dependencies.</li>
+					<li>
+						Defined <ao:a href="https://en.wikipedia.org/wiki/SQLSTATE">SQLSTATE</ao:a> values for all
+						<ao:a rel="nofollow" href="@{javadoc.link.javase}java/sql/SQLException.html">SQLException</ao:a>.
+					</li>
+					<li>Resolved editor warnings.</li>
+				</ul>
+			</changelog:release>
 		</c:if>
 
 		<changelog:release

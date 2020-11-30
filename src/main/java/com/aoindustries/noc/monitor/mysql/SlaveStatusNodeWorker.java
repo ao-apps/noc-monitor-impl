@@ -79,9 +79,9 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>,MySQ
 		// Get the latest values
 		currentFailoverMySQLReplication = _mysqlReplication.getTable().getConnector().getBackup().getMysqlReplication().get(_mysqlReplication.getPkey());
 		MysqlReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
-		if(slaveStatus==null) throw new LocalizedSQLException(accessor, "MySQLSlaveStatusNodeWorker.slaveNotRunning");
+		if(slaveStatus==null) throw new LocalizedSQLException("08006", accessor, "MySQLSlaveStatusNodeWorker.slaveNotRunning");
 		Server.MasterStatus masterStatus = _mysqlReplication.getMySQLServer().getMasterStatus();
-		if(masterStatus==null) throw new LocalizedSQLException(accessor, "MySQLSlaveStatusNodeWorker.masterNotRunning");
+		if(masterStatus==null) throw new LocalizedSQLException("08006", accessor, "MySQLSlaveStatusNodeWorker.masterNotRunning");
 		// Display the alert thresholds
 		int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();
 		int secondsBehindMedium = currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium();

@@ -245,7 +245,9 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 	@Override
 	protected List<AlertLevel> getAlertLevels(List<DnsQueryResult> results) {
 		List<AlertLevel> alertLevels = new ArrayList<>(results.size());
-		for(DnsQueryResult result : results) alertLevels.add(result.alertLevel);
+		for(DnsQueryResult result : results) {
+			alertLevels.add(result.alertLevel);
+		}
 		return alertLevels;
 	}
 
