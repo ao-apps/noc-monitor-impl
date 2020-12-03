@@ -28,7 +28,7 @@ import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.aoserv.client.mysql.Table_Name;
 import com.aoindustries.collections.AoCollections;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -85,11 +85,11 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(
-			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"),
-			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"),
-			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.duration"),
-			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgType"),
-			accessor.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgText")
+			RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"),
+			RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"),
+			RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.duration"),
+			RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgType"),
+			RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgText")
 		);
 	}
 

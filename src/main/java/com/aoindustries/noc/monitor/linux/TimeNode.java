@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.linux;
 
 import com.aoindustries.aoserv.client.linux.Server;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.TimeResult;
 import com.aoindustries.noc.monitor.net.HostNode;
@@ -59,13 +59,13 @@ public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "TimeNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "TimeNode.label");
 	}
 
 	@Override
 	public List<?> getColumnHeaders() {
 		return Collections.singletonList(
-			accessor.getMessage(rootNode.locale, "TimeNode.columnHeader.clockSkew")
+			RESOURCES.getMessage(rootNode.locale, "TimeNode.columnHeader.clockSkew")
 		);
 	}
 }

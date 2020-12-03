@@ -26,8 +26,8 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.net.HostNode;
 import com.aoindustries.table.Table;
@@ -111,7 +111,7 @@ public class HttpdServersNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "HttpdServersNode.label");
+		return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "HttpdServersNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -213,7 +213,8 @@ public class HttpdServersNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
+					RESOURCES.getMessage(
+						hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.pki;
 import com.aoindustries.aoserv.client.pki.Certificate;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -134,9 +134,9 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(
-			accessor.getMessage(locale, "SslCertificateNodeWorker.columnHeader.check"),
-			accessor.getMessage(locale, "SslCertificateNodeWorker.columnHeader.value"),
-			accessor.getMessage(locale, "SslCertificateNodeWorker.columnHeader.message")
+			RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.check"),
+			RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.value"),
+			RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.message")
 		);
 	}
 

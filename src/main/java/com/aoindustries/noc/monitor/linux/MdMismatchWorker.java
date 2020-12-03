@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.linux;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.MdMismatchReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -116,9 +116,9 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(
-			accessor.getMessage(locale, "MdMismatchWorker.columnHeader.device"),
-			accessor.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
-			accessor.getMessage(locale, "MdMismatchWorker.columnHeader.count")
+			RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.device"),
+			RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
+			RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.count")
 		);
 	}
 

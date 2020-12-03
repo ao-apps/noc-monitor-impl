@@ -24,7 +24,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.concurrent.Executors;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertChange;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -63,14 +63,14 @@ import javax.swing.SwingUtilities;
  */
 public class RootNodeImpl extends NodeImpl implements RootNode {
 
-	private static final long serialVersionUID = 1L;
-
 	private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
 	/**
 	 * Shared random number generator.
 	 */
 	public static final Random random = new Random();
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * One thread pool is shared by all components, and it is never disposed.
@@ -232,7 +232,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(locale, "RootNode.label");
+		return RESOURCES.getMessage(locale, "RootNode.label");
 	}
 
 	/**
@@ -560,7 +560,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()

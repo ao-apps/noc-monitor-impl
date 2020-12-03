@@ -26,8 +26,8 @@ import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
@@ -105,7 +105,7 @@ public class DevicesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "NetDevicesNode.label");
+		return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "NetDevicesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -186,7 +186,8 @@ public class DevicesNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
+					RESOURCES.getMessage(
+						hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

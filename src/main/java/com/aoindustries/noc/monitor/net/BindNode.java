@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.NetBindResult;
 import java.io.File;
@@ -76,7 +76,7 @@ public class BindNode extends TableMultiResultNodeImpl<NetBindResult> {
 	@Override
 	public List<?> getColumnHeaders() {
 		return Collections.singletonList(
-			accessor.getMessage(rootNode.locale, "NetBindNode.columnHeader.result")
+			RESOURCES.getMessage(rootNode.locale, "NetBindNode.columnHeader.result")
 		);
 	}
 }

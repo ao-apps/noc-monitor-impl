@@ -26,7 +26,7 @@ import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.account.Administrator;
 import com.aoindustries.aoserv.client.signup.Request;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -109,8 +109,8 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 				return new AlertLevelAndMessage(
 					AlertLevel.CRITICAL,
 					locale -> incompleteCount==1
-						? accessor.getMessage(locale, "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
-						: accessor.getMessage(locale, "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
+						? RESOURCES.getMessage(locale, "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
+						: RESOURCES.getMessage(locale, "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
 				);
 			}
 		}
@@ -124,12 +124,12 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(
-			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.source"),
-			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"),
-			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.time"),
-			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.ip_address"),
-			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_by"),
-			accessor.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_time")
+			RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.source"),
+			RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"),
+			RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.time"),
+			RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.ip_address"),
+			RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_by"),
+			RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_time")
 		);
 	}
 

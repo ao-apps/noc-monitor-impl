@@ -31,8 +31,8 @@ import com.aoindustries.exception.WrappedException;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -109,7 +109,7 @@ public class BindsNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(ipAddressNode.ipAddressesNode.rootNode.locale, "NetBindsNode.label");
+		return RESOURCES.getMessage(ipAddressNode.ipAddressesNode.rootNode.locale, "NetBindsNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -333,7 +333,7 @@ public class BindsNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						ipAddressNode.ipAddressesNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()

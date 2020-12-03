@@ -20,28 +20,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoindustries.noc.monitor;
+package com.aoindustries.noc.monitor.cluster;
 
 import com.aoindustries.util.i18n.EditableResourceBundle;
+import com.aoindustries.util.i18n.EditableResourceBundleSet;
 import java.io.File;
 import java.util.Locale;
 
 /**
- * Provides a simplified interface for obtaining localized values from the ApplicationResources.properties files.
- * Is also an editable resource bundle.
- *
  * @author  AO Industries, Inc.
  */
-public final class ApplicationResources_ja extends EditableResourceBundle {
+public final class ApplicationResources extends EditableResourceBundle {
 
-	/**
-	 * Do not use directly.
-	 */
-	public ApplicationResources_ja() {
-		super(
-			Locale.JAPANESE,
-			ApplicationResources.bundleSet,
-			new File(System.getProperty("user.home")+"/maven2/ao/noc/monitor/impl/src/main/resources/com/aoindustries/noc/monitor/ApplicationResources_ja.properties")
-		);
+	static final EditableResourceBundleSet bundleSet = new EditableResourceBundleSet(
+		ApplicationResources.class,
+		Locale.ROOT,
+		Locale.JAPANESE
+	);
+
+	static File getSourceFile(String filename) {
+		return new File(System.getProperty("user.home") + "/maven2/ao/noc/monitor/impl/src/main/resources/com/aoindustries/noc/monitor/cluster", filename);
+	}
+
+	public ApplicationResources() {
+		super(Locale.ROOT, bundleSet, getSourceFile("ApplicationResources.properties"));
 	}
 }

@@ -25,8 +25,8 @@ package com.aoindustries.noc.monitor.mysql;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
 import com.aoindustries.table.TableListener;
@@ -108,7 +108,7 @@ public class DatabasesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale, "MySQLDatabasesNode.label");
+		return RESOURCES.getMessage(mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale, "MySQLDatabasesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -181,7 +181,7 @@ public class DatabasesNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()

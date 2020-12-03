@@ -27,7 +27,7 @@ import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Name;
@@ -60,8 +59,6 @@ import org.xbill.DNS.Type;
  * @author  AO Industries, Inc.
  */
 class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryResult>,Object> {
-
-	private static final Logger logger = Logger.getLogger(DnsNodeWorker.class.getName());
 
 	static class DnsQueryResult {
 		final String query;
@@ -112,10 +109,10 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(
-			accessor.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
-			accessor.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
-			accessor.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
-			accessor.getMessage(locale, "DnsNodeWorker.columnHeader.message")
+			RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
+			RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
+			RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
+			RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.message")
 		);
 	}
 

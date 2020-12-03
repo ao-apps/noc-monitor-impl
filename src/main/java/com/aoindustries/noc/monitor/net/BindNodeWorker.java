@@ -30,7 +30,7 @@ import com.aoindustries.lang.Throwables;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.net.Port;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetBindResult;
@@ -106,7 +106,7 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
 		) {
 			Host host = netMonitorSetting.getServer();
 			Server linuxServer = host.getLinuxServer();
-			if(linuxServer==null) throw new LocalizedIllegalArgumentException(accessor, "NetBindNodeWorker.host.notLinuxServer", host.toString());
+			if(linuxServer==null) throw new LocalizedIllegalArgumentException(RESOURCES, "NetBindNodeWorker.host.notLinuxServer", host.toString());
 			portMonitor = new AOServDaemonPortMonitor(
 				linuxServer,
 				ipAddress,

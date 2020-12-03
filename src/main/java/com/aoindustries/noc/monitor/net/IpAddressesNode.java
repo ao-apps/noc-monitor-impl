@@ -27,8 +27,8 @@ import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -119,7 +119,7 @@ public class IpAddressesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "IpAddressesNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "IpAddressesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -238,7 +238,7 @@ public class IpAddressesNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()

@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.linux;
 
 import com.aoindustries.aoserv.client.linux.Server;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.LoadAverageResult;
 import com.aoindustries.noc.monitor.net.HostNode;
@@ -63,19 +63,19 @@ public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult>
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "LoadAverageNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.label");
 	}
 
 	@Override
 	public List<String> getColumnHeaders() {
 		return Arrays.asList(
-			accessor.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.oneMinute"),
-			accessor.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.fiveMinute"),
-			accessor.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.tenMinute"),
-			accessor.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.runningProcesses"),
-			accessor.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.totalProcesses"),
-			accessor.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.lastPID"),
-			accessor.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.alertThresholds")
+			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.oneMinute"),
+			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.fiveMinute"),
+			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.tenMinute"),
+			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.runningProcesses"),
+			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.totalProcesses"),
+			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.lastPID"),
+			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.alertThresholds")
 		);
 	}
 }

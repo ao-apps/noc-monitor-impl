@@ -43,8 +43,8 @@ import com.aoindustries.aoserv.cluster.ProcessorArchitecture;
 import com.aoindustries.aoserv.cluster.ProcessorType;
 import com.aoindustries.collections.AoCollections;
 import com.aoindustries.concurrent.ConcurrentUtils;
+import com.aoindustries.i18n.Resources;
 import com.aoindustries.noc.monitor.RootNodeImpl;
-import static com.aoindustries.noc.monitor.cluster.ApplicationResourcesAccessor.accessor;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -69,6 +69,8 @@ import java.util.concurrent.Future;
  * @author  AO Industries, Inc.
  */
 public class AOServClusterBuilder {
+
+	private static final Resources RESOURCES = Resources.getResources(AOServClusterBuilder.class.getPackage());
 
 	private static boolean is7200rpm(String model) {
 		return
@@ -444,7 +446,7 @@ public class AOServClusterBuilder {
 				String domUHostname = report.getResourceHostname();
 				Host domUServer = conn.getNet().getHost().get(rootAccounting+"/"+domUHostname);
 				if(domUServer==null) throw new ParseException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						locale,
 						"AOServClusterBuilder.ParseException.serverNotFound",
 						domUHostname
@@ -453,7 +455,7 @@ public class AOServClusterBuilder {
 				);
 				VirtualServer domUVirtualServer = domUServer.getVirtualServer();
 				if(domUVirtualServer==null) throw new ParseException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						locale,
 						"AOServClusterBuilder.ParseException.notVirtualServer",
 						domUHostname
@@ -469,7 +471,7 @@ public class AOServClusterBuilder {
 					|| domUDevice.charAt(3)<'a'
 					|| domUDevice.charAt(3)>'z'
 				) throw new ParseException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						locale,
 						"AOServClusterBuilder.ParseException.unexpectedResourceEnding",
 						domUDevice
@@ -481,7 +483,7 @@ public class AOServClusterBuilder {
 					// Is Primary
 					String previousValue = drbdPrimaryDom0s.put(domUHostname, dom0Hostname);
 					if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
-						accessor.getMessage(
+						RESOURCES.getMessage(
 							locale,
 							"AOServClusterBuilder.ParseException.multiPrimary",
 							domUHostname,
@@ -494,7 +496,7 @@ public class AOServClusterBuilder {
 					// Is Secondary
 					String previousValue = drbdSecondaryDom0s.put(domUHostname, dom0Hostname);
 					if(previousValue!=null && !previousValue.equals(dom0Hostname)) throw new ParseException(
-						accessor.getMessage(
+						RESOURCES.getMessage(
 							locale,
 							"AOServClusterBuilder.ParseException.multiSecondary",
 							domUHostname,
@@ -505,7 +507,7 @@ public class AOServClusterBuilder {
 					);
 				} else {
 					throw new ParseException(
-						accessor.getMessage(
+						RESOURCES.getMessage(
 							locale,
 							"AOServClusterBuilder.ParseException.unexpectedState",
 							localRole
@@ -520,7 +522,7 @@ public class AOServClusterBuilder {
 					//System.err.println("-- "+domUHostname);
 					//System.err.println("INSERT INTO virtual_disks VALUES(DEFAULT, "+domUVirtualServer.getPkey()+", '"+device+"', NULL, extents, 1, false, false);");
 					throw new ParseException(
-						accessor.getMessage(
+						RESOURCES.getMessage(
 							locale,
 							"AOServClusterBuilder.ParseException.virtualDiskNotFound",
 							domUHostname,
@@ -541,7 +543,7 @@ public class AOServClusterBuilder {
 
 			String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
 			if(primaryDom0Hostname==null) throw new ParseException(
-				accessor.getMessage(
+				RESOURCES.getMessage(
 					locale,
 					"AOServClusterBuilder.ParseException.primaryNotFound",
 					domUHostname
@@ -551,7 +553,7 @@ public class AOServClusterBuilder {
 
 			String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
 			if(secondaryDom0Hostname==null) throw new ParseException(
-				accessor.getMessage(
+				RESOURCES.getMessage(
 					locale,
 					"AOServClusterBuilder.ParseException.secondaryNotFound",
 					domUHostname
@@ -574,7 +576,7 @@ public class AOServClusterBuilder {
 					if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
 				}
 				if(foundCount!=1) throw new ParseException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						locale,
 						"AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
 						domUDisk.getDevice(),
@@ -589,7 +591,7 @@ public class AOServClusterBuilder {
 					if(report.getResourceHostname().equals(domUHostname) && report.getResourceDevice().equals(domUDisk.getDevice())) foundCount++;
 				}
 				if(foundCount!=1) throw new ParseException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						locale,
 						"AOServClusterBuilder.ParseException.drbdDomUDiskShouldBeFoundOnce",
 						domUDisk.getDevice(),

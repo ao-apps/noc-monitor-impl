@@ -31,8 +31,8 @@ import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TableResultListener;
@@ -64,14 +64,14 @@ import javax.swing.SwingUtilities;
  */
 public class BackupsNode extends NodeImpl implements TableResultNode, TableResultListener {
 
-	private static final long serialVersionUID = 1L;
-
 	private static final Logger logger = Logger.getLogger(BackupsNode.class.getName());
 
 	/**
 	 * All AO-boxes should be backed-up to this server farm (AO admin HQ).
 	 */
 	private static final String AO_SERVER_REQUIRED_BACKUP_FARM = "mob";
+
+	private static final long serialVersionUID = 1L;
 
 	final HostNode hostNode;
 	private final List<BackupNode> backupNodes = new ArrayList<>();
@@ -129,7 +129,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.label");
+		return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -238,10 +238,10 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 			if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
 			String newAlertLevelMessage =
 				failoverFileReplications.isEmpty()
-				? accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
+				? RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
 				: missingMobBackup
-					? accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.missingMobBackup")
-					: accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.backupsConfigured")
+					? RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.missingMobBackup")
+					: RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.backupsConfigured")
 			;
 			alertLevel = newAlertLevel;
 			if(oldAlertLevel!=newAlertLevel) {
@@ -287,8 +287,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					true,
 					1,
 					1,
-					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
-					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.noBackupsConfigured")),
+					locale -> Collections.singletonList(RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
+					locale -> Collections.singletonList(RESOURCES.getMessage(locale, "BackupsNode.noBackupsConfigured")),
 					Collections.singletonList(linuxServer==null ? AlertLevel.NONE : AlertLevel.MEDIUM)
 				);
 			} else if(missingMobBackup) {
@@ -298,8 +298,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					true,
 					1,
 					1,
-					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
-					locale -> Collections.singletonList(accessor.getMessage(locale, "BackupsNode.missingMobBackup")),
+					locale -> Collections.singletonList(RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
+					locale -> Collections.singletonList(RESOURCES.getMessage(locale, "BackupsNode.missingMobBackup")),
 					Collections.singletonList(AlertLevel.LOW)
 				);
 			} else {
@@ -323,14 +323,14 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					tableData.add(times.toString());
 					Long bitRate = failoverFileReplication.getBitRate();
 					if(bitRate==null) {
-						tableData.add(accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate.unlimited"));
+						tableData.add(RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate.unlimited"));
 					} else {
-						tableData.add(accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate", bitRate));
+						tableData.add(RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate", bitRate));
 					}
 					if(failoverFileReplication.getUseCompression()) {
-						tableData.add(accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.true"));
+						tableData.add(RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.true"));
 					} else {
-						tableData.add(accessor.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.false"));
+						tableData.add(RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.false"));
 					}
 					tableData.add(failoverFileReplication.getRetention().getDisplay());
 					BackupNode backupNode = backupNodes.get(c);
@@ -352,13 +352,13 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 					7,
 					failoverFileReplications.size(),
 					locale -> Arrays.asList(
-						accessor.getMessage(locale, "BackupsNode.columnHeaders.to"),
-						accessor.getMessage(locale, "BackupsNode.columnHeaders.path"),
-						accessor.getMessage(locale, "BackupsNode.columnHeaders.scheduledTimes"),
-						accessor.getMessage(locale, "BackupsNode.columnHeaders.maxBitRate"),
-						accessor.getMessage(locale, "BackupsNode.columnHeaders.useCompression"),
-						accessor.getMessage(locale, "BackupsNode.columnHeaders.retention"),
-						accessor.getMessage(locale, "BackupsNode.columnHeaders.status")
+						RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.to"),
+						RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.path"),
+						RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.scheduledTimes"),
+						RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.maxBitRate"),
+						RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.useCompression"),
+						RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.retention"),
+						RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.status")
 					),
 					locale -> tableData,
 					Collections.unmodifiableList(alertLevels)
@@ -374,7 +374,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
+					RESOURCES.getMessage(
+						hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

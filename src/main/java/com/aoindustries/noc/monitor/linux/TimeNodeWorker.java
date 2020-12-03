@@ -24,7 +24,7 @@ package com.aoindustries.noc.monitor.linux;
 
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TimeResult;
@@ -114,7 +114,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval,TimeResult
 
 		return new AlertLevelAndMessage(
 			getAlertLevel(currentSkew),
-			locale -> accessor.getMessage(
+			locale -> RESOURCES.getMessage(
 				locale,
 				"TimeNodeWorker.alertMessage",
 				currentSkew

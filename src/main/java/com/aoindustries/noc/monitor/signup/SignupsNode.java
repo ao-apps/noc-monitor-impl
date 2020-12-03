@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.signup;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;
@@ -61,6 +61,6 @@ public class SignupsNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "SignupsNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "SignupsNode.label");
 	}
 }

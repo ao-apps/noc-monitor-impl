@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.dns;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.net.IpAddressNode;
 import java.io.File;
@@ -59,6 +59,6 @@ public class DnsNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "DnsNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "DnsNode.label");
 	}
 }

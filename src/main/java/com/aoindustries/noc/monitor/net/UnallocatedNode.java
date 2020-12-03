@@ -23,8 +23,8 @@
 package com.aoindustries.noc.monitor.net;
 
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -100,7 +100,7 @@ public class UnallocatedNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "UnallocatedNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "UnallocatedNode.label");
 	}
 
 	public void start() throws IOException, SQLException {
@@ -131,7 +131,7 @@ public class UnallocatedNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(
+					RESOURCES.getMessage(
 						rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()

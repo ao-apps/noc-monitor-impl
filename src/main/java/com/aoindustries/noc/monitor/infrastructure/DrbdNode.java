@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.linux.RaidNode;
 import java.io.File;
@@ -56,6 +56,6 @@ public class DrbdNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "DrbdNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "DrbdNode.label");
 	}
 }

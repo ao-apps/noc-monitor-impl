@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.collections.AoCollections;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
@@ -220,7 +220,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * Gets the full path to the node.
 	 */
 	String getFullPath(Locale locale) throws RemoteException {
-		String pathSeparator = accessor.getMessage(locale, "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
+		String pathSeparator = RESOURCES.getMessage(locale, "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
 		final StringBuilder fullPath = new StringBuilder();
 		Stack<Node> path = new Stack<>();
 		Node parent = this;

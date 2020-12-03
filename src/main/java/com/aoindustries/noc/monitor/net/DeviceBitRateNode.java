@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import java.io.IOException;
@@ -54,17 +54,17 @@ public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRate
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.label");
 	}
 
 	@Override
 	public List<String> getColumnHeaders() {
 		return Arrays.asList(
-			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txBitRate"),
-			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"),
-			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"),
-			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
-			accessor.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.alertThresholds")
+			RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txBitRate"),
+			RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"),
+			RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"),
+			RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
+			RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.alertThresholds")
 		);
 	}
 }

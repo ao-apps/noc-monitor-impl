@@ -25,8 +25,8 @@ package com.aoindustries.noc.monitor.linux;
 import com.aoindustries.aoserv.client.distribution.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.infrastructure.DrbdNode;
 import com.aoindustries.noc.monitor.infrastructure.ThreeWareRaidNode;
@@ -113,7 +113,7 @@ public class RaidNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "RaidNode.label");
+		return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "RaidNode.label");
 	}
 
 	public void start() throws IOException, SQLException {
@@ -190,7 +190,8 @@ public class RaidNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
+					RESOURCES.getMessage(
+						hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

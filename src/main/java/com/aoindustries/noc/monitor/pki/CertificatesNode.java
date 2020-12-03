@@ -26,8 +26,8 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.pki.Certificate;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.net.HostNode;
 import com.aoindustries.table.Table;
@@ -104,7 +104,7 @@ public class CertificatesNode extends NodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(hostNode.hostsNode.rootNode.locale, "SslCertificatesNode.label");
+		return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "SslCertificatesNode.label");
 	}
 
 	private final TableListener tableListener = (Table<?> table) -> {
@@ -198,7 +198,7 @@ public class CertificatesNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(hostNode.hostsNode.rootNode.locale,
+					RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()
 					)

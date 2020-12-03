@@ -24,7 +24,7 @@ package com.aoindustries.noc.monitor.infrastructure;
 
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
@@ -127,17 +127,17 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 		{
 			String status = sample.getStatus();
 			if(status==null) {
-				highest = highest.escalate(AlertLevel.UNKNOWN, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.null"));
+				highest = highest.escalate(AlertLevel.UNKNOWN, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.null"));
 			} else if(status.equals("ONLINE") || status.startsWith("ONLINE ")) {
-				highest = highest.escalate(AlertLevel.NONE, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.online"));
+				highest = highest.escalate(AlertLevel.NONE, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.online"));
 			} else if(status.equals("CHARGING") || status.startsWith("CHARGING ")) {
-				highest = highest.escalate(AlertLevel.LOW, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.charging"));
+				highest = highest.escalate(AlertLevel.LOW, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.charging"));
 			} else if(status.equals("ONBATT") || status.startsWith("ONBATT ")) {
-				highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.onbatt"));
+				highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.onbatt"));
 			} else if(status.equals("COMMLOST")) {
-				highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.commlost"));
+				highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.commlost"));
 			} else {
-				highest = highest.escalate(AlertLevel.UNKNOWN, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.unknown", status));
+				highest = highest.escalate(AlertLevel.UNKNOWN, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.unknown", status));
 			}
 		}
 		// LINEV
@@ -153,10 +153,10 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 				float loAlert = lotrans + LINEV_LOW_TOLERANCE * (hitrans - lotrans);
 				float hiAlert = lotrans + LINEV_HIGH_TOLERANCE * (hitrans - lotrans);
 				if(linev<loAlert) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.linev.low", linev, loAlert));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.linev.low", linev, loAlert));
 				}
 				if(linev>hiAlert) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.linev.high", linev, hiAlert));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.linev.high", linev, hiAlert));
 				}
 			}
 		}
@@ -165,10 +165,10 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 			float linefreq = sample.getLinefreq();
 			if(!Float.isNaN(linefreq)) {
 				if(linefreq<LOW_LINEFREQ) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.linefreq.low", linefreq, LOW_LINEFREQ));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.linefreq.low", linefreq, LOW_LINEFREQ));
 				}
 				if(linefreq>HIGH_LINEFREQ) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.linefreq.high", linefreq, HIGH_LINEFREQ));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.linefreq.high", linefreq, HIGH_LINEFREQ));
 				}
 			}
 		}
@@ -183,10 +183,10 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 				final float loAlert = nomoutv - OUTPUTV_TOLERANCE;
 				final float hiAlert = nomoutv + OUTPUTV_TOLERANCE;
 				if(nomoutv<loAlert) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.nomoutv.low", nomoutv, loAlert));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.nomoutv.low", nomoutv, loAlert));
 				}
 				if(nomoutv>hiAlert) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.nomoutv.high", nomoutv, hiAlert));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.nomoutv.high", nomoutv, hiAlert));
 				}
 			}
 		}
@@ -195,13 +195,13 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 			float loadpct = sample.getLoadpct();
 			if(!Float.isNaN(loadpct)) {
 				if(loadpct>=CRITICAL_LOAD_PERCENT) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.loadpct", loadpct, CRITICAL_LOAD_PERCENT));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.loadpct", loadpct, CRITICAL_LOAD_PERCENT));
 				} else if(loadpct>=HIGH_LOAD_PERCENT) {
-					highest = highest.escalate(AlertLevel.HIGH,     locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.loadpct", loadpct, HIGH_LOAD_PERCENT));
+					highest = highest.escalate(AlertLevel.HIGH,     locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.loadpct", loadpct, HIGH_LOAD_PERCENT));
 				} else if(loadpct>=MEDIUM_LOAD_PERCENT) {
-					highest = highest.escalate(AlertLevel.MEDIUM,   locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.loadpct", loadpct, MEDIUM_LOAD_PERCENT));
+					highest = highest.escalate(AlertLevel.MEDIUM,   locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.loadpct", loadpct, MEDIUM_LOAD_PERCENT));
 				} else if(loadpct>=LOW_LOAD_PERCENT) {
-					highest = highest.escalate(AlertLevel.LOW,      locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.loadpct", loadpct, LOW_LOAD_PERCENT));
+					highest = highest.escalate(AlertLevel.LOW,      locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.loadpct", loadpct, LOW_LOAD_PERCENT));
 				}
 			}
 		}
@@ -210,13 +210,13 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 			float bcharge = sample.getBcharge();
 			if(!Float.isNaN(bcharge)) {
 				if(bcharge<=CRITICAL_BCHARGE) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.bcharge", bcharge, CRITICAL_BCHARGE));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.bcharge", bcharge, CRITICAL_BCHARGE));
 				} else if(bcharge<=HIGH_BCHARGE) {
-					highest = highest.escalate(AlertLevel.HIGH,     locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.bcharge", bcharge, HIGH_BCHARGE));
+					highest = highest.escalate(AlertLevel.HIGH,     locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.bcharge", bcharge, HIGH_BCHARGE));
 				} else if(bcharge<=MEDIUM_BCHARGE) {
-					highest = highest.escalate(AlertLevel.MEDIUM,   locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.bcharge", bcharge, MEDIUM_BCHARGE));
+					highest = highest.escalate(AlertLevel.MEDIUM,   locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.bcharge", bcharge, MEDIUM_BCHARGE));
 				} else if(bcharge<=LOW_BCHARGE) {
-					highest = highest.escalate(AlertLevel.LOW,      locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.bcharge", bcharge, LOW_BCHARGE));
+					highest = highest.escalate(AlertLevel.LOW,      locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.bcharge", bcharge, LOW_BCHARGE));
 				}
 			}
 		}
@@ -230,7 +230,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 			) {
 				final float loAlert = nombattv - LOW_BATTV_TOLERANCE;
 				if(battv<loAlert) {
-					highest = highest.escalate(AlertLevel.HIGH, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.battv.low", battv, loAlert));
+					highest = highest.escalate(AlertLevel.HIGH, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.battv.low", battv, loAlert));
 				}
 			}
 		}
@@ -238,7 +238,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 		{
 			int badbatts = sample.getBadbatts();
 			if(badbatts>0) {
-				highest = highest.escalate(AlertLevel.HIGH, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.badbatts"));
+				highest = highest.escalate(AlertLevel.HIGH, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.badbatts"));
 			}
 		}
 		// TONBATT
@@ -246,13 +246,13 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 			MilliInterval tonbatt = sample.getTonbatt();
 			if(tonbatt!=null) {
 				if(tonbatt.compareTo(CRITICAL_TONBATT)>0) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, CRITICAL_TONBATT));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, CRITICAL_TONBATT));
 				} else if(tonbatt.compareTo(HIGH_TONBATT)>0) {
-					highest = highest.escalate(AlertLevel.HIGH,     locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, HIGH_TONBATT));
+					highest = highest.escalate(AlertLevel.HIGH,     locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, HIGH_TONBATT));
 				} else if(tonbatt.compareTo(MEDIUM_TONBATT)>0) {
-					highest = highest.escalate(AlertLevel.MEDIUM,   locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, MEDIUM_TONBATT));
+					highest = highest.escalate(AlertLevel.MEDIUM,   locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, MEDIUM_TONBATT));
 				} else if(tonbatt.compareTo(LOW_TONBATT)>0) {
-					highest = highest.escalate(AlertLevel.LOW,      locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, LOW_TONBATT));
+					highest = highest.escalate(AlertLevel.LOW,      locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.tonbatt", tonbatt, LOW_TONBATT));
 				}
 			}
 		}
@@ -261,13 +261,13 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 			MilliInterval timeleft = sample.getTimeleft();
 			if(timeleft!=null) {
 				if(timeleft.compareTo(CRITICAL_TIMELEFT)<0) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, CRITICAL_TIMELEFT));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, CRITICAL_TIMELEFT));
 				} else if(timeleft.compareTo(HIGH_TIMELEFT)<0) {
-					highest = highest.escalate(AlertLevel.HIGH,     locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, HIGH_TIMELEFT));
+					highest = highest.escalate(AlertLevel.HIGH,     locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, HIGH_TIMELEFT));
 				} else if(timeleft.compareTo(MEDIUM_TIMELEFT)<0) {
-					highest = highest.escalate(AlertLevel.MEDIUM,   locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, MEDIUM_TIMELEFT));
+					highest = highest.escalate(AlertLevel.MEDIUM,   locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, MEDIUM_TIMELEFT));
 				} else if(timeleft.compareTo(LOW_TIMELEFT)<0) {
-					highest = highest.escalate(AlertLevel.LOW,      locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, LOW_TIMELEFT));
+					highest = highest.escalate(AlertLevel.LOW,      locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.timeleft", timeleft, LOW_TIMELEFT));
 				}
 			}
 		}
@@ -276,10 +276,10 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
 			float itemp = sample.getItemp();
 			if(!Float.isNaN(itemp)) {
 				if(itemp<LOW_ITEMP) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.itemp.low", itemp, LOW_ITEMP));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.itemp.low", itemp, LOW_ITEMP));
 				}
 				if(itemp>HIGH_ITEMP) {
-					highest = highest.escalate(AlertLevel.CRITICAL, locale -> accessor.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.itemp.high", itemp, HIGH_ITEMP));
+					highest = highest.escalate(AlertLevel.CRITICAL, locale -> RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.itemp.high", itemp, HIGH_ITEMP));
 				}
 			}
 		}

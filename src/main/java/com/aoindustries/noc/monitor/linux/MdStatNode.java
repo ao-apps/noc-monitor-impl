@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.SingleResultNodeImpl;
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +54,6 @@ public class MdStatNode extends SingleResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "MdStatNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "MdStatNode.label");
 	}
 }

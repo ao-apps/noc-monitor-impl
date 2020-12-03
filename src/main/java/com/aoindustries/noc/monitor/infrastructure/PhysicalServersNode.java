@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.infrastructure;
 import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.net.HostsNode;
@@ -55,7 +55,7 @@ public class PhysicalServersNode extends HostsNode {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "PhysicalServersNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "PhysicalServersNode.label");
 	}
 
 	@Override

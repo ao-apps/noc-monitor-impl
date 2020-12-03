@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.infrastructure;
 
 import com.aoindustries.aoserv.client.linux.Server;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import com.aoindustries.noc.monitor.net.HostNode;
@@ -61,24 +61,24 @@ public class UpsNode extends TableMultiResultNodeImpl<UpsResult> {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "UpsNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "UpsNode.label");
 	}
 
 	@Override
 	public List<?> getColumnHeaders() {
 		return Arrays.asList(
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.upsname"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.status"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.linev"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.outputv"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.loadpct"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.bcharge"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.battv"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.badbatts"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.tonbatt"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.cumonbatt"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.timeleft"),
-			accessor.getMessage(rootNode.locale, "UpsNode.columnHeader.itemp")
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.upsname"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.status"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.linev"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.outputv"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.loadpct"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.bcharge"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.battv"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.badbatts"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.tonbatt"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.cumonbatt"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.timeleft"),
+			RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.itemp")
 		);
 	}
 }

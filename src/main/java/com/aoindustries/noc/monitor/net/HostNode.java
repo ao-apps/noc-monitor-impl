@@ -29,8 +29,8 @@ import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
 import com.aoindustries.noc.monitor.NodeImpl;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.backup.BackupsNode;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.infrastructure.HardDrivesNode;
@@ -612,7 +612,7 @@ public class HostNode extends NodeImpl {
 		if(!packDir.exists()) {
 			if(!packDir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(hostsNode.rootNode.locale,
+					RESOURCES.getMessage(hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						packDir.getCanonicalPath()
 					)
@@ -623,7 +623,7 @@ public class HostNode extends NodeImpl {
 		if(!serverDir.exists()) {
 			if(!serverDir.mkdir()) {
 				throw new IOException(
-					accessor.getMessage(hostsNode.rootNode.locale,
+					RESOURCES.getMessage(hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						serverDir.getCanonicalPath()
 					)

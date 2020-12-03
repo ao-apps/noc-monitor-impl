@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.lang.EnumUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableMultiResult;
 import com.aoindustries.persistence.PersistentCollections;
@@ -226,7 +226,7 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 						() -> {
 							String msg = err.getLocalizedMessage();
 							if(msg == null || msg.isEmpty()) msg = err.toString();
-							return accessor.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);
+							return RESOURCES.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);
 						}
 					)
 				);

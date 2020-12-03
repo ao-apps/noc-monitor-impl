@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.lang.EnumUtils;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.util.function.SerializableFunction;
@@ -167,7 +167,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 				columns = 1;
 				rows = 1;
 				columnHeaders = locale -> Collections.singletonList(
-					accessor.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
+					RESOURCES.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
 				);
 				tableData = locale -> ThreadLocale.call(
 					locale,
@@ -175,7 +175,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 						String msg = err.getLocalizedMessage();
 						if(msg == null || msg.isEmpty()) msg = err.toString();
 						return Collections.singletonList(
-							accessor.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
+							RESOURCES.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
 						);
 					}
 				);

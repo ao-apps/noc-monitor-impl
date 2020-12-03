@@ -26,7 +26,7 @@ import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.lang.EnumUtils;
 import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.SingleResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
@@ -98,7 +98,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 			return new AlertLevelAndMessage(
 				// Don't downgrade UNKNOWN to CRITICAL on error
 				EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-				locale -> accessor.getMessage(
+				locale -> RESOURCES.getMessage(
 					locale,
 					"NetDeviceBondingNode.alertMessage.error",
 					error.apply(locale)
@@ -127,7 +127,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 			downCount = down;
 		}
 		AlertLevel alertLevel;
-		Function<Locale,String> alertMessage = locale -> accessor.getMessage(
+		Function<Locale,String> alertMessage = locale -> RESOURCES.getMessage(
 			locale,
 			"NetDeviceBondingNode.alertMessage.counts",
 			upCount,
@@ -144,7 +144,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 				if(line.startsWith("Duplex: ")) {
 					if(!line.equals("Duplex: full")) {
 						alertLevel = AlertLevel.LOW;
-						alertMessage = locale -> accessor.getMessage(
+						alertMessage = locale -> RESOURCES.getMessage(
 							locale,
 							"NetDeviceBondingNode.alertMessage.notFullDuplex",
 							line
@@ -170,7 +170,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 						default:
 							bondindMode = BondingMode.UNKNOWN;
 							alertLevel = AlertLevel.HIGH;
-							alertMessage = locale -> accessor.getMessage(
+							alertMessage = locale -> RESOURCES.getMessage(
 								locale,
 								"NetDeviceBondingNode.alertMessage.unexpectedBondingMode",
 								line
@@ -181,7 +181,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 			}
 			if(bondindMode == null) {
 				alertLevel = AlertLevel.HIGH;
-				alertMessage = locale -> accessor.getMessage(locale, "NetDeviceBondingNode.alertMessage.noBondingMode");
+				alertMessage = locale -> RESOURCES.getMessage(locale, "NetDeviceBondingNode.alertMessage.noBondingMode");
 			} else if(bondindMode == BondingMode.ACTIVE_BACKUP) {
 				// Look for any mismatched speed
 				for(String line : lines) {
@@ -203,7 +203,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 						}
 						if(bps == -1L) {
 							alertLevel = AlertLevel.HIGH;
-							alertMessage = locale -> accessor.getMessage(
+							alertMessage = locale -> RESOURCES.getMessage(
 								locale,
 								"NetDeviceBondingNode.alertMessage.unknownSpeed",
 								line
@@ -213,7 +213,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 						long maxBitRate = device.getMaxBitRate();
 						if(maxBitRate!=-1 && bps != maxBitRate) {
 							alertLevel = AlertLevel.HIGH;
-							alertMessage = locale -> accessor.getMessage(
+							alertMessage = locale -> RESOURCES.getMessage(
 								locale,
 								"NetDeviceBondingNode.alertMessage.speedMismatch",
 								maxBitRate,
@@ -250,7 +250,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 							}
 							if(bps == -1L) {
 								alertLevel = AlertLevel.HIGH;
-								alertMessage = locale -> accessor.getMessage(
+								alertMessage = locale -> RESOURCES.getMessage(
 									locale,
 									"NetDeviceBondingNode.alertMessage.unknownSpeed",
 									line
@@ -267,7 +267,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 					long maxBitRate = device.getMaxBitRate();
 					if(maxBitRate!=-1 && totalBps != maxBitRate) {
 						alertLevel = AlertLevel.HIGH;
-						alertMessage = locale -> accessor.getMessage(
+						alertMessage = locale -> RESOURCES.getMessage(
 							locale,
 							"NetDeviceBondingNode.alertMessage.speedMismatch",
 							maxBitRate,

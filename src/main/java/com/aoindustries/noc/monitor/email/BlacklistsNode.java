@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.email;
 
-import static com.aoindustries.noc.monitor.ApplicationResources.accessor;
+import static com.aoindustries.noc.monitor.Resources.RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.net.IpAddressNode;
 import java.io.File;
@@ -59,6 +59,6 @@ public class BlacklistsNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return accessor.getMessage(rootNode.locale, "BlacklistsNode.label");
+		return RESOURCES.getMessage(rootNode.locale, "BlacklistsNode.label");
 	}
 }
