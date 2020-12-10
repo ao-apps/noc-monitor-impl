@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.SingleResultNodeImpl;
 import com.aoindustries.noc.monitor.linux.RaidNode;
 import java.io.File;
@@ -55,6 +55,6 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(rootNode.locale, "ThreeWareRaidNode.label");
+		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "ThreeWareRaidNode.label");
 	}
 }

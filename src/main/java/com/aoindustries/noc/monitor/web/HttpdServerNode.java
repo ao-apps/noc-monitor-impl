@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.web;
 
 import com.aoindustries.aoserv.client.web.HttpdServer;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
 import java.io.File;
@@ -65,18 +65,17 @@ public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult>
 	public String getLabel() {
 		String name = _httpdServer.getName();
 		if(name == null) {
-			return RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.noName");
+			return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.noName");
 		} else {
-			return RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.named", name);
+			return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.named", name);
 		}
 	}
 
 	@Override
 	public List<String> getColumnHeaders() {
-		return Arrays.asList(
-			RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.concurrency"),
-			RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.maxConcurrency"),
-			RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.alertThresholds")
+		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.concurrency"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.maxConcurrency"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.alertThresholds")
 		);
 	}
 }

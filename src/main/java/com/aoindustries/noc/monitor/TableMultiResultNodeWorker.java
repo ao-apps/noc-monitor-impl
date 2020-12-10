@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoindustries.lang.EnumUtils;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableMultiResult;
 import com.aoindustries.persistence.PersistentCollections;
@@ -221,12 +221,11 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 				alertLevelAndMessage = new AlertLevelAndMessage(
 					// Don't downgrade UNKNOWN to CRITICAL on error
 					EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-					locale -> ThreadLocale.call(
-						locale,
+					locale -> ThreadLocale.call(locale,
 						() -> {
 							String msg = err.getLocalizedMessage();
 							if(msg == null || msg.isEmpty()) msg = err.toString();
-							return RESOURCES.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);
+							return PACKAGE_RESOURCES.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);
 						}
 					)
 				);

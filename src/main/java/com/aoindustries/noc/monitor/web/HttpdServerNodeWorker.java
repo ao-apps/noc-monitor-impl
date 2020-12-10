@@ -24,7 +24,7 @@ package com.aoindustries.noc.monitor.web;
 
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
@@ -99,7 +99,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 		if(concurrencyCritical != -1 && concurrency >= concurrencyCritical) {
 			return new AlertLevelAndMessage(
 				AlertLevel.CRITICAL,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"HttpdServerNodeWorker.alertMessage.critical",
 					concurrencyCritical,
@@ -111,7 +111,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 		if(concurrencyHigh != -1 && concurrency >= concurrencyHigh) {
 			return new AlertLevelAndMessage(
 				AlertLevel.HIGH,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"HttpdServerNodeWorker.alertMessage.high",
 					concurrencyHigh,
@@ -123,7 +123,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 		if(concurrencyMedium != -1 && concurrency >= concurrencyMedium) {
 			return new AlertLevelAndMessage(
 				AlertLevel.MEDIUM,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"HttpdServerNodeWorker.alertMessage.medium",
 					concurrencyMedium,
@@ -135,7 +135,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 		if(concurrencyLow != -1 && concurrency >= concurrencyLow) {
 			return new AlertLevelAndMessage(
 				AlertLevel.LOW,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"HttpdServerNodeWorker.alertMessage.low",
 					concurrencyLow,
@@ -146,7 +146,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 		if(concurrencyLow == -1) {
 			return new AlertLevelAndMessage(
 				AlertLevel.NONE,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"HttpdServerNodeWorker.alertMessage.notAny",
 					concurrency
@@ -155,7 +155,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,Htt
 		} else {
 			return new AlertLevelAndMessage(
 				AlertLevel.NONE,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"HttpdServerNodeWorker.alertMessage.none",
 					concurrencyLow,

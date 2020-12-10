@@ -30,7 +30,7 @@ import com.aoindustries.collections.AoCollections;
 import com.aoindustries.lang.Throwables;
 import com.aoindustries.net.DomainName;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -1127,12 +1127,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(
-			RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.basename"),
-			RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.queryTime"),
-			RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.latency"),
-			RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.query"),
-			RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.result")
+		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.basename"),
+			PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.queryTime"),
+			PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.latency"),
+			PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.query"),
+			PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.result")
 		);
 	}
 

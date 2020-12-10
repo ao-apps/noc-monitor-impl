@@ -24,7 +24,7 @@ package com.aoindustries.noc.monitor;
 
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.concurrent.Executors;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertChange;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -232,7 +232,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(locale, "RootNode.label");
+		return PACKAGE_RESOURCES.getMessage(locale, "RootNode.label");
 	}
 
 	/**
@@ -560,7 +560,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					RESOURCES.getMessage(
+					PACKAGE_RESOURCES.getMessage(
 						locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()

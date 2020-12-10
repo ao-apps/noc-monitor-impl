@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.mysql;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -92,25 +92,24 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
-			RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment")
+		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
+			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment")
 		);
 	}
 

@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.linux;
 
 import com.aoindustries.aoserv.client.linux.Server;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.MemoryResult;
 import com.aoindustries.noc.monitor.net.HostNode;
@@ -59,18 +59,17 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(rootNode.locale, "MemoryNode.label");
+		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.label");
 	}
 
 	@Override
 	public List<String> getColumnHeaders() {
-		return Arrays.asList(
-			RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memTotal"),
-			RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memFree"),
-			RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.buffers"),
-			RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.cached"),
-			RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapTotal"),
-			RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapFree")
+		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memTotal"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memFree"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.buffers"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.cached"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapTotal"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapFree")
 		);
 	}
 }

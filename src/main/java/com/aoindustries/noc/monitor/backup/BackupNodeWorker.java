@@ -28,7 +28,7 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -98,7 +98,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 			List<?> tableData = result.getTableData(Locale.getDefault());
 			if(tableData.isEmpty()) {
 				highestAlertLevel = AlertLevel.MEDIUM;
-				highestAlertMessage = locale -> RESOURCES.getMessage(locale, "BackupNodeWorker.noBackupPassesLogged");
+				highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.noBackupPassesLogged");
 			} else {
 				// We try to find the most recent successful pass
 				// If <30 hours NONE
@@ -115,12 +115,12 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 				if(lastSuccessfulTime==-1) {
 					// No success found, is MEDIUM
 					highestAlertLevel = AlertLevel.MEDIUM;
-					highestAlertMessage = locale -> RESOURCES.getMessage(locale, "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
+					highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
 				} else {
 					long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime)/((long)60*60*1000);
 					if(hoursSince<0) {
 						highestAlertLevel = AlertLevel.CRITICAL;
-						highestAlertMessage = locale -> RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassInFuture");
+						highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassInFuture");
 					} else {
 						if(hoursSince<30) {
 							highestAlertLevel = AlertLevel.NONE;
@@ -130,11 +130,11 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 							highestAlertLevel = AlertLevel.MEDIUM;
 						}
 						if(hoursSince<=48) {
-							highestAlertMessage = locale -> RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPass", hoursSince);
+							highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPass", hoursSince);
 						} else {
 							long days = hoursSince / 24;
 							long hours = hoursSince % 24;
-							highestAlertMessage = locale -> RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassDays", days, hours);
+							highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassDays", days, hours);
 						}
 					}
 				}
@@ -143,7 +143,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 				if(!lastSuccessful) {
 					if(AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
 						highestAlertLevel = AlertLevel.LOW;
-						highestAlertMessage = locale -> RESOURCES.getMessage(locale, "BackupNodeWorker.lastPassNotSuccessful");
+						highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastPassNotSuccessful");
 					}
 				}
 			}
@@ -158,13 +158,12 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(
-			RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"),
-			RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.duration"),
-			RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"),
-			RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.updated"),
-			RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.bytes"),
-			RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.successful")
+		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"),
+			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.duration"),
+			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"),
+			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.updated"),
+			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.bytes"),
+			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.successful")
 		);
 	}
 

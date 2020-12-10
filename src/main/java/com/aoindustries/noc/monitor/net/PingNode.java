@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.PingResult;
 import java.io.IOException;
@@ -59,7 +59,7 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(rootNode.locale, "PingNode.label");
+		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "PingNode.label");
 	}
 
 	@Override

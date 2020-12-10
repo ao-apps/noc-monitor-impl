@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.backup;
 import com.aoindustries.aoserv.client.backup.BackupPartition;
 import com.aoindustries.aoserv.client.backup.FileReplication;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -61,7 +61,7 @@ public class BackupNode extends TableResultNodeImpl {
 		);
 		this.failoverFileReplication = failoverFileReplication;
 		BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
-		this.label = RESOURCES.getMessage(
+		this.label = PACKAGE_RESOURCES.getMessage(
 			rootNode.locale,
 			"BackupNode.label",
 			backupPartition==null ? "null" : backupPartition.getLinuxServer().getHostname(),

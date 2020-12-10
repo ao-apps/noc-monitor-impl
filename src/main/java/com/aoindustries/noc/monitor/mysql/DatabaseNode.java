@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.mysql;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -115,7 +115,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					RESOURCES.getMessage(
+					PACKAGE_RESOURCES.getMessage(
 						mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()

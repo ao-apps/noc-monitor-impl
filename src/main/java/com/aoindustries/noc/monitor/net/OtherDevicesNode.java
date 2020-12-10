@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.net;
 import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class OtherDevicesNode extends HostsNode {
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(rootNode.locale, "OtherDevicesNode.label");
+		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "OtherDevicesNode.label");
 	}
 
 	@Override

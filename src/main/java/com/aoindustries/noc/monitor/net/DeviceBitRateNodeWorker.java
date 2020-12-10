@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.net;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
@@ -189,7 +189,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,Ne
 		if(bitRateCritical!=-1 && bps>=bitRateCritical) {
 			return new AlertLevelAndMessage(
 				AlertLevel.CRITICAL,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"NetDeviceBitRateNodeWorker.alertMessage."+direction+".critical",
 					bitRateCritical,
@@ -201,7 +201,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,Ne
 		if(bitRateHigh!=-1 && bps>=bitRateHigh) {
 			return new AlertLevelAndMessage(
 				AlertLevel.HIGH,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"NetDeviceBitRateNodeWorker.alertMessage."+direction+".high",
 					bitRateHigh,
@@ -213,7 +213,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,Ne
 		if(bitRateMedium!=-1 && bps>=bitRateMedium) {
 			return new AlertLevelAndMessage(
 				AlertLevel.MEDIUM,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"NetDeviceBitRateNodeWorker.alertMessage."+direction+".medium",
 					bitRateMedium,
@@ -225,7 +225,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,Ne
 		if(bitRateLow!=-1 && bps>=bitRateLow) {
 			return new AlertLevelAndMessage(
 				AlertLevel.LOW,
-				locale -> RESOURCES.getMessage(
+				locale -> PACKAGE_RESOURCES.getMessage(
 					locale,
 					"NetDeviceBitRateNodeWorker.alertMessage."+direction+".low",
 					bitRateLow,
@@ -235,7 +235,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,Ne
 		}
 		return new AlertLevelAndMessage(
 			AlertLevel.NONE,
-			locale -> RESOURCES.getMessage(
+			locale -> PACKAGE_RESOURCES.getMessage(
 				locale,
 				"NetDeviceBitRateNodeWorker.alertMessage."+direction+".none",
 				bps

@@ -27,7 +27,7 @@ import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.net.InetAddress;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -108,11 +108,10 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(
-			RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
-			RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
-			RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
-			RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.message")
+		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
+			PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
+			PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
+			PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.message")
 		);
 	}
 

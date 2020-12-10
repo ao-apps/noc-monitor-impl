@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.mysql;
 
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -59,7 +59,7 @@ public class CheckTablesNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(rootNode.locale, "MySQLCheckTablesNode.label");
+		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLCheckTablesNode.label");
 	}
 
 	/**

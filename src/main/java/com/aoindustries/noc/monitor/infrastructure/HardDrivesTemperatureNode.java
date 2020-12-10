@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +54,6 @@ public class HardDrivesTemperatureNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(rootNode.locale, "HardDrivesTemperatureNode.label");
+		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HardDrivesTemperatureNode.label");
 	}
 }

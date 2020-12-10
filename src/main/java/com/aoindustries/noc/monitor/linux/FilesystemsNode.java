@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.linux;
 
 import com.aoindustries.aoserv.client.linux.Server;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.net.HostNode;
 import java.io.File;
@@ -59,6 +59,6 @@ public class FilesystemsNode extends TableResultNodeImpl {
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(rootNode.locale, "FilesystemsNode.label");
+		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "FilesystemsNode.label");
 	}
 }

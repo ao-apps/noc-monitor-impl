@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.infrastructure;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -124,10 +124,9 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(
-			RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.device"),
-			RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.model"),
-			RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.temperature")
+		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.device"),
+			PACKAGE_RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.model"),
+			PACKAGE_RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.temperature")
 		);
 	}
 
@@ -143,7 +142,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 			if(values.size()!=3) {
 				throw new LocalizedParseException(
 					lineNum,
-					RESOURCES,
+					PACKAGE_RESOURCES,
 					"HardDrivesTemperatureNodeWorker.alertMessage.badColumnCount",
 					line
 				);

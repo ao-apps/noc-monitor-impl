@@ -25,7 +25,7 @@ package com.aoindustries.noc.monitor.infrastructure;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.DrbdReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -138,14 +138,13 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 
 	@Override
 	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(
-			RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.device"),
-			RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"),
-			RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"),
-			RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.ds"),
-			RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.roles"),
-			RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.lastVerified"),
-			RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.outOfSync")
+		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.device"),
+			PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"),
+			PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"),
+			PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.ds"),
+			PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.roles"),
+			PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.lastVerified"),
+			PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.outOfSync")
 		);
 	}
 

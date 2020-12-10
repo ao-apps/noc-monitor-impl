@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.linux;
 
 import com.aoindustries.aoserv.client.linux.Server;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.LoadAverageResult;
 import com.aoindustries.noc.monitor.net.HostNode;
@@ -63,19 +63,18 @@ public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult>
 
 	@Override
 	public String getLabel() {
-		return RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.label");
+		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.label");
 	}
 
 	@Override
 	public List<String> getColumnHeaders() {
-		return Arrays.asList(
-			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.oneMinute"),
-			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.fiveMinute"),
-			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.tenMinute"),
-			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.runningProcesses"),
-			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.totalProcesses"),
-			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.lastPID"),
-			RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.alertThresholds")
+		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.oneMinute"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.fiveMinute"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.tenMinute"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.runningProcesses"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.totalProcesses"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.lastPID"),
+			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.alertThresholds")
 		);
 	}
 }

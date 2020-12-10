@@ -26,7 +26,7 @@ import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.exception.WrappedException;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.table.Table;
@@ -176,7 +176,7 @@ abstract public class HostsNode extends NodeImpl {
 		if(!dir.exists()) {
 			if(!dir.mkdir()) {
 				throw new IOException(
-					RESOURCES.getMessage(
+					PACKAGE_RESOURCES.getMessage(
 						rootNode.locale,
 						"error.mkdirFailed",
 						dir.getCanonicalPath()

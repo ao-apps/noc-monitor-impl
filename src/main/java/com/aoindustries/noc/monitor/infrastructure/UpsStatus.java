@@ -23,7 +23,7 @@
 package com.aoindustries.noc.monitor.infrastructure;
 
 import com.aoindustries.lang.Strings;
-import static com.aoindustries.noc.monitor.Resources.RESOURCES;
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import com.aoindustries.sql.MilliInterval;
@@ -150,7 +150,7 @@ class UpsStatus {
 		// Parse the status
 		for(String line : Strings.splitLines(upsStatus)) {
 			int colonPos = line.indexOf(':');
-			if(colonPos==-1) throw new LocalizedParseException(0, RESOURCES, "UpsStatus.parse.noColon", line);
+			if(colonPos==-1) throw new LocalizedParseException(0, PACKAGE_RESOURCES, "UpsStatus.parse.noColon", line);
 			String name = line.substring(0, colonPos).trim();
 			String value = line.substring(colonPos+1).trim();
 				 if("UPSNAME"  .equals(name)) _upsname   = value;
