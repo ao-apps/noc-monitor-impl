@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -53,11 +53,11 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 
 	public final RootNodeImpl rootNode;
 	final NodeImpl parent;
-	protected final TableResultNodeWorker<?,?> worker;
+	protected final TableResultNodeWorker<?, ?> worker;
 
 	final private List<TableResultListener> tableResultListeners = new ArrayList<>();
 
-	protected TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?,?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	protected TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?, ?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.rootNode = rootNode;
 		this.parent = parent;
@@ -87,7 +87,7 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 
 	@Override
 	final public String getAlertMessage() {
-		Function<Locale,String> alertMessage = worker.getAlertMessage();
+		Function<Locale, String> alertMessage = worker.getAlertMessage();
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
 
@@ -107,7 +107,7 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 	/**
 	 * Called by the worker when the alert level changes.
 	 */
-	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale,String> alertMessage) throws RemoteException {
+	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale, String> alertMessage) throws RemoteException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		rootNode.nodeAlertLevelChanged(

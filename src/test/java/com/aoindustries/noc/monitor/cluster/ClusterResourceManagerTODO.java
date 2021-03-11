@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -389,9 +389,9 @@ public class ClusterResourceManagerTODO extends TestCase {
 		try {
 			List<Server> linuxServers = conn.getLinux().getServer().getRows();
 			Locale locale = Locale.getDefault();
-			Map<String,Map<String,String>> hddModelReports = AOServClusterBuilder.getHddModelReports(linuxServers, locale);
-			Map<String,Server.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(linuxServers, locale);
-			Map<String,List<Server.DrbdReport>> drbdReports = AOServClusterBuilder.getDrbdReports(linuxServers, locale);
+			Map<String, Map<String, String>> hddModelReports = AOServClusterBuilder.getHddModelReports(linuxServers, locale);
+			Map<String, Server.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(linuxServers, locale);
+			Map<String, List<Server.DrbdReport>> drbdReports = AOServClusterBuilder.getDrbdReports(linuxServers, locale);
 			SortedSet<Cluster> clusters = AOServClusterBuilder.getClusters(conn, linuxServers, hddModelReports, lvmReports, USE_TARGET);
 			if(USE_TARGET) {
 				// See what happens if we add an additional server

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -340,7 +340,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 						alertLevels.add(AlertLevel.UNKNOWN);
 					} else {
 						AlertLevelAndMessage alertLevelAndMessage = backupNode.getAlertLevelAndMessage(backupNodeResult);
-						Function<Locale,String> alertMessage = alertLevelAndMessage.getAlertMessage();
+						Function<Locale, String> alertMessage = alertLevelAndMessage.getAlertMessage();
 						tableData.add(alertMessage == null ? null : alertMessage.apply(hostNode.hostsNode.rootNode.locale));
 						alertLevels.add(alertLevelAndMessage.getAlertLevel());
 					}

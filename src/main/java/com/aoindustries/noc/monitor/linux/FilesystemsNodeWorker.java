@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2017, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2017, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  *
  * @author  AO Industries, Inc.
  */
-class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
+class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> {
 
 	private static final Logger logger = Logger.getLogger(FilesystemsNodeWorker.class.getName());
 
@@ -85,7 +85,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 	@Override
 	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = null;
+		Function<Locale, String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
@@ -127,7 +127,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.mountpoint"),
 			PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.device"),
 			PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.bytes"),
@@ -137,7 +137,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>,String> {
 			//RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.inodes"),
 			//RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.iused"),
 			//RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.ifree"),
-PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.iuse"),
+			PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.iuse"),
 			PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.fstype"),
 			PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.mountoptions"),
 			PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.extstate"),
@@ -177,7 +177,7 @@ PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.iuse"),
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getTableData(List<String> tableData) throws Exception {
+	protected SerializableFunction<Locale, List<String>> getTableData(List<String> tableData) throws Exception {
 		return locale -> tableData;
 	}
 
@@ -201,7 +201,7 @@ PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.columnHeader.iuse"),
 	 */
 	private AlertLevelAndMessage getAlertLevelAndMessage(List<?> tableData, int index) throws Exception {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.allOk");
+		Function<Locale, String> highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.allOk");
 
 		// Check extstate
 		String fstype = tableData.get(index+7).toString();

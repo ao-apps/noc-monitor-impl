@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -78,7 +78,7 @@ class BackgroundWriter {
 	}
 
 	// These are both synchronized on queue
-	private static final LinkedHashMap<File,QueueEntry> queue = new LinkedHashMap<>();
+	private static final LinkedHashMap<File, QueueEntry> queue = new LinkedHashMap<>();
 	private static boolean running = false;
 
 	/**
@@ -99,13 +99,13 @@ class BackgroundWriter {
 						File persistenceFile1;
 						QueueEntry queueEntry1;
 						synchronized (queue) {
-							Iterator<Map.Entry<File,QueueEntry>> iter = queue.entrySet().iterator();
+							Iterator<Map.Entry<File, QueueEntry>> iter = queue.entrySet().iterator();
 							if(!iter.hasNext()) {
 								running = false;
 								logger.finer("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
 								return;
 							}
-							Map.Entry<File,QueueEntry> first = iter.next();
+							Map.Entry<File, QueueEntry> first = iter.next();
 							persistenceFile1 = first.getKey();
 							queueEntry1 = first.getValue();
 							iter.remove();

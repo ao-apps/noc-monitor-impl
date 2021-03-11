@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2014, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2014, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -52,11 +52,11 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
 	public final RootNodeImpl rootNode;
 	final NodeImpl parent;
-	final TableMultiResultNodeWorker<?,R> worker;
+	final TableMultiResultNodeWorker<?, R> worker;
 
 	final private List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<>();
 
-	protected TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?,R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+	protected TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?, R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.rootNode = rootNode;
 		this.parent = parent;
@@ -86,7 +86,7 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
 	@Override
 	final public String getAlertMessage() {
-		Function<Locale,String> alertMessage = worker.getAlertMessage();
+		Function<Locale, String> alertMessage = worker.getAlertMessage();
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
 
@@ -106,7 +106,7 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 	/**
 	 * Called by the worker when the alert level changes.
 	 */
-	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale,String> newAlertMessage) throws RemoteException {
+	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale, String> newAlertMessage) throws RemoteException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		rootNode.nodeAlertLevelChanged(

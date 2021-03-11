@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -39,9 +39,9 @@ public class AlertLevelAndMessage {
 	public static final AlertLevelAndMessage NONE = new AlertLevelAndMessage(AlertLevel.NONE, null);
 
 	final private AlertLevel alertLevel;
-	final private Function<Locale,String> alertMessage;
+	final private Function<Locale, String> alertMessage;
 
-	public AlertLevelAndMessage(AlertLevel alertLevel, Function<Locale,String> alertMessage) {
+	public AlertLevelAndMessage(AlertLevel alertLevel, Function<Locale, String> alertMessage) {
 		this.alertLevel = alertLevel;
 		this.alertMessage = alertMessage;
 	}
@@ -61,7 +61,7 @@ public class AlertLevelAndMessage {
 	 * Gets a new alert level and message if a higher alert level, otherwise returns
 	 * this alert level and message.
 	 */
-	public AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Function<Locale,String> newAlertMessage) {
+	public AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Function<Locale, String> newAlertMessage) {
 		int diff = newAlertLevel.compareTo(this.alertLevel);
 		if(diff > 0) return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
 		if(

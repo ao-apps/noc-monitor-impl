@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -82,7 +82,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 	 */
 	@Override
 	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result) {
-		Function<Locale,String> error = result.getError();
+		Function<Locale, String> error = result.getError();
 		if(error != null) {
 			return new AlertLevelAndMessage(
 				// Don't downgrade UNKNOWN to CRITICAL on error
@@ -96,7 +96,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 		}
 		String report = result.getReport();
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = null;
+		Function<Locale, String> highestAlertMessage = null;
 		if(!"\nNo controller found.\nMake sure appropriate AMCC/3ware device driver(s) are loaded.\n\n".equals(report)) {
 			List<String> lines = Strings.splitLines(report);
 			// Should have at least four lines

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2014, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2014, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -71,7 +71,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> implements Runnable {
+public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
@@ -84,7 +84,7 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 	final private PersistentLinkedList<R> results;
 
 	volatile private AlertLevel alertLevel = null;
-	volatile private Function<Locale,String> alertMessage = null;
+	volatile private Function<Locale, String> alertMessage = null;
 
 	final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
 
@@ -126,7 +126,7 @@ public abstract class TableMultiResultNodeWorker<S,R extends TableMultiResult> i
 		return alertLevel;
 	}
 
-	final Function<Locale,String> getAlertMessage() {
+	final Function<Locale, String> getAlertMessage() {
 		return alertMessage;
 	}
 

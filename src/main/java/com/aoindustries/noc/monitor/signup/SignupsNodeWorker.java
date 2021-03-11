@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2015, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2015, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -48,7 +48,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
+class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 
 	/**
 	 * One unique worker is made per persistence file.
@@ -122,7 +122,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.source"),
 			PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"),
 			PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.time"),
@@ -166,7 +166,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<Object> tableData) throws Exception {
+	protected SerializableFunction<Locale, List<Object>> getTableData(List<Object> tableData) throws Exception {
 		return locale -> tableData;
 	}
 

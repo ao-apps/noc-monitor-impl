@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -104,7 +104,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 	 */
 	@Override
 	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result) {
-		Function<Locale,String> error = result.getError();
+		Function<Locale, String> error = result.getError();
 		if(error != null) {
 			return new AlertLevelAndMessage(
 				// Don't downgrade UNKNOWN to CRITICAL on error
@@ -120,7 +120,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 		List<String> lines = Strings.splitLines(report);
 		RaidLevel lastRaidLevel = null;
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = null;
+		Function<Locale, String> highestAlertMessage = null;
 		for(String line : lines) {
 			if(
 				!line.startsWith("Personalities :")
@@ -204,7 +204,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
 										}
 										// Get the current alert level
 										final AlertLevel alertLevel;
-										final Function<Locale,String> alertMessage;
+										final Function<Locale, String> alertMessage;
 										if(lastRaidLevel==RaidLevel.RAID1) {
 											if(upCount==1 && downCount==0) alertLevel = AlertLevel.MEDIUM;
 											else if(downCount==0) alertLevel = AlertLevel.NONE;

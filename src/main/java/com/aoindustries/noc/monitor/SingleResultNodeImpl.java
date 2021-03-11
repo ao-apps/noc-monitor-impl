@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -86,7 +86,7 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 
 	@Override
 	final public String getAlertMessage() {
-		Function<Locale,String> alertMessage = worker.getAlertMessage();
+		Function<Locale, String> alertMessage = worker.getAlertMessage();
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
 
@@ -106,7 +106,7 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 	/**
 	 * Called by the worker when the alert level changes.
 	 */
-	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale,String> alertMessage) throws RemoteException {
+	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale, String> alertMessage) throws RemoteException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		rootNode.nodeAlertLevelChanged(

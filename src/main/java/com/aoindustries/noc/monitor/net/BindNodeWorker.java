@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  *
  * @author  AO Industries, Inc.
  */
-class BindNodeWorker extends TableMultiResultNodeWorker<String,NetBindResult> {
+class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
 
 	private static final Logger logger = Logger.getLogger(BindNodeWorker.class.getName());
 

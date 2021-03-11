@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -48,7 +48,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
+abstract public class TableResultNodeWorker<QR, TD> implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
 
@@ -60,7 +60,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 
 	volatile private TableResult lastResult;
 	volatile private AlertLevel alertLevel = null;
-	volatile private Function<Locale,String> alertMessage = null;
+	volatile private Function<Locale, String> alertMessage = null;
 
 	final private List<TableResultNodeImpl> tableResultNodeImpls = new ArrayList<>();
 
@@ -78,7 +78,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 		return alertLevel;
 	}
 
-	final Function<Locale,String> getAlertMessage() {
+	final Function<Locale, String> getAlertMessage() {
 		return alertMessage;
 	}
 
@@ -149,13 +149,13 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 
 			int columns;
 			int rows;
-			SerializableFunction<Locale,? extends List<String>> columnHeaders;
-			SerializableFunction<Locale,? extends List<?>> tableData;
+			SerializableFunction<Locale, ? extends List<String>> columnHeaders;
+			SerializableFunction<Locale, ? extends List<?>> tableData;
 			List<AlertLevel> alertLevels;
 			boolean isError;
 			try {
 				QR queryResult = getQueryResultWithTimeout();
-				SerializableFunction<Locale,? extends List<? extends TD>> successfulTableData = getTableData(queryResult);
+				SerializableFunction<Locale, ? extends List<? extends TD>> successfulTableData = getTableData(queryResult);
 				columns = getColumns();
 				rows = successfulTableData.apply(Locale.getDefault()).size() / columns; // TODO: Is possible to delay getting number of rows until locale known?
 				columnHeaders = getColumnHeaders();
@@ -327,7 +327,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 	/**
 	 * Gets the column headers.
 	 */
-	protected abstract SerializableFunction<Locale,? extends List<String>> getColumnHeaders();
+	protected abstract SerializableFunction<Locale, ? extends List<String>> getColumnHeaders();
 
 	/**
 	 * Gets the current table data for this worker.
@@ -337,7 +337,7 @@ abstract public class TableResultNodeWorker<QR,TD> implements Runnable {
 	/**
 	 * Gets the table data for the query result.  This must be processed quickly.
 	 */
-	protected abstract SerializableFunction<Locale,? extends List<? extends TD>> getTableData(QR queryResult) throws Exception;
+	protected abstract SerializableFunction<Locale, ? extends List<? extends TD>> getTableData(QR queryResult) throws Exception;
 
 	/**
 	 * Cancels the current getTableData call on a best-effort basis.

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -82,7 +82,7 @@ import org.xbill.DNS.Type;
  *
  * @author  AO Industries, Inc.
  */
-class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWorker.BlacklistQueryResult>,Object> {
+class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWorker.BlacklistQueryResult>, Object> {
 
 	private static final Logger logger = Logger.getLogger(BlacklistsNodeWorker.class.getName());
 
@@ -389,7 +389,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	final private List<BlacklistLookup> lookups;
 
 	private static DnsBlacklist[] addUnique(DnsBlacklist ... blacklists) {
-		Map<String,DnsBlacklist> unique = AoCollections.newHashMap(blacklists.length);
+		Map<String, DnsBlacklist> unique = AoCollections.newHashMap(blacklists.length);
 		for(DnsBlacklist blacklist : blacklists) {
 			String basename = blacklist.getBaseName();
 			DnsBlacklist existing = unique.get(basename);
@@ -1126,7 +1126,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.basename"),
 			PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.queryTime"),
 			PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.latency"),
@@ -1140,7 +1140,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		(Runnable r) -> new Thread(r, BlacklistsNodeWorker.class.getName() + ".executorService")
 	);
 
-	private final Map<String,BlacklistQueryResult> queryResultCache = new HashMap<>();
+	private final Map<String, BlacklistQueryResult> queryResultCache = new HashMap<>();
 
 	@Override
 	@SuppressWarnings({"ThrowableResultIgnored", "UseSpecificCatch", "TooBroadCatch", "SleepWhileInLoop"})
@@ -1257,7 +1257,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<BlacklistQueryResult> queryResult) throws Exception {
+	protected SerializableFunction<Locale, List<Object>> getTableData(List<BlacklistQueryResult> queryResult) throws Exception {
 		List<Object> tableData = new ArrayList<>(queryResult.size()*5);
 		for(BlacklistQueryResult result : queryResult) {
 			tableData.add(result.basename);
@@ -1281,7 +1281,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	@Override
 	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = null;
+		Function<Locale, String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();

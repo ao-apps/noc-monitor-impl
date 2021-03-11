@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -93,7 +93,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 	 */
 	@Override
 	protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result) {
-		Function<Locale,String> error = result.getError();
+		Function<Locale, String> error = result.getError();
 		if(error != null) {
 			return new AlertLevelAndMessage(
 				// Don't downgrade UNKNOWN to CRITICAL on error
@@ -127,7 +127,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 			downCount = down;
 		}
 		AlertLevel alertLevel;
-		Function<Locale,String> alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+		Function<Locale, String> alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
 			locale,
 			"NetDeviceBondingNode.alertMessage.counts",
 			upCount,

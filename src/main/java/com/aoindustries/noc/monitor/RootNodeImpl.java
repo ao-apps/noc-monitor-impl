@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -279,9 +279,9 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	final private List<TreeListener> treeListeners = new ArrayList<>();
 	// Synchronized on treeListeners
-	final private Map<TreeListener,NodeAddedSignaler> nodeAddedSignalers = new HashMap<>();
-	final private Map<TreeListener,NodeRemovedSignaler> nodeRemovedSignalers = new HashMap<>();
-	final private Map<TreeListener,NodeAlertLevelChangedSignaler> nodeAlertLevelChangedSignalers = new HashMap<>();
+	final private Map<TreeListener, NodeAddedSignaler> nodeAddedSignalers = new HashMap<>();
+	final private Map<TreeListener, NodeRemovedSignaler> nodeRemovedSignalers = new HashMap<>();
+	final private Map<TreeListener, NodeAlertLevelChangedSignaler> nodeAlertLevelChangedSignalers = new HashMap<>();
 
 	@Override
 	public void addTreeListener(TreeListener treeListener) {

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -58,7 +58,7 @@ import org.xbill.DNS.Type;
  *
  * @author  AO Industries, Inc.
  */
-class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryResult>,Object> {
+class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryResult>, Object> {
 
 	static class DnsQueryResult {
 		final String query;
@@ -107,7 +107,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
 			PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
 			PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
@@ -227,7 +227,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<DnsQueryResult> results) throws Exception {
+	protected SerializableFunction<Locale, List<Object>> getTableData(List<DnsQueryResult> results) throws Exception {
 		List<Object> tableData = new ArrayList<>(results.size()*4);
 		for(DnsQueryResult result : results) {
 			tableData.add(result.query);
@@ -250,7 +250,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 	@Override
 	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = null;
+		Function<Locale, String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();

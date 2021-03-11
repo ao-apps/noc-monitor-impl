@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2016, 2017, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2016, 2017, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -43,7 +43,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class PingNodeWorker extends TableMultiResultNodeWorker<Object,PingResult> {
+class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
 
 	/**
 	 * The ping timeout.

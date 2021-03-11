@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -52,7 +52,7 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Object> {
+class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, Object> {
 
 	private static final int HISTORY_SIZE = 100;
 
@@ -90,7 +90,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 	@Override
 	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel;
-		Function<Locale,String> highestAlertMessage;
+		Function<Locale, String> highestAlertMessage;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
@@ -157,7 +157,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"),
 			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.duration"),
 			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"),
@@ -173,7 +173,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>,Ob
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<FileReplicationLog> failoverFileLogs) throws Exception {
+	protected SerializableFunction<Locale, List<Object>> getTableData(List<FileReplicationLog> failoverFileLogs) throws Exception {
 		if(failoverFileLogs.isEmpty()) {
 			return locale -> Collections.emptyList();
 		} else {

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009, 2014, 2017, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2009, 2014, 2017, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -70,7 +70,7 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
 		"Connected successfully (SSL disabled)",
 		"Connected successfully over SSL"
 	};
-	private static final Map<String,Integer> commonResultsMap = AoCollections.newHashMap(commonResults.length);
+	private static final Map<String, Integer> commonResultsMap = AoCollections.newHashMap(commonResults.length);
 	static {
 		for(int c = 0; c < commonResults.length; c++) {
 			commonResultsMap.put(commonResults[c], c);
@@ -90,7 +90,7 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
 		RAW = 4
 	;
 
-	private static final ConcurrentMap<String,Boolean> commonResultsSuggested = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, Boolean> commonResultsSuggested = new ConcurrentHashMap<>();
 
 	@Override
 	protected void serialize(NetBindResult value, ByteArrayOutputStream buffer) throws IOException {

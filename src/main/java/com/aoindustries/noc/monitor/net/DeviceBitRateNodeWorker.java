@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -44,7 +44,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>,NetDeviceBitRateResult> {
+class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, NetDeviceBitRateResult> {
 
 	/**
 	 * The number of bytes overhead for each Ethernet frame, including interframe gap, assuming no VLAN tag.

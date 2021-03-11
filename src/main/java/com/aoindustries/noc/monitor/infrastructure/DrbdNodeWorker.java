@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2015, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2015, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -51,7 +51,7 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
+class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
 
 	private static final int NUM_COLS = 7;
 
@@ -99,7 +99,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	@Override
 	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = null;
+		Function<Locale, String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
@@ -137,7 +137,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.device"),
 			PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"),
 			PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"),
@@ -154,7 +154,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>,Object> {
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<DrbdReport> reports) throws Exception {
+	protected SerializableFunction<Locale, List<Object>> getTableData(List<DrbdReport> reports) throws Exception {
 		List<Object> tableData = new ArrayList<>(reports.size() * NUM_COLS);
 		for(DrbdReport report : reports) {
 			tableData.add(report.getDevice());

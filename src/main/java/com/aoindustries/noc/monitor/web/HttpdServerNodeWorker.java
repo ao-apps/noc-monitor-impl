@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 /**
  * @author  AO Industries, Inc.
  */
-class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>,HttpdServerResult> {
+class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, HttpdServerResult> {
 
 	private static final Logger logger = Logger.getLogger(HttpdServerNodeWorker.class.getName());
 

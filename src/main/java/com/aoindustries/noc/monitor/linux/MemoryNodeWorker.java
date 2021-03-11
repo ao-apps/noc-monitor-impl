@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -50,7 +50,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDisplayExactSize>,MemoryResult> {
+class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDisplayExactSize>, MemoryResult> {
 
 	/**
 	 * One unique worker is made per persistence directory (and should match linuxServer exactly)

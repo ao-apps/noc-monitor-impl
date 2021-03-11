@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2012, 2013, 2014, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2012, 2013, 2014, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * @author  AO Industries, Inc.
  */
-class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus,UpsResult> {
+class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus, UpsResult> {
 
 	private static final float LINEV_LOW_TOLERANCE = 0.25f;
 	private static final float LINEV_HIGH_TOLERANCE = 0.75f;

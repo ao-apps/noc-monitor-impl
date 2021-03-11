@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -46,7 +46,7 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check>,Object> {
+class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check>, Object> {
 
 	private static final int NUM_COLS = 3;
 
@@ -99,7 +99,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 	@Override
 	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = null;
+		Function<Locale, String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
@@ -132,7 +132,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.check"),
 			PACKAGE_RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.value"),
 			PACKAGE_RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.message")
@@ -145,7 +145,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<Certificate.Check> results) throws Exception {
+	protected SerializableFunction<Locale, List<Object>> getTableData(List<Certificate.Check> results) throws Exception {
 		List<Object> tableData = new ArrayList<>(results.size() * NUM_COLS);
 		for(Certificate.Check result : results) {
 			tableData.add(result.getCheck());

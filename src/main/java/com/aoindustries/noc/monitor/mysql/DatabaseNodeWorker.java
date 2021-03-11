@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2009, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -45,7 +45,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus>,Object> {
+class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus>, Object> {
 
 	//private static final Logger logger = Logger.getLogger(MySQLDatabaseNodeWorker.class.getName());
 
@@ -91,7 +91,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"),
 			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
 			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
@@ -121,7 +121,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<Database.TableStatus> tableStatuses) throws Exception {
+	protected SerializableFunction<Locale, List<Object>> getTableData(List<Database.TableStatus> tableStatuses) throws Exception {
 		List<Object> tableData = new ArrayList<>(tableStatuses.size()*18);
 		for(Database.TableStatus tableStatus : tableStatuses) {
 			tableData.add(tableStatus.getName());

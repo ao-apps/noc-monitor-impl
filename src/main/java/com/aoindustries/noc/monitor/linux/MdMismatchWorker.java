@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2014, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2014, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -45,7 +45,7 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,String> {
+class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, String> {
 
 	private static final int RAID1_HIGH_THRESHOLD = 2048;
 	private static final int RAID1_MEDIUM_THRESHOLD = 1024;
@@ -83,7 +83,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	@Override
 	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
 		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale,String> highestAlertMessage = null;
+		Function<Locale, String> highestAlertMessage = null;
 		if(result.isError()) {
 			highestAlertLevel = result.getAlertLevels().get(0);
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
@@ -114,7 +114,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.device"),
 			PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
 			PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.count")
@@ -127,7 +127,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>,Stri
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getTableData(List<MdMismatchReport> reports) throws Exception {
+	protected SerializableFunction<Locale, List<String>> getTableData(List<MdMismatchReport> reports) throws Exception {
 		List<String> tableData = new ArrayList<>(reports.size() * 3);
 		for(MdMismatchReport report : reports) {
 			tableData.add(report.getDevice());

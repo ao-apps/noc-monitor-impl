@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -49,7 +49,7 @@ import java.util.Map;
  *
  * @author  AO Industries, Inc.
  */
-class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
+class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 
 	/**
 	 * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
@@ -83,7 +83,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<String>> getColumnHeaders() {
+	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
 		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"),
 			PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"),
 			PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.duration"),
@@ -128,7 +128,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 		if(lastTableStatuses.isEmpty()) return Collections.emptyList();
 		// Build the set of table names and types
 		List<Table_Name> tableNames = new ArrayList<>(lastTableStatuses.size());
-		Map<Table_Name,Database.Engine> tables = AoCollections.newHashMap(lastTableStatuses.size());
+		Map<Table_Name, Database.Engine> tables = AoCollections.newHashMap(lastTableStatuses.size());
 		for(Database.TableStatus lastTableStatus : lastTableStatuses) {
 			Database.Engine engine = lastTableStatus.getEngine();
 			if(
@@ -170,7 +170,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>,Object> {
 	}
 
 	@Override
-	protected SerializableFunction<Locale,List<Object>> getTableData(List<Object> tableData) throws Exception {
+	protected SerializableFunction<Locale, List<Object>> getTableData(List<Object> tableData) throws Exception {
 		return locale -> tableData;
 	}
 

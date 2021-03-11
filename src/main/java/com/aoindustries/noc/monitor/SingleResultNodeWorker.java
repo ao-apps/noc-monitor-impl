@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -57,7 +57,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 
 	volatile private SingleResult lastResult;
 	volatile private AlertLevel alertLevel;
-	volatile private Function<Locale,String> alertMessage = null;
+	volatile private Function<Locale, String> alertMessage = null;
 
 	final private List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<>();
 
@@ -75,7 +75,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 		return alertLevel;
 	}
 
-	final Function<Locale,String> getAlertMessage() {
+	final Function<Locale, String> getAlertMessage() {
 		return alertMessage;
 	}
 
@@ -142,7 +142,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 
 			lastSuccessful = false;
 
-			SerializableFunction<Locale,String> error;
+			SerializableFunction<Locale, String> error;
 			String report;
 			try {
 				error = null;
