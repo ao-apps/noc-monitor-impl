@@ -938,7 +938,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// </editor-fold>
 
 			// <editor-fold desc="anti-abuse.org" defaultstate="collapsed">
-			// From www.anti-abuse.org on 2009-11-06
+			// From http://www.anti-abuse.org/multi-rbl-check-results/?host=66.160.183.1 on 2021-04-05
 			new DnsBlacklist("bl.spamcop.net"),
 			new DnsBlacklist("cbl.abuseat.org"),
 			new DnsBlacklist("b.barracudacentral.org"),
@@ -951,9 +951,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("spam.dnsbl.sorbs.net"),
 			new DnsBlacklist("web.dnsbl.sorbs.net"),
 			new DnsBlacklist("zombie.dnsbl.sorbs.net"),
-			new DnsBlacklist("dnsbl-1.uceprotect.net"),
-			new DnsBlacklist("dnsbl-2.uceprotect.net"),
-			new DnsBlacklist("dnsbl-3.uceprotect.net"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl-1.uceprotect.net"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl-2.uceprotect.net"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl-3.uceprotect.net"),
 			new DnsBlacklist("pbl.spamhaus.org"),
 			new DnsBlacklist("sbl.spamhaus.org"),
 			new DnsBlacklist("xbl.spamhaus.org"),
@@ -985,7 +985,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("drone.abuse.ch"),
 			// Removed 2014-02-09: new DnsBlacklist("spam.abuse.ch"),
 			new DnsBlacklist("httpbl.abuse.ch"),
-			new DnsBlacklist("dul.ru"),
+			// Removed 2021-04-05: new DnsBlacklist("dul.ru"),
 			new DnsBlacklist("korea.services.net"),
 			new DnsBlacklist("short.rbl.jp"),
 			new DnsBlacklist("virus.rbl.jp"),
@@ -994,7 +994,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("virbl.bit.nl"),
 			new DnsBlacklist("rbl.suresupport.com"),
 			new DnsBlacklist("dsn.rfc-ignorant.org"),
-			new DnsBlacklist("ips.backscatterer.org"),
+			// Removed 2021-04-05: new DnsBlacklist("ips.backscatterer.org"),
 			new DnsBlacklist("spamguard.leadmon.net"),
 			new DnsBlacklist("opm.tornevall.org"),
 			new DnsBlacklist("netblock.pedantic.org"),
@@ -1012,6 +1012,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("query.senderbase.org"),
 			new DnsBlacklist("bogons.cymru.com"),
 			new DnsBlacklist("csi.cloudmark.com"),
+			new DnsBlacklist("truncate.gbudb.net"),
 			// </editor-fold>
 
 			// <editor-fold desc="multirbl.valli.org" defaultstate="collapsed">
