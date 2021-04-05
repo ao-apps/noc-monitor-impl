@@ -94,6 +94,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	/**
 	 * The resolver timeout in milliseconds.
 	 */
+	// Matches dig's default timeout of 5 seconds
+	// Matches Linux's RES_TIMEOUT default of 5 seconds (See resolv.h)
 	private static final Duration RESOLVER_TIMEOUT = Duration.ofSeconds(5);
 
 	/**
@@ -270,6 +272,13 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 					alertLevel =
 						// list.quorum.to returns 127.0.0.0 for no listing
 						("list.quorum.to".equals(basename) && "127.0.0.0".equals(ip)) ? AlertLevel.NONE
+						// Returns 127.0.0.2 when "an IP address being checked is not recommended for receiving emails",
+						// See http://rbldns.ru/index.php/en/service.html
+						: ("rbl.rbldns.ru".equals(basename) && "127.0.0.2".equals(ip)) ? AlertLevel.NONE
+						// Returns 127.0.1.2 when "The IP 64.62.174.254 is part of the following subnets announced by AS6939."
+						// This network range is much bigger than our allocation, and current has "247 (0.75)%" listed.
+						// See http://fmb.la/ip/64.62.174.254
+						: ("bl.fmb.la".equals(basename) && "127.0.1.2".equals(ip)) ? AlertLevel.NONE
 						: maxAlertLevel
 					;
 				}
@@ -522,7 +531,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("blacklist.sci.kun.nl"),
 			// Offline 2021-04-05: new DnsBlacklist("blacklist.spambag.org"),
 			new DnsBlacklist("block.dnsbl.sorbs.net"),
-			new DnsBlacklist("blocked.hilli.dk"),
+			// Down 2021-04-05: new DnsBlacklist("blocked.hilli.dk"),
 			new DnsBlacklist("cart00ney.surriel.com"),
 			new DnsBlacklist("cbl.abuseat.org"),
 			new DnsBlacklist("dev.null.dk"),
@@ -1016,37 +1025,46 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// </editor-fold>
 
 			// <editor-fold desc="multirbl.valli.org" defaultstate="collapsed">
-			// From http://multirbl.valli.org/ on 2014-02-09
+			// From https://multirbl.valli.org/dnsbl-lookup/66.160.183.1.html (DNSBL lookups only) on 2021-04-05
+			// Not including "(hidden)"
+			//
+			// DNSBL Blacklist Test
+			//
+			new DnsBlacklist("bl.0spam.org"),
 			new DnsBlacklist("0spam.fusionzero.com"),
-			new DnsBlacklist("0spam-killlist.fusionzero.com"),
-			// Removed 2014-02-09: new DnsBlacklist("blackholes.five-ten-sg.com"),
-			new DnsBlacklist("combined.abuse.ch"),
+			new DnsBlacklist("nbl.0spam.org"),
+			new DnsBlacklist("0spam-n.fusionzero.com"),
+			// Forward lookup: url.0spam.org,
+			// Forward lookup: 0spamurl.fusionzero.com
+			// Removed 2021-04-05: new DnsBlacklist("0spam-killlist.fusionzero.com"),
+			// Removed 2021-04-05: new DnsBlacklist("combined.abuse.ch"),
 			// Removed 2014-02-09: new DnsBlacklist("dnsbl.abuse.ch"),
-			new DnsBlacklist("drone.abuse.ch"),
-			// Removed 2014-07-14, Timeout and SERVFAIL only: new DnsBlacklist("spam.abuse.ch"),
-			new DnsBlacklist("httpbl.abuse.ch"),
+			// Removed 2021-04-05: new DnsBlacklist("drone.abuse.ch"),
+			// Removed 2021-04-05: new DnsBlacklist("httpbl.abuse.ch"),
+			// Removed 2021-04-05: new DnsBlacklist("spam.abuse.ch"),
 			// Forward lookup: uribl.zeustracker.abuse.ch
 			new DnsBlacklist("ipbl.zeustracker.abuse.ch"),
 			new DnsBlacklist("rbl.abuse.ro"),
 			// Forward lookup: uribl.abuse.ro
 			// Removed 2014-02-09: new DnsBlacklist("dnsbl.ahbl.org"),
 			// Removed 2014-02-09: new DnsBlacklist("ircbl.ahbl.org"),
-			// Forward lookup: rhsbl.ahbl.org
-			// Removed 2014-02-09: new DnsBlacklist("orvedb.aupads.org"),
-			// Removed 2014-02-09: new DnsBlacklist("rsbl.aupads.org"),
+			// Removed 2014-02-09: // Forward lookup: rhsbl.ahbl.org
 			new DnsBlacklist("spam.dnsbl.anonmails.de"),
-			new DnsBlacklist("dnsbl.anticaptcha.net"),
-			new DnsBlacklist("orvedb.aupads.org"),
-			new DnsBlacklist("rsbl.aupads.org"),
-			// Forward lookup: l1.apews.org
-			new DnsBlacklist("l2.apews.org"),
+			// Down 2021-04-05: new DnsBlacklist("dnsbl.anticaptcha.net"),
+			// Removed 2021-04-05: // Forward lookup: l1.apews.org
+			// Removed 2021-04-05: new DnsBlacklist("l2.apews.org"),
 			// Removed 2014-02-09: new DnsBlacklist("fresh.dict.rbl.arix.com"),
 			// Removed 2014-02-09: new DnsBlacklist("stale.dict.rbl.arix.com"),
 			// Removed 2014-02-09: new DnsBlacklist("fresh.sa_slip.rbl.arix.com"),
 			// Removed 2014-02-09: new DnsBlacklist("stale.sa_slip.arix.com"),
+			new DnsBlacklist("orvedb.aupads.org"),
+			new DnsBlacklist("rsbl.aupads.org"),
+			new DnsBlacklist("block.ascams.com"),
+			new DnsBlacklist("superblock.ascams.com"),
 			new DnsBlacklist("aspews.ext.sorbs.net"),
-			new DnsBlacklist("dnsbl.aspnet.hu"),
-			// Forward lookup: dnsbl.aspnet.hu
+			// Removed 2014-02-09: new DnsBlacklist("blackholes.five-ten-sg.com"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.aspnet.hu"),
+			// Removed 2021-04-05: // Forward lookup: dnsbl.aspnet.hu
 			// Removed 2014-02-09: new DnsBlacklist("access.atlbl.net"),
 			// Removed 2014-02-09: new DnsBlacklist("rbl.atlbl.net"),
 			new DnsBlacklist("ips.backscatterer.org"),
@@ -1057,9 +1075,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("l2.bbfh.ext.sorbs.net"),
 			new DnsBlacklist("l3.bbfh.ext.sorbs.net"),
 			new DnsBlacklist("l4.bbfh.ext.sorbs.net"),
-			new DnsBlacklist("bbm.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
-			new DnsBlacklist("niku.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
-			new DnsBlacklist("bbx.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
+			new DnsBlacklist("blackholes.tepucom.nl"),
+			// Removed 2021-04-05: new DnsBlacklist("bbm.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
+			// Removed 2021-04-05: new DnsBlacklist("niku.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
+			// Removed 2021-04-05: new DnsBlacklist("bbx.2ch.net", AlertLevel.NONE), // Japanese site, don't know how to delist
 			// Removed 2014-02-09: new DnsBlacklist("bl.deadbeef.com"),
 			// Removed 2014-02-09: new DnsBlacklist("rbl.blakjak.net"),
 			new DnsBlacklist("netscan.rbl.blockedservers.com"),
@@ -1070,32 +1089,44 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Forward lookup: bsb.empty.us
 			new DnsBlacklist("bsb.spamlookup.net"),
 			// Forward lookup: bsb.spamlookup.net
+			new DnsBlacklist("black.dnsbl.brukalai.lt"),
+			// Forward lookup: black.dnsbl.brukalai.lt
+			new DnsBlacklist("light.dnsbl.brukalai.lt"),
+			// Forward lookup: light.dnsbl.brukalai.lt
 			// Domain expired 2018-03-27: new DnsBlacklist("dnsbl.burnt-tech.com"),
 			new DnsBlacklist("blacklist.sci.kun.nl"),
-			new DnsBlacklist("cbl.anti-spam.org.cn"),
-			new DnsBlacklist("cblplus.anti-spam.org.cn"),
-			new DnsBlacklist("cblless.anti-spam.org.cn"),
-			new DnsBlacklist("cdl.anti-spam.org.cn"),
+			// Removed 2021-04-05: new DnsBlacklist("cbl.anti-spam.org.cn"),
+			// Removed 2021-04-05: new DnsBlacklist("cblplus.anti-spam.org.cn"),
+			// Removed 2021-04-05: new DnsBlacklist("cblless.anti-spam.org.cn"),
+			// Removed 2021-04-05: new DnsBlacklist("cdl.anti-spam.org.cn"),
 			new DnsBlacklist("cbl.abuseat.org"),
 			// Offline 2014-06-28: new DnsBlacklist("rbl.choon.net"),
 			// Removed 2014-02-09: new DnsBlacklist("dnsbl.cyberlogic.net"),
 			new DnsBlacklist("bogons.cymru.com"),
 			new DnsBlacklist("v4.fullbogons.cymru.com"),
-			new DnsBlacklist("tor.dan.me.uk"),
 			new DnsBlacklist("torexit.dan.me.uk"),
-			// Forward lookup: ex.dnsbl.org
-			// Forward lookup: in.dnsbl.org
+			new DnsBlacklist("dnsbl.darklist.de"),
+			new DnsBlacklist("openproxy.bls.digibase.ca"),
+			new DnsBlacklist("proxyabuse.bls.digibase.ca"),
+			new DnsBlacklist("spambot.bls.digibase.ca"),
+			// Removed 2021-04-05: // Forward lookup: ex.dnsbl.org
+			// Removed 2021-04-05: // Forward lookup: in.dnsbl.org
 			new DnsBlacklist("rbl.dns-servicios.com"),
-			new DnsBlacklist("dnsbl.ipocalypse.net"),
-			new DnsBlacklist("dnsbl.mags.net"),
-			// Forward lookup: dnsbl.othello.ch
+			new DnsBlacklist("dnsbl.beetjevreemd.nl"),
+			new DnsBlacklist("dnsbl.calivent.com.pe"),
+			// Down 2021-04-05: new DnsBlacklist("dnsbl.isx.fr"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.ipocalypse.net"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.mags.net"),
+			new DnsBlacklist("dnsbl.net.ua"),
+			// Removed 2021-04-05: // Forward lookup: dnsbl.othello.ch
 			new DnsBlacklist("dnsbl.rv-soft.info"),
-			// Offline 2014-06-28: new DnsBlacklist("dnsblchile.org"),
+			new DnsBlacklist("dnsblchile.org"),
+			new DnsBlacklist("dnsrbl.org"),
 			new DnsBlacklist("vote.drbl.caravan.ru"),
-			new DnsBlacklist("vote.drbldf.dsbl.ru"),
-			new DnsBlacklist("vote.drbl.gremlin.ru"),
 			new DnsBlacklist("work.drbl.caravan.ru"),
-			new DnsBlacklist("work.drbldf.dsbl.ru"),
+			// Removed 2021-04-05: new DnsBlacklist("vote.drbldf.dsbl.ru"),
+			// Removed 2021-04-05: new DnsBlacklist("work.drbldf.dsbl.ru"),
+			new DnsBlacklist("vote.drbl.gremlin.ru"),
 			new DnsBlacklist("work.drbl.gremlin.ru"),
 			// Removed 2014-02-09: new DnsBlacklist("vote.drbl.drand.net"),
 			// Removed 2014-02-09: new DnsBlacklist("spamprobe.drbl.drand.net"),
@@ -1103,26 +1134,36 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2014-02-09: new DnsBlacklist("work.drbl.drand.net"),
 			new DnsBlacklist("bl.drmx.org"),
 			new DnsBlacklist("dnsbl.dronebl.org"),
+			new DnsBlacklist("dul.pacifier.net"),
 			// Removed 2014-02-09: new DnsBlacklist("rbl.efnethelp.net"),
 			new DnsBlacklist("rbl.efnet.org"),
 			new DnsBlacklist("rbl.efnetrbl.org"),
 			new DnsBlacklist("tor.efnet.org"),
 			// Offline 2019-12-05: new DnsBlacklist("bl.emailbasura.org"),
 			new DnsBlacklist("rbl.fasthosts.co.uk"),
+			new DnsBlacklist("bl.fmb.la"),
+			// Forward lookup: bl.fmb.la
+			// Forward lookup: communicado.fmb.la
+			// Forward lookup: nsbl.fmb.la
+			// Forward lookup: short.fmb.la
 			new DnsBlacklist("fnrbl.fast.net"),
 			new DnsBlacklist("forbidden.icm.edu.pl"),
 			new DnsBlacklist("hil.habeas.com"),
+			new DnsBlacklist("black.junkemailfilter.com"),
+			// Forward lookup: black.junkemailfilter.com
+			new DnsBlacklist("dnsbl.cobion.com"),
 			// Offline 2018-03-27: new DnsBlacklist("lookup.dnsbl.iip.lu"),
 			new DnsBlacklist("spamrbl.imp.ch"),
 			new DnsBlacklist("wormrbl.imp.ch"),
-			new DnsBlacklist("dnsbl.inps.de"),
-			new DnsBlacklist("intercept.datapacket.net"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.inps.de"),
+			// Removed 2021-04-05: new DnsBlacklist("intercept.datapacket.net"),
 			new DnsBlacklist("rbl.interserver.net"),
 			// Offline 2014-06-28: new DnsBlacklist("any.dnsl.ipquery.org"),
 			// Offline 2014-06-28: new DnsBlacklist("backscat.dnsl.ipquery.org"),
 			// Offline 2014-06-28: new DnsBlacklist("netblock.dnsl.ipquery.org"),
 			// Offline 2014-06-28: new DnsBlacklist("relay.dnsl.ipquery.org"),
 			// Offline 2014-06-28: new DnsBlacklist("single.dnsl.ipquery.org"),
+			new DnsBlacklist("rbl.iprange.net"),
 			new DnsBlacklist("mail-abuse.blacklist.jippg.org"),
 			// Removed 2014-02-09: new DnsBlacklist("karmasphere.email-sender.dnsbl.karmasphere.com"),
 			new DnsBlacklist("dnsbl.justspam.org"),
@@ -1134,15 +1175,17 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2014-02-09: new DnsBlacklist("fraud.rhs.mailpolice.com"),
 			// Removed 2014-02-09: new DnsBlacklist("sbl.csma.biz"),
 			// Removed 2014-02-09: new DnsBlacklist("bl.csma.biz"),
+			new DnsBlacklist("rbl.lugh.ch"),
 			new DnsBlacklist("dnsbl.madavi.de"),
 			// Offline 2018-03-27: new DnsBlacklist("ipbl.mailhosts.org"),
-			// Forward lookup: rhsbl.mailhosts.org
+			// Offline 2018-03-27: // Forward lookup: rhsbl.mailhosts.org
 			// Offline 2018-03-27: new DnsBlacklist("shortlist.mailhosts.org"),
 			new DnsBlacklist("bl.mailspike.net"),
 			new DnsBlacklist("z.mailspike.net"),
 			new DnsBlacklist("bl.mav.com.br"),
 			new DnsBlacklist("cidr.bl.mcafee.com"),
 			// Offline 2019-12-05: new DnsBlacklist("rbl.megarbl.net"),
+			new DnsBlacklist("rbl.metunet.com"),
 			new DnsBlacklist("combined.rbl.msrbl.net"),
 			new DnsBlacklist("images.rbl.msrbl.net"),
 			new DnsBlacklist("phishing.rbl.msrbl.net"),
@@ -1155,40 +1198,71 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2014-02-09: new DnsBlacklist("dnsbl.njabl.org"),
 			// Removed 2014-02-09: new DnsBlacklist("bhnc.njabl.org"),
 			// Removed 2014-02-09: new DnsBlacklist("combined.njabl.org"),
-			new DnsBlacklist("no-more-funn.moensted.dk"),
-			new DnsBlacklist("nospam.ant.pl"),
+			// Removed 2021-04-05: new DnsBlacklist("no-more-funn.moensted.dk"),
+			// Forward lookup: dbl.nordspam.com
+			new DnsBlacklist("bl.nordspam.com"),
+			// Down 2021-04-05: new DnsBlacklist("bl.nosolicitado.org"),
+			// Down 2021-04-05: new DnsBlacklist("bl.worst.nosolicitado.org"),
+			// Removed 2021-04-05: new DnsBlacklist("nospam.ant.pl"),
 			new DnsBlacklist("dyn.nszones.com"),
 			new DnsBlacklist("sbl.nszones.com"),
 			new DnsBlacklist("bl.nszones.com"),
 			// Forward lookup: ubl.nszones.com
+			new DnsBlacklist("bl.octopusdns.com"),
 			// Removed 2021-04-05: new DnsBlacklist("dnsbl.openresolvers.org"),
-			new DnsBlacklist("rbl.orbitrbl.com", AlertLevel.NONE),
-			new DnsBlacklist("netblock.pedantic.org"),
+			// Removed 2021-04-05: new DnsBlacklist("rbl.orbitrbl.com", AlertLevel.NONE),
+			// Removed 2021-04-05: new DnsBlacklist("netblock.pedantic.org"),
 			new DnsBlacklist("spam.pedantic.org"),
 			new DnsBlacklist("pofon.foobar.hu"),
-			new DnsBlacklist("rbl.polarcomm.net"),
-			new DnsBlacklist("dnsbl.proxybl.org"),
+			// Forward lookup: uribl.pofon.foobar.hu
+			// Removed 2021-04-05: new DnsBlacklist("rbl.polarcomm.net"),
+			new DnsBlacklist("bl.rbl.polspam.pl"),
+			new DnsBlacklist("bl-h1.rbl.polspam.pl"),
+			new DnsBlacklist("bl-h2.rbl.polspam.pl"),
+			new DnsBlacklist("bl-h3.rbl.polspam.pl"),
+			new DnsBlacklist("bl-h4.rbl.polspam.pl"),
+			new DnsBlacklist("cnkr.rbl.polspam.pl"),
+			new DnsBlacklist("dyn.rbl.polspam.pl"),
+			new DnsBlacklist("lblip4.rbl.polspam.pl"),
+			new DnsBlacklist("rblip4.rbl.polspam.pl"),
+			// Forward lookup: rhsbl.rbl.polspam.pl
+			// Forward lookup: rhsbl-h.rbl.polspam.pl
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.proxybl.org"),
 			new DnsBlacklist("psbl.surriel.com"),
-			new DnsBlacklist("all.rbl.jp"),
-			// Forward lookup: dyndns.rbl.jp
-			new DnsBlacklist("short.rbl.jp"),
-			// Forward lookup: url.rbl.jp
-			new DnsBlacklist("virus.rbl.jp"),
+			new DnsBlacklist("rbl.rbldns.ru"),
+			// Removed 2021-04-05: new DnsBlacklist("all.rbl.jp"),
+			// Removed 2021-04-05: // Forward lookup: dyndns.rbl.jp
+			// Removed 2021-04-05: new DnsBlacklist("short.rbl.jp"),
+			// Removed 2021-04-05: // Forward lookup: url.rbl.jp
+			// Removed 2021-04-05: new DnsBlacklist("virus.rbl.jp"),
 			new DnsBlacklist("rbl.schulte.org"),
-			new DnsBlacklist("rbl.talkactive.net"),
+			new DnsBlacklist("rbl.realtimeblacklist.com"),
+			// Removed 2021-04-05: new DnsBlacklist("rbl.talkactive.net"),
 			new DnsBlacklist("access.redhawk.org"),
-			new DnsBlacklist("dnsbl.rizon.net"),
-			new DnsBlacklist("dynip.rothen.com"),
-			new DnsBlacklist("dul.ru"),
+			// Forward lookup: abuse.rfc-clueless.org
+			// Forward lookup: bogusmx.rfc-clueless.org
+			// Forward lookup: dsn.rfc-clueless.org
+			// Forward lookup: elitist.rfc-clueless.org
+			// Forward lookup: fulldom.rfc-clueless.org
+			// Forward lookup: postmaster.rfc-clueless.org
+			// Forward lookup: mailsl.dnsbl.rjek.com
+			// Forward lookup: urlsl.dnsbl.rjek.com
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.rizon.net"),
+			// Removed 2021-04-05: new DnsBlacklist("dynip.rothen.com"),
+			// Removed 2021-04-05: new DnsBlacklist("dul.ru"),
 			new DnsBlacklist("dnsbl.rymsho.ru"),
 			// Forward lookup: rhsbl.rymsho.ru
 			new DnsBlacklist("all.s5h.net"),
-			new DnsBlacklist("tor.dnsbl.sectoor.de"),
-			new DnsBlacklist("exitnodes.tor.dnsbl.sectoor.de"),
+			// Forward lookup: public.sarbl.org
+			// Forward lookup: rhsbl.scientificspam.net
+			new DnsBlacklist("bl.scientificspam.net"),
+			// Removed 2021-04-05: new DnsBlacklist("tor.dnsbl.sectoor.de"),
+			// Removed 2021-04-05: new DnsBlacklist("exitnodes.tor.dnsbl.sectoor.de"),
 			new DnsBlacklist("bl.score.senderscore.com"),
 			// Removed 2015-06-26: new DnsBlacklist("bl.shlink.org"),
 			// Removed 2015-06-26: new DnsBlacklist("dyn.shlink.org"),
-			// Forward lookup: rhsbl.shlink.org
+			// Removed 2015-06-26: // Forward lookup: rhsbl.shlink.org
+			new DnsBlacklist("singular.ttk.pte.hu"),
 			// Removed 2014-02-09: new DnsBlacklist("dnsbl.solid.net"),
 			new DnsBlacklist("dnsbl.sorbs.net"),
 			new DnsBlacklist("problems.dnsbl.sorbs.net"),
@@ -1213,21 +1287,23 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("web.dnsbl.sorbs.net"),
 			new DnsBlacklist("korea.services.net"),
 			new DnsBlacklist("backscatter.spameatingmonkey.net"),
-			new DnsBlacklist("badnets.spameatingmonkey.net"),
+			// Removed 2015-06-26: new DnsBlacklist("badnets.spameatingmonkey.net"),
 			new DnsBlacklist("bl.spameatingmonkey.net"),
 			// Forward lookup: fresh.spameatingmonkey.net
 			// Forward lookup: fresh10.spameatingmonkey.net
 			// Forward lookup: fresh15.spameatingmonkey.net
+			// Forward lookup: fresh30.spameatingmonkey.net
+			// Forward lookup: freshzero.spameatingmonkey.net
 			new DnsBlacklist("netbl.spameatingmonkey.net"),
 			// Forward lookup: uribl.spameatingmonkey.net
 			// Forward lookup: urired.spameatingmonkey.net
 			// Removed 2014-02-09: new DnsBlacklist("map.spam-rbl.com"),
-			new DnsBlacklist("singlebl.spamgrouper.com", AlertLevel.NONE), // Very unprofessional
-			new DnsBlacklist("netblockbl.spamgrouper.com", AlertLevel.NONE), // Very unprofessional
-			new DnsBlacklist("all.spam-rbl.fr"),
+			new DnsBlacklist("netblockbl.spamgrouper.to", AlertLevel.NONE), // Very unprofessional
+			// Removed 2021-04-05: new DnsBlacklist("all.spam-rbl.fr"),
 			// Offline 2019-12-05: new DnsBlacklist("bl.spamcannibal.org"),
-			new DnsBlacklist("dnsbl.spam-champuru.livedoor.com"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.spam-champuru.livedoor.com"),
 			new DnsBlacklist("bl.spamcop.net"),
+			new DnsBlacklist("sbl.spamdown.org"),
 			// Forward lookup: dbl.spamhaus.org
 			new DnsBlacklist("pbl.spamhaus.org"),
 			new DnsBlacklist("sbl.spamhaus.org"),
@@ -1237,15 +1313,20 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("feb.spamlab.com"),
 			new DnsBlacklist("rbl.spamlab.com"),
 			new DnsBlacklist("all.spamrats.com"),
+			new DnsBlacklist("auth.spamrats.com"),
 			new DnsBlacklist("dyna.spamrats.com"),
 			new DnsBlacklist("noptr.spamrats.com"),
 			new DnsBlacklist("spam.spamrats.com"),
 			new DnsBlacklist("spamsources.fabel.dk"),
-			new DnsBlacklist("bl.spamstinks.com"),
-			new DnsBlacklist("badhost.stopspam.org"),
-			new DnsBlacklist("block.stopspam.org"),
-			new DnsBlacklist("dnsbl.stopspam.org"),
-			new DnsBlacklist("dul.pacifier.net"),
+			// Removed 2021-04-05: new DnsBlacklist("bl.spamstinks.com"),
+			new DnsBlacklist("dnsbl.spfbl.net"),
+			// Forward lookup: dnsbl.spfbl.net
+			// Removed 2021-04-05: new DnsBlacklist("badhost.stopspam.org"),
+			// Removed 2021-04-05: new DnsBlacklist("block.stopspam.org"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.stopspam.org"),
+			new DnsBlacklist("bl.suomispam.net"),
+			// Forward lookup: dbl.suomispam.net
+			new DnsBlacklist("gl.suomispam.net"),
 			// Removed 2014-02-09: new DnsBlacklist("ab.surbl.org"),
 			// Removed 2014-02-09: new DnsBlacklist("jp.surbl.org"),
 			new DnsBlacklist("multi.surbl.org"),
@@ -1255,7 +1336,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2014-02-09: new DnsBlacklist("sc.surbl.org"),
 			// Removed 2014-02-09: new DnsBlacklist("ws.surbl.org"),
 			// Deprecated and offline 2018-03-27: new DnsBlacklist("xs.surbl.org"),
-			// Forward lookup: xs.surbl.org
+			// Deprecated and offline 2018-03-27: // Forward lookup: xs.surbl.org
 			// Disabled 2012-02-07: new DnsBlacklist("dnsbl.swiftbl.net"),
 			// Offline 2014-06-28: new DnsBlacklist("dnsbl.swiftbl.org"),
 			new DnsBlacklist("dnsrbl.swinog.ch"),
@@ -1263,7 +1344,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Offline 2014-06-28: new DnsBlacklist("bl.technovision.dk"),
 			new DnsBlacklist("st.technovision.dk"),
 			// Forward lookup: dob.sibl.support-intelligence.net
-			new DnsBlacklist("opm.tornevall.org"),
+			new DnsBlacklist("dnsbl.tornevall.org"),
+			// Removed 2021-04-05: new DnsBlacklist("opm.tornevall.org"),
 			new DnsBlacklist("rbl2.triumf.ca"),
 			new DnsBlacklist("truncate.gbudb.net"),
 			new DnsBlacklist("dnsbl-0.uceprotect.net"),
@@ -1276,24 +1358,93 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Forward lookup: multi.uribl.com
 			// Forward lookup: red.uribl.com
 			// Removed 2014-02-09: new DnsBlacklist("ubl.lashback.com"),
-			// Removed 2014-07-02 pending successful test delist requests: new DnsBlacklist("free.v4bl.org"),
-			// Removed 2014-07-02 pending successful test delist requests: new DnsBlacklist("ip.v4bl.org"),
-			new DnsBlacklist("virbl.dnsbl.bit.nl"),
-			new DnsBlacklist("dnsbl.webequipped.com"),
+			new DnsBlacklist("free.v4bl.org"),
+			// Down 2021-04-05: new DnsBlacklist("ip.v4bl.org"),
+			// Removed 2021-04-05: new DnsBlacklist("virbl.dnsbl.bit.nl"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.webequipped.com"),
 			new DnsBlacklist("blacklist.woody.ch"),
 			// Forward lookup: uri.blacklist.woody.ch
 			new DnsBlacklist("db.wpbl.info"),
 			new DnsBlacklist("bl.blocklist.de"),
 			new DnsBlacklist("dnsbl.zapbl.net"),
 			// Forward lookup: rhsbl.zapbl.net
-			// Forward lookup: zebl.zoneedit.com
-			// Forward lookup: ban.zebl.zoneedit.com
+			// Forward lookup: d.bl.zenrbl.pl
+			new DnsBlacklist("ip4.bl.zenrbl.pl"),
 			// Removed 2014-02-09: new DnsBlacklist("dnsbl.zetabl.org"),
+			// Removed 2021-04-05: // Forward lookup: zebl.zoneedit.com
+			// Removed 2021-04-05: // Forward lookup: ban.zebl.zoneedit.com
+			//
+			// DNSBL Combinedlist Test
+			//
+			// Forward lookup: sa.fmb.la
 			new DnsBlacklist("hostkarma.junkemailfilter.com"),
 			// Forward lookup: hostkarma.junkemailfilter.com
+			new DnsBlacklist("nobl.junkemailfilter.com"),
+			// Forward lookup: nobl.junkemailfilter.com
+			new DnsBlacklist("krn.korumail.com"),
 			new DnsBlacklist("rep.mailspike.net"),
-			new DnsBlacklist("list.quorum.to"),
-			new DnsBlacklist("srn.surgate.net")
+			// Removed 2021-04-05: new DnsBlacklist("list.quorum.to"),
+			// Forward lookup: reputation-domain.rbl.scrolloutf1.com
+			new DnsBlacklist("reputation-ip.rbl.scrolloutf1.com"),
+			// Forward lookup: reputation-ns.rbl.scrolloutf1.com
+			new DnsBlacklist("score.senderscore.com"),
+			new DnsBlacklist("score.spfbl.net"),
+			// Forward lookup: score.spfbl.net
+			// Down 2021-04-05: new DnsBlacklist("srn.surgate.net"),
+			//
+			// DNSBL Whitelist Test
+			//
+			new DnsBlacklist("0spamtrust.fusionzero.com"),
+			new DnsBlacklist("query.bondedsender.org"),
+			new DnsBlacklist("plus.bondedsender.org"),
+			new DnsBlacklist("white.dnsbl.brukalai.lt"),
+			// Forward lookup: white.dnsbl.brukalai.lt
+			new DnsBlacklist("whitelist.sci.kun.nl"),
+			// Forward lookup: dwl.dnswl.org
+			new DnsBlacklist("list.dnswl.org"),
+			new DnsBlacklist("accredit.habeas.com"),
+			new DnsBlacklist("sa-accredit.habeas.com"),
+			new DnsBlacklist("hul.habeas.com"),
+			new DnsBlacklist("sohul.habeas.com"),
+			new DnsBlacklist("iadb.isipp.com"),
+			new DnsBlacklist("iadb2.isipp.com"),
+			// Forward lookup: iddb.isipp.com
+			new DnsBlacklist("wadb.isipp.com"),
+			new DnsBlacklist("wl.mailspike.net"),
+			new DnsBlacklist("trusted.nether.net"),
+			new DnsBlacklist("wl.nszones.com"),
+			new DnsBlacklist("ispmx.pofon.foobar.hu"),
+			new DnsBlacklist("ip4.white.polspam.pl"),
+			// Down 2021-04-05: new DnsBlacklist("whitelist.surriel.com"),
+			new DnsBlacklist("eswlrev.dnsbl.rediris.es"),
+			new DnsBlacklist("mtawlrev.dnsbl.rediris.es"),
+			// Forward lookup: _vouch.dwl.spamhaus.org
+			new DnsBlacklist("swl.spamhaus.org"),
+			new DnsBlacklist("dnswl.spfbl.net"),
+			// Forward lookup: dnswl.spfbl.net
+			new DnsBlacklist("wbl.triumf.ca"),
+			// Forward lookup: white.uribl.com
+			new DnsBlacklist("ips.whitelisted.org"),
+			//
+			// DNSBL Informationallist Test
+			//
+			new DnsBlacklist("abuse-contacts.abusix.org", AlertLevel.NONE),
+			new DnsBlacklist("all.ascc.dnsbl.bit.nl", AlertLevel.NONE),
+			new DnsBlacklist("all.dnsbl.bit.nl"),
+			new DnsBlacklist("bitonly.dnsbl.bit.nl"),
+			new DnsBlacklist("zz.countries.nerd.dk", AlertLevel.NONE),
+			new DnsBlacklist("origin.asn.cymru.com", AlertLevel.NONE),
+			new DnsBlacklist("peer.asn.cymru.com", AlertLevel.NONE),
+			new DnsBlacklist("tor.dan.me.uk"),
+			new DnsBlacklist("asn.routeviews.org"),
+			new DnsBlacklist("aspath.routeviews.org"),
+			new DnsBlacklist("query.senderbase.org"),
+			new DnsBlacklist("sa.senderbase.org"),
+			new DnsBlacklist("rf.senderbase.org"),
+			new DnsBlacklist("geobl.spameatingmonkey.net"),
+			new DnsBlacklist("origin.asn.spameatingmonkey.net", AlertLevel.NONE),
+			new DnsBlacklist("abuse.spfbl.net", AlertLevel.NONE)
+			// Forward lookup: abuse.spfbl.net
 			// </editor-fold>
 		);
 		//InetAddress ip = ipAddress.getInetAddress();
