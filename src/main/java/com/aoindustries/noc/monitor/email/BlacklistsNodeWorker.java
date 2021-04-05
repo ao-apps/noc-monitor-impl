@@ -954,7 +954,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("sbl.nszones.com"),
 			new DnsBlacklist("bl.nszones.com"),
 			// Forward lookup: ubl.nszones.com
-			new DnsBlacklist("dnsbl.openresolvers.org"),
+			// Removed 2021-04-05: new DnsBlacklist("dnsbl.openresolvers.org"),
 			new DnsBlacklist("rbl.orbitrbl.com", AlertLevel.NONE),
 			new DnsBlacklist("netblock.pedantic.org"),
 			new DnsBlacklist("spam.pedantic.org"),
