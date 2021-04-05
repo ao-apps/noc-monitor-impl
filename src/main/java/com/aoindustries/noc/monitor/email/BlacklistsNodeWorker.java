@@ -508,7 +508,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// </editor-fold>
 
 			// <editor-fold desc="cqcounter.com" defaultstate="collapsed">
-			// From http://cqcounter.com/rbl_check/ on 2014-02-09
+			// From http://cqcounter.com/rbl_check/ on 2021-04-05 (Can only review first page of results, since page selector broken)
 			new DnsBlacklist("access.redhawk.org"),
 			new DnsBlacklist("assholes.madscience.nl"),
 			new DnsBlacklist("badconf.rhsbl.sorbs.net"),
@@ -520,7 +520,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("blackholes.mail-abuse.org"),
 			new DnsBlacklist("blackholes.sandes.dk"),
 			new DnsBlacklist("blacklist.sci.kun.nl"),
-			new DnsBlacklist("blacklist.spambag.org", AlertLevel.NONE),
+			// Offline 2021-04-05: new DnsBlacklist("blacklist.spambag.org"),
 			new DnsBlacklist("block.dnsbl.sorbs.net"),
 			new DnsBlacklist("blocked.hilli.dk"),
 			new DnsBlacklist("cart00ney.surriel.com"),
