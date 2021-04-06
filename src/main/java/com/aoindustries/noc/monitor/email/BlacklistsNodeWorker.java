@@ -279,6 +279,9 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 						// This network range is much bigger than our allocation, and current has "247 (0.75)%" listed.
 						// See http://fmb.la/ip/64.62.174.254
 						: ("bl.fmb.la".equals(basename) && "127.0.1.2".equals(ip)) ? AlertLevel.NONE
+						// Returns 127.0.0.4 when "could not identify an email service running at this address, it’s a NAT router, or because it’s residential connection"
+						// See https://spfbl.net/en/dnsbl
+						: ("dnsbl.spfbl.net".equals(basename) && "127.0.0.4".equals(ip)) ? AlertLevel.NONE
 						: maxAlertLevel
 					;
 				}
