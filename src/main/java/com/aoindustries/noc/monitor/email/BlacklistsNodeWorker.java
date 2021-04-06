@@ -882,7 +882,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2014-02-09: new DnsBlacklist("sbl.csma.biz"),
 			// Removed 2021-04-05: new DnsBlacklist("sbl.spamhaus.org"),
 			new DnsBlacklist("schizo-bl.kundenserver.de"),
-			new DnsBlacklist("score.senderscore.com"),
+			new DnsBlacklist("score.senderscore.com", AlertLevel.NONE), // Is a positive score, not an alert
 			new DnsBlacklist("short.rbl.jp"),
 			new DnsBlacklist("singular.ttk.pte.hu"),
 			// Removed 2021-04-05: new DnsBlacklist("smtp.dnsbl.sorbs.net"),
@@ -1387,7 +1387,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Forward lookup: reputation-domain.rbl.scrolloutf1.com
 			new DnsBlacklist("reputation-ip.rbl.scrolloutf1.com"),
 			// Forward lookup: reputation-ns.rbl.scrolloutf1.com
-			new DnsBlacklist("score.senderscore.com"),
+			new DnsBlacklist("score.senderscore.com", AlertLevel.NONE), // Is a positive score, not an alert
 			new DnsBlacklist("score.spfbl.net"),
 			// Forward lookup: score.spfbl.net
 			// Down 2021-04-05: new DnsBlacklist("srn.surgate.net"),
