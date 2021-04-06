@@ -89,14 +89,16 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	/**
 	 * The results timeout in milliseconds, allows for time in the queue waiting for resolver.
 	 */
-	private static final long TIMEOUT = 60L*1000L; // Was 15 minutes
+	private static final long TIMEOUT = 120L*1000L; // Was 60 seconds for a long time, increased to 120 seconds since resolver timeout now higher
 
 	/**
 	 * The resolver timeout in milliseconds.
 	 */
-	// Matches dig's default timeout of 5 seconds
-	// Matches Linux's RES_TIMEOUT default of 5 seconds (See resolv.h)
-	private static final Duration RESOLVER_TIMEOUT = Duration.ofSeconds(5);
+	// dig defaults to 5 seconds
+	// Linux's RES_TIMEOUT defaults to 5 seconds
+	// We've increased to 30 seconds since occasionally nameservers are slower than 5 seconds while network saturated
+	// 30 matches the silent cap of resolv.conf
+	private static final Duration RESOLVER_TIMEOUT = Duration.ofSeconds(30); // Was 5 for a very long time
 
 	/**
 	 * The number of milliseconds to wait before trying a timed-out lookup.
