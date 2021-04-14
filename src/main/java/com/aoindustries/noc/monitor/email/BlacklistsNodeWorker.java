@@ -455,7 +455,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("db.wpbl.info"),
 			new DnsBlacklist("dialups.mail-abuse.org"),
 			new DnsBlacklist("dnsbl-1.uceprotect.net"),
-			new DnsBlacklist("dnsbl-2.uceprotect.net"),
+			new DnsBlacklist(
+				"dnsbl-2.uceprotect.net",
+				// Gives network-wide blocks from activity outside our control, such as a /17 range where only a /24 of it is allocated to us.
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("dnsbl-3.uceprotect.net"),
 			new DnsBlacklist("dnsbl.abuse.ch"),
 			new DnsBlacklist("dnsbl.cyberlogic.net"),
@@ -552,7 +556,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("dialups.mail-abuse.org"),
 			new DnsBlacklist("dialups.visi.com"),
 			new DnsBlacklist("dnsbl-1.uceprotect.net"),
-			new DnsBlacklist("dnsbl-2.uceprotect.net"),
+			new DnsBlacklist(
+				"dnsbl-2.uceprotect.net",
+				// Gives network-wide blocks from activity outside our control, such as a /17 range where only a /24 of it is allocated to us.
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("dnsbl-3.uceprotect.net"),
 			// Removed 2014-02-09: new DnsBlacklist("dnsbl.ahbl.org"),
 			new DnsBlacklist("dnsbl.antispam.or.id"),
@@ -762,7 +770,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("dnsbl.zapbl.net"),
 			new DnsBlacklist("dnsbl-0.uceprotect.net"),
 			new DnsBlacklist("dnsbl-1.uceprotect.net"),
-			new DnsBlacklist("dnsbl-2.uceprotect.net"),
+			new DnsBlacklist(
+				"dnsbl-2.uceprotect.net",
+				// Gives network-wide blocks from activity outside our control, such as a /17 range where only a /24 of it is allocated to us.
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("dnsbl-3.uceprotect.net"),
 			new DnsBlacklist("dnsblchile.org"),
 			new DnsBlacklist("dnsrbl.org"),
@@ -1231,7 +1243,12 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2021-04-05: new DnsBlacklist("rbl.polarcomm.net"),
 			new DnsBlacklist("bl.rbl.polspam.pl"),
 			new DnsBlacklist("bl-h1.rbl.polspam.pl"),
-			new DnsBlacklist("bl-h2.rbl.polspam.pl"),
+			new DnsBlacklist(
+				"bl-h2.rbl.polspam.pl",
+				// Gives network-wide blocks from activity outside our control
+				// See https://polspam.pl/rbll.php
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("bl-h3.rbl.polspam.pl"),
 			new DnsBlacklist("bl-h4.rbl.polspam.pl"),
 			new DnsBlacklist("cnkr.rbl.polspam.pl"),
@@ -1363,7 +1380,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("truncate.gbudb.net"),
 			new DnsBlacklist("dnsbl-0.uceprotect.net"),
 			new DnsBlacklist("dnsbl-1.uceprotect.net"),
-			new DnsBlacklist("dnsbl-2.uceprotect.net"),
+			new DnsBlacklist(
+				"dnsbl-2.uceprotect.net",
+				// Gives network-wide blocks from activity outside our control, such as a /17 range where only a /24 of it is allocated to us.
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("dnsbl-3.uceprotect.net"),
 			new DnsBlacklist("ubl.unsubscore.com"),
 			// Forward lookup: black.uribl.com
