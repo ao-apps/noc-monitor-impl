@@ -213,90 +213,108 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		public BlacklistQueryResult call() throws Exception {
 			long startTime = System.currentTimeMillis();
 			long startNanos = System.nanoTime();
-			String result;
+			boolean doTxt;
+			StringBuilder resultSB = new StringBuilder();
 			AlertLevel alertLevel;
 			// Lookup the IP addresses
 			Lookup aLookup = new Lookup(query, Type.A);
 			aLookup.run();
-			if(aLookup.getResult()==Lookup.HOST_NOT_FOUND) {
+			if(aLookup.getResult() == Lookup.HOST_NOT_FOUND) {
 				// Not blacklisted
-				result = "Host not found";
+				doTxt = false;
+				resultSB.append("Host not found");
 				alertLevel = AlertLevel.NONE;
-			} else if(aLookup.getResult()==Lookup.TYPE_NOT_FOUND) {
+			} else if(aLookup.getResult() == Lookup.TYPE_NOT_FOUND) {
 				// Not blacklisted
-				result = "Type not found";
+				doTxt = true;
+				resultSB.append("Type not found");
 				alertLevel = AlertLevel.NONE;
-			} else if(aLookup.getResult()!=Lookup.SUCCESSFUL) {
+			} else if(aLookup.getResult() != Lookup.SUCCESSFUL) {
+				doTxt = false;
 				String errorString = aLookup.getErrorString();
 				switch (errorString) {
 					case "SERVFAIL":
 						// Not blacklisted
-						result = "SERVFAIL";
+						resultSB.append("SERVFAIL");
 						alertLevel = AlertLevel.NONE;
 						break;
 					case "timed out":
-						result = "Timeout";
+						resultSB.append("Timeout");
 						alertLevel = AlertLevel.NONE; // Was UNKNOWN
 						break;
 					default:
-						result = "A lookup failed: "+errorString;
+						resultSB.append("A lookup failed: ").append(errorString);
 						alertLevel = maxAlertLevel;
 						break;
 				}
 			} else {
+				doTxt = true;
 				Record[] aRecords = aLookup.getAnswers();
-				// Pick a random A
-				if(aRecords.length==0) {
-					result = "No A records found";
+				if(aRecords == null || aRecords.length == 0) {
+					resultSB.append("No A records found");
 					alertLevel = maxAlertLevel;
 				} else {
-					ARecord a;
-					if(aRecords.length==1) a = (ARecord)aRecords[0];
-					else a = (ARecord)aRecords[RootNodeImpl.random.nextInt(aRecords.length)];
-					String ip = a.getAddress().getHostAddress();
-					// Try TXT record
-					Lookup txtLookup = new Lookup(query, Type.TXT);
-					txtLookup.run();
-					if(txtLookup.getResult()==Lookup.SUCCESSFUL) {
-						Record[] answers = txtLookup.getAnswers();
-						if(answers.length>0) {
-							StringBuilder SB = new StringBuilder(ip);
-							for(Record record : answers) {
-								SB.append(" - ").append(record.rdataToString());
-							}
-							result = SB.toString();
-						} else {
-							result = ip.intern();
-						}
-					} else {
-						result = ip.intern();
+					alertLevel = AlertLevel.NONE;
+					for(Record aRecord : aRecords) {
+						ARecord a = (ARecord)aRecord;
+						String ip = a.getAddress().getHostAddress();
+						if(resultSB.length() > 0) resultSB.append(", ");
+						resultSB.append(ip);
+						AlertLevel recordAlertLevel =
+							// list.quorum.to returns 127.0.0.0 for no listing
+							("list.quorum.to".equals(basename) && "127.0.0.0".equals(ip)) ? AlertLevel.NONE
+							// Returns 127.0.0.2 when "an IP address being checked is not recommended for receiving emails",
+							// See http://rbldns.ru/index.php/en/service.html
+							: ("rbl.rbldns.ru".equals(basename) && "127.0.0.2".equals(ip)) ? AlertLevel.NONE
+							// Returns 127.0.1.2 when "The IP 64.62.174.254 is part of the following subnets announced by AS6939."
+							// This network range is much bigger than our allocation, and current has "247 (0.75)%" listed.
+							// See http://fmb.la/ip/64.62.174.254
+							: ("bl.fmb.la".equals(basename) && "127.0.1.2".equals(ip)) ? AlertLevel.NONE
+							// See https://spfbl.net/en/dnsbl
+							: (
+								"dnsbl.spfbl.net".equals(basename)
+								&& (
+									// Returns 127.0.0.3 when "flagged due difficulty to identify the responsible for abuses or MTA not in compliance with RFC 5321",
+									//                   this is getting triggered by modern top-level domains, such as .club, so no alert level.
+									"127.0.0.3".equals(ip)
+									// Returns 127.0.0.4 when "could not identify an email service running at this address, it’s a NAT router, or because it’s residential connection"
+									|| "127.0.0.4".equals(ip)
+								)
+							) ? AlertLevel.NONE
+							// See https://wiki.junkemailfilter.com/index.php/Spam_DNS_Lists
+							: (
+								"hostkarma.junkemailfilter.com".equals(basename)
+								&& (
+									   "127.0.0.1".equals(ip) // whilelist - trusted nonspam
+									|| "127.0.0.3".equals(ip) // yellowlist - mix of spam and nonspam
+									|| "127.0.0.5".equals(ip) // NOBL - This IP is not a spam only source and no blacklists need to be tested
+									|| "127.0.1.1".equals(ip) // QUIT is used
+									|| "127.0.2.1".equals(ip) // domains we first saw in the last 24-48 hours
+									|| "127.0.2.2".equals(ip) // domains we first saw in the last 10 days
+									|| "127.0.2.3".equals(ip) // domains that are older than 10 days
+								)
+							) ? AlertLevel.NONE
+							: maxAlertLevel
+						;
+						if(recordAlertLevel.compareTo(alertLevel) > 0) alertLevel = recordAlertLevel;
 					}
-					alertLevel =
-						// list.quorum.to returns 127.0.0.0 for no listing
-						("list.quorum.to".equals(basename) && "127.0.0.0".equals(ip)) ? AlertLevel.NONE
-						// Returns 127.0.0.2 when "an IP address being checked is not recommended for receiving emails",
-						// See http://rbldns.ru/index.php/en/service.html
-						: ("rbl.rbldns.ru".equals(basename) && "127.0.0.2".equals(ip)) ? AlertLevel.NONE
-						// Returns 127.0.1.2 when "The IP 64.62.174.254 is part of the following subnets announced by AS6939."
-						// This network range is much bigger than our allocation, and current has "247 (0.75)%" listed.
-						// See http://fmb.la/ip/64.62.174.254
-						: ("bl.fmb.la".equals(basename) && "127.0.1.2".equals(ip)) ? AlertLevel.NONE
-						// See https://spfbl.net/en/dnsbl
-						: (
-							"dnsbl.spfbl.net".equals(basename)
-							&& (
-								// Returns 127.0.0.3 when "flagged due difficulty to identify the responsible for abuses or MTA not in compliance with RFC 5321",
-								//                   this is getting triggered by modern top-level domains, such as .club, so no alert level.
-								"127.0.0.3".equals(ip)
-								// Returns 127.0.0.4 when "could not identify an email service running at this address, it’s a NAT router, or because it’s residential connection"
-								|| "127.0.0.4".equals(ip)
-							)
-						) ? AlertLevel.NONE
-						: maxAlertLevel
-					;
 				}
 			}
-			return new BlacklistQueryResult(basename, startTime, System.nanoTime() - startNanos, query, result, alertLevel);
+			if(doTxt) {
+				// Try TXT record
+				Lookup txtLookup = new Lookup(query, Type.TXT);
+				txtLookup.run();
+				if(txtLookup.getResult() == Lookup.SUCCESSFUL) {
+					Record[] txtRecords = txtLookup.getAnswers();
+					if(txtRecords != null) {
+						for(Record txtRecord : txtRecords) {
+							if(resultSB.length() > 0) resultSB.append(" - ");
+							resultSB.append(txtRecord.rdataToString());
+						}
+					}
+				}
+			}
+			return new BlacklistQueryResult(basename, startTime, System.nanoTime() - startNanos, query, resultSB.toString(), alertLevel);
 		}
 
 		@Override
@@ -834,7 +852,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("netscan.rbl.blockedservers.com"),
 			new DnsBlacklist("nlwhitelist.dnsbl.bit.nl"),
 			new DnsBlacklist("no-more-funn.moensted.dk"),
-			new DnsBlacklist("nobl.junkemailfilter.com"),
+			new DnsBlacklist("nobl.junkemailfilter.com", AlertLevel.NONE), // Is a positive score, not an alert
 			// Removed 2021-04-05: new DnsBlacklist("noptr.spamrats.com"),
 			new DnsBlacklist("ohps.dnsbl.net.au"),
 			// Disabled 2012-02-07: new DnsBlacklist("okrelays.nthelp.com"),
@@ -1413,7 +1431,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Forward lookup: sa.fmb.la
 			new DnsBlacklist("hostkarma.junkemailfilter.com"),
 			// Forward lookup: hostkarma.junkemailfilter.com
-			new DnsBlacklist("nobl.junkemailfilter.com"),
+			new DnsBlacklist("nobl.junkemailfilter.com", AlertLevel.NONE), // Is a positive score, not an alert
 			// Forward lookup: nobl.junkemailfilter.com
 			new DnsBlacklist("krn.korumail.com"),
 			new DnsBlacklist("rep.mailspike.net"),
