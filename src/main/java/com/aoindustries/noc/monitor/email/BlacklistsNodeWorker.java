@@ -777,7 +777,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			),
 			new DnsBlacklist("dnsbl-3.uceprotect.net"),
 			new DnsBlacklist("dnsblchile.org"),
-			new DnsBlacklist("dnsrbl.org"),
+			// Expired domain 2021-04-19: new DnsBlacklist("dnsrbl.org"),
 			new DnsBlacklist("dnswl.inps.de"),
 			new DnsBlacklist("drone.abuse.ch"),
 			new DnsBlacklist("dsbl.dnsbl.net.au"),
@@ -1146,7 +1146,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			// Removed 2021-04-05: // Forward lookup: dnsbl.othello.ch
 			new DnsBlacklist("dnsbl.rv-soft.info"),
 			new DnsBlacklist("dnsblchile.org"),
-			new DnsBlacklist("dnsrbl.org"),
+			// Expired domain 2021-04-19: new DnsBlacklist("dnsrbl.org"),
 			new DnsBlacklist("vote.drbl.caravan.ru"),
 			new DnsBlacklist("work.drbl.caravan.ru"),
 			// Removed 2021-04-05: new DnsBlacklist("vote.drbldf.dsbl.ru"),
