@@ -54,10 +54,10 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	 * The normal alert thresholds.
 	 */
 	private static final int
-		COLD_CRITICAL = 8,
-		COLD_HIGH = 14,
-		COLD_MEDIUM = 17,
-		COLD_LOW = 20,
+		COLD_CRITICAL = 5,
+		COLD_HIGH = 6,
+		COLD_MEDIUM = 8,
+		COLD_LOW = 10,
 		HOT_LOW = 48,
 		HOT_MEDIUM = 51,
 		HOT_HIGH = 54,
