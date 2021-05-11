@@ -773,7 +773,15 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("dnsbl.forefront.microsoft.com"),
 			new DnsBlacklist("dnsbl.httpbl.org"),
 			new DnsBlacklist("dnsbl.inps.de"),
-			new DnsBlacklist("dnsbl.justspam.org"),
+			new DnsBlacklist(
+				"dnsbl.justspam.org",
+				// The delisting procedure requires browsing from the IP address in order to request de-listing.  This
+				// would mean having to provision the IP address and tunnel (or install browser on server) in order to
+				// request delisting of a deallocated IP.  This is not worth the effort unless a client reports it as an
+				// issue.
+				// http://www.justspam.org/policy
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("dnsbl.kempt.net"),
 			new DnsBlacklist("dnsbl.madavi.de"),
 			new DnsBlacklist("dnsbl.mags.net"),
@@ -1233,7 +1241,15 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("rbl.iprange.net"),
 			new DnsBlacklist("mail-abuse.blacklist.jippg.org"),
 			// Removed 2014-02-09: new DnsBlacklist("karmasphere.email-sender.dnsbl.karmasphere.com"),
-			new DnsBlacklist("dnsbl.justspam.org"),
+			new DnsBlacklist(
+				"dnsbl.justspam.org",
+				// The delisting procedure requires browsing from the IP address in order to request de-listing.  This
+				// would mean having to provision the IP address and tunnel (or install browser on server) in order to
+				// request delisting of a deallocated IP.  This is not worth the effort unless a client reports it as an
+				// issue.
+				// http://www.justspam.org/policy
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("dnsbl.kempt.net"),
 			new DnsBlacklist("spamlist.or.kr"),
 			new DnsBlacklist("bl.konstant.no"),
