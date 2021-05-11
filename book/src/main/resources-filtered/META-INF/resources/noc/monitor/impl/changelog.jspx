@@ -37,7 +37,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 		shortTitle="Changelog"
 		tocLevels="1"
 		datePublished="2020-04-11T01:35:38-05:00"
-		dateModified="2021-05-09T11:51:01-05:00"
+		dateModified="2021-05-11T18:21:34-05:00"
 	>
 		<c:if test="${fn:endsWith('@{project.version}', '-SNAPSHOT') and !fn:endsWith('@{project.version}', '-POST-SNAPSHOT')}">
 			<changelog:release
@@ -64,6 +64,11 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 					<li>
 						Limited <code>nobl.junkemailfilter.com</code> DNSBL to alert level "None", since it is a
 						positive whitelist.
+					</li>
+					<li>
+						Limited <code>vote.drbl.gremlin.ru</code> and <code>work.drbl.gremlin.ru</code> DNSBL to alert
+						level "None", since <ao:a href="http://drbl.gremlin.ru/en.html">the delisting procedure</ao:a>
+						seems rather obscure given the "vote" aspect.
 					</li>
 					<li>
 						Also performs TXT lookups for <code>TYPE_NOT_FOUND</code>, for DNSRBL sources that provide

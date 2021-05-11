@@ -968,7 +968,13 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("virus.rbl.jp"),
 			new DnsBlacklist("virus.rbl.msrbl.net"),
 			new DnsBlacklist("vote.drbl.caravan.ru"),
-			new DnsBlacklist("vote.drbl.gremlin.ru"),
+			new DnsBlacklist(
+				"vote.drbl.gremlin.ru",
+				// The delisting procedure seems rather obscure given the "vote" aspect,
+				// no alerts on this unless a client reports it as an issue
+				// See http://drbl.gremlin.ru/en.html
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("wadb.isipp.com"),
 			new DnsBlacklist("wbl.triumf.ca"),
 			// Removed 2021-04-05: new DnsBlacklist("web.dnsbl.sorbs.net"),
@@ -980,7 +986,13 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("wl.mailspike.net"),
 			new DnsBlacklist("wl.nszones.com"),
 			new DnsBlacklist("work.drbl.caravan.ru"),
-			new DnsBlacklist("work.drbl.gremlin.ru"),
+			new DnsBlacklist(
+				"work.drbl.gremlin.ru",
+				// The delisting procedure seems rather obscure given the "vote" aspect,
+				// no alerts on this unless a client reports it as an issue
+				// See http://drbl.gremlin.ru/en.html
+				AlertLevel.NONE
+			),
 			new DnsBlacklist("wormrbl.imp.ch"),
 			new DnsBlacklist("worms-bl.kundenserver.de"),
 			// Removed 2021-04-05: new DnsBlacklist("xbl.spamhaus.org"),
@@ -1169,8 +1181,20 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			new DnsBlacklist("work.drbl.caravan.ru"),
 			// Removed 2021-04-05: new DnsBlacklist("vote.drbldf.dsbl.ru"),
 			// Removed 2021-04-05: new DnsBlacklist("work.drbldf.dsbl.ru"),
-			new DnsBlacklist("vote.drbl.gremlin.ru"),
-			new DnsBlacklist("work.drbl.gremlin.ru"),
+			new DnsBlacklist(
+				"vote.drbl.gremlin.ru",
+				// The delisting procedure seems rather obscure given the "vote" aspect,
+				// no alerts on this unless a client reports it as an issue
+				// See http://drbl.gremlin.ru/en.html
+				AlertLevel.NONE
+			),
+			new DnsBlacklist(
+				"work.drbl.gremlin.ru",
+				// The delisting procedure seems rather obscure given the "vote" aspect,
+				// no alerts on this unless a client reports it as an issue
+				// See http://drbl.gremlin.ru/en.html
+				AlertLevel.NONE
+			),
 			// Removed 2014-02-09: new DnsBlacklist("vote.drbl.drand.net"),
 			// Removed 2014-02-09: new DnsBlacklist("spamprobe.drbl.drand.net"),
 			// Removed 2014-02-09: new DnsBlacklist("spamtrap.drbl.drand.net"),
