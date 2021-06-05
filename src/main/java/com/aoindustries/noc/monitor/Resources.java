@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2007-2009, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2007-2009, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -29,8 +29,8 @@ package com.aoindustries.noc.monitor;
  */
 public final class Resources {
 
-	public static final com.aoindustries.i18n.Resources PACKAGE_RESOURCES =
-		com.aoindustries.i18n.Resources.getResources(Resources.class.getPackage());
+	public static final com.aoapps.lang.i18n.Resources PACKAGE_RESOURCES =
+		com.aoapps.lang.i18n.Resources.getResources(Resources.class.getPackage());
 
 	/**
 	 * Make no instances.

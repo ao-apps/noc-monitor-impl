@@ -22,7 +22,7 @@
  */
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.io.FileUtils;
+import com.aoapps.lang.io.FileUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;

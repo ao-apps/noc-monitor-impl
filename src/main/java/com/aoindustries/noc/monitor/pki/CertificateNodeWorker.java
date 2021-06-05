@@ -22,6 +22,7 @@
  */
 package com.aoindustries.noc.monitor.pki;
 
+import com.aoapps.lang.function.SerializableFunction;
 import com.aoindustries.aoserv.client.pki.Certificate;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
@@ -29,7 +30,6 @@ import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
-import com.aoindustries.util.function.SerializableFunction;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;

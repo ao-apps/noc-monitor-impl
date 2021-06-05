@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2012, 2013, 2016, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2012, 2013, 2016, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -22,12 +22,12 @@
  */
 package com.aoindustries.noc.monitor.infrastructure;
 
-import com.aoindustries.lang.Strings;
+import com.aoapps.lang.Strings;
+import com.aoapps.lang.text.LocalizedParseException;
+import com.aoapps.sql.MilliInterval;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
-import com.aoindustries.sql.MilliInterval;
-import com.aoindustries.text.LocalizedParseException;
 import java.text.ParseException;
 
 /**

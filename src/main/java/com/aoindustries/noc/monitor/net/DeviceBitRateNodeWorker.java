@@ -22,8 +22,8 @@
  */
 package com.aoindustries.noc.monitor.net;
 
+import com.aoapps.lang.Strings;
 import com.aoindustries.aoserv.client.net.Device;
-import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;

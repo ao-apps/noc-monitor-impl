@@ -22,13 +22,13 @@
  */
 package com.aoindustries.noc.monitor.net;
 
+import com.aoapps.lang.concurrent.LocalizedTimeoutException;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.PingResult;
-import com.aoindustries.util.concurrent.LocalizedTimeoutException;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -56,9 +56,9 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
 	private static final Map<String, PingNodeWorker> workerCache = new HashMap<>();
 	static PingNodeWorker getWorker(File persistenceDirectory, IpAddress ipAddress) throws IOException {
 		String path = persistenceDirectory.getCanonicalPath();
-		com.aoindustries.net.InetAddress ip = ipAddress.getInetAddress();
-		com.aoindustries.net.InetAddress externalIp = ipAddress.getExternalInetAddress();
-		com.aoindustries.net.InetAddress pingAddress = externalIp==null ? ip : externalIp;
+		com.aoapps.net.InetAddress ip = ipAddress.getInetAddress();
+		com.aoapps.net.InetAddress externalIp = ipAddress.getExternalInetAddress();
+		com.aoapps.net.InetAddress pingAddress = externalIp==null ? ip : externalIp;
 		synchronized(workerCache) {
 			PingNodeWorker worker = workerCache.get(path);
 			if(worker==null) {
@@ -74,9 +74,9 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
 	/**
 	 * The most recent timer task
 	 */
-	final private com.aoindustries.net.InetAddress ipAddress;
+	final private com.aoapps.net.InetAddress ipAddress;
 
-	private PingNodeWorker(File persistenceDirectory, com.aoindustries.net.InetAddress ipAddress) throws IOException {
+	private PingNodeWorker(File persistenceDirectory, com.aoapps.net.InetAddress ipAddress) throws IOException {
 		super(new File(persistenceDirectory, "pings"), new PingResultSerializer());
 		this.ipAddress = ipAddress;
 	}

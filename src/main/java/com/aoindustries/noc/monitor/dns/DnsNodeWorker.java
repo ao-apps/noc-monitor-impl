@@ -22,18 +22,18 @@
  */
 package com.aoindustries.noc.monitor.dns;
 
+import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.net.InetAddress;
+import com.aoapps.sql.NanoInterval;
 import com.aoindustries.aoserv.client.dns.RecordType;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
-import com.aoindustries.net.InetAddress;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
-import com.aoindustries.sql.NanoInterval;
-import com.aoindustries.util.function.SerializableFunction;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;

@@ -22,18 +22,18 @@
  */
 package com.aoindustries.noc.monitor.mysql;
 
+import com.aoapps.collections.AoCollections;
+import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.aoserv.client.mysql.Table_Name;
-import com.aoindustries.collections.AoCollections;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
-import com.aoindustries.sql.MilliInterval;
-import com.aoindustries.util.function.SerializableFunction;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

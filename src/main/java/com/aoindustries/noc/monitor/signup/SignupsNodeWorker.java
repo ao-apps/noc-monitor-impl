@@ -22,6 +22,7 @@
  */
 package com.aoindustries.noc.monitor.signup;
 
+import com.aoapps.lang.function.SerializableFunction;
 import com.aoindustries.aoserv.client.AOServConnector;
 import com.aoindustries.aoserv.client.account.Administrator;
 import com.aoindustries.aoserv.client.signup.Request;
@@ -31,7 +32,6 @@ import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
-import com.aoindustries.util.function.SerializableFunction;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;

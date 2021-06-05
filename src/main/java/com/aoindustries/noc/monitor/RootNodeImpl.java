@@ -22,8 +22,8 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoapps.concurrent.Executors;
 import com.aoindustries.aoserv.client.AOServConnector;
-import com.aoindustries.concurrent.Executors;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertChange;

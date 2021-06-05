@@ -22,10 +22,10 @@
  */
 package com.aoindustries.noc.monitor;
 
+import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
-import com.aoindustries.util.function.SerializableFunction;
-import com.aoindustries.util.i18n.ThreadLocale;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

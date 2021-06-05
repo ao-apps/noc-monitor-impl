@@ -22,6 +22,8 @@
  */
 package com.aoindustries.noc.monitor.infrastructure;
 
+import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.DrbdReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -30,8 +32,6 @@ import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
-import com.aoindustries.util.function.SerializableFunction;
-import com.aoindustries.util.i18n.ThreadLocale;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;

@@ -22,9 +22,9 @@
  */
 package com.aoindustries.noc.monitor.linux;
 
+import com.aoapps.lang.EnumUtils;
+import com.aoapps.lang.Strings;
 import com.aoindustries.aoserv.client.linux.Server;
-import com.aoindustries.lang.EnumUtils;
-import com.aoindustries.lang.Strings;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.SingleResultNodeWorker;

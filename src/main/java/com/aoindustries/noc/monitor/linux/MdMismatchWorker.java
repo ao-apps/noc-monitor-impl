@@ -22,6 +22,7 @@
  */
 package com.aoindustries.noc.monitor.linux;
 
+import com.aoapps.lang.function.SerializableFunction;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.MdMismatchReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -29,7 +30,6 @@ import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
-import com.aoindustries.util.function.SerializableFunction;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

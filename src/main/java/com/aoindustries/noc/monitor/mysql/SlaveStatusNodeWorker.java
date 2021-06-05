@@ -22,6 +22,7 @@
  */
 package com.aoindustries.noc.monitor.mysql;
 
+import com.aoapps.lang.sql.LocalizedSQLException;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -29,7 +30,6 @@ import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
-import com.aoindustries.sql.LocalizedSQLException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;

@@ -22,13 +22,15 @@
  */
 package com.aoindustries.noc.monitor.email;
 
+import com.aoapps.collections.AoCollections;
+import com.aoapps.lang.Throwables;
+import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.net.DomainName;
+import com.aoapps.sql.NanoInterval;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
-import com.aoindustries.collections.AoCollections;
-import com.aoindustries.lang.Throwables;
-import com.aoindustries.net.DomainName;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
@@ -36,8 +38,6 @@ import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
-import com.aoindustries.sql.NanoInterval;
-import com.aoindustries.util.function.SerializableFunction;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -188,10 +188,10 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 		DnsBlacklist(String basename, AlertLevel maxAlertLevel) {
 			this.basename = basename;
 			this.maxAlertLevel = maxAlertLevel;
-			com.aoindustries.net.InetAddress ip = ipAddress.getExternalInetAddress();
+			com.aoapps.net.InetAddress ip = ipAddress.getExternalInetAddress();
 			if(ip==null) ip = ipAddress.getInetAddress();
-			com.aoindustries.net.AddressFamily addressFamily = ip.getAddressFamily();
-			if(addressFamily != com.aoindustries.net.AddressFamily.INET) throw new UnsupportedOperationException("Address family not yet implemented: " + addressFamily);
+			com.aoapps.net.AddressFamily addressFamily = ip.getAddressFamily();
+			if(addressFamily != com.aoapps.net.AddressFamily.INET) throw new UnsupportedOperationException("Address family not yet implemented: " + addressFamily);
 			int bits = IpAddress.getIntForIPAddress(ip.toString());
 			this.query =
 				new StringBuilder(16+basename.length())
@@ -390,7 +390,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			if(device==null) throw new SQLException(ipAddress+": Device not found");
 			Server linuxServer = device.getHost().getLinuxServer();
 			if(linuxServer==null) throw new SQLException(ipAddress+": Server not found");
-			com.aoindustries.net.InetAddress addressIp = com.aoindustries.net.InetAddress.valueOf(address.getHostAddress());
+			com.aoapps.net.InetAddress addressIp = com.aoapps.net.InetAddress.valueOf(address.getHostAddress());
 			String statusLine = linuxServer.checkSmtpBlacklist(ipAddress.getInetAddress(), addressIp);
 			// Return results
 			long endNanos = System.nanoTime();

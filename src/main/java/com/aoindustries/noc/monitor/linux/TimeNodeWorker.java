@@ -22,13 +22,13 @@
  */
 package com.aoindustries.noc.monitor.linux;
 
+import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TimeResult;
-import com.aoindustries.sql.MilliInterval;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
