@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -70,7 +71,8 @@ import java.util.concurrent.Future;
  */
 public class AOServClusterBuilder {
 
-	private static final Resources RESOURCES = Resources.getResources(AOServClusterBuilder.class);
+	private static final Resources RESOURCES =
+		Resources.getResources(ResourceBundle::getBundle, AOServClusterBuilder.class);
 
 	private static boolean is7200rpm(String model) {
 		return
@@ -144,7 +146,7 @@ public class AOServClusterBuilder {
 	/**
 	 * Loads an unmodifiable set of the current cluster states from the AOServ Platform.
 	 * Only ServerFarms that have at least one enabled Dom0 are included.
-	 * 
+	 *
 	 * @see Cluster
 	 */
 	public static SortedSet<Cluster> getClusters(
@@ -187,7 +189,7 @@ public class AOServClusterBuilder {
 
 	/**
 	 * Loads a cluster for a single server farm.
-	 * 
+	 *
 	 * @param  useTarget  if true will use the target values, otherwise will use the live values
 	 */
 	public static Cluster getCluster(
@@ -317,7 +319,7 @@ public class AOServClusterBuilder {
 
 	/**
 	 * Loads an unmodifiable set of the current cluster configuration from the AOServ Platform.
-	 * 
+	 *
 	 * @see  #getClusters
 	 * @see  #getClusterConfiguration
 	 */

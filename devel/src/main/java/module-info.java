@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2007-2009, 2016, 2018, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -20,22 +20,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoindustries.noc.monitor;
-
-import java.util.ResourceBundle;
-
-/**
- * Provides a simplified interface for obtaining localized values from the ApplicationResources.properties files.
- *
- * @author  AO Industries, Inc.
- */
-public final class Resources {
-
-	public static final com.aoapps.lang.i18n.Resources PACKAGE_RESOURCES =
-		com.aoapps.lang.i18n.Resources.getResources(ResourceBundle::getBundle, Resources.class.getPackage());
-
-	/**
-	 * Make no instances.
-	 */
-	private Resources() {}
+module com.aoindustries.noc.monitor.devel {
+	exports com.aoindustries.noc.monitor.i18n;
+	exports com.aoindustries.noc.monitor.cluster.i18n;
+	// Direct
+	requires com.aoapps.hodgepodge; // <groupId>com.aoapps</groupId><artifactId>ao-hodgepodge</artifactId>
 }

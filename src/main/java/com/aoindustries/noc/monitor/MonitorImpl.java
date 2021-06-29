@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2017, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2017, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -129,11 +129,11 @@ import java.util.Locale;
  * CPU
  *      configurable limits per alert level
  *      based on 5-minute averages, sampled every minute, will take up to 9 minutes to alert
- * 
+ *
  * LVM:
  *   snapshot space
  *   vgck
- * 
+ *
  * Monitor syslog for ECC errors (at least for i5000 module with most recent 2.6.18-92.1.10+ kernels).  See wiki page for xen917-5.fc.aoindustries.com
  *
  * Monitor all SSL certificates, ours and customers, could have on a single SSL
@@ -168,6 +168,9 @@ import java.util.Locale;
  * Watch the jvm_crashes.log file?
  *
  * Integrate NOC with Amazon Cloud Watch
+ *
+ * Monitor for certificates issued in domains that are not expected.
+ *     Jonathon Moldenhaur described how there are lists of certificates issued.
  *
  * @author  AO Industries, Inc.
  */

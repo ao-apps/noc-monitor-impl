@@ -20,7 +20,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.aoindustries.noc.monitor;
+package com.aoindustries.noc.monitor.i18n;
 
 import com.aoapps.hodgepodge.i18n.EditableResourceBundle;
 import com.aoapps.hodgepodge.i18n.EditableResourceBundleSet;
@@ -39,7 +39,7 @@ public final class ApplicationResources extends EditableResourceBundle {
 	);
 
 	static File getSourceFile(String filename) {
-		return new File(System.getProperty("user.home") + "/maven2/ao/noc/monitor/impl/src/main/resources/com/aoindustries/noc/monitor", filename);
+		return new File(System.getProperty("user.home") + "/maven2/ao/noc/monitor/impl/src/main/resources/com/aoindustries/noc/monitor/i18n", filename);
 	}
 
 	public ApplicationResources() {

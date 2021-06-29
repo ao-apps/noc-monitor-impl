@@ -37,7 +37,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 		shortTitle="Changelog"
 		tocLevels="1"
 		datePublished="2020-04-11T01:35:38-05:00"
-		dateModified="2021-05-27T23:06:39-05:00"
+		dateModified="2021-06-27T16:13:41-05:00"
 	>
 		<c:if test="${fn:endsWith('@{project.version}', '-SNAPSHOT') and !fn:endsWith('@{project.version}', '-POST-SNAPSHOT')}">
 			<changelog:release
@@ -50,6 +50,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 			>
 				<ul>
 					<li>Minimum Java version changed from 1.8 to 11.</li>
+					<li>Now supports Java 9+ modules with included <code>module-info.class</code>.</li>
 					<li>
 						Updated MySQL JDBC Drivers to 8.0.25.  Please note, our internal packaging may still use older
 						drivers for compatibility with legacy applications that are not yet on MySQL 5.6 or newer.
@@ -170,7 +171,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 				<li>Updated dependencies.</li>
 				<li>
 					Defined <ao:a href="https://en.wikipedia.org/wiki/SQLSTATE">SQLSTATE</ao:a> values for all
-					<ao:a rel="nofollow" href="@{javadoc.link.javase}java/sql/SQLException.html">SQLException</ao:a>.
+					<ao:a rel="nofollow" href="@{javadoc.link.javase}java.sql/java/sql/SQLException.html">SQLException</ao:a>.
 				</li>
 				<li>Resolved editor warnings.</li>
 			</ul>

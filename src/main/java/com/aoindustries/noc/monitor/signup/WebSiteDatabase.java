@@ -46,7 +46,12 @@ public class WebSiteDatabase extends Database {
 	private static Properties props;
 
 	private static String getProperty(String name) throws IOException {
-		if (props == null) props = PropertiesUtils.loadFromResource(WebSiteDatabase.class, "WebSiteDatabase.properties");
+		if (props == null) {
+			props = PropertiesUtils.loadFromResource(
+				WebSiteDatabase.class,
+				"/com/aoindustries/noc/monitor/signup/WebSiteDatabase.properties"
+			);
+		}
 		return props.getProperty(name);
 	}
 

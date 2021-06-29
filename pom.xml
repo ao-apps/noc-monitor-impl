@@ -33,6 +33,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 	<packaging>bundle</packaging>
 
 	<properties>
+		<module.name>com.aoindustries.noc.monitor.impl</module.name>
 		<javadoc.breadcrumbs><![CDATA[<a target="${javadoc.target}" href="https://aoindustries.com/noc/">NOC</a>
 / <a target="${javadoc.target}" href="https://aoindustries.com/noc/monitor/">Monitor</a>
 / <a target="${javadoc.target}" href="${project.url}">Impl</a>]]></javadoc.breadcrumbs>
