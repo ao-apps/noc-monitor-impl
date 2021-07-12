@@ -38,6 +38,10 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 / <a target="${javadoc.target}" href="https://aoindustries.com/noc/monitor/">Monitor</a>
 / <a target="${javadoc.target}" href="${project.url}">Impl</a>]]></javadoc.breadcrumbs>
 		<description.html><![CDATA[Implementation of <a target="${javadoc.target}" href="https://aoindustries.com/noc/monitor/">Network Operations Center Monitoring</a>.]]></description.html>
+		<!-- SonarCloud.io -->
+		<sonar.projectKey>com.aoapp.platform:noc-monitor-impl<!-- TODO: ${project.groupId}:${project.artifactId} --></sonar.projectKey>
+		<sonar.organization>aoindustries</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<!-- Dependencies -->
 		<dnsjava.version>3.4.0</dnsjava.version>
 		<!-- TODO: Remove once moved to oss.aoapps.com -->
