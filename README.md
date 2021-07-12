@@ -7,6 +7,8 @@
 [![semantic versioning: 2.0.0](https://aoindustries.com/ao-badges/semver-2.0.0.svg)](http://semver.org/spec/v2.0.0.html)
 [![license: LGPL v3](https://aoindustries.com/ao-badges/license-lgpl-3.0.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
+[![Build](https://github.com/aoindustries/noc-monitor-impl/workflows/Build/badge.svg?branch=master)](https://github.com/aoindustries/noc-monitor-impl/actions?query=workflow%3ABuild)
+
 Implementation of [Network Operations Center Monitoring](https://github.com/aoindustries/noc-monitor).
 
 ## Project Links
