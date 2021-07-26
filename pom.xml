@@ -311,7 +311,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 				<groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><version>${dnsjava.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.aoindustries</groupId><artifactId>noc-monitor-api</artifactId><version>1.3.0-SNAPSHOT<!-- ${POST-SNAPSHOT} --></version>
+				<groupId>com.aoindustries</groupId><artifactId>noc-monitor-api</artifactId><version>1.3.0${POST-SNAPSHOT}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.aoindustries</groupId><artifactId>noc-monitor-portmon</artifactId><version>1.3.0${POST-SNAPSHOT}</version>
