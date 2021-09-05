@@ -349,7 +349,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 			</dependency>
 			<!-- Runtime Transitive -->
 			<dependency>
-				<groupId>org.checkerframework</groupId><artifactId>checker-qual</artifactId><version>3.17.0</version>
+				<groupId>org.checkerframework</groupId><artifactId>checker-qual</artifactId><version>3.18.0</version>
 			</dependency>
 			<dependency>
 				<groupId>mysql</groupId><artifactId>mysql-connector-java</artifactId><version>8.0.26</version>
