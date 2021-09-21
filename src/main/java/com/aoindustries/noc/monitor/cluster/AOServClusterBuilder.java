@@ -72,7 +72,7 @@ import java.util.concurrent.Future;
 public class AOServClusterBuilder {
 
 	private static final Resources RESOURCES =
-		Resources.getResources(AOServClusterBuilder.class, ResourceBundle::getBundle);
+		Resources.getResources(ResourceBundle::getBundle, AOServClusterBuilder.class);
 
 	private static boolean is7200rpm(String model) {
 		return
