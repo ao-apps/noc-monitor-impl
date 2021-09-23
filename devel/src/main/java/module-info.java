@@ -25,4 +25,6 @@ module com.aoindustries.noc.monitor.devel {
 	exports com.aoindustries.noc.monitor.cluster.i18n;
 	// Direct
 	requires com.aoapps.hodgepodge; // <groupId>com.aoapps</groupId><artifactId>ao-hodgepodge</artifactId>
+	// Java SE
+	requires java.logging;
 }
