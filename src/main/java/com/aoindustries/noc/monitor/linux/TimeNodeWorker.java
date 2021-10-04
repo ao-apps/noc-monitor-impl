@@ -71,7 +71,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
 		}
 	}
 
-	final private Server _linuxServer;
+	private final Server _linuxServer;
 	private Server currentLinuxServer;
 
 	private TimeNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {

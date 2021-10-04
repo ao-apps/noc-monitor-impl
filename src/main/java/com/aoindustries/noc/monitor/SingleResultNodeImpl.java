@@ -44,7 +44,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract public class SingleResultNodeImpl extends NodeImpl implements SingleResultNode {
+public abstract class SingleResultNodeImpl extends NodeImpl implements SingleResultNode {
 
 	private static final Logger logger = Logger.getLogger(SingleResultNodeImpl.class.getName());
 
@@ -54,7 +54,7 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 	protected final NodeImpl parent;
 	private final SingleResultNodeWorker worker;
 
-	final private List<SingleResultListener> singleResultListeners = new ArrayList<>();
+	private final List<SingleResultListener> singleResultListeners = new ArrayList<>();
 
 	protected SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -64,28 +64,28 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 	}
 
 	@Override
-	final public NodeImpl getParent() {
+	public final NodeImpl getParent() {
 		return parent;
 	}
 
 	@Override
-	final public boolean getAllowsChildren() {
+	public final boolean getAllowsChildren() {
 		return false;
 	}
 
 	@Override
-	final public List<? extends NodeImpl> getChildren() {
+	public final List<? extends NodeImpl> getChildren() {
 		return Collections.emptyList();
 	}
 
 	@Override
-	final public AlertLevel getAlertLevel() {
+	public final AlertLevel getAlertLevel() {
 		AlertLevel alertLevel = worker.getAlertLevel();
 		return constrainAlertLevel(alertLevel == null ? AlertLevel.UNKNOWN : alertLevel);
 	}
 
 	@Override
-	final public String getAlertMessage() {
+	public final String getAlertMessage() {
 		Function<Locale, String> alertMessage = worker.getAlertMessage();
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
@@ -99,7 +99,7 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 	}
 
 	@Override
-	final public SingleResult getLastResult() {
+	public final SingleResult getLastResult() {
 		return worker.getLastResult();
 	}
 
@@ -118,14 +118,14 @@ abstract public class SingleResultNodeImpl extends NodeImpl implements SingleRes
 	}
 
 	@Override
-	final public void addSingleResultListener(SingleResultListener singleResultListener) {
+	public final void addSingleResultListener(SingleResultListener singleResultListener) {
 		synchronized(singleResultListeners) {
 			singleResultListeners.add(singleResultListener);
 		}
 	}
 
 	@Override
-	final public void removeSingleResultListener(SingleResultListener singleResultListener) {
+	public final void removeSingleResultListener(SingleResultListener singleResultListener) {
 		synchronized(singleResultListeners) {
 			for(int c=singleResultListeners.size()-1;c>=0;c--) {
 				if(singleResultListeners.get(c).equals(singleResultListener)) {

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2014, 2016, 2017, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2014, 2016, 2017, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -52,7 +52,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 
 	private boolean started;
 
-	volatile private CheckTablesNode mysqlCheckTablesNode;
+	private volatile CheckTablesNode mysqlCheckTablesNode;
 
 	DatabaseNode(DatabasesNode mysqlDatabasesNode, Database mysqlDatabase, MysqlReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(

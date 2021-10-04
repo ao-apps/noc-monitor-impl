@@ -61,7 +61,7 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
 		}
 	}
 
-	final private MysqlReplication _mysqlReplication;
+	private final MysqlReplication _mysqlReplication;
 	private MysqlReplication currentFailoverMySQLReplication;
 
 	private SlaveStatusNodeWorker(File persistenceFile, MysqlReplication mysqlReplication) throws IOException {

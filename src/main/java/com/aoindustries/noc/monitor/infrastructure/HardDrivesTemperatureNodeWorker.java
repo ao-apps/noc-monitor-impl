@@ -83,7 +83,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server linuxServer;
+	private final Server linuxServer;
 
 	HardDrivesTemperatureNodeWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);

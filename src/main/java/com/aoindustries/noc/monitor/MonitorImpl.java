@@ -178,9 +178,9 @@ public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 
 	private static final long serialVersionUID = 1L;
 
-	final private int port;
-	final private RMIClientSocketFactory csf;
-	final private RMIServerSocketFactory ssf;
+	private final int port;
+	private final RMIClientSocketFactory csf;
+	private final RMIServerSocketFactory ssf;
 
 	public MonitorImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);

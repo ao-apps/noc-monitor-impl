@@ -70,18 +70,18 @@ public class HostNode extends NodeImpl {
 	private final String _label;
 
 	private boolean started;
-	volatile private BackupsNode _backupsNode;
-	volatile private DevicesNode _netDevicesNode;
-	volatile private HttpdServersNode _httpdServersNode;
-	volatile private ServersNode _mysqlServersNode;
-	volatile private HardDrivesNode _hardDrivesNode;
-	volatile private RaidNode _raidNode;
-	volatile private CertificatesNode _sslCertificatesNode;
-	volatile private UpsNode _upsNode;
-	volatile private FilesystemsNode _filesystemsNode;
-	volatile private LoadAverageNode _loadAverageNode;
-	volatile private MemoryNode _memoryNode;
-	volatile private TimeNode _timeNode;
+	private volatile BackupsNode _backupsNode;
+	private volatile DevicesNode _netDevicesNode;
+	private volatile HttpdServersNode _httpdServersNode;
+	private volatile ServersNode _mysqlServersNode;
+	private volatile HardDrivesNode _hardDrivesNode;
+	private volatile RaidNode _raidNode;
+	private volatile CertificatesNode _sslCertificatesNode;
+	private volatile UpsNode _upsNode;
+	private volatile FilesystemsNode _filesystemsNode;
+	private volatile LoadAverageNode _loadAverageNode;
+	private volatile MemoryNode _memoryNode;
+	private volatile TimeNode _timeNode;
 
 	HostNode(HostsNode hostsNode, Host host, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
 		super(port, csf, ssf);

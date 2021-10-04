@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -44,8 +44,8 @@ public class BackupNode extends TableResultNodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	final private FileReplication failoverFileReplication;
-	final private String label;
+	private final FileReplication failoverFileReplication;
+	private final String label;
 
 	BackupNode(BackupsNode backupsNode, FileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(

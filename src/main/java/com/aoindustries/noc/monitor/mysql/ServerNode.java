@@ -54,8 +54,8 @@ public class ServerNode extends NodeImpl {
 	private final Server.Name _label;
 
 	private boolean started;
-	volatile private SlavesNode _mysqlSlavesNode;
-	volatile private DatabasesNode _mysqlDatabasesNode;
+	private volatile SlavesNode _mysqlSlavesNode;
+	private volatile DatabasesNode _mysqlDatabasesNode;
 
 	ServerNode(ServersNode mysqlServersNode, Server mysqlServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
 		super(port, csf, ssf);

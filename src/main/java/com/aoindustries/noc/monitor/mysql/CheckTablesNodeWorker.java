@@ -70,7 +70,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private DatabaseNode databaseNode;
+	private final DatabaseNode databaseNode;
 
 	CheckTablesNodeWorker(DatabaseNode databaseNode, File persistenceFile) {
 		super(persistenceFile);

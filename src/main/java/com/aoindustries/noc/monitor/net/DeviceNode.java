@@ -60,9 +60,9 @@ public class DeviceNode extends NodeImpl {
 	private final ChildLock childLock = new ChildLock();
 	private boolean started;
 
-	volatile private DeviceBitRateNode _netDeviceBitRateNode;
-	volatile private DeviceBondingNode _netDeviceBondingNode;
-	volatile private IpAddressesNode _ipAddressesNode;
+	private volatile DeviceBitRateNode _netDeviceBitRateNode;
+	private volatile DeviceBondingNode _netDeviceBondingNode;
+	private volatile IpAddressesNode _ipAddressesNode;
 
 	DeviceNode(DevicesNode networkDevicesNode, Device device, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
 		super(port, csf, ssf);

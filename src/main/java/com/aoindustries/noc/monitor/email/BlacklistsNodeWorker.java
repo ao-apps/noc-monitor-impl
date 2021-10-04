@@ -165,7 +165,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	abstract class BlacklistLookup implements Comparable<BlacklistLookup>, Callable<BlacklistQueryResult> {
 
 		@Override
-		final public int compareTo(BlacklistLookup o) {
+		public final int compareTo(BlacklistLookup o) {
 			return DomainName.compareLabels(getBaseName(), o.getBaseName());
 		}
 
@@ -425,8 +425,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private IpAddress ipAddress;
-	final private List<BlacklistLookup> lookups;
+	private final IpAddress ipAddress;
+	private final List<BlacklistLookup> lookups;
 
 	private static DnsBlacklist[] addUnique(DnsBlacklist ... blacklists) {
 		Map<String, DnsBlacklist> unique = AoCollections.newHashMap(blacklists.length);

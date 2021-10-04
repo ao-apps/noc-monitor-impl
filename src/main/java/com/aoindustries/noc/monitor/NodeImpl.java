@@ -46,9 +46,9 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 
 	private static final long serialVersionUID = 1L;
 
-	final protected int port;
-	final protected RMIClientSocketFactory csf;
-	final protected RMIServerSocketFactory ssf;
+	protected final int port;
+	protected final RMIClientSocketFactory csf;
+	protected final RMIServerSocketFactory ssf;
 
 	protected NodeImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -58,10 +58,10 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	}
 
 	@Override
-	abstract public NodeImpl getParent();
+	public abstract NodeImpl getParent();
 
 	@Override
-	abstract public List<? extends NodeImpl> getChildren();
+	public abstract List<? extends NodeImpl> getChildren();
 
 	/**
 	 * For thread safety and encapsulation, returns an unmodifiable copy of the list.
@@ -185,10 +185,10 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	 * @see #constrainAlertLevel(com.aoindustries.noc.monitor.common.AlertLevel)
 	 */
 	@Override
-	abstract public AlertLevel getAlertLevel();
+	public abstract AlertLevel getAlertLevel();
 
 	@Override
-	abstract public String getAlertMessage();
+	public abstract String getAlertMessage();
 
 	/**
 	 * Defaults to the alert category of the parent node.
@@ -203,10 +203,10 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
 	}
 
 	@Override
-	abstract public boolean getAllowsChildren();
+	public abstract boolean getAllowsChildren();
 
 	@Override
-	abstract public String getLabel();
+	public abstract String getLabel();
 
 	/**
 	 * The default toString is the label.

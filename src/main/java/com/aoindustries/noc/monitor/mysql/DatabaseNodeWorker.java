@@ -68,10 +68,10 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Database mysqlDatabase;
-	final private MysqlReplication mysqlSlave;
+	private final Database mysqlDatabase;
+	private final MysqlReplication mysqlSlave;
 	final boolean isSlowServer;
-	final private Object lastTableStatusesLock = new Object();
+	private final Object lastTableStatusesLock = new Object();
 	private List<Database.TableStatus> lastTableStatuses;
 
 	DatabaseNodeWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {

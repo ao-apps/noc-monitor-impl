@@ -72,7 +72,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> 
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server linuxServer;
+	private final Server linuxServer;
 
 	FilesystemsNodeWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);

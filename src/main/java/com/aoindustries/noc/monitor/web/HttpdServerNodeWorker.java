@@ -64,7 +64,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
 		}
 	}
 
-	final private HttpdServer _httpdServer;
+	private final HttpdServer _httpdServer;
 	private HttpdServer currentHttpdServer;
 
 	private HttpdServerNodeWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {

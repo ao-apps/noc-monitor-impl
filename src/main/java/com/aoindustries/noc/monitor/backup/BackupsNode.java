@@ -80,7 +80,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 	private AlertLevel alertLevel;
 	private TableResult lastResult;
 
-	final private List<TableResultListener> tableResultListeners = new ArrayList<>();
+	private final List<TableResultListener> tableResultListeners = new ArrayList<>();
 
 	public BackupsNode(HostNode hostNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -385,14 +385,14 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 	}
 
 	@Override
-	final public void addTableResultListener(TableResultListener tableResultListener) {
+	public final void addTableResultListener(TableResultListener tableResultListener) {
 		synchronized(tableResultListeners) {
 			tableResultListeners.add(tableResultListener);
 		}
 	}
 
 	@Override
-	final public void removeTableResultListener(TableResultListener tableResultListener) {
+	public final void removeTableResultListener(TableResultListener tableResultListener) {
 		synchronized(tableResultListeners) {
 			for(int c=tableResultListeners.size()-1;c>=0;c--) {
 				if(tableResultListeners.get(c).equals(tableResultListener)) {

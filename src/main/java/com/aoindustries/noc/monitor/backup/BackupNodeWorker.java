@@ -75,7 +75,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private FileReplication failoverFileReplication;
+	private final FileReplication failoverFileReplication;
 
 	BackupNodeWorker(File persistenceFile, FileReplication failoverFileReplication) {
 		super(persistenceFile);

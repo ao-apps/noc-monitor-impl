@@ -81,12 +81,12 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
 	private final Object timerTaskLock = new Object();
 	private Future<?> timerTask;
 
-	final private PersistentLinkedList<R> results;
+	private final PersistentLinkedList<R> results;
 
-	volatile private AlertLevel alertLevel = null;
-	volatile private Function<Locale, String> alertMessage = null;
+	private volatile AlertLevel alertLevel = null;
+	private volatile Function<Locale, String> alertMessage = null;
 
-	final private List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
+	private final List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
 
 	protected TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
 		this.results = new PersistentLinkedList<>(
@@ -187,7 +187,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
 
 	@Override
 	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	final public void run() {
+	public final void run() {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		boolean lastSuccessful = false;

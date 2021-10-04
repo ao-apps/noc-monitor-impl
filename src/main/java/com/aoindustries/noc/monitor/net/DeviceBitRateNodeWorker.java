@@ -72,7 +72,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Device _device;
+	private final Device _device;
 	private Device _currentNetDevice;
 
 	private DeviceBitRateNodeWorker(File persistenceDirectory, Device device) throws IOException {

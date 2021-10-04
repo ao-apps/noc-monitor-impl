@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -49,7 +49,7 @@ public class HardDrivesNode extends NodeImpl {
 
 	private boolean started;
 
-	volatile private HardDrivesTemperatureNode _hardDriveTemperatureNode;
+	private volatile HardDrivesTemperatureNode _hardDriveTemperatureNode;
 
 	public HardDrivesNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);

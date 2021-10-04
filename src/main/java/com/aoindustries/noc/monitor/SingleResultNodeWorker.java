@@ -55,13 +55,13 @@ public abstract class SingleResultNodeWorker implements Runnable {
 	private final Object timerTaskLock = new Object();
 	private Future<?> timerTask;
 
-	volatile private SingleResult lastResult;
-	volatile private AlertLevel alertLevel;
-	volatile private Function<Locale, String> alertMessage = null;
+	private volatile SingleResult lastResult;
+	private volatile AlertLevel alertLevel;
+	private volatile Function<Locale, String> alertMessage = null;
 
-	final private List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<>();
+	private final List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<>();
 
-	final protected File persistenceFile;
+	protected final File persistenceFile;
 
 	protected SingleResultNodeWorker(File persistenceFile) {
 		this.persistenceFile = persistenceFile;
@@ -131,7 +131,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 
 	@Override
 	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	final public void run() {
+	public final void run() {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		boolean lastSuccessful = false;

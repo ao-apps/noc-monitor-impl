@@ -78,7 +78,7 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
 		}
 	}
 
-	final private BindsNode.NetMonitorSetting netMonitorSetting;
+	private final BindsNode.NetMonitorSetting netMonitorSetting;
 	private volatile PortMonitor portMonitor;
 
 	private BindNodeWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {

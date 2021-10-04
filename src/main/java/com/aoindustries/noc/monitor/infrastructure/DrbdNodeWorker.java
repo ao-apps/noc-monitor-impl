@@ -82,8 +82,8 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server linuxServer;
-	final private TimeZone timeZone;
+	private final Server linuxServer;
+	private final TimeZone timeZone;
 
 	DrbdNodeWorker(File persistenceFile, Server linuxServer) throws IOException, SQLException {
 		super(persistenceFile);

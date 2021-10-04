@@ -59,7 +59,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
 		}
 	}
 
-	final private Server _linuxServer;
+	private final Server _linuxServer;
 	private Server currentAOServer;
 
 	private LoadAverageNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {

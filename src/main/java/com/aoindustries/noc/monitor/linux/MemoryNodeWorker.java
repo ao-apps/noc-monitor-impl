@@ -70,7 +70,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
 		}
 	}
 
-	final private Server _linuxServer;
+	private final Server _linuxServer;
 	private Server currentAOServer;
 
 	private MemoryNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {

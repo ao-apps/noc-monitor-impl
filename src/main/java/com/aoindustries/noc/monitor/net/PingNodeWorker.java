@@ -74,7 +74,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
 	/**
 	 * The most recent timer task
 	 */
-	final private com.aoapps.net.InetAddress ipAddress;
+	private final com.aoapps.net.InetAddress ipAddress;
 
 	private PingNodeWorker(File persistenceDirectory, com.aoapps.net.InetAddress ipAddress) throws IOException {
 		super(new File(persistenceDirectory, "pings"), new PingResultSerializer());

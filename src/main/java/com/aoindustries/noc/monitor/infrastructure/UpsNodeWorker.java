@@ -92,7 +92,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus, UpsResult> {
 		}
 	}
 
-	final private Server _linuxServer;
+	private final Server _linuxServer;
 
 	private UpsNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
 		super(new File(persistenceDirectory, "ups"), new UpsResultSerializer());

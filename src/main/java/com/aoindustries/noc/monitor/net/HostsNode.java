@@ -47,7 +47,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract public class HostsNode extends NodeImpl {
+public abstract class HostsNode extends NodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -62,17 +62,17 @@ abstract public class HostsNode extends NodeImpl {
 	}
 
 	@Override
-	final public RootNodeImpl getParent() {
+	public final RootNodeImpl getParent() {
 		return rootNode;
 	}
 
 	@Override
-	final public boolean getAllowsChildren() {
+	public final boolean getAllowsChildren() {
 		return true;
 	}
 
 	@Override
-	final public List<HostNode> getChildren() {
+	public final List<HostNode> getChildren() {
 		synchronized(hostNodes) {
 			return getSnapshot(hostNodes);
 		}
@@ -82,7 +82,7 @@ abstract public class HostsNode extends NodeImpl {
 	 * The alert level is equal to the highest alert level of its children.
 	 */
 	@Override
-	final public AlertLevel getAlertLevel() {
+	public final AlertLevel getAlertLevel() {
 		AlertLevel level;
 		synchronized(hostNodes) {
 			level = AlertLevelUtils.getMaxAlertLevel(hostNodes);
@@ -94,7 +94,7 @@ abstract public class HostsNode extends NodeImpl {
 	 * No alert messages.
 	 */
 	@Override
-	final public String getAlertMessage() {
+	public final String getAlertMessage() {
 		return null;
 	}
 
@@ -106,7 +106,7 @@ abstract public class HostsNode extends NodeImpl {
 		}
 	};
 
-	final public void start() throws IOException, SQLException {
+	public final void start() throws IOException, SQLException {
 		synchronized(hostNodes) {
 			if(started) throw new IllegalStateException();
 			started = true;
@@ -187,5 +187,5 @@ abstract public class HostsNode extends NodeImpl {
 		return dir;
 	}
 
-	abstract protected boolean includeHost(Host host) throws SQLException, IOException;
+	protected abstract boolean includeHost(Host host) throws SQLException, IOException;
 }

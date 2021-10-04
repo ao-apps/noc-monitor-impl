@@ -77,7 +77,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Certificate sslCertificate;
+	private final Certificate sslCertificate;
 
 	CertificateNodeWorker(File persistenceFile, Certificate sslCertificate) throws IOException, SQLException {
 		super(persistenceFile);

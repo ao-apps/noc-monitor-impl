@@ -44,7 +44,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> extends NodeImpl implements TableMultiResultNode<R> {
+public abstract class TableMultiResultNodeImpl<R extends TableMultiResult> extends NodeImpl implements TableMultiResultNode<R> {
 
 	private static final Logger logger = Logger.getLogger(TableMultiResultNodeImpl.class.getName());
 
@@ -54,7 +54,7 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 	final NodeImpl parent;
 	final TableMultiResultNodeWorker<?, R> worker;
 
-	final private List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<>();
+	private final List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<>();
 
 	protected TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?, R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -64,28 +64,28 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 	}
 
 	@Override
-	final public NodeImpl getParent() {
+	public final NodeImpl getParent() {
 		return parent;
 	}
 
 	@Override
-	final public boolean getAllowsChildren() {
+	public final boolean getAllowsChildren() {
 		return false;
 	}
 
 	@Override
-	final public List<? extends NodeImpl> getChildren() {
+	public final List<? extends NodeImpl> getChildren() {
 		return Collections.emptyList();
 	}
 
 	@Override
-	final public AlertLevel getAlertLevel() {
+	public final AlertLevel getAlertLevel() {
 		AlertLevel alertLevel = worker.getAlertLevel();
 		return constrainAlertLevel(alertLevel == null ? AlertLevel.UNKNOWN : alertLevel);
 	}
 
 	@Override
-	final public String getAlertMessage() {
+	public final String getAlertMessage() {
 		Function<Locale, String> alertMessage = worker.getAlertMessage();
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
@@ -99,7 +99,7 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 	}
 
 	@Override
-	final public List<? extends R> getResults() {
+	public final List<? extends R> getResults() {
 		return worker.getResults();
 	}
 
@@ -118,14 +118,14 @@ abstract public class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 	}
 
 	@Override
-	final public void addTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
+	public final void addTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
 		synchronized(tableMultiResultListeners) {
 			tableMultiResultListeners.add(tableMultiResultListener);
 		}
 	}
 
 	@Override
-	final public void removeTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
+	public final void removeTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
 		synchronized(tableMultiResultListeners) {
 			for(int c=tableMultiResultListeners.size()-1;c>=0;c--) {
 				if(tableMultiResultListeners.get(c).equals(tableMultiResultListener)) {

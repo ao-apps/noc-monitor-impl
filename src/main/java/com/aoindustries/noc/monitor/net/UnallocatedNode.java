@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2014, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2014, 2018, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -49,7 +49,7 @@ public class UnallocatedNode extends NodeImpl {
 
 	private boolean started;
 
-	volatile private IpAddressesNode _ipAddressesNode;
+	private volatile IpAddressesNode _ipAddressesNode;
 
 	public UnallocatedNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);

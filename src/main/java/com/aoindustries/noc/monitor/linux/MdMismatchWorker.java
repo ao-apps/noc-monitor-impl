@@ -70,7 +70,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server linuxServer;
+	private final Server linuxServer;
 
 	MdMismatchWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);

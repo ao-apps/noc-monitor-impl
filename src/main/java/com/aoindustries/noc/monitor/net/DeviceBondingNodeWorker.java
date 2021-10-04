@@ -65,7 +65,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	volatile private Device device;
+	private volatile Device device;
 
 	private DeviceBondingNodeWorker(File persistenceFile, Device device) {
 		super(persistenceFile);

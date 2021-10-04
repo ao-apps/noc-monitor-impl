@@ -38,8 +38,8 @@ public class AlertLevelAndMessage {
 	 */
 	public static final AlertLevelAndMessage NONE = new AlertLevelAndMessage(AlertLevel.NONE, null);
 
-	final private AlertLevel alertLevel;
-	final private Function<Locale, String> alertMessage;
+	private final AlertLevel alertLevel;
+	private final Function<Locale, String> alertMessage;
 
 	public AlertLevelAndMessage(AlertLevel alertLevel, Function<Locale, String> alertMessage) {
 		this.alertLevel = alertLevel;

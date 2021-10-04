@@ -45,7 +45,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract public class TableResultNodeImpl extends NodeImpl implements TableResultNode {
+public abstract class TableResultNodeImpl extends NodeImpl implements TableResultNode {
 
 	private static final Logger logger = Logger.getLogger(TableResultNodeImpl.class.getName());
 
@@ -55,7 +55,7 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 	final NodeImpl parent;
 	protected final TableResultNodeWorker<?, ?> worker;
 
-	final private List<TableResultListener> tableResultListeners = new ArrayList<>();
+	private final List<TableResultListener> tableResultListeners = new ArrayList<>();
 
 	protected TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?, ?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -65,7 +65,7 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 	}
 
 	@Override
-	final public NodeImpl getParent() {
+	public final NodeImpl getParent() {
 		return parent;
 	}
 
@@ -86,7 +86,7 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 	}
 
 	@Override
-	final public String getAlertMessage() {
+	public final String getAlertMessage() {
 		Function<Locale, String> alertMessage = worker.getAlertMessage();
 		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
 	}
@@ -100,7 +100,7 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 	}
 
 	@Override
-	final public TableResult getLastResult() {
+	public final TableResult getLastResult() {
 		return worker.getLastResult();
 	}
 
@@ -119,14 +119,14 @@ abstract public class TableResultNodeImpl extends NodeImpl implements TableResul
 	}
 
 	@Override
-	final public void addTableResultListener(TableResultListener tableResultListener) {
+	public final void addTableResultListener(TableResultListener tableResultListener) {
 		synchronized(tableResultListeners) {
 			tableResultListeners.add(tableResultListener);
 		}
 	}
 
 	@Override
-	final public void removeTableResultListener(TableResultListener tableResultListener) {
+	public final void removeTableResultListener(TableResultListener tableResultListener) {
 		synchronized(tableResultListeners) {
 			for(int c=tableResultListeners.size()-1;c>=0;c--) {
 				if(tableResultListeners.get(c).equals(tableResultListener)) {

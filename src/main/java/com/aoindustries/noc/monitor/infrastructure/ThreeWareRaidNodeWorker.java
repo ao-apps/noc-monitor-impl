@@ -65,7 +65,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 	}
 
 	// Will use whichever connector first created this worker, even if other accounts connect later.
-	final private Server linuxServer;
+	private final Server linuxServer;
 
 	ThreeWareRaidNodeWorker(File persistenceFile, Server linuxServer) {
 		super(persistenceFile);

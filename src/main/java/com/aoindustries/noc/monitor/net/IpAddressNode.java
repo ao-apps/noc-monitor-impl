@@ -83,10 +83,10 @@ public class IpAddressNode extends NodeImpl {
 	private final ChildLock childLock = new ChildLock();
 	private boolean started;
 
-	volatile private PingNode pingNode;
-	volatile private BindsNode netBindsNode;
-	volatile private DnsNode dnsNode;
-	volatile private BlacklistsNode blacklistsNode;
+	private volatile PingNode pingNode;
+	private volatile BindsNode netBindsNode;
+	private volatile DnsNode dnsNode;
+	private volatile BlacklistsNode blacklistsNode;
 
 	IpAddressNode(IpAddressesNode ipAddressesNode, IpAddress ipAddress, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, SQLException, IOException {
 		super(port, csf, ssf);

@@ -48,7 +48,7 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-abstract public class TableResultNodeWorker<QR, TD> implements Runnable {
+public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
 
@@ -58,13 +58,13 @@ abstract public class TableResultNodeWorker<QR, TD> implements Runnable {
 	private final Object timerTaskLock = new Object();
 	private Future<?> timerTask;
 
-	volatile private TableResult lastResult;
-	volatile private AlertLevel alertLevel = null;
-	volatile private Function<Locale, String> alertMessage = null;
+	private volatile TableResult lastResult;
+	private volatile AlertLevel alertLevel = null;
+	private volatile Function<Locale, String> alertMessage = null;
 
-	final private List<TableResultNodeImpl> tableResultNodeImpls = new ArrayList<>();
+	private final List<TableResultNodeImpl> tableResultNodeImpls = new ArrayList<>();
 
-	final protected File persistenceFile;
+	protected final File persistenceFile;
 
 	protected TableResultNodeWorker(File persistenceFile) {
 		this.persistenceFile = persistenceFile;
@@ -134,7 +134,7 @@ abstract public class TableResultNodeWorker<QR, TD> implements Runnable {
 
 	@Override
 	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	final public void run() {
+	public final void run() {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		boolean lastSuccessful = false;

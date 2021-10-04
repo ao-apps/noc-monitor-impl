@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -53,10 +53,10 @@ public class RaidNode extends NodeImpl {
 
 	private boolean started;
 
-	volatile private ThreeWareRaidNode _threeWareRaidNode;
-	volatile private MdStatNode _mdStatNode;
-	volatile private MdMismatchNode _mdMismatchNode;
-	volatile private DrbdNode _drbdNode;
+	private volatile ThreeWareRaidNode _threeWareRaidNode;
+	private volatile MdStatNode _mdStatNode;
+	private volatile MdMismatchNode _mdMismatchNode;
+	private volatile DrbdNode _drbdNode;
 
 	public RaidNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);

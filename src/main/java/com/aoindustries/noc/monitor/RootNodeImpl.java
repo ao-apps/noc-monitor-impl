@@ -75,7 +75,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	/**
 	 * One thread pool is shared by all components, and it is never disposed.
 	 */
-	public final static Executors executors = new Executors();
+	public static final Executors executors = new Executors();
 
 	/**
 	 * Schedules a task to be performed in the future.  It will be performed in a background thread via the ExecutorService.
@@ -89,11 +89,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	 */
 	private static class RootNodeCacheKey {
 
-		final private Locale locale;
-		final private AOServConnector connector;
-		final private int port;
-		final private RMIClientSocketFactory csf;
-		final private RMIServerSocketFactory ssf;
+		private final Locale locale;
+		private final AOServConnector connector;
+		private final int port;
+		private final RMIClientSocketFactory csf;
+		private final RMIServerSocketFactory ssf;
 
 		private RootNodeCacheKey(Locale locale, AOServConnector connector, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) {
 			this.locale = locale;
@@ -168,11 +168,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	public final Locale locale;
 	public final AOServConnector conn;
 
-	volatile private OtherDevicesNode otherDevicesNode;
-	volatile private PhysicalServersNode physicalServersNode;
-	volatile private VirtualServersNode virtualServersNode;
-	volatile private UnallocatedNode unallocatedNode;
-	volatile private SignupsNode signupsNode;
+	private volatile OtherDevicesNode otherDevicesNode;
+	private volatile PhysicalServersNode physicalServersNode;
+	private volatile VirtualServersNode virtualServersNode;
+	private volatile UnallocatedNode unallocatedNode;
+	private volatile SignupsNode signupsNode;
 
 	private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
@@ -238,7 +238,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	/**
 	 * Starts the rootNode.
 	 */
-	synchronized private void start() throws IOException, SQLException {
+	private synchronized void start() throws IOException, SQLException {
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		if(otherDevicesNode==null) {
@@ -277,11 +277,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		}
 	}
 
-	final private List<TreeListener> treeListeners = new ArrayList<>();
+	private final List<TreeListener> treeListeners = new ArrayList<>();
 	// Synchronized on treeListeners
-	final private Map<TreeListener, NodeAddedSignaler> nodeAddedSignalers = new HashMap<>();
-	final private Map<TreeListener, NodeRemovedSignaler> nodeRemovedSignalers = new HashMap<>();
-	final private Map<TreeListener, NodeAlertLevelChangedSignaler> nodeAlertLevelChangedSignalers = new HashMap<>();
+	private final Map<TreeListener, NodeAddedSignaler> nodeAddedSignalers = new HashMap<>();
+	private final Map<TreeListener, NodeRemovedSignaler> nodeRemovedSignalers = new HashMap<>();
+	private final Map<TreeListener, NodeAlertLevelChangedSignaler> nodeAlertLevelChangedSignalers = new HashMap<>();
 
 	@Override
 	public void addTreeListener(TreeListener treeListener) {
@@ -306,7 +306,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	private class NodeAddedSignaler implements Runnable {
 
-		final private TreeListener treeListener;
+		private final TreeListener treeListener;
 
 		private long lastCounterSent = 0;
 		private long currentCounter = 0;
@@ -359,7 +359,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	private class NodeRemovedSignaler implements Runnable {
 
-		final private TreeListener treeListener;
+		private final TreeListener treeListener;
 
 		private long lastCounterSent = 0;
 		private long currentCounter = 0;
@@ -412,7 +412,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
 	private class NodeAlertLevelChangedSignaler implements Runnable {
 
-		final private TreeListener treeListener;
+		private final TreeListener treeListener;
 
 		private List<AlertChange> queuedChanges;
 
