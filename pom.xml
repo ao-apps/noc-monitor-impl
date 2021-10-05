@@ -40,7 +40,7 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 		<description.html><![CDATA[Implementation of <a target="${javadoc.target}" href="https://aoindustries.com/noc/monitor/">Network Operations Center Monitoring</a>.]]></description.html>
 		<!-- SonarQube -->
 		<sonar.projectKey>com.aoapp.platform:noc-monitor-impl<!-- TODO: ${project.groupId}:${project.artifactId} --></sonar.projectKey>
-		<sonar.organization>aoindustries</sonar.organization>
+		<sonar.organization>ao-apps</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<!-- TODO: Code Coverage broken in Java 11 -->
 		<sonar.coverage.exclusions>**.*</sonar.coverage.exclusions>
@@ -81,20 +81,20 @@ along with noc-monitor-impl.  If not, see <http://www.gnu.org/licenses />.
 	</developers>
 
 	<scm>
-		<connection>scm:git:git://github.com/aoindustries/noc-monitor-impl.git</connection>
-		<developerConnection>scm:git:git@github.com:aoindustries/noc-monitor-impl.git</developerConnection>
-		<url>https://github.com/aoindustries/noc-monitor-impl</url>
+		<connection>scm:git:git://github.com/ao-apps/noc-monitor-impl.git</connection>
+		<developerConnection>scm:git:git@github.com:ao-apps/noc-monitor-impl.git</developerConnection>
+		<url>https://github.com/ao-apps/noc-monitor-impl</url>
 		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>https://github.com/aoindustries/noc-monitor-impl/issues</url>
+		<url>https://github.com/ao-apps/noc-monitor-impl/issues</url>
 	</issueManagement>
 
 	<ciManagement>
 		<system>GitHub Actions</system>
-		<url>https://github.com/aoindustries/noc-monitor-impl/actions</url>
+		<url>https://github.com/ao-apps/noc-monitor-impl/actions</url>
 	</ciManagement>
 
 	<repositories>
