@@ -256,7 +256,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
 			List<?> tableData = result.getTableData(Locale.getDefault());
-			for(int index=0,len=tableData.size();index<len;index+=4) {
+			for(int index=0, len=tableData.size();index<len;index+=4) {
 				AlertLevel alertLevel = result.getAlertLevels().get(index/4);
 				if(alertLevel.compareTo(highestAlertLevel)>0) {
 					highestAlertLevel = alertLevel;

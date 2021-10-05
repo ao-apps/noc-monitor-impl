@@ -43,7 +43,7 @@ import java.util.function.Function;
 
 /**
  * The workers for hard drive temperature monitoring.
- * 
+ *
  * TODO: Keep historical data and warn if temp increases more than 20C/hour
  *
  * @author  AO Industries, Inc.
@@ -103,7 +103,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 		} else {
 			List<?> tableData = result.getTableData(Locale.getDefault());
 			List<AlertLevel> alertLevels = result.getAlertLevels();
-			for(int index=0,len=tableData.size();index<len;index+=3) {
+			for(int index=0, len=tableData.size();index<len;index+=3) {
 				AlertLevel alertLevel = alertLevels.get(index/3);
 				if(alertLevel.compareTo(highestAlertLevel)>0) {
 					highestAlertLevel = alertLevel;
@@ -147,7 +147,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 					line
 				);
 			}
-			for(int c=0,len=values.size(); c<len; c++) {
+			for(int c=0, len=values.size(); c<len; c++) {
 				tableData.add(values.get(c).trim());
 			}
 		}
@@ -162,7 +162,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 	@Override
 	protected List<AlertLevel> getAlertLevels(List<String> tableData) {
 		List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/3);
-		for(int index=0,len=tableData.size();index<len;index+=3) {
+		for(int index=0, len=tableData.size();index<len;index+=3) {
 			String value = tableData.get(index+2);
 			AlertLevel alertLevel = AlertLevel.NONE;
 			if(

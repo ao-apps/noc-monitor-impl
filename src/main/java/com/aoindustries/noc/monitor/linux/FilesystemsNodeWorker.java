@@ -91,7 +91,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> 
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
 			List<?> tableData = result.getTableData(Locale.getDefault());
-			for(int index=0,len=tableData.size();index<len;index+=12) {
+			for(int index=0, len=tableData.size();index<len;index+=12) {
 				AlertLevelAndMessage alam;
 				try {
 					alam = getAlertLevelAndMessage(tableData, index);
@@ -184,7 +184,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> 
 	@Override
 	protected List<AlertLevel> getAlertLevels(List<String> tableData) {
 		List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/12);
-		for(int index=0,len=tableData.size();index<len;index+=12) {
+		for(int index=0, len=tableData.size();index<len;index+=12) {
 			try {
 				AlertLevelAndMessage alam = getAlertLevelAndMessage(tableData, index);
 				alertLevels.add(alam.getAlertLevel());

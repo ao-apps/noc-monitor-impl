@@ -192,7 +192,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
 	@Override
 	protected List<AlertLevel> getAlertLevels(List<Object> tableData) {
 		List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/5);
-		for(int index=0,len=tableData.size();index<len;index+=5) {
+		for(int index=0, len=tableData.size();index<len;index+=5) {
 			String msgText = (String)tableData.get(index+4);
 			alertLevels.add(
 				msgText!=null && (msgText.equals("OK") || msgText.equals("Table is already up to date"))
@@ -215,7 +215,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
 			);
 		} else {
 			List<?> tableData = result.getTableData(Locale.getDefault());
-			for(int index=0,len=tableData.size();index<len;index+=5) {
+			for(int index=0, len=tableData.size();index<len;index+=5) {
 				String msgText = (String)tableData.get(index+4);
 				if(msgText==null || (!msgText.equals("OK") && !msgText.equals("Table is already up to date"))) {
 					Object name = tableData.get(index);

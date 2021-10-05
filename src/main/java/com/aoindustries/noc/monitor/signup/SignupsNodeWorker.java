@@ -97,7 +97,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 			int incompleteCount;
 			{
 				int i = 0;
-				for(int index=0,len=tableData.size();index<len;index+=6) {
+				for(int index=0, len=tableData.size();index<len;index+=6) {
 					String completedBy = (String)tableData.get(index+4);
 					if(completedBy==null) i++;
 				}
@@ -173,7 +173,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 	@Override
 	protected List<AlertLevel> getAlertLevels(List<Object> tableData) {
 		List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/6);
-		for(int index=0,len=tableData.size();index<len;index+=6) {
+		for(int index=0, len=tableData.size();index<len;index+=6) {
 			String completedBy = (String)tableData.get(index+4);
 			alertLevels.add(completedBy==null ? AlertLevel.CRITICAL : AlertLevel.NONE);
 		}

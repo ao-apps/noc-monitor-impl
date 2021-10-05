@@ -1737,7 +1737,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
 		} else {
 			List<?> tableData = result.getTableData(Locale.getDefault());
-			for(int index=0,len=tableData.size();index<len;index+=5) {
+			for(int index=0, len=tableData.size();index<len;index+=5) {
 				AlertLevel alertLevel = result.getAlertLevels().get(index/5);
 				// Too many queries time-out: if alert level is "Unknown", treat as "Low"
 				if(alertLevel == AlertLevel.UNKNOWN) alertLevel = AlertLevel.LOW;

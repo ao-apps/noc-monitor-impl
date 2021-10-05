@@ -84,7 +84,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
 
 	/**
 	 * Determines the alert message for the provided result.
-	 * 
+	 *
 	 * If there is not any data (no backups logged, make high level)
 	 */
 	@Override
@@ -105,7 +105,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
 				// if <48 hours LOW
 				// otherwise MEDIUM
 				long lastSuccessfulTime = -1;
-				for(int index=0,len=tableData.size();index<len;index+=6) {
+				for(int index=0, len=tableData.size();index<len;index+=6) {
 					boolean successful = (Boolean)tableData.get(index+5);
 					if(successful) {
 						lastSuccessfulTime = ((TimeWithTimeZone)tableData.get(index)).getTime();
