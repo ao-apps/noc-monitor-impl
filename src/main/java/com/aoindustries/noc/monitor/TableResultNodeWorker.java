@@ -106,7 +106,7 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
 	}
 
 	private QR getQueryResultWithTimeout() throws Exception {
-		Future<QR> future = RootNodeImpl.executors.getUnbounded().submit(() -> getQueryResult());
+		Future<QR> future = RootNodeImpl.executors.getUnbounded().submit(this::getQueryResult);
 		try {
 			return future.get(getTimeout(), getTimeoutUnit());
 		} catch(InterruptedException | TimeoutException err) {

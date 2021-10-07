@@ -155,7 +155,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
 	}
 
 	private S getSampleWithTimeout() throws Exception {
-		Future<S> future = RootNodeImpl.executors.getUnbounded().submit(() -> getSample());
+		Future<S> future = RootNodeImpl.executors.getUnbounded().submit(this::getSample);
 		try {
 			return future.get(getFutureTimeout(), getFutureTimeoutUnit());
 		} catch(InterruptedException | TimeoutException err) {
