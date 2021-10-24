@@ -187,10 +187,9 @@ public class BindsNode extends NodeImpl {
 		}
 
 		@Override
-		public boolean equals(Object O) {
-			if(O==null) return false;
-			if(!(O instanceof NetMonitorSetting)) return false;
-			NetMonitorSetting other = (NetMonitorSetting)O;
+		public boolean equals(Object obj) {
+			if(!(obj instanceof NetMonitorSetting)) return false;
+			NetMonitorSetting other = (NetMonitorSetting)obj;
 			return
 				port==other.port
 				&& host.equals(other.host)

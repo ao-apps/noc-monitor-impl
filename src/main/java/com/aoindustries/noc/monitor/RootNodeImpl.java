@@ -55,7 +55,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * The top-level node has one child for each of the servers.
- * 
+ *
  * There is no stop here because root nodes keep running forever in the background to be reconnected to.
  * The overhead of this is reduced by using workers and only creating one rootNode per user.
  *
@@ -104,10 +104,9 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		}
 
 		@Override
-		public boolean equals(Object O) {
-			if(O==null) return false;
-			if(!(O instanceof RootNodeCacheKey)) return false;
-			RootNodeCacheKey other = (RootNodeCacheKey)O;
+		public boolean equals(Object obj) {
+			if(!(obj instanceof RootNodeCacheKey)) return false;
+			RootNodeCacheKey other = (RootNodeCacheKey)obj;
 			return
 				locale.equals(other.locale)
 				&& connector.equals(other.connector)
