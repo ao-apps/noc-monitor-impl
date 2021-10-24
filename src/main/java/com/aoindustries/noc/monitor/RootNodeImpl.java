@@ -149,8 +149,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 					logger.finer("Running start() in background task");
 					try {
 						newRootNode.start();
-					} catch(ThreadDeath TD) {
-						throw TD;
+					} catch(ThreadDeath td) {
+						throw td;
 					} catch(Throwable t) {
 						logger.log(Level.SEVERE, null, t);
 					}

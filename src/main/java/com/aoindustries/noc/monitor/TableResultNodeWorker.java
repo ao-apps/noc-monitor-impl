@@ -229,9 +229,9 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
 					}
 				}
 			}
-		} catch(ThreadDeath TD) {
+		} catch(ThreadDeath td) {
 			lastSuccessful = false;
-			throw TD;
+			throw td;
 		} catch(Throwable t) {
 			logger.log(Level.SEVERE, null, t);
 			lastSuccessful = false;

@@ -76,8 +76,8 @@ public class WebSiteDatabase extends Database {
 	}
 
 	private static long getDatabaseMaxConnectionAge() throws IOException {
-		String S=getProperty("com.aoindustries.website.database.max_connection_age");
-		return S==null || S.length()==0 ? AOPool.DEFAULT_MAX_CONNECTION_AGE : Long.parseLong(S);
+		String s = getProperty("com.aoindustries.website.database.max_connection_age");
+		return s==null || s.length()==0 ? AOPool.DEFAULT_MAX_CONNECTION_AGE : Long.parseLong(s);
 	}
 
 	/**

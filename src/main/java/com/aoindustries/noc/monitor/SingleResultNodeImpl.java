@@ -145,13 +145,13 @@ public abstract class SingleResultNodeImpl extends NodeImpl implements SingleRes
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		synchronized(singleResultListeners) {
-			Iterator<SingleResultListener> I = singleResultListeners.iterator();
-			while(I.hasNext()) {
-				SingleResultListener singleResultListener = I.next();
+			Iterator<SingleResultListener> iter = singleResultListeners.iterator();
+			while(iter.hasNext()) {
+				SingleResultListener singleResultListener = iter.next();
 				try {
 					singleResultListener.singleResultUpdated(singleResult);
 				} catch(RemoteException err) {
-					I.remove();
+					iter.remove();
 					logger.log(Level.SEVERE, null, err);
 				}
 			}

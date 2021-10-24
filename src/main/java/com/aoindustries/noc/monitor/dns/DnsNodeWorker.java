@@ -126,7 +126,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 		if(!expectedHostname.endsWith(".")) expectedHostname += '.';
 		// Priority is higher when assigned, lower when unassigned
 		final AlertLevel problemAlertLevel = currentIpAddress.getDevice() != null ? AlertLevel.MEDIUM : AlertLevel.LOW;
-		StringBuilder SB = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		List<DnsQueryResult> results = new ArrayList<>();
 		boolean didHostnameAVerification = false;
 		// Reverse DNS
@@ -147,15 +147,15 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 					String ptrList;
 					boolean expectedHostnameFound = false;
 					{
-						SB.setLength(0);
+						sb.setLength(0);
 						for(Record record : ptrRecords) {
-							if(SB.length()>0) SB.append(", ");
+							if(sb.length()>0) sb.append(", ");
 							PTRRecord ptrRecord = (PTRRecord)record;
 							String hostname = ptrRecord.getTarget().toString();
-							SB.append(hostname);
+							sb.append(hostname);
 							if(expectedHostname.equals(hostname)) expectedHostnameFound = true;
 						}
-						ptrList = SB.toString();
+						ptrList = sb.toString();
 					}
 					boolean hasPtrResult = false;
 					if(ptrRecords.length > 1) {
@@ -173,7 +173,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 						// Lookup each A record, making sure one of its IP addresses is the current IP
 						for(Record record : ptrRecords) {
 							PTRRecord ptrRecord = (PTRRecord)record;
-							verifyDnsA(ptrRecord.getTarget(), results, problemAlertLevel, SB, ip);
+							verifyDnsA(ptrRecord.getTarget(), results, problemAlertLevel, sb, ip);
 						}
 						if(expectedHostnameFound) didHostnameAVerification = true;
 					}
@@ -182,12 +182,12 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 		}
 		// Check forward DNS for the hostname, if not already done as part of the above
 		if(iam.getVerifyDnsA() && !didHostnameAVerification) {
-			verifyDnsA(new Name(expectedHostname), results, problemAlertLevel, SB, ip);
+			verifyDnsA(new Name(expectedHostname), results, problemAlertLevel, sb, ip);
 		}
 		return results;
 	}
 
-	private static void verifyDnsA(Name target, List<DnsQueryResult> results, AlertLevel problemAlertLevel, StringBuilder SB, InetAddress ip) {
+	private static void verifyDnsA(Name target, List<DnsQueryResult> results, AlertLevel problemAlertLevel, StringBuilder sb, InetAddress ip) {
 		long aStartNanos = System.nanoTime();
 		Lookup aLookup = new Lookup(target, Type.A);
 		aLookup.run();
@@ -202,15 +202,15 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 				String ipList;
 				boolean ipFound = false;
 				{
-					SB.setLength(0);
+					sb.setLength(0);
 					for(Record rec : aRecords) {
-						if(SB.length()>0) SB.append(", ");
+						if(sb.length()>0) sb.append(", ");
 						ARecord aRecord = (ARecord)rec;
 						String aIp = aRecord.getAddress().getHostAddress();
-						SB.append(aIp);
+						sb.append(aIp);
 						if(ip.toString().equals(aIp)) ipFound = true;
 					}
-					ipList = SB.toString();
+					ipList = sb.toString();
 				}
 				String aMessage;
 				AlertLevel aAlertLevel;

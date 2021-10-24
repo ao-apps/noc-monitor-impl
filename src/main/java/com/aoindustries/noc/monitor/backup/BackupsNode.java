@@ -412,13 +412,13 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
 		synchronized(tableResultListeners) {
-			Iterator<TableResultListener> I = tableResultListeners.iterator();
-			while(I.hasNext()) {
-				TableResultListener tableResultListener = I.next();
+			Iterator<TableResultListener> iter = tableResultListeners.iterator();
+			while(iter.hasNext()) {
+				TableResultListener tableResultListener = iter.next();
 				try {
 					tableResultListener.tableResultUpdated(tableResult);
 				} catch(RemoteException err) {
-					I.remove();
+					iter.remove();
 					logger.log(Level.SEVERE, null, err);
 				}
 			}
