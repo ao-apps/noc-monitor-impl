@@ -105,7 +105,7 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
 		}
 	}
 
-	private QR getQueryResultWithTimeout() throws Exception {
+	private QR getQueryResultWithTimeout() throws InterruptedException, TimeoutException, Exception {
 		Future<QR> future = RootNodeImpl.executors.getUnbounded().submit(this::getQueryResult);
 		try {
 			return future.get(getTimeout(), getTimeoutUnit());
@@ -166,13 +166,15 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
 			} catch(Exception err) {
 				columns = 1;
 				rows = 1;
-				columnHeaders = locale -> Collections.singletonList(PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
+				columnHeaders = locale -> Collections.singletonList(
+					PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
 				);
 				tableData = locale -> ThreadLocale.call(locale,
 					() -> {
 						String msg = err.getLocalizedMessage();
 						if(msg == null || msg.isEmpty()) msg = err.toString();
-						return Collections.singletonList(PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
+						return Collections.singletonList(
+							PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
 						);
 					}
 				);
@@ -332,7 +334,7 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
 	/**
 	 * Gets the current table data for this worker.
 	 */
-	protected abstract QR getQueryResult() throws Exception;
+	protected abstract QR getQueryResult() throws InterruptedException, Exception;
 
 	/**
 	 * Gets the table data for the query result.  This must be processed quickly.

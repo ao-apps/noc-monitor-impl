@@ -1594,7 +1594,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
 	@Override
 	@SuppressWarnings({"ThrowableResultIgnored", "UseSpecificCatch", "TooBroadCatch", "SleepWhileInLoop"})
-	protected List<BlacklistQueryResult> getQueryResult() throws Exception {
+	protected List<BlacklistQueryResult> getQueryResult() throws InterruptedException, Exception {
 		// Run each query in parallel
 		List<Long> startTimes = new ArrayList<>(lookups.size());
 		List<Long> startNanos = new ArrayList<>(lookups.size());
@@ -1675,10 +1675,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), "Timeout in queue, timeoutRemaining = " + new NanoInterval(timeoutRemainingNanos), AlertLevel.UNKNOWN);
 					// Queue timeouts are not cached
 					cacheResult = false;
-				} catch(ThreadDeath td) {
+				} catch(ThreadDeath | InterruptedException td) {
 					try {
 						future.cancel(false);
 					} catch(Throwable t) {
+						@SuppressWarnings("ThrowableResultIgnored")
 						Throwable t2 = Throwables.addSuppressed(td, t);
 						assert t2 == td;
 					}
@@ -1688,12 +1689,6 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 					result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), t.getMessage(), lookup.getMaxAlertLevel());
 					cacheResult = true;
 					logger.log(Level.FINE, null, t); // TODO: Log all others that are put into result without full stack trace
-					/*
-					if(e instanceof InterruptedException) {
-						// Restore the interrupted status
-						Thread.currentThread().interrupt();
-					}
-					 */
 				}
 				if(cacheResult) {
 					synchronized(queryResultCache) {

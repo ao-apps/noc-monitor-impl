@@ -159,14 +159,10 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 	 * will not return null.  May wait for a very long time in some cases.
 	 */
 	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	List<Database.TableStatus> getLastTableStatuses() {
+	List<Database.TableStatus> getLastTableStatuses() throws InterruptedException {
 		synchronized(lastTableStatusesLock) {
-			while(lastTableStatuses==null) {
-				try {
-					lastTableStatusesLock.wait();
-				} catch(InterruptedException err) {
-					// logger.warning("wait interrupted");
-				}
+			while(lastTableStatuses == null) {
+				lastTableStatusesLock.wait();
 			}
 			return lastTableStatuses;
 		}

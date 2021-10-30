@@ -325,7 +325,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		public void run() {
 			boolean removed = false;
 			try {
-				while(true) {
+				while(!Thread.currentThread().isInterrupted()) {
 					long sendingCounter;
 					synchronized(treeListeners) {
 						if(lastCounterSent<currentCounter) {
@@ -343,6 +343,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
+						// Restore the interrupted status
+						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {
@@ -378,7 +380,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		public void run() {
 			boolean removed = false;
 			try {
-				while(true) {
+				while(!Thread.currentThread().isInterrupted()) {
 					long sendingCounter;
 					synchronized(treeListeners) {
 						if(lastCounterSent<currentCounter) {
@@ -396,6 +398,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
+						// Restore the interrupted status
+						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {
@@ -431,7 +435,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 		public void run() {
 			boolean removed = false;
 			try {
-				while(true) {
+				while(!Thread.currentThread().isInterrupted()) {
 					List<AlertChange> changes;
 					synchronized(treeListeners) {
 						if(queuedChanges==null) {
@@ -447,6 +451,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 						Thread.sleep(250);
 					} catch(InterruptedException err) {
 						logger.log(Level.WARNING, null, err);
+						// Restore the interrupted status
+						Thread.currentThread().interrupt();
 					}
 				}
 			} catch(RemoteException err) {
