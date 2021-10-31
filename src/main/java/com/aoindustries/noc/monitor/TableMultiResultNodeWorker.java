@@ -374,7 +374,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
 	 * @param  alertLevel  When {@code null}, treated as {@link AlertLevel#UNKNOWN}
 	 */
 	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		return lastSuccessful && alertLevel==AlertLevel.NONE ? 5*60000 : 60000;
+		return (lastSuccessful && alertLevel == AlertLevel.NONE) ? (5L * 60 * 1000) : (60L * 1000);
 	}
 
 	/**

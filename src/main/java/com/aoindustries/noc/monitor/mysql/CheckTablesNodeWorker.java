@@ -180,8 +180,8 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
 	 */
 	@Override
 	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		if(databaseNode.databaseWorker.isSlowServer) return 12L*60*60000; // Only check tables once every 12 hours
-		return 5*60000;
+		if(databaseNode.databaseWorker.isSlowServer) return 12L * 60 * 60 * 1000; // Only check tables once every 12 hours
+		return 5L * 60 * 1000;
 	}
 
 	@Override

@@ -89,7 +89,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 	 */
 	@Override
 	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		return lastSuccessful && alertLevel == AlertLevel.NONE ? NONE_SLEEP_DELAY : 5 * 60 * 1000;
+		return (lastSuccessful && alertLevel == AlertLevel.NONE) ? NONE_SLEEP_DELAY : (5L * 60 * 1000);
 	}
 
 	/**

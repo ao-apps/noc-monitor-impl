@@ -174,8 +174,8 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 	 */
 	@Override
 	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		if(isSlowServer) return 12L*60*60000; // Only update once every 12 hours
-		return 5*60000;
+		if(isSlowServer) return 12L * 60 * 60 * 1000; // Only update once every 12 hours
+		return 5L * 60 * 1000;
 	}
 
 	@Override

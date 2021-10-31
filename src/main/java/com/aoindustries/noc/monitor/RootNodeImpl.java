@@ -580,7 +580,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	private static final Object lastStartupDelay5Lock = new Object();
 	static int getNextStartupDelayFiveMinutes() {
 		synchronized(lastStartupDelay5Lock) {
-			lastStartupDelay5 = (lastStartupDelay5+5037)%(5*60000);
+			lastStartupDelay5 = (lastStartupDelay5 + 5037) % (5 * 60 * 1000);
 			return lastStartupDelay5;
 		}
 	}
@@ -589,7 +589,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	private static final Object lastStartupDelay15Lock = new Object();
 	public static int getNextStartupDelayFifteenMinutes() {
 		synchronized(lastStartupDelay15Lock) {
-			lastStartupDelay15= (lastStartupDelay15+15037)%(15*60000);
+			lastStartupDelay15= (lastStartupDelay15 + 15037) % (15 * 60 * 1000);
 			return lastStartupDelay15;
 		}
 	}

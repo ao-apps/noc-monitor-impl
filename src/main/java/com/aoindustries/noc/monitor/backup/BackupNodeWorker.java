@@ -117,7 +117,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
 					highestAlertLevel = AlertLevel.MEDIUM;
 					highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
 				} else {
-					long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime)/((long)60*60*1000);
+					long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime) / (60L * 60 * 1000);
 					if(hoursSince<0) {
 						highestAlertLevel = AlertLevel.CRITICAL;
 						highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassInFuture");
