@@ -140,8 +140,8 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
 				long rxNumPackets = thisRxPackets - lastRxPackets;
 				txPacketsPerSecond = txNumPackets*1000 / timeDiff;
 				rxPacketsPerSecond = rxNumPackets*1000 / timeDiff;
-				txBitsPerSecond = (thisTxBytes - lastTxBytes + FRAME_ADDITIONAL_BYTES * txNumPackets)*8000 / timeDiff;
-				rxBitsPerSecond = (thisRxBytes - lastRxBytes + FRAME_ADDITIONAL_BYTES * rxNumPackets)*8000 / timeDiff;
+				txBitsPerSecond = (thisTxBytes - lastTxBytes + FRAME_ADDITIONAL_BYTES * txNumPackets) * Byte.SIZE * 1000 / timeDiff;
+				rxBitsPerSecond = (thisRxBytes - lastRxBytes + FRAME_ADDITIONAL_BYTES * rxNumPackets) * Byte.SIZE * 1000 / timeDiff;
 			}
 			// Display the alert thresholds
 			List<Object> sample = new ArrayList<>(8);
