@@ -23,6 +23,7 @@
 package com.aoindustries.noc.monitor;
 
 import com.aoapps.concurrent.Executors;
+import com.aoapps.lang.io.IoUtils;
 import com.aoindustries.aoserv.client.AOServConnector;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertCategory;
@@ -41,6 +42,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,9 +68,9 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 	private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
 
 	/**
-	 * Shared random number generator.
+	 * A fast pseudo-random number generator for non-cryptographic purposes.
 	 */
-	public static final Random random = new Random();
+	public static final Random fastRandom = new Random(IoUtils.bufferToLong(new SecureRandom().generateSeed(Long.BYTES)));
 
 	private static final long serialVersionUID = 1L;
 

@@ -372,7 +372,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			if(mxRecords.length==0) throw new IOException(domain+": No MX records found");
 			MXRecord mx;
 			if(mxRecords.length==1) mx = (MXRecord)mxRecords[0];
-			else mx = (MXRecord)mxRecords[RootNodeImpl.random.nextInt(mxRecords.length)];
+			else mx = (MXRecord)mxRecords[RootNodeImpl.fastRandom.nextInt(mxRecords.length)];
 			// Lookup the IP addresses
 			Name target = mx.getTarget();
 			Lookup aLookup = new Lookup(target, Type.A);
@@ -383,7 +383,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 			if(aRecords.length==0) throw new IOException(domain+": No A records found");
 			ARecord a;
 			if(aRecords.length==1) a = (ARecord)aRecords[0];
-			else a = (ARecord)aRecords[RootNodeImpl.random.nextInt(aRecords.length)];
+			else a = (ARecord)aRecords[RootNodeImpl.fastRandom.nextInt(aRecords.length)];
 			InetAddress address = a.getAddress();
 			// Make call from the daemon from privileged port
 			Device device = ipAddress.getDevice();
