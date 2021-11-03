@@ -1587,7 +1587,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
 	private static final ExecutorService executorService = Executors.newFixedThreadPool(
 		NUM_THREADS,
-		(Runnable r) -> new Thread(r, BlacklistsNodeWorker.class.getName() + ".executorService")
+		r -> new Thread(r, BlacklistsNodeWorker.class.getName() + ".executorService")
 	);
 
 	private final Map<String, BlacklistQueryResult> queryResultCache = new HashMap<>();

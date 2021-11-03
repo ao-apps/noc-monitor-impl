@@ -34,7 +34,6 @@ import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
 import java.io.File;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,7 +136,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 		List<Object> tableData = new ArrayList<>();
 		// Add the old signup forms
 		WebSiteDatabase.getDatabase().queryRun(
-			(ResultSet results) -> {
+			results -> {
 				while (results.next()) {
 					tableData.add("aoweb");
 					tableData.add(results.getInt("pkey"));
