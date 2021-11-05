@@ -58,9 +58,10 @@ import java.util.zip.GZIPOutputStream;
  *
  * @author  AO Industries, Inc.
  */
-class BackgroundWriter {
+abstract class BackgroundWriter {
 
-	private BackgroundWriter() {}
+	/** Make no instances. */
+	private BackgroundWriter() {throw new AssertionError();}
 
 	private static final Logger logger = Logger.getLogger(BackgroundWriter.class.getName());
 

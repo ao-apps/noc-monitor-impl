@@ -69,7 +69,10 @@ import java.util.concurrent.Future;
  *
  * @author  AO Industries, Inc.
  */
-public class AOServClusterBuilder {
+public abstract class AOServClusterBuilder {
+
+	/** Make no instances. */
+	private AOServClusterBuilder() {throw new AssertionError();}
 
 	private static final Resources RESOURCES =
 		Resources.getResources(ResourceBundle::getBundle, AOServClusterBuilder.class);
@@ -117,9 +120,6 @@ public class AOServClusterBuilder {
 			model.equals("ST3146855LC")             // 146 GB
 		;
 	}
-
-	/** Make no instances */
-	private AOServClusterBuilder() {}
 
 	/**
 	 * Determines if the provide Server is an enabled Dom0.

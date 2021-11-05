@@ -30,7 +30,10 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
  *
  * @author  AO Industries, Inc.
  */
-public class AlertLevelUtils {
+public abstract class AlertLevelUtils {
+
+	/** Make no instances. */
+	private AlertLevelUtils() {throw new AssertionError();}
 
 	public static AlertLevel getMonitoringAlertLevel(com.aoindustries.aoserv.client.monitoring.AlertLevel aoservAlertLevel) {
 		if(aoservAlertLevel == null) return null;
@@ -128,8 +131,5 @@ public class AlertLevelUtils {
 			level = getMaxAlertLevel(level, node);
 		}
 		return level;
-	}
-
-	private AlertLevelUtils() {
 	}
 }

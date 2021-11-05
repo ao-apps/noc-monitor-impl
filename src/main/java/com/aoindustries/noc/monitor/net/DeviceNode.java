@@ -56,7 +56,7 @@ public class DeviceNode extends NodeImpl {
 	private final Device _device;
 	private final String _label;
 
-	private static class ChildLock {}
+	private static class ChildLock {/* Empty lock class to help heap profile */}
 	private final ChildLock childLock = new ChildLock();
 	private boolean started;
 

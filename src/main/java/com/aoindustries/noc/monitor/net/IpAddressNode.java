@@ -79,7 +79,7 @@ public class IpAddressNode extends NodeImpl {
 	private final IpAddress ipAddress;
 	private final String label;
 
-	private static class ChildLock {}
+	private static class ChildLock {/* Empty lock class to help heap profile */}
 	private final ChildLock childLock = new ChildLock();
 	private boolean started;
 
@@ -217,7 +217,7 @@ public class IpAddressNode extends NodeImpl {
 
 		IpAddress _currentIpAddress = ipAddress.getTable().getConnector().getNet().getIpAddress().get(ipAddress.getPkey());
 		boolean isPingable = isPingable(ipAddressesNode, _currentIpAddress);
-		boolean isLoopback = 
+		boolean isLoopback =
 			ipAddressesNode.netDeviceNode != null
 			&& ipAddressesNode.netDeviceNode.getNetDevice().getDeviceId().isLoopback();
 		InetAddress ip = _currentIpAddress.getExternalInetAddress();
