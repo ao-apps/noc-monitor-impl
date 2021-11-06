@@ -175,6 +175,11 @@ public class BindsNode extends NodeImpl {
 		}
 
 		@Override
+		public String toString() {
+			return host + ", " + netBind + ", " + ipAddress + ":" + port;
+		}
+
+		@Override
 		public int compareTo(NetMonitorSetting o) {
 			// Host
 			int diff = host.compareTo(o.host);
