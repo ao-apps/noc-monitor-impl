@@ -45,7 +45,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
 		<!-- TODO: Code Coverage broken in Java 11 -->
 		<sonar.coverage.exclusions>**.*</sonar.coverage.exclusions>
 		<!-- Dependencies -->
-		<dnsjava.version>3.4.2</dnsjava.version>
+		<dnsjava.version>3.4.3</dnsjava.version>
 		<!-- TODO: Remove once moved to platform.aoapps.com -->
 		<google.analytics.trackingId>UA-86871646-1</google.analytics.trackingId>
 		<!-- com.aoindustries is on original Sonatype Nexus Repository Manager -->
