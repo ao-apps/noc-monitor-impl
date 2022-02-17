@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -40,8 +40,6 @@ public class FilesystemsNode extends TableResultNodeImpl {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Server _linuxServer;
-
 	public FilesystemsNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
 			hostNode.hostsNode.rootNode,
@@ -54,7 +52,6 @@ public class FilesystemsNode extends TableResultNodeImpl {
 			csf,
 			ssf
 		);
-		this._linuxServer = linuxServer;
 	}
 
 	@Override
