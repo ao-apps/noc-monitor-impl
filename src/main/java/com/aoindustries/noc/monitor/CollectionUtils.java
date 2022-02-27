@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2018, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2018, 2020, 2021, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -24,7 +24,7 @@ package com.aoindustries.noc.monitor;
 
 import java.util.Iterator;
 
-abstract class CollectionUtils {
+final class CollectionUtils {
 
 	/** Make no instances. */
 	private CollectionUtils() {throw new AssertionError();}

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2014, 2018, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2014, 2018, 2020, 2021, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -30,7 +30,7 @@ import com.aoindustries.noc.monitor.common.AlertLevel;
  *
  * @author  AO Industries, Inc.
  */
-public abstract class AlertLevelUtils {
+public final class AlertLevelUtils {
 
 	/** Make no instances. */
 	private AlertLevelUtils() {throw new AssertionError();}

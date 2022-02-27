@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2000-2013, 2015, 2016, 2018, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2000-2013, 2015, 2016, 2018, 2020, 2021, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -80,9 +80,6 @@ public class WebSiteDatabase extends Database {
 		return s==null || s.length()==0 ? AOPool.DEFAULT_MAX_CONNECTION_AGE : Long.parseLong(s);
 	}
 
-	/**
-	 * Make no instances.
-	 */
 	private WebSiteDatabase() throws IOException {
 		super(
 			getDatabaseDriver(),
