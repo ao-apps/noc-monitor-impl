@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -148,9 +148,9 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 					boolean expectedHostnameFound = false;
 					{
 						sb.setLength(0);
-						for(Record record : ptrRecords) {
+						for(Record rec : ptrRecords) {
 							if(sb.length()>0) sb.append(", ");
-							PTRRecord ptrRecord = (PTRRecord)record;
+							PTRRecord ptrRecord = (PTRRecord)rec;
 							String hostname = ptrRecord.getTarget().toString();
 							sb.append(hostname);
 							if(expectedHostname.equals(hostname)) expectedHostnameFound = true;
@@ -171,8 +171,8 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 					}
 					if(iam.getVerifyDnsA()) {
 						// Lookup each A record, making sure one of its IP addresses is the current IP
-						for(Record record : ptrRecords) {
-							PTRRecord ptrRecord = (PTRRecord)record;
+						for(Record rec : ptrRecords) {
+							PTRRecord ptrRecord = (PTRRecord)rec;
 							verifyDnsA(ptrRecord.getTarget(), results, problemAlertLevel, sb, ip);
 						}
 						if(expectedHostnameFound) didHostnameAVerification = true;
