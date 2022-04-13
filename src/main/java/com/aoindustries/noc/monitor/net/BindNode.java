@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2012, 2014, 2016, 2017, 2018, 2020  AO Industries, Inc.
+ * Copyright (C) 2009-2012, 2014, 2016, 2017, 2018, 2020, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -45,7 +45,7 @@ public class BindNode extends TableMultiResultNodeImpl<NetBindResult> {
 	private final BindsNode.NetMonitorSetting netMonitorSetting;
 	private final String label;
 
-	BindNode(BindsNode netBindsNode, BindsNode.NetMonitorSetting netMonitorSetting, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, IOException, SQLException {
+	BindNode(BindsNode netBindsNode, BindsNode.NetMonitorSetting netMonitorSetting, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
 		super(
 			netBindsNode.ipAddressNode.ipAddressesNode.rootNode,
 			netBindsNode,

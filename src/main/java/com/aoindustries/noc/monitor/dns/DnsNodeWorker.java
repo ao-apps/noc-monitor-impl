@@ -96,7 +96,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 
 	private final IpAddress ipAddress;
 
-	DnsNodeWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
+	DnsNodeWorker(File persistenceFile, IpAddress ipAddress) {
 		super(persistenceFile);
 		this.ipAddress = ipAddress;
 	}

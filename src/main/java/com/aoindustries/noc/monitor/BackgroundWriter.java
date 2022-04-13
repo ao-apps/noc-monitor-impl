@@ -26,7 +26,6 @@ import com.aoapps.lang.io.FileUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
@@ -86,7 +85,7 @@ final class BackgroundWriter {
 	 * Queues the object for write.  No defensive copy of the object is made - do not change after giving to this method.
 	 */
 	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) throws IOException {
+	static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) {
 		QueueEntry queueEntry = new QueueEntry(newPersistenceFile, serializable, gzip);
 		synchronized(queue) {
 			if(queue.put(persistenceFile, queueEntry)!=null) {

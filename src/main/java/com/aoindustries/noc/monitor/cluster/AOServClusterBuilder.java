@@ -199,7 +199,7 @@ public final class AOServClusterBuilder {
 		Map<String, Map<String, String>> hddModelReports,
 		Map<String, Server.LvmReport> lvmReports,
 		boolean useTarget
-	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
+	) throws SQLException, IOException {
 		final Account.Name rootAccounting = conn.getAccount().getAccount().getRootAccount_name();
 
 		Cluster cluster = new Cluster(serverFarm.getName());
@@ -329,7 +329,7 @@ public final class AOServClusterBuilder {
 		final SortedSet<Cluster> clusters,
 		final Map<String, List<Server.DrbdReport>> drbdReports,
 		final Map<String, Server.LvmReport> lvmReports
-	) throws SQLException, ParseException, InterruptedException, ExecutionException, IOException {
+	) throws InterruptedException, ExecutionException {
 		//final List<Server> linuxServers = conn.linuxServers.getRows();
 		//final Map<String, Map<String, String>> hddModelReports = getHddModelReports(linuxServers, locale);
 		//final Map<String, List<Server.DrbdReport>> drbdReports = getDrbdReports(linuxServers, locale);
@@ -360,7 +360,7 @@ public final class AOServClusterBuilder {
 	public static Map<String, List<Server.DrbdReport>> getDrbdReports(
 		final List<Server> linuxServers,
 		final Locale locale
-	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
+	) throws SQLException, InterruptedException, ExecutionException, IOException {
 		// Query concurrently for each of the drbdcstate's to get a good snapshot and determine primary/secondary locations
 		Map<String, Future<List<Server.DrbdReport>>> futures = AoCollections.newHashMap(linuxServers.size());
 		for(final Server linuxServer : linuxServers) {
@@ -383,7 +383,7 @@ public final class AOServClusterBuilder {
 	public static Map<String, Server.LvmReport> getLvmReports(
 		final List<Server> linuxServers,
 		final Locale locale
-	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
+	) throws SQLException, InterruptedException, ExecutionException, IOException {
 		Map<String, Future<Server.LvmReport>> futures = AoCollections.newHashMap(linuxServers.size());
 		for(final Server linuxServer : linuxServers) {
 			if(isEnabledDom0(linuxServer)) {
@@ -405,7 +405,7 @@ public final class AOServClusterBuilder {
 	public static Map<String, Map<String, String>> getHddModelReports(
 		final List<Server> linuxServers,
 		final Locale locale
-	) throws SQLException, InterruptedException, ExecutionException, ParseException, IOException {
+	) throws SQLException, InterruptedException, ExecutionException, IOException {
 		Map<String, Future<Map<String, String>>> futures = AoCollections.newHashMap(linuxServers.size());
 		for(final Server linuxServer : linuxServers) {
 			if(isEnabledDom0(linuxServer)) {
@@ -429,7 +429,7 @@ public final class AOServClusterBuilder {
 		Cluster cluster,
 		Map<String, List<Server.DrbdReport>> drbdReports,
 		Map<String, Server.LvmReport> lvmReports
-	) throws InterruptedException, ExecutionException, ParseException, IOException, SQLException {
+	) throws ParseException, IOException, SQLException {
 		final Account.Name rootAccounting = conn.getAccount().getAccount().getRootAccount_name();
 
 		ClusterConfiguration clusterConfiguration = new ClusterConfiguration(cluster);

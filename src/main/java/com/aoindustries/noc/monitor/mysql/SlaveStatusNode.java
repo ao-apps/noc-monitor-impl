@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2012, 2016, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2009-2012, 2016, 2018, 2019, 2020, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -28,7 +28,6 @@ import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class SlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicationRe
 
 	private static final long serialVersionUID = 1L;
 
-	SlaveStatusNode(SlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+	SlaveStatusNode(SlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
 		super(
 			mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
 			mysqlSlaveNode,

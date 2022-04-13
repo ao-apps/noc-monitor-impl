@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2018, 2019, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -79,7 +79,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
 	// Will use whichever connector first created this worker, even if other accounts connect later.
 	private final Certificate sslCertificate;
 
-	CertificateNodeWorker(File persistenceFile, Certificate sslCertificate) throws IOException, SQLException {
+	CertificateNodeWorker(File persistenceFile, Certificate sslCertificate) {
 		super(persistenceFile);
 		this.sslCertificate = sslCertificate;
 	}

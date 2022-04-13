@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -83,7 +83,7 @@ public class HostNode extends NodeImpl {
 	private volatile MemoryNode _memoryNode;
 	private volatile TimeNode _timeNode;
 
-	HostNode(HostsNode hostsNode, Host host, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
+	HostNode(HostsNode hostsNode, Host host, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException {
 		super(port, csf, ssf);
 		this.hostsNode = hostsNode;
 		this._host = host;
