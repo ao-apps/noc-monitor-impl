@@ -20,6 +20,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package com.aoindustries.noc.monitor.i18n;
 
 import com.aoapps.hodgepodge.i18n.EditableResourceBundle;
