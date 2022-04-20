@@ -48,120 +48,122 @@ import java.util.function.Function;
  */
 class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, String> {
 
-	private static final int RAID1_HIGH_THRESHOLD = 2048;
-	private static final int RAID1_MEDIUM_THRESHOLD = 1024;
-	private static final int RAID1_LOW_THRESHOLD = 1;
+  private static final int RAID1_HIGH_THRESHOLD = 2048;
+  private static final int RAID1_MEDIUM_THRESHOLD = 1024;
+  private static final int RAID1_LOW_THRESHOLD = 1;
 
-	/**
-	 * One unique worker is made per persistence file (and should match the linuxServer exactly)
-	 */
-	private static final Map<String, MdMismatchWorker> workerCache = new HashMap<>();
-	static MdMismatchWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
-		String path = persistenceFile.getCanonicalPath();
-		synchronized(workerCache) {
-			MdMismatchWorker worker = workerCache.get(path);
-			if(worker==null) {
-				worker = new MdMismatchWorker(persistenceFile, linuxServer);
-				workerCache.put(path, worker);
-			} else {
-				if(!worker.linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker.linuxServer+"!="+linuxServer);
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence file (and should match the linuxServer exactly)
+   */
+  private static final Map<String, MdMismatchWorker> workerCache = new HashMap<>();
+  static MdMismatchWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
+    String path = persistenceFile.getCanonicalPath();
+    synchronized (workerCache) {
+      MdMismatchWorker worker = workerCache.get(path);
+      if (worker == null) {
+        worker = new MdMismatchWorker(persistenceFile, linuxServer);
+        workerCache.put(path, worker);
+      } else {
+        if (!worker.linuxServer.equals(linuxServer)) {
+          throw new AssertionError("worker.linuxServer != linuxServer: "+worker.linuxServer+" != "+linuxServer);
+        }
+      }
+      return worker;
+    }
+  }
 
-	// Will use whichever connector first created this worker, even if other accounts connect later.
-	private final Server linuxServer;
+  // Will use whichever connector first created this worker, even if other accounts connect later.
+  private final Server linuxServer;
 
-	MdMismatchWorker(File persistenceFile, Server linuxServer) {
-		super(persistenceFile);
-		this.linuxServer = linuxServer;
-	}
+  MdMismatchWorker(File persistenceFile, Server linuxServer) {
+    super(persistenceFile);
+    this.linuxServer = linuxServer;
+  }
 
-	/**
-	 * Determines the alert message for the provided result.
-	 */
-	@Override
-	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
-		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale, String> highestAlertMessage = null;
-		if(result.isError()) {
-			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
-		} else {
-			List<?> tableData = result.getTableData(Locale.getDefault());
-			List<AlertLevel> alertLevels = result.getAlertLevels();
-			for(
-				int index=0, len=tableData.size();
-				index < len;
-				index += 3
-			) {
-				AlertLevel alertLevel = alertLevels.get(index / 3);
-				if(alertLevel.compareTo(highestAlertLevel)>0) {
-					highestAlertLevel = alertLevel;
-					Object device = tableData.get(index);
-					Object level = tableData.get(index+1);
-					Object count = tableData.get(index+2);
-					highestAlertMessage = locale -> device + " " + level + " " + count;
-				}
-			}
-		}
-		return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
-	}
+  /**
+   * Determines the alert message for the provided result.
+   */
+  @Override
+  public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
+    AlertLevel highestAlertLevel = AlertLevel.NONE;
+    Function<Locale, String> highestAlertMessage = null;
+    if (result.isError()) {
+      highestAlertLevel = result.getAlertLevels().get(0);
+      highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
+    } else {
+      List<?> tableData = result.getTableData(Locale.getDefault());
+      List<AlertLevel> alertLevels = result.getAlertLevels();
+      for (
+        int index=0, len=tableData.size();
+        index < len;
+        index += 3
+      ) {
+        AlertLevel alertLevel = alertLevels.get(index / 3);
+        if (alertLevel.compareTo(highestAlertLevel)>0) {
+          highestAlertLevel = alertLevel;
+          Object device = tableData.get(index);
+          Object level = tableData.get(index+1);
+          Object count = tableData.get(index+2);
+          highestAlertMessage = locale -> device + " " + level + " " + count;
+        }
+      }
+    }
+    return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
+  }
 
-	@Override
-	protected int getColumns() {
-		return 3;
-	}
+  @Override
+  protected int getColumns() {
+    return 3;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.device"),
-			PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
-			PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.count")
-		);
-	}
+  @Override
+  protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
+    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.device"),
+      PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
+      PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.count")
+    );
+  }
 
-	@Override
-	protected List<MdMismatchReport> getQueryResult() throws Exception {
-		return linuxServer.getMdMismatchReport();
-	}
+  @Override
+  protected List<MdMismatchReport> getQueryResult() throws Exception {
+    return linuxServer.getMdMismatchReport();
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<String>> getTableData(List<MdMismatchReport> reports) throws Exception {
-		List<String> tableData = new ArrayList<>(reports.size() * 3);
-		for(MdMismatchReport report : reports) {
-			tableData.add(report.getDevice());
-			tableData.add(report.getLevel().name());
-			tableData.add(Long.toString(report.getCount()));
-		}
-		return locale -> tableData;
-	}
+  @Override
+  protected SerializableFunction<Locale, List<String>> getTableData(List<MdMismatchReport> reports) throws Exception {
+    List<String> tableData = new ArrayList<>(reports.size() * 3);
+    for (MdMismatchReport report : reports) {
+      tableData.add(report.getDevice());
+      tableData.add(report.getLevel().name());
+      tableData.add(Long.toString(report.getCount()));
+    }
+    return locale -> tableData;
+  }
 
-	@Override
-	protected List<AlertLevel> getAlertLevels(List<MdMismatchReport> reports) {
-		List<AlertLevel> alertLevels = new ArrayList<>(reports.size());
-		for(MdMismatchReport report : reports) {
-			long count = report.getCount();
-			final AlertLevel alertLevel;
-			if(count == 0) {
-				alertLevel = AlertLevel.NONE;
-			} else {
-				if(report.getLevel() == Server.RaidLevel.raid1) {
-					// Allow small amount of mismatch for RAID1 only
-					alertLevel =
-						count >= RAID1_HIGH_THRESHOLD ? AlertLevel.HIGH
-						: count >= RAID1_MEDIUM_THRESHOLD ? AlertLevel.MEDIUM
-						: count >= RAID1_LOW_THRESHOLD ? AlertLevel.LOW
-						: AlertLevel.NONE
-					;
-				} else {
-					// All other types allow no mismatch
-					alertLevel = AlertLevel.HIGH;
-				}
-			}
-			alertLevels.add(alertLevel);
-		}
-		return alertLevels;
-	}
+  @Override
+  protected List<AlertLevel> getAlertLevels(List<MdMismatchReport> reports) {
+    List<AlertLevel> alertLevels = new ArrayList<>(reports.size());
+    for (MdMismatchReport report : reports) {
+      long count = report.getCount();
+      final AlertLevel alertLevel;
+      if (count == 0) {
+        alertLevel = AlertLevel.NONE;
+      } else {
+        if (report.getLevel() == Server.RaidLevel.raid1) {
+          // Allow small amount of mismatch for RAID1 only
+          alertLevel =
+            count >= RAID1_HIGH_THRESHOLD ? AlertLevel.HIGH
+            : count >= RAID1_MEDIUM_THRESHOLD ? AlertLevel.MEDIUM
+            : count >= RAID1_LOW_THRESHOLD ? AlertLevel.LOW
+            : AlertLevel.NONE
+          ;
+        } else {
+          // All other types allow no mismatch
+          alertLevel = AlertLevel.HIGH;
+        }
+      }
+      alertLevels.add(alertLevel);
+    }
+    return alertLevels;
+  }
 }

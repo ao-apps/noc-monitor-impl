@@ -47,158 +47,160 @@ import java.util.List;
  */
 public class RaidNode extends NodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public final HostNode hostNode;
-	private final Server linuxServer;
+  public final HostNode hostNode;
+  private final Server linuxServer;
 
-	private boolean started;
+  private boolean started;
 
-	private volatile ThreeWareRaidNode _threeWareRaidNode;
-	private volatile MdStatNode _mdStatNode;
-	private volatile MdMismatchNode _mdMismatchNode;
-	private volatile DrbdNode _drbdNode;
+  private volatile ThreeWareRaidNode _threeWareRaidNode;
+  private volatile MdStatNode _mdStatNode;
+  private volatile MdMismatchNode _mdMismatchNode;
+  private volatile DrbdNode _drbdNode;
 
-	public RaidNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(port, csf, ssf);
-		this.hostNode = hostNode;
-		this.linuxServer = linuxServer;
-	}
+  public RaidNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(port, csf, ssf);
+    this.hostNode = hostNode;
+    this.linuxServer = linuxServer;
+  }
 
-	@Override
-	public HostNode getParent() {
-		return hostNode;
-	}
+  @Override
+  public HostNode getParent() {
+    return hostNode;
+  }
 
-	public Server getAOServer() {
-		return linuxServer;
-	}
+  public Server getAOServer() {
+    return linuxServer;
+  }
 
-	@Override
-	public boolean getAllowsChildren() {
-		return true;
-	}
+  @Override
+  public boolean getAllowsChildren() {
+    return true;
+  }
 
-	@Override
-	public List<NodeImpl> getChildren() {
-		return getSnapshot(
-			this._threeWareRaidNode,
-			this._mdStatNode,
-			this._mdMismatchNode,
-			this._drbdNode
-		);
-	}
+  @Override
+  public List<NodeImpl> getChildren() {
+    return getSnapshot(
+      this._threeWareRaidNode,
+      this._mdStatNode,
+      this._mdMismatchNode,
+      this._drbdNode
+    );
+  }
 
-	/**
-	 * The alert level is equal to the highest alert level of its children.
-	 */
-	@Override
-	public AlertLevel getAlertLevel() {
-		return constrainAlertLevel(
-			AlertLevelUtils.getMaxAlertLevel(
-				this._threeWareRaidNode,
-				this._mdStatNode,
-				this._mdMismatchNode,
-				this._drbdNode
-			)
-		);
-	}
+  /**
+   * The alert level is equal to the highest alert level of its children.
+   */
+  @Override
+  public AlertLevel getAlertLevel() {
+    return constrainAlertLevel(
+      AlertLevelUtils.getMaxAlertLevel(
+        this._threeWareRaidNode,
+        this._mdStatNode,
+        this._mdMismatchNode,
+        this._drbdNode
+      )
+    );
+  }
 
-	/**
-	 * No alert messages.
-	 */
-	@Override
-	public String getAlertMessage() {
-		return null;
-	}
+  /**
+   * No alert messages.
+   */
+  @Override
+  public String getAlertMessage() {
+    return null;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "RaidNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "RaidNode.label");
+  }
 
-	public void start() throws IOException, SQLException {
-		// TODO: Operating system versions can change on-the-fly:
-		// We only have 3ware cards in xen outers
-		int osv = linuxServer.getHost().getOperatingSystemVersion().getPkey();
-		synchronized(this) {
-			if(started) throw new IllegalStateException();
-			started = true;
-			if(
-				osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
-				|| osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
-			) {
-				if(_threeWareRaidNode==null) {
-					_threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
-					_threeWareRaidNode.start();
-					hostNode.hostsNode.rootNode.nodeAdded();
-				}
-			}
-			// Any machine may have MD RAID (at least until all services run in Xen outers)
-			if(_mdStatNode==null) {
-				_mdStatNode = new MdStatNode(this, port, csf, ssf);
-				_mdStatNode.start();
-				hostNode.hostsNode.rootNode.nodeAdded();
-			}
-			if(_mdMismatchNode==null) {
-				_mdMismatchNode = new MdMismatchNode(this, port, csf, ssf);
-				_mdMismatchNode.start();
-				hostNode.hostsNode.rootNode.nodeAdded();
-			}
-			// We only run DRBD in xen outers
-			if(
-				osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
-				|| osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
-				|| osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
-			) {
-				if(_drbdNode==null) {
-					_drbdNode = new DrbdNode(this, port, csf, ssf);
-					_drbdNode.start();
-					hostNode.hostsNode.rootNode.nodeAdded();
-				}
-			}
-		}
-	}
+  public void start() throws IOException, SQLException {
+    // TODO: Operating system versions can change on-the-fly:
+    // We only have 3ware cards in xen outers
+    int osv = linuxServer.getHost().getOperatingSystemVersion().getPkey();
+    synchronized (this) {
+      if (started) {
+        throw new IllegalStateException();
+      }
+      started = true;
+      if (
+        osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
+        || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
+      ) {
+        if (_threeWareRaidNode == null) {
+          _threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
+          _threeWareRaidNode.start();
+          hostNode.hostsNode.rootNode.nodeAdded();
+        }
+      }
+      // Any machine may have MD RAID (at least until all services run in Xen outers)
+      if (_mdStatNode == null) {
+        _mdStatNode = new MdStatNode(this, port, csf, ssf);
+        _mdStatNode.start();
+        hostNode.hostsNode.rootNode.nodeAdded();
+      }
+      if (_mdMismatchNode == null) {
+        _mdMismatchNode = new MdMismatchNode(this, port, csf, ssf);
+        _mdMismatchNode.start();
+        hostNode.hostsNode.rootNode.nodeAdded();
+      }
+      // We only run DRBD in xen outers
+      if (
+        osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
+        || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
+        || osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
+      ) {
+        if (_drbdNode == null) {
+          _drbdNode = new DrbdNode(this, port, csf, ssf);
+          _drbdNode.start();
+          hostNode.hostsNode.rootNode.nodeAdded();
+        }
+      }
+    }
+  }
 
-	public void stop() {
-		synchronized(this) {
-			started = false;
-			if(_threeWareRaidNode!=null) {
-				_threeWareRaidNode.stop();
-				_threeWareRaidNode = null;
-				hostNode.hostsNode.rootNode.nodeRemoved();
-			}
-			if(_mdStatNode!=null) {
-				_mdStatNode.stop();
-				_mdStatNode = null;
-				hostNode.hostsNode.rootNode.nodeRemoved();
-			}
-			if(_mdMismatchNode!=null) {
-				_mdMismatchNode.stop();
-				_mdMismatchNode = null;
-				hostNode.hostsNode.rootNode.nodeRemoved();
-			}
-			if(_drbdNode!=null) {
-				_drbdNode.stop();
-				_drbdNode = null;
-				hostNode.hostsNode.rootNode.nodeRemoved();
-			}
-		}
-	}
+  public void stop() {
+    synchronized (this) {
+      started = false;
+      if (_threeWareRaidNode != null) {
+        _threeWareRaidNode.stop();
+        _threeWareRaidNode = null;
+        hostNode.hostsNode.rootNode.nodeRemoved();
+      }
+      if (_mdStatNode != null) {
+        _mdStatNode.stop();
+        _mdStatNode = null;
+        hostNode.hostsNode.rootNode.nodeRemoved();
+      }
+      if (_mdMismatchNode != null) {
+        _mdMismatchNode.stop();
+        _mdMismatchNode = null;
+        hostNode.hostsNode.rootNode.nodeRemoved();
+      }
+      if (_drbdNode != null) {
+        _drbdNode.stop();
+        _drbdNode = null;
+        hostNode.hostsNode.rootNode.nodeRemoved();
+      }
+    }
+  }
 
-	public File getPersistenceDirectory() throws IOException {
-		File dir = new File(hostNode.getPersistenceDirectory(), "raid");
-		if(!dir.exists()) {
-			if(!dir.mkdir()) {
-				throw new IOException(
-					PACKAGE_RESOURCES.getMessage(
-						hostNode.hostsNode.rootNode.locale,
-						"error.mkdirFailed",
-						dir.getCanonicalPath()
-					)
-				);
-			}
-		}
-		return dir;
-	}
+  public File getPersistenceDirectory() throws IOException {
+    File dir = new File(hostNode.getPersistenceDirectory(), "raid");
+    if (!dir.exists()) {
+      if (!dir.mkdir()) {
+        throw new IOException(
+          PACKAGE_RESOURCES.getMessage(
+            hostNode.hostsNode.rootNode.locale,
+            "error.mkdirFailed",
+            dir.getCanonicalPath()
+          )
+        );
+      }
+    }
+    return dir;
+  }
 }

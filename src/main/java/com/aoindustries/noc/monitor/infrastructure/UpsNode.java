@@ -41,41 +41,41 @@ import java.util.List;
  */
 public class UpsNode extends TableMultiResultNodeImpl<UpsResult> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public UpsNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			hostNode.hostsNode.rootNode,
-			hostNode,
-			UpsNodeWorker.getWorker(
-				hostNode.getPersistenceDirectory(),
-				linuxServer
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  public UpsNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      hostNode.hostsNode.rootNode,
+      hostNode,
+      UpsNodeWorker.getWorker(
+        hostNode.getPersistenceDirectory(),
+        linuxServer
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.label");
+  }
 
-	@Override
-	public List<?> getColumnHeaders() {
-		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.upsname"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.status"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.linev"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.outputv"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.loadpct"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.bcharge"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.battv"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.badbatts"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.tonbatt"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.cumonbatt"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.timeleft"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.itemp")
-		);
-	}
+  @Override
+  public List<?> getColumnHeaders() {
+    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.upsname"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.status"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.linev"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.outputv"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.loadpct"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.bcharge"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.battv"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.badbatts"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.tonbatt"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.cumonbatt"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.timeleft"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "UpsNode.columnHeader.itemp")
+    );
+  }
 }

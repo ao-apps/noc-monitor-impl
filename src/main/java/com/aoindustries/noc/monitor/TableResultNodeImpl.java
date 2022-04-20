@@ -48,115 +48,115 @@ import javax.swing.SwingUtilities;
  */
 public abstract class TableResultNodeImpl extends NodeImpl implements TableResultNode {
 
-	private static final Logger logger = Logger.getLogger(TableResultNodeImpl.class.getName());
+  private static final Logger logger = Logger.getLogger(TableResultNodeImpl.class.getName());
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public final RootNodeImpl rootNode;
-	final NodeImpl parent;
-	protected final TableResultNodeWorker<?, ?> worker;
+  public final RootNodeImpl rootNode;
+  final NodeImpl parent;
+  protected final TableResultNodeWorker<?, ?> worker;
 
-	private final List<TableResultListener> tableResultListeners = new ArrayList<>();
+  private final List<TableResultListener> tableResultListeners = new ArrayList<>();
 
-	protected TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?, ?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(port, csf, ssf);
-		this.rootNode = rootNode;
-		this.parent = parent;
-		this.worker = worker;
-	}
+  protected TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?, ?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(port, csf, ssf);
+    this.rootNode = rootNode;
+    this.parent = parent;
+    this.worker = worker;
+  }
 
-	@Override
-	public final NodeImpl getParent() {
-		return parent;
-	}
+  @Override
+  public final NodeImpl getParent() {
+    return parent;
+  }
 
-	@Override
-	public boolean getAllowsChildren() {
-		return false;
-	}
+  @Override
+  public boolean getAllowsChildren() {
+    return false;
+  }
 
-	@Override
-	public List<? extends NodeImpl> getChildren() {
-		return Collections.emptyList();
-	}
+  @Override
+  public List<? extends NodeImpl> getChildren() {
+    return Collections.emptyList();
+  }
 
-	@Override
-	public AlertLevel getAlertLevel() {
-		AlertLevel alertLevel = worker.getAlertLevel();
-		return constrainAlertLevel(alertLevel == null ? AlertLevel.UNKNOWN : alertLevel);
-	}
+  @Override
+  public AlertLevel getAlertLevel() {
+    AlertLevel alertLevel = worker.getAlertLevel();
+    return constrainAlertLevel(alertLevel == null ? AlertLevel.UNKNOWN : alertLevel);
+  }
 
-	@Override
-	public final String getAlertMessage() {
-		Function<Locale, String> alertMessage = worker.getAlertMessage();
-		return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
-	}
+  @Override
+  public final String getAlertMessage() {
+    Function<Locale, String> alertMessage = worker.getAlertMessage();
+    return alertMessage == null ? null : alertMessage.apply(rootNode.locale);
+  }
 
-	public void start() throws IOException {
-		worker.addTableResultNodeImpl(this);
-	}
+  public void start() throws IOException {
+    worker.addTableResultNodeImpl(this);
+  }
 
-	public void stop() {
-		worker.removeTableResultNodeImpl(this);
-	}
+  public void stop() {
+    worker.removeTableResultNodeImpl(this);
+  }
 
-	@Override
-	public final TableResult getLastResult() {
-		return worker.getLastResult();
-	}
+  @Override
+  public final TableResult getLastResult() {
+    return worker.getLastResult();
+  }
 
-	/**
-	 * Called by the worker when the alert level changes.
-	 */
-	final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale, String> alertMessage) throws RemoteException {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  /**
+   * Called by the worker when the alert level changes.
+   */
+  final void nodeAlertLevelChanged(AlertLevel oldAlertLevel, AlertLevel newAlertLevel, Function<Locale, String> alertMessage) throws RemoteException {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		rootNode.nodeAlertLevelChanged(
-			this,
-			constrainAlertLevel(oldAlertLevel),
-			constrainAlertLevel(newAlertLevel),
-			alertMessage == null ? null : alertMessage.apply(rootNode.locale)
-		);
-	}
+    rootNode.nodeAlertLevelChanged(
+      this,
+      constrainAlertLevel(oldAlertLevel),
+      constrainAlertLevel(newAlertLevel),
+      alertMessage == null ? null : alertMessage.apply(rootNode.locale)
+    );
+  }
 
-	@Override
-	public final void addTableResultListener(TableResultListener tableResultListener) {
-		synchronized(tableResultListeners) {
-			tableResultListeners.add(tableResultListener);
-		}
-	}
+  @Override
+  public final void addTableResultListener(TableResultListener tableResultListener) {
+    synchronized (tableResultListeners) {
+      tableResultListeners.add(tableResultListener);
+    }
+  }
 
-	@Override
-	public final void removeTableResultListener(TableResultListener tableResultListener) {
-		synchronized(tableResultListeners) {
-			for(int c=tableResultListeners.size()-1;c>=0;c--) {
-				if(tableResultListeners.get(c).equals(tableResultListener)) {
-					tableResultListeners.remove(c);
-					// Remove only once, in case add and remove come in out of order with quick GUI changes
-					return;
-				}
-			}
-		}
-		logger.log(Level.WARNING, null, new AssertionError("Listener not found: " + tableResultListener));
-	}
+  @Override
+  public final void removeTableResultListener(TableResultListener tableResultListener) {
+    synchronized (tableResultListeners) {
+      for (int c=tableResultListeners.size()-1;c >= 0;c--) {
+        if (tableResultListeners.get(c).equals(tableResultListener)) {
+          tableResultListeners.remove(c);
+          // Remove only once, in case add and remove come in out of order with quick GUI changes
+          return;
+        }
+      }
+    }
+    logger.log(Level.WARNING, null, new AssertionError("Listener not found: " + tableResultListener));
+  }
 
-	/**
-	 * Notifies all of the listeners.
-	 */
-	final void tableResultUpdated(TableResult tableResult) {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  /**
+   * Notifies all of the listeners.
+   */
+  final void tableResultUpdated(TableResult tableResult) {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		synchronized(tableResultListeners) {
-			Iterator<TableResultListener> iter = tableResultListeners.iterator();
-			while(iter.hasNext()) {
-				TableResultListener tableResultListener = iter.next();
-				try {
-					tableResultListener.tableResultUpdated(tableResult);
-				} catch(RemoteException err) {
-					iter.remove();
-					logger.log(Level.SEVERE, null, err);
-				}
-			}
-		}
-	}
+    synchronized (tableResultListeners) {
+      Iterator<TableResultListener> iter = tableResultListeners.iterator();
+      while (iter.hasNext()) {
+        TableResultListener tableResultListener = iter.next();
+        try {
+          tableResultListener.tableResultUpdated(tableResult);
+        } catch (RemoteException err) {
+          iter.remove();
+          logger.log(Level.SEVERE, null, err);
+        }
+      }
+    }
+  }
 }

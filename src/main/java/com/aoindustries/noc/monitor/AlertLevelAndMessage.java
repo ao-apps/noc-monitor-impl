@@ -34,45 +34,47 @@ import java.util.function.Function;
  */
 public class AlertLevelAndMessage {
 
-	/**
-	 * An alert level and message with no alert and no message.
-	 */
-	public static final AlertLevelAndMessage NONE = new AlertLevelAndMessage(AlertLevel.NONE, null);
+  /**
+   * An alert level and message with no alert and no message.
+   */
+  public static final AlertLevelAndMessage NONE = new AlertLevelAndMessage(AlertLevel.NONE, null);
 
-	private final AlertLevel alertLevel;
-	private final Function<Locale, String> alertMessage;
+  private final AlertLevel alertLevel;
+  private final Function<Locale, String> alertMessage;
 
-	public AlertLevelAndMessage(AlertLevel alertLevel, Function<Locale, String> alertMessage) {
-		this.alertLevel = alertLevel;
-		this.alertMessage = alertMessage;
-	}
+  public AlertLevelAndMessage(AlertLevel alertLevel, Function<Locale, String> alertMessage) {
+    this.alertLevel = alertLevel;
+    this.alertMessage = alertMessage;
+  }
 
-	public AlertLevel getAlertLevel() {
-		return alertLevel;
-	}
+  public AlertLevel getAlertLevel() {
+    return alertLevel;
+  }
 
-	/**
-	 * Gets the alert message or <code>null</code> for none.
-	 */
-	public Function<Locale, String> getAlertMessage() {
-		return alertMessage;
-	}
+  /**
+   * Gets the alert message or <code>null</code> for none.
+   */
+  public Function<Locale, String> getAlertMessage() {
+    return alertMessage;
+  }
 
-	/**
-	 * Gets a new alert level and message if a higher alert level, otherwise returns
-	 * this alert level and message.
-	 */
-	public AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Function<Locale, String> newAlertMessage) {
-		int diff = newAlertLevel.compareTo(this.alertLevel);
-		if(diff > 0) return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
-		if(
-			diff == 0
-			// Use the new alert if the old one had an empty message (like NONE above)
-			&& this.alertMessage == null
-			&& newAlertMessage != null
-		) {
-			return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
-		}
-		return this;
-	}
+  /**
+   * Gets a new alert level and message if a higher alert level, otherwise returns
+   * this alert level and message.
+   */
+  public AlertLevelAndMessage escalate(AlertLevel newAlertLevel, Function<Locale, String> newAlertMessage) {
+    int diff = newAlertLevel.compareTo(this.alertLevel);
+    if (diff > 0) {
+      return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
+    }
+    if (
+      diff == 0
+      // Use the new alert if the old one had an empty message (like NONE above)
+      && this.alertMessage == null
+      && newAlertMessage != null
+    ) {
+      return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
+    }
+    return this;
+  }
 }

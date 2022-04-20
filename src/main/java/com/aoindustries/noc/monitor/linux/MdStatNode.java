@@ -37,24 +37,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class MdStatNode extends SingleResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	MdStatNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			raidNode.hostNode.hostsNode.rootNode,
-			raidNode,
-			MdStatNodeWorker.getWorker(
-				new File(raidNode.getPersistenceDirectory(), "mdstat"),
-				raidNode.getAOServer()
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  MdStatNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      raidNode.hostNode.hostsNode.rootNode,
+      raidNode,
+      MdStatNodeWorker.getWorker(
+        new File(raidNode.getPersistenceDirectory(), "mdstat"),
+        raidNode.getAOServer()
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MdStatNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MdStatNode.label");
+  }
 }

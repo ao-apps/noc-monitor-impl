@@ -52,181 +52,193 @@ import java.util.Map;
  */
 class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 
-	/**
-	 * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
-	 */
-	private static final Map<String, CheckTablesNodeWorker> workerCache = new HashMap<>();
-	static CheckTablesNodeWorker getWorker(DatabaseNode databaseNode, File persistenceFile) throws IOException {
-		String path = persistenceFile.getCanonicalPath();
-		synchronized(workerCache) {
-			CheckTablesNodeWorker worker = workerCache.get(path);
-			if(worker==null) {
-				worker = new CheckTablesNodeWorker(databaseNode, persistenceFile);
-				workerCache.put(path, worker);
-			} else {
-				if(!worker.databaseNode.getMySQLDatabase().equals(databaseNode.getMySQLDatabase())) throw new AssertionError("worker.mysqlDatabase!=mysqlDatabase: "+worker.databaseNode.getMySQLDatabase()+"!="+databaseNode.getMySQLDatabase());
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
+   */
+  private static final Map<String, CheckTablesNodeWorker> workerCache = new HashMap<>();
+  static CheckTablesNodeWorker getWorker(DatabaseNode databaseNode, File persistenceFile) throws IOException {
+    String path = persistenceFile.getCanonicalPath();
+    synchronized (workerCache) {
+      CheckTablesNodeWorker worker = workerCache.get(path);
+      if (worker == null) {
+        worker = new CheckTablesNodeWorker(databaseNode, persistenceFile);
+        workerCache.put(path, worker);
+      } else {
+        if (!worker.databaseNode.getMySQLDatabase().equals(databaseNode.getMySQLDatabase())) {
+          throw new AssertionError("worker.mysqlDatabase != mysqlDatabase: "+worker.databaseNode.getMySQLDatabase()+" != "+databaseNode.getMySQLDatabase());
+        }
+      }
+      return worker;
+    }
+  }
 
-	// Will use whichever connector first created this worker, even if other accounts connect later.
-	private final DatabaseNode databaseNode;
+  // Will use whichever connector first created this worker, even if other accounts connect later.
+  private final DatabaseNode databaseNode;
 
-	CheckTablesNodeWorker(DatabaseNode databaseNode, File persistenceFile) {
-		super(persistenceFile);
-		this.databaseNode = databaseNode;
-	}
+  CheckTablesNodeWorker(DatabaseNode databaseNode, File persistenceFile) {
+    super(persistenceFile);
+    this.databaseNode = databaseNode;
+  }
 
-	@Override
-	protected int getColumns() {
-		return 5;
-	}
+  @Override
+  protected int getColumns() {
+    return 5;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.duration"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgType"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgText")
-		);
-	}
+  @Override
+  protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
+    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.duration"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgType"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgText")
+    );
+  }
 
-	@Override
-	protected List<Object> getQueryResult() throws Exception {
-		Database mysqlDatabase = databaseNode.getMySQLDatabase();
-		MysqlReplication mysqlSlave = databaseNode.getMySQLSlave();
+  @Override
+  protected List<Object> getQueryResult() throws Exception {
+    Database mysqlDatabase = databaseNode.getMySQLDatabase();
+    MysqlReplication mysqlSlave = databaseNode.getMySQLSlave();
 
-		// Don't check any table on MySQL 5.1+ information_schema database
-		if(mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)) {
-			String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
-			if(
-				version.startsWith(Server.VERSION_5_1_PREFIX)
-				|| version.startsWith(Server.VERSION_5_6_PREFIX)
-				|| version.startsWith(Server.VERSION_5_7_PREFIX)
-			) return Collections.emptyList();
-		}
+    // Don't check any table on MySQL 5.1+ information_schema database
+    if (mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)) {
+      String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
+      if (
+        version.startsWith(Server.VERSION_5_1_PREFIX)
+        || version.startsWith(Server.VERSION_5_6_PREFIX)
+        || version.startsWith(Server.VERSION_5_7_PREFIX)
+      ) {
+        return Collections.emptyList();
+      }
+    }
 
-		// Don't check any table on MySQL 5.6+ performance_schema database
-		if(mysqlDatabase.getName().equals(Database.PERFORMANCE_SCHEMA)) {
-			String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
-			if(
-				version.startsWith(Server.VERSION_5_6_PREFIX)
-				|| version.startsWith(Server.VERSION_5_7_PREFIX)
-			) return Collections.emptyList();
-		}
+    // Don't check any table on MySQL 5.6+ performance_schema database
+    if (mysqlDatabase.getName().equals(Database.PERFORMANCE_SCHEMA)) {
+      String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
+      if (
+        version.startsWith(Server.VERSION_5_6_PREFIX)
+        || version.startsWith(Server.VERSION_5_7_PREFIX)
+      ) {
+        return Collections.emptyList();
+      }
+    }
 
-		// Don't check any table on MySQL 5.7+ sys database
-		if(mysqlDatabase.getName().equals(Database.SYS)) {
-			String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
-			if(
-				version.startsWith(Server.VERSION_5_7_PREFIX)
-			) return Collections.emptyList();
-		}
+    // Don't check any table on MySQL 5.7+ sys database
+    if (mysqlDatabase.getName().equals(Database.SYS)) {
+      String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
+      if (
+        version.startsWith(Server.VERSION_5_7_PREFIX)
+      ) {
+        return Collections.emptyList();
+      }
+    }
 
-		List<Database.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
-		if(lastTableStatuses.isEmpty()) return Collections.emptyList();
-		// Build the set of table names and types
-		List<Table_Name> tableNames = new ArrayList<>(lastTableStatuses.size());
-		Map<Table_Name, Database.Engine> tables = AoCollections.newHashMap(lastTableStatuses.size());
-		for(Database.TableStatus lastTableStatus : lastTableStatuses) {
-			Database.Engine engine = lastTableStatus.getEngine();
-			if(
-				engine!=Database.Engine.CSV
-				&& engine!=Database.Engine.HEAP
-				&& engine!=Database.Engine.InnoDB
-				&& engine!=Database.Engine.MEMORY
-				&& engine!=Database.Engine.PERFORMANCE_SCHEMA
-				&& !(engine==null && "VIEW".equals(lastTableStatus.getComment()))
-			) {
-				Table_Name name = lastTableStatus.getName();
-				if(
-					// Skip the four expected non-checkable tables in information_schema
-					!mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)
-					|| (
-						!name.toString().equals("COLUMNS")
-						&& !name.toString().equals("ROUTINES")
-						&& !name.toString().equals("TRIGGERS")
-						&& !name.toString().equals("VIEWS")
-					)
-				) {
-					tableNames.add(name);
-					tables.put(name, engine);
-				}
-			}
-		}
-		List<Database.CheckTableResult> checkTableResults = mysqlDatabase.checkTables(mysqlSlave, tableNames);
-		List<Object> tableData = new ArrayList<>(checkTableResults.size()*5);
+    List<Database.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
+    if (lastTableStatuses.isEmpty()) {
+      return Collections.emptyList();
+    }
+    // Build the set of table names and types
+    List<Table_Name> tableNames = new ArrayList<>(lastTableStatuses.size());
+    Map<Table_Name, Database.Engine> tables = AoCollections.newHashMap(lastTableStatuses.size());
+    for (Database.TableStatus lastTableStatus : lastTableStatuses) {
+      Database.Engine engine = lastTableStatus.getEngine();
+      if (
+        engine != Database.Engine.CSV
+        && engine != Database.Engine.HEAP
+        && engine != Database.Engine.InnoDB
+        && engine != Database.Engine.MEMORY
+        && engine != Database.Engine.PERFORMANCE_SCHEMA
+        && !(engine == null && "VIEW".equals(lastTableStatus.getComment()))
+      ) {
+        Table_Name name = lastTableStatus.getName();
+        if (
+          // Skip the four expected non-checkable tables in information_schema
+          !mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)
+          || (
+            !name.toString().equals("COLUMNS")
+            && !name.toString().equals("ROUTINES")
+            && !name.toString().equals("TRIGGERS")
+            && !name.toString().equals("VIEWS")
+          )
+        ) {
+          tableNames.add(name);
+          tables.put(name, engine);
+        }
+      }
+    }
+    List<Database.CheckTableResult> checkTableResults = mysqlDatabase.checkTables(mysqlSlave, tableNames);
+    List<Object> tableData = new ArrayList<>(checkTableResults.size()*5);
 
-		for(Database.CheckTableResult checkTableResult : checkTableResults) {
-			Table_Name table = checkTableResult.getTable();
-			tableData.add(table);
-			tableData.add(tables.get(table));
-			tableData.add(new MilliInterval(checkTableResult.getDuration()));
-			tableData.add(checkTableResult.getMsgType());
-			tableData.add(checkTableResult.getMsgText());
-		}
-		return tableData;
-	}
+    for (Database.CheckTableResult checkTableResult : checkTableResults) {
+      Table_Name table = checkTableResult.getTable();
+      tableData.add(table);
+      tableData.add(tables.get(table));
+      tableData.add(new MilliInterval(checkTableResult.getDuration()));
+      tableData.add(checkTableResult.getMsgType());
+      tableData.add(checkTableResult.getMsgText());
+    }
+    return tableData;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<Object>> getTableData(List<Object> tableData) throws Exception {
-		return locale -> tableData;
-	}
+  @Override
+  protected SerializableFunction<Locale, List<Object>> getTableData(List<Object> tableData) throws Exception {
+    return locale -> tableData;
+  }
 
-	/**
-	 * If is a slowServer (many tables), only checks once every 12 hours.
-	 * Otherwise checks once every five minutes.
-	 */
-	@Override
-	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		if(databaseNode.databaseWorker.isSlowServer) return 12L * 60 * 60 * 1000; // Only check tables once every 12 hours
-		return 5L * 60 * 1000;
-	}
+  /**
+   * If is a slowServer (many tables), only checks once every 12 hours.
+   * Otherwise checks once every five minutes.
+   */
+  @Override
+  protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+    if (databaseNode.databaseWorker.isSlowServer) {
+      return 12L * 60 * 60 * 1000; // Only check tables once every 12 hours
+    }
+    return 5L * 60 * 1000;
+  }
 
-	@Override
-	protected long getTimeout() {
-		return databaseNode.databaseWorker.isSlowServer ? 30 : 5;
-	}
+  @Override
+  protected long getTimeout() {
+    return databaseNode.databaseWorker.isSlowServer ? 30 : 5;
+  }
 
-	@Override
-	protected List<AlertLevel> getAlertLevels(List<Object> tableData) {
-		List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/5);
-		for(int index=0, len=tableData.size();index<len;index+=5) {
-			String msgText = (String)tableData.get(index+4);
-			alertLevels.add(
-				msgText!=null && (msgText.equals("OK") || msgText.equals("Table is already up to date"))
-				? AlertLevel.NONE
-				: AlertLevel.CRITICAL
-			);
-		}
-		return alertLevels;
-	}
+  @Override
+  protected List<AlertLevel> getAlertLevels(List<Object> tableData) {
+    List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/5);
+    for (int index=0, len=tableData.size();index<len;index+=5) {
+      String msgText = (String)tableData.get(index+4);
+      alertLevels.add(
+        msgText != null && (msgText.equals("OK") || msgText.equals("Table is already up to date"))
+        ? AlertLevel.NONE
+        : AlertLevel.CRITICAL
+      );
+    }
+    return alertLevels;
+  }
 
-	/**
-	 * Determines the alert message for the provided result.
-	 */
-	@Override
-	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
-		if(result.isError()) {
-			return new AlertLevelAndMessage(
-				result.getAlertLevels().get(0),
-				locale -> result.getTableData(locale).get(0).toString()
-			);
-		} else {
-			List<?> tableData = result.getTableData(Locale.getDefault());
-			for(int index=0, len=tableData.size();index<len;index+=5) {
-				String msgText = (String)tableData.get(index+4);
-				if(msgText==null || (!msgText.equals("OK") && !msgText.equals("Table is already up to date"))) {
-					Object name = tableData.get(index);
-					return new AlertLevelAndMessage(
-						AlertLevel.CRITICAL,
-						locale -> name + " - " + msgText
-					);
-				}
-			}
-		}
-		return AlertLevelAndMessage.NONE;
-	}
+  /**
+   * Determines the alert message for the provided result.
+   */
+  @Override
+  public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
+    if (result.isError()) {
+      return new AlertLevelAndMessage(
+        result.getAlertLevels().get(0),
+        locale -> result.getTableData(locale).get(0).toString()
+      );
+    } else {
+      List<?> tableData = result.getTableData(Locale.getDefault());
+      for (int index=0, len=tableData.size();index<len;index+=5) {
+        String msgText = (String)tableData.get(index+4);
+        if (msgText == null || (!msgText.equals("OK") && !msgText.equals("Table is already up to date"))) {
+          Object name = tableData.get(index);
+          return new AlertLevelAndMessage(
+            AlertLevel.CRITICAL,
+            locale -> name + " - " + msgText
+          );
+        }
+      }
+    }
+    return AlertLevelAndMessage.NONE;
+  }
 }

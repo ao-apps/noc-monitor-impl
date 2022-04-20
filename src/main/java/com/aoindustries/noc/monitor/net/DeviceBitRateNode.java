@@ -37,34 +37,34 @@ import java.util.List;
  */
 public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRateResult> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	DeviceBitRateNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
-			netDeviceNode,
-			DeviceBitRateNodeWorker.getWorker(
-				netDeviceNode.getPersistenceDirectory(),
-				netDeviceNode.getNetDevice()
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  DeviceBitRateNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
+      netDeviceNode,
+      DeviceBitRateNodeWorker.getWorker(
+        netDeviceNode.getPersistenceDirectory(),
+        netDeviceNode.getNetDevice()
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.label");
+  }
 
-	@Override
-	public List<String> getColumnHeaders() {
-		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txBitRate"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.alertThresholds")
-		);
-	}
+  @Override
+  public List<String> getColumnHeaders() {
+    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txBitRate"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.alertThresholds")
+    );
+  }
 }

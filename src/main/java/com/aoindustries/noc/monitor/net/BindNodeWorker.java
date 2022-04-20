@@ -51,103 +51,107 @@ import java.util.logging.Logger;
  */
 class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
 
-	private static final Logger logger = Logger.getLogger(BindNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(BindNodeWorker.class.getName());
 
-	/**
-	 * One unique worker is made per persistence file (and should match the NetMonitorSetting)
-	 */
-	private static final Map<String, BindNodeWorker> workerCache = new HashMap<>();
-	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	static BindNodeWorker getWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
-		try {
-			String path = persistenceFile.getCanonicalPath();
-			synchronized(workerCache) {
-				BindNodeWorker worker = workerCache.get(path);
-				if(worker==null) {
-					worker = new BindNodeWorker(persistenceFile, netMonitorSetting);
-					workerCache.put(path, worker);
-				} else {
-					if(!worker.netMonitorSetting.equals(netMonitorSetting)) throw new AssertionError("worker.netMonitorSetting!=netMonitorSetting: "+worker.netMonitorSetting+"!="+netMonitorSetting);
-				}
-				return worker;
-			}
-		} catch(ThreadDeath td) {
-			throw td;
-		} catch(Throwable t) {
-			logger.log(Level.SEVERE, null, t);
-			throw Throwables.wrap(t, IOException.class, IOException::new);
-		}
-	}
+  /**
+   * One unique worker is made per persistence file (and should match the NetMonitorSetting)
+   */
+  private static final Map<String, BindNodeWorker> workerCache = new HashMap<>();
+  @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
+  static BindNodeWorker getWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+    try {
+      String path = persistenceFile.getCanonicalPath();
+      synchronized (workerCache) {
+        BindNodeWorker worker = workerCache.get(path);
+        if (worker == null) {
+          worker = new BindNodeWorker(persistenceFile, netMonitorSetting);
+          workerCache.put(path, worker);
+        } else if (!worker.netMonitorSetting.equals(netMonitorSetting)) {
+          throw new AssertionError("worker.netMonitorSetting != netMonitorSetting: "+worker.netMonitorSetting+" != "+netMonitorSetting);
+        }
+        return worker;
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      logger.log(Level.SEVERE, null, t);
+      throw Throwables.wrap(t, IOException.class, IOException::new);
+    }
+  }
 
-	private final BindsNode.NetMonitorSetting netMonitorSetting;
-	private volatile PortMonitor portMonitor;
+  private final BindsNode.NetMonitorSetting netMonitorSetting;
+  private volatile PortMonitor portMonitor;
 
-	private BindNodeWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
-		super(persistenceFile, new BindResultSerializer());
-		this.netMonitorSetting = netMonitorSetting;
-	}
+  private BindNodeWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+    super(persistenceFile, new BindResultSerializer());
+    this.netMonitorSetting = netMonitorSetting;
+  }
 
-	@Override
-	protected int getHistorySize() {
-		return 2000;
-	}
+  @Override
+  protected int getHistorySize() {
+    return 2000;
+  }
 
-	@Override
-	protected String getSample() throws Exception {
-		// Get the latest netBind for the appProtocol and monitoring parameters
-		Bind netBind = netMonitorSetting.getNetBind();
-		Bind currentNetBind = netBind.getTable().getConnector().getNet().getBind().get(netBind.getPkey());
-		Port netPort = netMonitorSetting.getPort();
-		// If loopback or private IP, make the monitoring request through the master->daemon channel
-		InetAddress ipAddress = netMonitorSetting.getIpAddress();
-		if(
-			ipAddress.isUniqueLocal()
-			|| ipAddress.isLoopback()
-			|| netPort.getPort() == 25 // Port 25 cannot be monitored directly from several networks
-		) {
-			Host host = netMonitorSetting.getServer();
-			Server linuxServer = host.getLinuxServer();
-			if(linuxServer==null) throw new LocalizedIllegalArgumentException(PACKAGE_RESOURCES, "NetBindNodeWorker.host.notLinuxServer", host.toString());
-			portMonitor = new AOServDaemonPortMonitor(
-				linuxServer,
-				ipAddress,
-				netPort,
-				currentNetBind.getAppProtocol().getProtocol(),
-				currentNetBind.getMonitoringParameters()
-			);
-		} else {
-			portMonitor = PortMonitor.getPortMonitor(
-				ipAddress,
-				netMonitorSetting.getPort(),
-				currentNetBind.getAppProtocol().getProtocol(),
-				currentNetBind.getMonitoringParameters()
-			);
-		}
-		return portMonitor.checkPort();
-	}
+  @Override
+  protected String getSample() throws Exception {
+    // Get the latest netBind for the appProtocol and monitoring parameters
+    Bind netBind = netMonitorSetting.getNetBind();
+    Bind currentNetBind = netBind.getTable().getConnector().getNet().getBind().get(netBind.getPkey());
+    Port netPort = netMonitorSetting.getPort();
+    // If loopback or private IP, make the monitoring request through the master->daemon channel
+    InetAddress ipAddress = netMonitorSetting.getIpAddress();
+    if (
+      ipAddress.isUniqueLocal()
+      || ipAddress.isLoopback()
+      || netPort.getPort() == 25 // Port 25 cannot be monitored directly from several networks
+    ) {
+      Host host = netMonitorSetting.getServer();
+      Server linuxServer = host.getLinuxServer();
+      if (linuxServer == null) {
+        throw new LocalizedIllegalArgumentException(PACKAGE_RESOURCES, "NetBindNodeWorker.host.notLinuxServer", host.toString());
+      }
+      portMonitor = new AOServDaemonPortMonitor(
+        linuxServer,
+        ipAddress,
+        netPort,
+        currentNetBind.getAppProtocol().getProtocol(),
+        currentNetBind.getMonitoringParameters()
+      );
+    } else {
+      portMonitor = PortMonitor.getPortMonitor(
+        ipAddress,
+        netMonitorSetting.getPort(),
+        currentNetBind.getAppProtocol().getProtocol(),
+        currentNetBind.getMonitoringParameters()
+      );
+    }
+    return portMonitor.checkPort();
+  }
 
-	@Override
-	protected void cancel(Future<String> future) {
-		super.cancel(future);
-		PortMonitor myPortMonitor = portMonitor;
-		if(myPortMonitor!=null) myPortMonitor.cancel();
-	}
+  @Override
+  protected void cancel(Future<String> future) {
+    super.cancel(future);
+    PortMonitor myPortMonitor = portMonitor;
+    if (myPortMonitor != null) {
+      myPortMonitor.cancel();
+    }
+  }
 
-	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(String sample, Iterable<? extends NetBindResult> previousResults) throws Exception {
-		return new AlertLevelAndMessage(
-			AlertLevel.NONE,
-			locale -> sample
-		);
-	}
+  @Override
+  protected AlertLevelAndMessage getAlertLevelAndMessage(String sample, Iterable<? extends NetBindResult> previousResults) throws Exception {
+    return new AlertLevelAndMessage(
+      AlertLevel.NONE,
+      locale -> sample
+    );
+  }
 
-	@Override
-	protected NetBindResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-		return new NetBindResult(time, latency, alertLevel, error, null);
-	}
+  @Override
+  protected NetBindResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
+    return new NetBindResult(time, latency, alertLevel, error, null);
+  }
 
-	@Override
-	protected NetBindResult newSampleResult(long time, long latency, AlertLevel alertLevel, String sample) {
-		return new NetBindResult(time, latency, alertLevel, null, sample);
-	}
+  @Override
+  protected NetBindResult newSampleResult(long time, long latency, AlertLevel alertLevel, String sample) {
+    return new NetBindResult(time, latency, alertLevel, null, sample);
+  }
 }

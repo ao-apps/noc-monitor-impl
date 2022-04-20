@@ -43,36 +43,36 @@ import java.util.List;
  */
 public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public LoadAverageNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			hostNode.hostsNode.rootNode,
-			hostNode,
-			LoadAverageNodeWorker.getWorker(
-				hostNode.getPersistenceDirectory(),
-				linuxServer
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  public LoadAverageNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      hostNode.hostsNode.rootNode,
+      hostNode,
+      LoadAverageNodeWorker.getWorker(
+        hostNode.getPersistenceDirectory(),
+        linuxServer
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.label");
+  }
 
-	@Override
-	public List<String> getColumnHeaders() {
-		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.oneMinute"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.fiveMinute"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.tenMinute"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.runningProcesses"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.totalProcesses"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.lastPID"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.alertThresholds")
-		);
-	}
+  @Override
+  public List<String> getColumnHeaders() {
+    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.oneMinute"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.fiveMinute"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.tenMinute"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.runningProcesses"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.totalProcesses"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.lastPID"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.alertThresholds")
+    );
+  }
 }

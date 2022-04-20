@@ -47,142 +47,144 @@ import java.util.List;
  */
 public class SlaveNode extends NodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	final SlavesNode mysqlSlavesNode;
-	private final MysqlReplication _mysqlReplication;
-	private final String _label;
+  final SlavesNode mysqlSlavesNode;
+  private final MysqlReplication _mysqlReplication;
+  private final String _label;
 
-	private boolean started;
+  private boolean started;
 
-	private volatile SlaveStatusNode _mysqlSlaveStatusNode;
-	private volatile DatabasesNode _mysqlDatabasesNode;
+  private volatile SlaveStatusNode _mysqlSlaveStatusNode;
+  private volatile DatabasesNode _mysqlDatabasesNode;
 
-	SlaveNode(SlavesNode mysqlSlavesNode, MysqlReplication mysqlReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
-		super(port, csf, ssf);
-		this.mysqlSlavesNode = mysqlSlavesNode;
-		this._mysqlReplication = mysqlReplication;
-		FileReplication replication = mysqlReplication.getFailoverFileReplication();
-		if(replication!=null) {
-			// replication-based
-			com.aoindustries.aoserv.client.linux.Server linuxServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
-			Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
-			BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
-			this._label = bp.getLinuxServer().getHostname()+":"+bp.getPath()+"/"+linuxServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
-		} else {
-			// ao_server-based
-			Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
-			this._label = mysqlReplication.getLinuxServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
-		}
-	}
+  SlaveNode(SlavesNode mysqlSlavesNode, MysqlReplication mysqlReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
+    super(port, csf, ssf);
+    this.mysqlSlavesNode = mysqlSlavesNode;
+    this._mysqlReplication = mysqlReplication;
+    FileReplication replication = mysqlReplication.getFailoverFileReplication();
+    if (replication != null) {
+      // replication-based
+      com.aoindustries.aoserv.client.linux.Server linuxServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
+      Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
+      BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
+      this._label = bp.getLinuxServer().getHostname()+":"+bp.getPath()+"/"+linuxServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
+    } else {
+      // ao_server-based
+      Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
+      this._label = mysqlReplication.getLinuxServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
+    }
+  }
 
-	MysqlReplication getFailoverMySQLReplication() {
-		return _mysqlReplication;
-	}
+  MysqlReplication getFailoverMySQLReplication() {
+    return _mysqlReplication;
+  }
 
-	@Override
-	public SlavesNode getParent() {
-		return mysqlSlavesNode;
-	}
+  @Override
+  public SlavesNode getParent() {
+    return mysqlSlavesNode;
+  }
 
-	@Override
-	public boolean getAllowsChildren() {
-		return true;
-	}
+  @Override
+  public boolean getAllowsChildren() {
+    return true;
+  }
 
-	@Override
-	public List<NodeImpl> getChildren() {
-		return getSnapshot(
-			this._mysqlSlaveStatusNode,
-			this._mysqlDatabasesNode
-		);
-	}
+  @Override
+  public List<NodeImpl> getChildren() {
+    return getSnapshot(
+      this._mysqlSlaveStatusNode,
+      this._mysqlDatabasesNode
+    );
+  }
 
-	/**
-	 * The maximum alert level is constrained by the failover_mysql_replications table.
-	 */
-	@Override
-	protected AlertLevel getMaxAlertLevel() {
-		return AlertLevelUtils.getMonitoringAlertLevel(
-			_mysqlReplication.getMaxAlertLevel()
-		);
-	}
+  /**
+   * The maximum alert level is constrained by the failover_mysql_replications table.
+   */
+  @Override
+  protected AlertLevel getMaxAlertLevel() {
+    return AlertLevelUtils.getMonitoringAlertLevel(
+      _mysqlReplication.getMaxAlertLevel()
+    );
+  }
 
-	/**
-	 * The alert level is equal to the highest alert level of its children.
-	 */
-	@Override
-	public AlertLevel getAlertLevel() {
-		return constrainAlertLevel(
-			AlertLevelUtils.getMaxAlertLevel(
-				this._mysqlSlaveStatusNode,
-				this._mysqlDatabasesNode
-			)
-		);
-	}
+  /**
+   * The alert level is equal to the highest alert level of its children.
+   */
+  @Override
+  public AlertLevel getAlertLevel() {
+    return constrainAlertLevel(
+      AlertLevelUtils.getMaxAlertLevel(
+        this._mysqlSlaveStatusNode,
+        this._mysqlDatabasesNode
+      )
+    );
+  }
 
-	/**
-	 * No alert messages.
-	 */
-	@Override
-	public String getAlertMessage() {
-		return null;
-	}
+  /**
+   * No alert messages.
+   */
+  @Override
+  public String getAlertMessage() {
+    return null;
+  }
 
-	@Override
-	public String getLabel() {
-		return _label;
-	}
+  @Override
+  public String getLabel() {
+    return _label;
+  }
 
-	void start() throws IOException, SQLException {
-		RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode;
-		synchronized(this) {
-			if(started) throw new IllegalStateException();
-			started = true;
-			if(_mysqlSlaveStatusNode==null) {
-				_mysqlSlaveStatusNode = new SlaveStatusNode(this, port, csf, ssf);
-				_mysqlSlaveStatusNode.start();
-				rootNode.nodeAdded();
-			}
-			if(_mysqlDatabasesNode==null) {
-				_mysqlDatabasesNode = new DatabasesNode(this, port, csf, ssf);
-				_mysqlDatabasesNode.start();
-				rootNode.nodeAdded();
-			}
-		}
-	}
+  void start() throws IOException, SQLException {
+    RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode;
+    synchronized (this) {
+      if (started) {
+        throw new IllegalStateException();
+      }
+      started = true;
+      if (_mysqlSlaveStatusNode == null) {
+        _mysqlSlaveStatusNode = new SlaveStatusNode(this, port, csf, ssf);
+        _mysqlSlaveStatusNode.start();
+        rootNode.nodeAdded();
+      }
+      if (_mysqlDatabasesNode == null) {
+        _mysqlDatabasesNode = new DatabasesNode(this, port, csf, ssf);
+        _mysqlDatabasesNode.start();
+        rootNode.nodeAdded();
+      }
+    }
+  }
 
-	void stop() {
-		RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode;
-		synchronized(this) {
-			started = false;
-			if(_mysqlSlaveStatusNode!=null) {
-				_mysqlSlaveStatusNode.stop();
-				_mysqlSlaveStatusNode = null;
-				rootNode.nodeRemoved();
-			}
+  void stop() {
+    RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode;
+    synchronized (this) {
+      started = false;
+      if (_mysqlSlaveStatusNode != null) {
+        _mysqlSlaveStatusNode.stop();
+        _mysqlSlaveStatusNode = null;
+        rootNode.nodeRemoved();
+      }
 
-			if(_mysqlDatabasesNode!=null) {
-				_mysqlDatabasesNode.stop();
-				_mysqlDatabasesNode = null;
-				rootNode.nodeRemoved();
-			}
-		}
-	}
+      if (_mysqlDatabasesNode != null) {
+        _mysqlDatabasesNode.stop();
+        _mysqlDatabasesNode = null;
+        rootNode.nodeRemoved();
+      }
+    }
+  }
 
-	File getPersistenceDirectory() throws IOException {
-		File dir = new File(mysqlSlavesNode.getPersistenceDirectory(), Integer.toString(_mysqlReplication.getPkey()));
-		if(!dir.exists()) {
-			if(!dir.mkdir()) {
-				throw new IOException(
-					PACKAGE_RESOURCES.getMessage(
-						mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
-						"error.mkdirFailed",
-						dir.getCanonicalPath()
-					)
-				);
-			}
-		}
-		return dir;
-	}
+  File getPersistenceDirectory() throws IOException {
+    File dir = new File(mysqlSlavesNode.getPersistenceDirectory(), Integer.toString(_mysqlReplication.getPkey()));
+    if (!dir.exists()) {
+      if (!dir.mkdir()) {
+        throw new IOException(
+          PACKAGE_RESOURCES.getMessage(
+            mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+            "error.mkdirFailed",
+            dir.getCanonicalPath()
+          )
+        );
+      }
+    }
+    return dir;
+  }
 }

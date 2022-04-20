@@ -50,133 +50,135 @@ import java.util.Map;
  */
 class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 
-	/**
-	 * One unique worker is made per persistence file.
-	 */
-	private static final Map<String, SignupsNodeWorker> workerCache = new HashMap<>();
-	static SignupsNodeWorker getWorker(File persistenceFile, AOServConnector conn) throws IOException {
-		String path = persistenceFile.getCanonicalPath();
-		synchronized(workerCache) {
-			SignupsNodeWorker worker = workerCache.get(path);
-			if(worker==null) {
-				worker = new SignupsNodeWorker(persistenceFile, conn);
-				workerCache.put(path, worker);
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence file.
+   */
+  private static final Map<String, SignupsNodeWorker> workerCache = new HashMap<>();
+  static SignupsNodeWorker getWorker(File persistenceFile, AOServConnector conn) throws IOException {
+    String path = persistenceFile.getCanonicalPath();
+    synchronized (workerCache) {
+      SignupsNodeWorker worker = workerCache.get(path);
+      if (worker == null) {
+        worker = new SignupsNodeWorker(persistenceFile, conn);
+        workerCache.put(path, worker);
+      }
+      return worker;
+    }
+  }
 
-	private final AOServConnector conn;
+  private final AOServConnector conn;
 
-	SignupsNodeWorker(File persistenceFile, AOServConnector conn) {
-		super(persistenceFile);
-		this.conn = conn;
-	}
+  SignupsNodeWorker(File persistenceFile, AOServConnector conn) {
+    super(persistenceFile);
+    this.conn = conn;
+  }
 
-	/**
-	 * React quickly to signups, but still ramp-up for errors.
-	 */
-	@Override
-	protected boolean isIncrementalRampUp(boolean isError) {
-		return isError;
-	}
+  /**
+   * React quickly to signups, but still ramp-up for errors.
+   */
+  @Override
+  protected boolean isIncrementalRampUp(boolean isError) {
+    return isError;
+  }
 
-	/**
-	 * Determines the alert message for the provided result.
-	 */
-	@Override
-	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
-		if(result.isError()) {
-			return new AlertLevelAndMessage(
-				result.getAlertLevels().get(0),
-				locale -> result.getTableData(locale).get(0).toString()
-			);
-		} else {
-			List<?> tableData = result.getTableData(Locale.getDefault());
-			// Count the number of incompleted signups
-			int incompleteCount;
-			{
-				int i = 0;
-				for(int index=0, len=tableData.size();index<len;index+=6) {
-					String completedBy = (String)tableData.get(index+4);
-					if(completedBy==null) i++;
-				}
-				incompleteCount = i;
-			}
-			if(incompleteCount==0) {
-				return AlertLevelAndMessage.NONE;
-			} else {
-				return new AlertLevelAndMessage(
-					AlertLevel.CRITICAL,
-					locale -> incompleteCount==1
-						? PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
-						: PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
-				);
-			}
-		}
-	}
+  /**
+   * Determines the alert message for the provided result.
+   */
+  @Override
+  public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
+    if (result.isError()) {
+      return new AlertLevelAndMessage(
+        result.getAlertLevels().get(0),
+        locale -> result.getTableData(locale).get(0).toString()
+      );
+    } else {
+      List<?> tableData = result.getTableData(Locale.getDefault());
+      // Count the number of incompleted signups
+      int incompleteCount;
+      {
+        int i = 0;
+        for (int index=0, len=tableData.size();index<len;index+=6) {
+          String completedBy = (String)tableData.get(index+4);
+          if (completedBy == null) {
+            i++;
+          }
+        }
+        incompleteCount = i;
+      }
+      if (incompleteCount == 0) {
+        return AlertLevelAndMessage.NONE;
+      } else {
+        return new AlertLevelAndMessage(
+          AlertLevel.CRITICAL,
+          locale -> incompleteCount == 1
+            ? PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
+            : PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
+        );
+      }
+    }
+  }
 
-	@Override
-	protected int getColumns() {
-		return 6;
-	}
+  @Override
+  protected int getColumns() {
+    return 6;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.source"),
-			PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"),
-			PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.time"),
-			PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.ip_address"),
-			PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_by"),
-			PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_time")
-		);
-	}
+  @Override
+  protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
+    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.source"),
+      PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"),
+      PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.time"),
+      PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.ip_address"),
+      PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_by"),
+      PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_time")
+    );
+  }
 
-	@Override
-	protected List<Object> getQueryResult() throws Exception {
-		List<Object> tableData = new ArrayList<>();
-		// Add the old signup forms
-		WebSiteDatabase.getDatabase().queryRun(
-			results -> {
-				while (results.next()) {
-					tableData.add("aoweb");
-					tableData.add(results.getInt("pkey"));
-					tableData.add(new TimeWithTimeZone(results.getTimestamp("time").getTime()));
-					tableData.add(results.getString("ip_address"));
-					tableData.add(results.getString("completed_by"));
-					Timestamp completedTime = results.getTimestamp("completed_time");
-					tableData.add(completedTime==null ? null : new TimeWithTimeZone(completedTime.getTime()));
-				}
-			},
-			"select * from signup_requests order by time"
-		);
+  @Override
+  protected List<Object> getQueryResult() throws Exception {
+    List<Object> tableData = new ArrayList<>();
+    // Add the old signup forms
+    WebSiteDatabase.getDatabase().queryRun(
+      results -> {
+        while (results.next()) {
+          tableData.add("aoweb");
+          tableData.add(results.getInt("pkey"));
+          tableData.add(new TimeWithTimeZone(results.getTimestamp("time").getTime()));
+          tableData.add(results.getString("ip_address"));
+          tableData.add(results.getString("completed_by"));
+          Timestamp completedTime = results.getTimestamp("completed_time");
+          tableData.add(completedTime == null ? null : new TimeWithTimeZone(completedTime.getTime()));
+        }
+      },
+      "select * from signup_requests order by time"
+    );
 
-		// Add the aoserv signups
-		for(Request request : conn.getSignup().getRequest()) {
-			tableData.add(request.getPackageDefinition().getAccount().getName());
-			tableData.add(request.getPkey());
-			tableData.add(new TimeWithTimeZone(request.getTime().getTime()));
-			tableData.add(request.getIpAddress());
-			Administrator completedBy = request.getCompletedBy();
-			tableData.add(completedBy==null ? null : completedBy.getUsername().getUsername());
-			Timestamp completedTime = request.getCompletedTime();
-			tableData.add(completedTime==null ? null : new TimeWithTimeZone(completedTime.getTime()));
-		}
-		return tableData;
-	}
+    // Add the aoserv signups
+    for (Request request : conn.getSignup().getRequest()) {
+      tableData.add(request.getPackageDefinition().getAccount().getName());
+      tableData.add(request.getPkey());
+      tableData.add(new TimeWithTimeZone(request.getTime().getTime()));
+      tableData.add(request.getIpAddress());
+      Administrator completedBy = request.getCompletedBy();
+      tableData.add(completedBy == null ? null : completedBy.getUsername().getUsername());
+      Timestamp completedTime = request.getCompletedTime();
+      tableData.add(completedTime == null ? null : new TimeWithTimeZone(completedTime.getTime()));
+    }
+    return tableData;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<Object>> getTableData(List<Object> tableData) throws Exception {
-		return locale -> tableData;
-	}
+  @Override
+  protected SerializableFunction<Locale, List<Object>> getTableData(List<Object> tableData) throws Exception {
+    return locale -> tableData;
+  }
 
-	@Override
-	protected List<AlertLevel> getAlertLevels(List<Object> tableData) {
-		List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/6);
-		for(int index=0, len=tableData.size();index<len;index+=6) {
-			String completedBy = (String)tableData.get(index+4);
-			alertLevels.add(completedBy==null ? AlertLevel.CRITICAL : AlertLevel.NONE);
-		}
-		return alertLevels;
-	}
+  @Override
+  protected List<AlertLevel> getAlertLevels(List<Object> tableData) {
+    List<AlertLevel> alertLevels = new ArrayList<>(tableData.size()/6);
+    for (int index=0, len=tableData.size();index<len;index+=6) {
+      String completedBy = (String)tableData.get(index+4);
+      alertLevels.add(completedBy == null ? AlertLevel.CRITICAL : AlertLevel.NONE);
+    }
+    return alertLevels;
+  }
 }

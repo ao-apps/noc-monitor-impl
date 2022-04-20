@@ -39,32 +39,32 @@ import java.util.List;
  */
 public class PingNode extends TableMultiResultNodeImpl<PingResult> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	//private final IpAddressNode ipAddressNode;
+  //private final IpAddressNode ipAddressNode;
 
-	PingNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			ipAddressNode.ipAddressesNode.rootNode,
-			ipAddressNode,
-			PingNodeWorker.getWorker(
-				ipAddressNode.getPersistenceDirectory(),
-				ipAddressNode.getIpAddress()
-			),
-			port,
-			csf,
-			ssf
-		);
-		//this.ipAddressNode = ipAddressNode;
-	}
+  PingNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      ipAddressNode.ipAddressesNode.rootNode,
+      ipAddressNode,
+      PingNodeWorker.getWorker(
+        ipAddressNode.getPersistenceDirectory(),
+        ipAddressNode.getIpAddress()
+      ),
+      port,
+      csf,
+      ssf
+    );
+    //this.ipAddressNode = ipAddressNode;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "PingNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "PingNode.label");
+  }
 
-	@Override
-	public List<?> getColumnHeaders() {
-		return Collections.emptyList();
-	}
+  @Override
+  public List<?> getColumnHeaders() {
+    return Collections.emptyList();
+  }
 }

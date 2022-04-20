@@ -43,30 +43,30 @@ import java.sql.SQLException;
  */
 public class PhysicalServersNode extends HostsNode {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public PhysicalServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(rootNode, port, csf, ssf);
-	}
+  public PhysicalServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(rootNode, port, csf, ssf);
+  }
 
-	@Override
-	public AlertCategory getAlertCategory() {
-		return AlertCategory.MONITORING;
-	}
+  @Override
+  public AlertCategory getAlertCategory() {
+    return AlertCategory.MONITORING;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "PhysicalServersNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "PhysicalServersNode.label");
+  }
 
-	@Override
-	protected boolean includeHost(Host host) throws SQLException, IOException {
-		PhysicalServer physicalServer = host.getPhysicalServer();
-		Server linuxServer = host.getLinuxServer();
-		return
-			physicalServer!=null && physicalServer.getRam()!=-1
-			// Ignore ao-box in fail-over
-			&& (linuxServer==null || linuxServer.getFailoverServer()==null)
-		;
-	}
+  @Override
+  protected boolean includeHost(Host host) throws SQLException, IOException {
+    PhysicalServer physicalServer = host.getPhysicalServer();
+    Server linuxServer = host.getLinuxServer();
+    return
+      physicalServer != null && physicalServer.getRam() != -1
+      // Ignore ao-box in fail-over
+      && (linuxServer == null || linuxServer.getFailoverServer() == null)
+    ;
+  }
 }

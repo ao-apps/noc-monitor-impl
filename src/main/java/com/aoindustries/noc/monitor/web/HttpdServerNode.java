@@ -39,44 +39,44 @@ import java.util.List;
  */
 public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	private final HttpdServer _httpdServer;
+  private final HttpdServer _httpdServer;
 
-	HttpdServerNode(HttpdServersNode httpdServersNode, HttpdServer httpdServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			httpdServersNode.hostNode.hostsNode.rootNode,
-			httpdServersNode,
-			HttpdServerNodeWorker.getWorker(
-				new File(httpdServersNode.getPersistenceDirectory(), Integer.toString(httpdServer.getPkey())),
-				httpdServer
-			),
-			port,
-			csf,
-			ssf
-		);
-		this._httpdServer = httpdServer;
-	}
+  HttpdServerNode(HttpdServersNode httpdServersNode, HttpdServer httpdServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      httpdServersNode.hostNode.hostsNode.rootNode,
+      httpdServersNode,
+      HttpdServerNodeWorker.getWorker(
+        new File(httpdServersNode.getPersistenceDirectory(), Integer.toString(httpdServer.getPkey())),
+        httpdServer
+      ),
+      port,
+      csf,
+      ssf
+    );
+    this._httpdServer = httpdServer;
+  }
 
-	public HttpdServer getHttpdServer() {
-		return _httpdServer;
-	}
+  public HttpdServer getHttpdServer() {
+    return _httpdServer;
+  }
 
-	@Override
-	public String getLabel() {
-		String name = _httpdServer.getName();
-		if(name == null) {
-			return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.noName");
-		} else {
-			return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.named", name);
-		}
-	}
+  @Override
+  public String getLabel() {
+    String name = _httpdServer.getName();
+    if (name == null) {
+      return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.noName");
+    } else {
+      return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.named", name);
+    }
+  }
 
-	@Override
-	public List<String> getColumnHeaders() {
-		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.concurrency"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.maxConcurrency"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.alertThresholds")
-		);
-	}
+  @Override
+  public List<String> getColumnHeaders() {
+    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.concurrency"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.maxConcurrency"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.alertThresholds")
+    );
+  }
 }

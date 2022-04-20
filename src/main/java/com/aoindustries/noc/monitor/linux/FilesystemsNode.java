@@ -39,24 +39,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class FilesystemsNode extends TableResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public FilesystemsNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			hostNode.hostsNode.rootNode,
-			hostNode,
-			FilesystemsNodeWorker.getWorker(
-				new File(hostNode.getPersistenceDirectory(), "filesystems"),
-				linuxServer
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  public FilesystemsNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      hostNode.hostsNode.rootNode,
+      hostNode,
+      FilesystemsNodeWorker.getWorker(
+        new File(hostNode.getPersistenceDirectory(), "filesystems"),
+        linuxServer
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "FilesystemsNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "FilesystemsNode.label");
+  }
 }

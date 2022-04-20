@@ -48,250 +48,272 @@ import javax.swing.SwingUtilities;
  */
 public abstract class SingleResultNodeWorker implements Runnable {
 
-	private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
 
-	/**
-	 * The most recent timer task
-	 */
-	private final Object timerTaskLock = new Object();
-	private Future<?> timerTask;
+  /**
+   * The most recent timer task
+   */
+  private final Object timerTaskLock = new Object();
+  private Future<?> timerTask;
 
-	private volatile SingleResult lastResult;
-	private volatile AlertLevel alertLevel;
-	private volatile Function<Locale, String> alertMessage = null;
+  private volatile SingleResult lastResult;
+  private volatile AlertLevel alertLevel;
+  private volatile Function<Locale, String> alertMessage = null;
 
-	private final List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<>();
+  private final List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<>();
 
-	protected final File persistenceFile;
+  protected final File persistenceFile;
 
-	protected SingleResultNodeWorker(File persistenceFile) {
-		this.persistenceFile = persistenceFile;
-	}
+  protected SingleResultNodeWorker(File persistenceFile) {
+    this.persistenceFile = persistenceFile;
+  }
 
-	final SingleResult getLastResult() {
-		return lastResult;
-	}
+  final SingleResult getLastResult() {
+    return lastResult;
+  }
 
-	final AlertLevel getAlertLevel() {
-		return alertLevel;
-	}
+  final AlertLevel getAlertLevel() {
+    return alertLevel;
+  }
 
-	final Function<Locale, String> getAlertMessage() {
-		return alertMessage;
-	}
+  final Function<Locale, String> getAlertMessage() {
+    return alertMessage;
+  }
 
-	/**
-	 * The default startup delay is within five minutes.
-	 */
-	protected int getNextStartupDelay() {
-		return RootNodeImpl.getNextStartupDelayFiveMinutes();
-	}
+  /**
+   * The default startup delay is within five minutes.
+   */
+  protected int getNextStartupDelay() {
+    return RootNodeImpl.getNextStartupDelayFiveMinutes();
+  }
 
-	private void start() {
-		synchronized(timerTaskLock) {
-			assert timerTask==null : "thread already started";
-			timerTask = RootNodeImpl.schedule(this, getNextStartupDelay());
-		}
-	}
+  private void start() {
+    synchronized (timerTaskLock) {
+      assert timerTask == null : "thread already started";
+      timerTask = RootNodeImpl.schedule(this, getNextStartupDelay());
+    }
+  }
 
-	private void stop() {
-		synchronized(timerTaskLock) {
-			if(timerTask!=null) {
-				timerTask.cancel(true);
-				timerTask = null;
-			}
-		}
-	}
+  private void stop() {
+    synchronized (timerTaskLock) {
+      if (timerTask != null) {
+        timerTask.cancel(true);
+        timerTask = null;
+      }
+    }
+  }
 
-	private String getReportWithTimeout() throws Exception {
-		Future<String> future = RootNodeImpl.executors.getUnbounded().submit(this::getReport);
-		try {
-			return future.get(5, TimeUnit.MINUTES);
-		} catch(InterruptedException | TimeoutException err) {
-			cancel(future);
-			throw err;
-		}
-	}
+  private String getReportWithTimeout() throws Exception {
+    Future<String> future = RootNodeImpl.executors.getUnbounded().submit(this::getReport);
+    try {
+      return future.get(5, TimeUnit.MINUTES);
+    } catch (InterruptedException | TimeoutException err) {
+      cancel(future);
+      throw err;
+    }
+  }
 
-	/**
-	 * Enables incremental alert level ramp-up, where the node's alert level
-	 * is only incremented one step at a time per monitoring pass.  This makes
-	 * the resource more tolerant of intermittent problems, at the cost of
-	 * slower reaction time.
-	 * <p>
-	 * <b>Implementation Note:</b><br>
-	 * Enabled by default
-	 * </p>
-	 *
-	 * @see  TableMultiResultNodeWorker#isIncrementalRampUp(boolean)
-	 * @see  TableResultNodeWorker#isIncrementalRampUp(boolean)
-	 */
-	protected boolean isIncrementalRampUp(boolean isError) {
-		return true;
-	}
+  /**
+   * Enables incremental alert level ramp-up, where the node's alert level
+   * is only incremented one step at a time per monitoring pass.  This makes
+   * the resource more tolerant of intermittent problems, at the cost of
+   * slower reaction time.
+   * <p>
+   * <b>Implementation Note:</b><br>
+   * Enabled by default
+   * </p>
+   *
+   * @see  TableMultiResultNodeWorker#isIncrementalRampUp(boolean)
+   * @see  TableResultNodeWorker#isIncrementalRampUp(boolean)
+   */
+  protected boolean isIncrementalRampUp(boolean isError) {
+    return true;
+  }
 
-	@Override
-	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	public final void run() {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  @Override
+  @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
+  public final void run() {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		boolean lastSuccessful = false;
-		synchronized(timerTaskLock) {if(timerTask==null) return;}
-		try {
-			long startMillis = System.currentTimeMillis();
-			long startNanos = System.nanoTime();
+    boolean lastSuccessful = false;
+    synchronized (timerTaskLock) {
+      if (timerTask == null) {
+        return;
+      }
+    }
+    try {
+      long startMillis = System.currentTimeMillis();
+      long startNanos = System.nanoTime();
 
-			lastSuccessful = false;
+      lastSuccessful = false;
 
-			SerializableFunction<Locale, String> error;
-			String report;
-			try {
-				error = null;
-				report = getReportWithTimeout();
-				if(report==null) throw new NullPointerException("report is null");
-				lastSuccessful = true;
-			} catch(Exception err) {
-				error = locale -> ThreadLocale.call(
-					locale,
-					() -> {
-						String msg = err.getLocalizedMessage();
-						if(msg == null || msg.isEmpty()) msg = err.toString();
-						return msg;
-					}
-				);
-				report = null;
-				lastSuccessful = false;
-			}
-			long pingNanos = System.nanoTime() - startNanos;
+      SerializableFunction<Locale, String> error;
+      String report;
+      try {
+        error = null;
+        report = getReportWithTimeout();
+        if (report == null) {
+          throw new NullPointerException("report is null");
+        }
+        lastSuccessful = true;
+      } catch (Exception err) {
+        error = locale -> ThreadLocale.call(
+          locale,
+          () -> {
+            String msg = err.getLocalizedMessage();
+            if (msg == null || msg.isEmpty()) {
+              msg = err.toString();
+            }
+            return msg;
+          }
+        );
+        report = null;
+        lastSuccessful = false;
+      }
+      long pingNanos = System.nanoTime() - startNanos;
 
-			synchronized(timerTaskLock) {if(timerTask==null) return;}
+      synchronized (timerTaskLock) {
+        if (timerTask == null) {
+          return;
+        }
+      }
 
-			SingleResult result = new SingleResult(
-				startMillis,
-				pingNanos,
-				error,
-				report
-			);
-			lastResult = result;
+      SingleResult result = new SingleResult(
+        startMillis,
+        pingNanos,
+        error,
+        report
+      );
+      lastResult = result;
 
-			AlertLevel curAlertLevel = alertLevel;
-			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
-			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(curAlertLevel, result);
-			AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
-			AlertLevel newAlertLevel;
-			// TODO: Immediate jump to UNKNOWN like TableMultiResultNodeWorker?
-			if(maxAlertLevel.compareTo(curAlertLevel) < 0) {
-				// If maxAlertLevel < current, drop current to be the max
-				newAlertLevel = maxAlertLevel;
-			} else if(isIncrementalRampUp(error != null) && curAlertLevel.compareTo(maxAlertLevel) < 0) {
-				// If current < maxAlertLevel, increment by one
-				newAlertLevel = AlertLevel.fromOrdinal(curAlertLevel.ordinal() + 1);
-			} else {
-				newAlertLevel = maxAlertLevel;
-			}
+      AlertLevel curAlertLevel = alertLevel;
+      if (curAlertLevel == null) {
+        curAlertLevel = AlertLevel.NONE;
+      }
+      AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(curAlertLevel, result);
+      AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
+      AlertLevel newAlertLevel;
+      // TODO: Immediate jump to UNKNOWN like TableMultiResultNodeWorker?
+      if (maxAlertLevel.compareTo(curAlertLevel) < 0) {
+        // If maxAlertLevel < current, drop current to be the max
+        newAlertLevel = maxAlertLevel;
+      } else if (isIncrementalRampUp(error != null) && curAlertLevel.compareTo(maxAlertLevel) < 0) {
+        // If current < maxAlertLevel, increment by one
+        newAlertLevel = AlertLevel.fromOrdinal(curAlertLevel.ordinal() + 1);
+      } else {
+        newAlertLevel = maxAlertLevel;
+      }
 
-			AlertLevel oldAlertLevel = alertLevel;
-			if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
-			alertLevel = newAlertLevel;
-			alertMessage = alertLevelAndMessage.getAlertMessage();
+      AlertLevel oldAlertLevel = alertLevel;
+      if (oldAlertLevel == null) {
+        oldAlertLevel = AlertLevel.UNKNOWN;
+      }
+      alertLevel = newAlertLevel;
+      alertMessage = alertLevelAndMessage.getAlertMessage();
 
-			singleResultUpdated(result);
-			if(oldAlertLevel!=newAlertLevel) {
-				synchronized(singleResultNodeImpls) {
-					for(SingleResultNodeImpl singleResultNodeImpl : singleResultNodeImpls) {
-						singleResultNodeImpl.nodeAlertLevelChanged(
-							oldAlertLevel,
-							newAlertLevel,
-							alertMessage
-						);
-					}
-				}
-			}
-		} catch(ThreadDeath td) {
-			throw td;
-		} catch(Throwable t) {
-			logger.log(Level.SEVERE, null, t);
-			lastSuccessful = false;
-		} finally {
-			// Reschedule next timer task if still running
-			synchronized(timerTaskLock) {
-				if(timerTask!=null) {
-					timerTask = RootNodeImpl.schedule(
-						this,
-						getSleepDelay(lastSuccessful, alertLevel)
-					);
-				}
-			}
-		}
-	}
+      singleResultUpdated(result);
+      if (oldAlertLevel != newAlertLevel) {
+        synchronized (singleResultNodeImpls) {
+          for (SingleResultNodeImpl singleResultNodeImpl : singleResultNodeImpls) {
+            singleResultNodeImpl.nodeAlertLevelChanged(
+              oldAlertLevel,
+              newAlertLevel,
+              alertMessage
+            );
+          }
+        }
+      }
+    } catch (ThreadDeath td) {
+      throw td;
+    } catch (Throwable t) {
+      logger.log(Level.SEVERE, null, t);
+      lastSuccessful = false;
+    } finally {
+      // Reschedule next timer task if still running
+      synchronized (timerTaskLock) {
+        if (timerTask != null) {
+          timerTask = RootNodeImpl.schedule(
+            this,
+            getSleepDelay(lastSuccessful, alertLevel)
+          );
+        }
+      }
+    }
+  }
 
-	final void addSingleResultNodeImpl(SingleResultNodeImpl singleResultNodeImpl) {
-		synchronized(singleResultNodeImpls) {
-			boolean needsStart = singleResultNodeImpls.isEmpty();
-			assert !CollectionUtils.containsByIdentity(singleResultNodeImpls, singleResultNodeImpl);
-			singleResultNodeImpls.add(singleResultNodeImpl);
-			if(needsStart) start();
-		}
-	}
+  final void addSingleResultNodeImpl(SingleResultNodeImpl singleResultNodeImpl) {
+    synchronized (singleResultNodeImpls) {
+      boolean needsStart = singleResultNodeImpls.isEmpty();
+      assert !CollectionUtils.containsByIdentity(singleResultNodeImpls, singleResultNodeImpl);
+      singleResultNodeImpls.add(singleResultNodeImpl);
+      if (needsStart) {
+        start();
+      }
+    }
+  }
 
-	final void removeSingleResultNodeImpl(SingleResultNodeImpl singleResultNodeImpl) {
-		synchronized(singleResultNodeImpls) {
-			if(singleResultNodeImpls.isEmpty()) throw new AssertionError("singleResultNodeImpls is empty");
-			boolean found = false;
-			for(int c=singleResultNodeImpls.size()-1;c>=0;c--) {
-				if(singleResultNodeImpls.get(c)==singleResultNodeImpl) {
-					singleResultNodeImpls.remove(c);
-					found = true;
-					break;
-				}
-			}
-			if(!found && logger.isLoggable(Level.WARNING)) logger.log(Level.WARNING, "singleResultNodeImpl not found in singleResultNodeImpls: " + singleResultNodeImpl);
-			assert !CollectionUtils.containsByIdentity(singleResultNodeImpls, singleResultNodeImpl);
-			if(singleResultNodeImpls.isEmpty()) {
-				stop();
-			}
-		}
-	}
+  final void removeSingleResultNodeImpl(SingleResultNodeImpl singleResultNodeImpl) {
+    synchronized (singleResultNodeImpls) {
+      if (singleResultNodeImpls.isEmpty()) {
+        throw new AssertionError("singleResultNodeImpls is empty");
+      }
+      boolean found = false;
+      for (int c=singleResultNodeImpls.size()-1;c >= 0;c--) {
+        if (singleResultNodeImpls.get(c) == singleResultNodeImpl) {
+          singleResultNodeImpls.remove(c);
+          found = true;
+          break;
+        }
+      }
+      if (!found && logger.isLoggable(Level.WARNING)) {
+        logger.log(Level.WARNING, "singleResultNodeImpl not found in singleResultNodeImpls: " + singleResultNodeImpl);
+      }
+      assert !CollectionUtils.containsByIdentity(singleResultNodeImpls, singleResultNodeImpl);
+      if (singleResultNodeImpls.isEmpty()) {
+        stop();
+      }
+    }
+  }
 
-	/**
-	 * Notifies all of the listeners.
-	 */
-	private void singleResultUpdated(SingleResult singleResult) {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  /**
+   * Notifies all of the listeners.
+   */
+  private void singleResultUpdated(SingleResult singleResult) {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		synchronized(singleResultNodeImpls) {
-			for(SingleResultNodeImpl singleResultNodeImpl : singleResultNodeImpls) {
-				singleResultNodeImpl.singleResultUpdated(singleResult);
-			}
-		}
-	}
+    synchronized (singleResultNodeImpls) {
+      for (SingleResultNodeImpl singleResultNodeImpl : singleResultNodeImpls) {
+        singleResultNodeImpl.singleResultUpdated(singleResult);
+      }
+    }
+  }
 
-	/**
-	 * The default sleep delay is five minutes when successful
-	 * or one minute when unsuccessful.
-	 *
-	 * @param  alertLevel  When {@code null}, treated as {@link AlertLevel#UNKNOWN}
-	 */
-	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		return (lastSuccessful && alertLevel == AlertLevel.NONE) ? (5L * 60 * 1000) : (60L * 1000);
-	}
+  /**
+   * The default sleep delay is five minutes when successful
+   * or one minute when unsuccessful.
+   *
+   * @param  alertLevel  When {@code null}, treated as {@link AlertLevel#UNKNOWN}
+   */
+  protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+    return (lastSuccessful && alertLevel == AlertLevel.NONE) ? (5L * 60 * 1000) : (60L * 1000);
+  }
 
-	/**
-	 * Determines the alert level and message for the provided result.
-	 */
-	protected abstract AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result);
+  /**
+   * Determines the alert level and message for the provided result.
+   */
+  protected abstract AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result);
 
-	/**
-	 * Gets the report for this worker.
-	 */
-	protected abstract String getReport() throws Exception;
+  /**
+   * Gets the report for this worker.
+   */
+  protected abstract String getReport() throws Exception;
 
-	/**
-	 * Cancels the current getReport call on a best-effort basis.
-	 * Implementations of this method <b>must not block</b>.
-	 * This default implementation calls <code>future.cancel(true)</code>.
-	 */
-	protected void cancel(Future<String> future) {
-		future.cancel(true);
-	}
+  /**
+   * Cancels the current getReport call on a best-effort basis.
+   * Implementations of this method <b>must not block</b>.
+   * This default implementation calls <code>future.cancel(true)</code>.
+   */
+  protected void cancel(Future<String> future) {
+    future.cancel(true);
+  }
 }

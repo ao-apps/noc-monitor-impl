@@ -43,48 +43,50 @@ import java.sql.SQLException;
  */
 public class BackupNode extends TableResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	private final FileReplication failoverFileReplication;
-	private final String label;
+  private final FileReplication failoverFileReplication;
+  private final String label;
 
-	BackupNode(BackupsNode backupsNode, FileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
-		super(
-			backupsNode.hostNode.hostsNode.rootNode,
-			backupsNode,
-			BackupNodeWorker.getWorker(
-				new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
-				failoverFileReplication
-			),
-			port,
-			csf,
-			ssf
-		);
-		this.failoverFileReplication = failoverFileReplication;
-		BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
-		this.label = PACKAGE_RESOURCES.getMessage(
-			rootNode.locale,
-			"BackupNode.label",
-			backupPartition==null ? "null" : backupPartition.getLinuxServer().getHostname(),
-			backupPartition==null ? "null" : backupPartition.getPath()
-		);
-	}
+  BackupNode(BackupsNode backupsNode, FileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    super(
+      backupsNode.hostNode.hostsNode.rootNode,
+      backupsNode,
+      BackupNodeWorker.getWorker(
+        new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
+        failoverFileReplication
+      ),
+      port,
+      csf,
+      ssf
+    );
+    this.failoverFileReplication = failoverFileReplication;
+    BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
+    this.label = PACKAGE_RESOURCES.getMessage(
+      rootNode.locale,
+      "BackupNode.label",
+      backupPartition == null ? "null" : backupPartition.getLinuxServer().getHostname(),
+      backupPartition == null ? "null" : backupPartition.getPath()
+    );
+  }
 
-	FileReplication getFailoverFileReplication() {
-		return failoverFileReplication;
-	}
+  FileReplication getFailoverFileReplication() {
+    return failoverFileReplication;
+  }
 
-	@Override
-	public String getLabel() {
-		return label;
-	}
+  @Override
+  public String getLabel() {
+    return label;
+  }
 
-	AlertLevelAndMessage getAlertLevelAndMessage(TableResult result) {
-		AlertLevel curAlertLevel = worker.getAlertLevel();
-		if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
-		return worker.getAlertLevelAndMessage(
-			curAlertLevel,
-			result
-		);
-	}
+  AlertLevelAndMessage getAlertLevelAndMessage(TableResult result) {
+    AlertLevel curAlertLevel = worker.getAlertLevel();
+    if (curAlertLevel == null) {
+      curAlertLevel = AlertLevel.NONE;
+    }
+    return worker.getAlertLevelAndMessage(
+      curAlertLevel,
+      result
+    );
+  }
 }

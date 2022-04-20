@@ -27,14 +27,18 @@ import java.util.Iterator;
 
 final class CollectionUtils {
 
-	/** Make no instances. */
-	private CollectionUtils() {throw new AssertionError();}
+  /** Make no instances. */
+  private CollectionUtils() {
+    throw new AssertionError();
+  }
 
-	static <T> boolean containsByIdentity(Iterable<T> iterable, T elem) {
-		Iterator<T> iter = iterable.iterator();
-		while(iter.hasNext()) {
-			if(iter.next() == elem) return true;
-		}
-		return false;
-	}
+  static <T> boolean containsByIdentity(Iterable<T> iterable, T elem) {
+    Iterator<T> iter = iterable.iterator();
+    while (iter.hasNext()) {
+      if (iter.next() == elem) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

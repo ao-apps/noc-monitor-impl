@@ -50,143 +50,149 @@ import javax.swing.SwingUtilities;
  */
 public abstract class HostsNode extends NodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public final RootNodeImpl rootNode;
+  public final RootNodeImpl rootNode;
 
-	private final List<HostNode> hostNodes = new ArrayList<>();
-	private boolean started;
+  private final List<HostNode> hostNodes = new ArrayList<>();
+  private boolean started;
 
-	protected HostsNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(port, csf, ssf);
-		this.rootNode = rootNode;
-	}
+  protected HostsNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(port, csf, ssf);
+    this.rootNode = rootNode;
+  }
 
-	@Override
-	public final RootNodeImpl getParent() {
-		return rootNode;
-	}
+  @Override
+  public final RootNodeImpl getParent() {
+    return rootNode;
+  }
 
-	@Override
-	public final boolean getAllowsChildren() {
-		return true;
-	}
+  @Override
+  public final boolean getAllowsChildren() {
+    return true;
+  }
 
-	@Override
-	public final List<HostNode> getChildren() {
-		synchronized(hostNodes) {
-			return getSnapshot(hostNodes);
-		}
-	}
+  @Override
+  public final List<HostNode> getChildren() {
+    synchronized (hostNodes) {
+      return getSnapshot(hostNodes);
+    }
+  }
 
-	/**
-	 * The alert level is equal to the highest alert level of its children.
-	 */
-	@Override
-	public final AlertLevel getAlertLevel() {
-		AlertLevel level;
-		synchronized(hostNodes) {
-			level = AlertLevelUtils.getMaxAlertLevel(hostNodes);
-		}
-		return constrainAlertLevel(level);
-	}
+  /**
+   * The alert level is equal to the highest alert level of its children.
+   */
+  @Override
+  public final AlertLevel getAlertLevel() {
+    AlertLevel level;
+    synchronized (hostNodes) {
+      level = AlertLevelUtils.getMaxAlertLevel(hostNodes);
+    }
+    return constrainAlertLevel(level);
+  }
 
-	/**
-	 * No alert messages.
-	 */
-	@Override
-	public final String getAlertMessage() {
-		return null;
-	}
+  /**
+   * No alert messages.
+   */
+  @Override
+  public final String getAlertMessage() {
+    return null;
+  }
 
-	private final TableListener tableListener = (Table<?> table) -> {
-		try {
-			verifyServers();
-		} catch(IOException | SQLException err) {
-			throw new WrappedException(err);
-		}
-	};
+  private final TableListener tableListener = (Table<?> table) -> {
+    try {
+      verifyServers();
+    } catch (IOException | SQLException err) {
+      throw new WrappedException(err);
+    }
+  };
 
-	public final void start() throws IOException, SQLException {
-		synchronized(hostNodes) {
-			if(started) throw new IllegalStateException();
-			started = true;
-			rootNode.conn.getNet().getHost().addTableListener(tableListener, 100);
-		}
-		verifyServers();
-	}
+  public final void start() throws IOException, SQLException {
+    synchronized (hostNodes) {
+      if (started) {
+        throw new IllegalStateException();
+      }
+      started = true;
+      rootNode.conn.getNet().getHost().addTableListener(tableListener, 100);
+    }
+    verifyServers();
+  }
 
-	final void stop() {
-		synchronized(hostNodes) {
-			started = false;
-			rootNode.conn.getNet().getHost().removeTableListener(tableListener);
-			for(HostNode hostNode : hostNodes) {
-				hostNode.stop();
-				rootNode.nodeRemoved();
-			}
-			hostNodes.clear();
-		}
-	}
+  final void stop() {
+    synchronized (hostNodes) {
+      started = false;
+      rootNode.conn.getNet().getHost().removeTableListener(tableListener);
+      for (HostNode hostNode : hostNodes) {
+        hostNode.stop();
+        rootNode.nodeRemoved();
+      }
+      hostNodes.clear();
+    }
+  }
 
-	private void verifyServers() throws IOException, SQLException {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  private void verifyServers() throws IOException, SQLException {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		synchronized(hostNodes) {
-			if(!started) return;
-		}
+    synchronized (hostNodes) {
+      if (!started) {
+        return;
+      }
+    }
 
-		// Get all the servers that have monitoring enabled
-		List<Host> allHosts = rootNode.conn.getNet().getHost().getRows();
-		List<Host> hosts = new ArrayList<>(allHosts.size());
-		for(Host host : allHosts) {
-			if(host.isMonitoringEnabled() && includeHost(host)) hosts.add(host);
-		}
-		synchronized(hostNodes) {
-			if(started) {
-				// Remove old ones
-				Iterator<HostNode> hostNodeIter = hostNodes.iterator();
-				while(hostNodeIter.hasNext()) {
-					HostNode hostNode = hostNodeIter.next();
-					Host host = hostNode.getHost();
-					if(!hosts.contains(host)) {
-						hostNode.stop();
-						hostNodeIter.remove();
-						rootNode.nodeRemoved();
-					}
-				}
-				// Add new ones
-				for(int c=0;c<hosts.size();c++) {
-					Host host = hosts.get(c);
-					if(c>=hostNodes.size() || !host.equals(hostNodes.get(c).getHost())) {
-						// Insert into proper index
-						HostNode hostNode = new HostNode(this, host, port, csf, ssf);
-						hostNodes.add(c, hostNode);
-						hostNode.start();
-						rootNode.nodeAdded();
-					}
-				}
-			}
-		}
-	}
+    // Get all the servers that have monitoring enabled
+    List<Host> allHosts = rootNode.conn.getNet().getHost().getRows();
+    List<Host> hosts = new ArrayList<>(allHosts.size());
+    for (Host host : allHosts) {
+      if (host.isMonitoringEnabled() && includeHost(host)) {
+        hosts.add(host);
+      }
+    }
+    synchronized (hostNodes) {
+      if (started) {
+        // Remove old ones
+        Iterator<HostNode> hostNodeIter = hostNodes.iterator();
+        while (hostNodeIter.hasNext()) {
+          HostNode hostNode = hostNodeIter.next();
+          Host host = hostNode.getHost();
+          if (!hosts.contains(host)) {
+            hostNode.stop();
+            hostNodeIter.remove();
+            rootNode.nodeRemoved();
+          }
+        }
+        // Add new ones
+        for (int c=0;c<hosts.size();c++) {
+          Host host = hosts.get(c);
+          if (c >= hostNodes.size() || !host.equals(hostNodes.get(c).getHost())) {
+            // Insert into proper index
+            HostNode hostNode = new HostNode(this, host, port, csf, ssf);
+            hostNodes.add(c, hostNode);
+            hostNode.start();
+            rootNode.nodeAdded();
+          }
+        }
+      }
+    }
+  }
 
-	/**
-	 * Gets the top-level persistence directory.
-	 */
-	final File getPersistenceDirectory() throws IOException {
-		File dir = new File(rootNode.getPersistenceDirectory(), "servers");
-		if(!dir.exists()) {
-			if(!dir.mkdir()) {
-				throw new IOException(
-					PACKAGE_RESOURCES.getMessage(
-						rootNode.locale,
-						"error.mkdirFailed",
-						dir.getCanonicalPath()
-					)
-				);
-			}
-		}
-		return dir;
-	}
+  /**
+   * Gets the top-level persistence directory.
+   */
+  final File getPersistenceDirectory() throws IOException {
+    File dir = new File(rootNode.getPersistenceDirectory(), "servers");
+    if (!dir.exists()) {
+      if (!dir.mkdir()) {
+        throw new IOException(
+          PACKAGE_RESOURCES.getMessage(
+            rootNode.locale,
+            "error.mkdirFailed",
+            dir.getCanonicalPath()
+          )
+        );
+      }
+    }
+    return dir;
+  }
 
-	protected abstract boolean includeHost(Host host) throws SQLException, IOException;
+  protected abstract boolean includeHost(Host host) throws SQLException, IOException;
 }

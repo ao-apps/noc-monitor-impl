@@ -39,40 +39,40 @@ import java.util.List;
  */
 public class SlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicationResult> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	SlaveStatusNode(SlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
-			mysqlSlaveNode,
-			SlaveStatusNodeWorker.getWorker(
-				mysqlSlaveNode.getPersistenceDirectory(),
-				mysqlSlaveNode.getFailoverMySQLReplication()
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  SlaveStatusNode(SlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
+      mysqlSlaveNode,
+      SlaveStatusNodeWorker.getWorker(
+        mysqlSlaveNode.getPersistenceDirectory(),
+        mysqlSlaveNode.getFailoverMySQLReplication()
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.label");
+  }
 
-	@Override
-	public List<String> getColumnHeaders() {
-		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.secondsBehindMaster"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogFile"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogPosition"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIOState"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogFile"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogPosition"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIORunning"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveSQLRunning"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorNumber"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorDetails"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.alertThresholds")
-		);
-	}
+  @Override
+  public List<String> getColumnHeaders() {
+    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.secondsBehindMaster"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogFile"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogPosition"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIOState"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogFile"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogPosition"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIORunning"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveSQLRunning"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorNumber"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorDetails"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.alertThresholds")
+    );
+  }
 }

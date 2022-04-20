@@ -46,131 +46,149 @@ import java.util.Map;
  */
 class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
 
-	/**
-	 * The ping timeout.
-	 */
-	private static final int TIMEOUT = 10000;
+  /**
+   * The ping timeout.
+   */
+  private static final int TIMEOUT = 10000;
 
-	/**
-	 * One unique worker is made per persistence directory (and should match the IP address exactly)
-	 */
-	private static final Map<String, PingNodeWorker> workerCache = new HashMap<>();
-	static PingNodeWorker getWorker(File persistenceDirectory, IpAddress ipAddress) throws IOException {
-		String path = persistenceDirectory.getCanonicalPath();
-		com.aoapps.net.InetAddress ip = ipAddress.getInetAddress();
-		com.aoapps.net.InetAddress externalIp = ipAddress.getExternalInetAddress();
-		com.aoapps.net.InetAddress pingAddress = externalIp==null ? ip : externalIp;
-		synchronized(workerCache) {
-			PingNodeWorker worker = workerCache.get(path);
-			if(worker==null) {
-				worker = new PingNodeWorker(persistenceDirectory, pingAddress);
-				workerCache.put(path, worker);
-			} else {
-				if(!worker.ipAddress.equals(pingAddress)) throw new AssertionError("worker.ipAddress!=pingAddress: "+worker.ipAddress+"!="+pingAddress);
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence directory (and should match the IP address exactly)
+   */
+  private static final Map<String, PingNodeWorker> workerCache = new HashMap<>();
+  static PingNodeWorker getWorker(File persistenceDirectory, IpAddress ipAddress) throws IOException {
+    String path = persistenceDirectory.getCanonicalPath();
+    com.aoapps.net.InetAddress ip = ipAddress.getInetAddress();
+    com.aoapps.net.InetAddress externalIp = ipAddress.getExternalInetAddress();
+    com.aoapps.net.InetAddress pingAddress = externalIp == null ? ip : externalIp;
+    synchronized (workerCache) {
+      PingNodeWorker worker = workerCache.get(path);
+      if (worker == null) {
+        worker = new PingNodeWorker(persistenceDirectory, pingAddress);
+        workerCache.put(path, worker);
+      } else {
+        if (!worker.ipAddress.equals(pingAddress)) {
+          throw new AssertionError("worker.ipAddress != pingAddress: "+worker.ipAddress+" != "+pingAddress);
+        }
+      }
+      return worker;
+    }
+  }
 
-	/**
-	 * The most recent timer task
-	 */
-	private final com.aoapps.net.InetAddress ipAddress;
+  /**
+   * The most recent timer task
+   */
+  private final com.aoapps.net.InetAddress ipAddress;
 
-	private PingNodeWorker(File persistenceDirectory, com.aoapps.net.InetAddress ipAddress) throws IOException {
-		super(new File(persistenceDirectory, "pings"), new PingResultSerializer());
-		this.ipAddress = ipAddress;
-	}
+  private PingNodeWorker(File persistenceDirectory, com.aoapps.net.InetAddress ipAddress) throws IOException {
+    super(new File(persistenceDirectory, "pings"), new PingResultSerializer());
+    this.ipAddress = ipAddress;
+  }
 
-	@Override
-	protected int getHistorySize() {
-		return 10000;
-	}
+  @Override
+  protected int getHistorySize() {
+    return 10000;
+  }
 
-	/**
-	 * Uses a single sample object because no data is contained in the sample, only the timing information is maintained.
-	 */
-	private static final Object SAMPLE = new Object();
+  /**
+   * Uses a single sample object because no data is contained in the sample, only the timing information is maintained.
+   */
+  private static final Object SAMPLE = new Object();
 
-	@Override
-	protected Object getSample() throws Exception {
-		final InetAddress inetAddress = InetAddress.getByName(ipAddress.toString());
-		boolean timeout = !inetAddress.isReachable(TIMEOUT);
-		if(timeout) throw new LocalizedTimeoutException(PACKAGE_RESOURCES, "PingNodeWorker.error.timeout");
-		return SAMPLE;
-	}
+  @Override
+  protected Object getSample() throws Exception {
+    final InetAddress inetAddress = InetAddress.getByName(ipAddress.toString());
+    boolean timeout = !inetAddress.isReachable(TIMEOUT);
+    if (timeout) {
+      throw new LocalizedTimeoutException(PACKAGE_RESOURCES, "PingNodeWorker.error.timeout");
+    }
+    return SAMPLE;
+  }
 
-	/**
-	 * Figures out the alert level.  It considers only the last 10 pings.  The number of timeouts follow:
-	 *
-	 * >=4  CRITICAL
-	 * >=3  HIGH
-	 * >=2  MEDIUM
-	 * >=1  LOW
-	 * =0   NONE
-	 */
-	private static AlertLevel getAlertLevel(int packetLossPercent) {
-		if(packetLossPercent<0) return AlertLevel.UNKNOWN;
-		if(packetLossPercent>=40) return AlertLevel.CRITICAL;
-		if(packetLossPercent>=30) return AlertLevel.HIGH;
-		if(packetLossPercent>=20) return AlertLevel.MEDIUM;
-		if(packetLossPercent>=10) return AlertLevel.LOW;
-		return AlertLevel.NONE;
-	}
+  /**
+   * Figures out the alert level.  It considers only the last 10 pings.  The number of timeouts follow:
+   *
+   * >= 4  CRITICAL
+   * >= 3  HIGH
+   * >= 2  MEDIUM
+   * >= 1  LOW
+   * =0   NONE
+   */
+  private static AlertLevel getAlertLevel(int packetLossPercent) {
+    if (packetLossPercent<0) {
+      return AlertLevel.UNKNOWN;
+    }
+    if (packetLossPercent >= 40) {
+      return AlertLevel.CRITICAL;
+    }
+    if (packetLossPercent >= 30) {
+      return AlertLevel.HIGH;
+    }
+    if (packetLossPercent >= 20) {
+      return AlertLevel.MEDIUM;
+    }
+    if (packetLossPercent >= 10) {
+      return AlertLevel.LOW;
+    }
+    return AlertLevel.NONE;
+  }
 
-	/**
-	 * Gets the packet loss percent.
-	 */
-	private static int getPacketLossPercent(Iterable<? extends PingResult> previousResults) {
-		int timeouts = 0;
-		// The current value is never a timeout to get this far
-		int checked = 1;
-		// The history
-		for(PingResult previousResult : previousResults) {
-			if(previousResult.getError()!=null) timeouts++;
-			checked++;
-			if(checked>=10) break;
-		}
-		return timeouts * 10;
-	}
+  /**
+   * Gets the packet loss percent.
+   */
+  private static int getPacketLossPercent(Iterable<? extends PingResult> previousResults) {
+    int timeouts = 0;
+    // The current value is never a timeout to get this far
+    int checked = 1;
+    // The history
+    for (PingResult previousResult : previousResults) {
+      if (previousResult.getError() != null) {
+        timeouts++;
+      }
+      checked++;
+      if (checked >= 10) {
+        break;
+      }
+    }
+    return timeouts * 10;
+  }
 
-	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(Object sample, Iterable<? extends PingResult> previousResults) throws Exception {
-		int packetLossPercent = getPacketLossPercent(previousResults);
-		return new AlertLevelAndMessage(
-			getAlertLevel(packetLossPercent),
-			locale -> PACKAGE_RESOURCES.getMessage(
-				locale,
-				"PingNodeWorker.alertMessage",
-				packetLossPercent
-			)
-		);
-	}
+  @Override
+  protected AlertLevelAndMessage getAlertLevelAndMessage(Object sample, Iterable<? extends PingResult> previousResults) throws Exception {
+    int packetLossPercent = getPacketLossPercent(previousResults);
+    return new AlertLevelAndMessage(
+      getAlertLevel(packetLossPercent),
+      locale -> PACKAGE_RESOURCES.getMessage(
+        locale,
+        "PingNodeWorker.alertMessage",
+        packetLossPercent
+      )
+    );
+  }
 
-	/**
-	 * Since pings support timeout, no need to provide timeout through
-	 * Future objects and ExecutorService.
-	 */
-	@Override
-	protected boolean useFutureTimeout() {
-		return false;
-	}
+  /**
+   * Since pings support timeout, no need to provide timeout through
+   * Future objects and ExecutorService.
+   */
+  @Override
+  protected boolean useFutureTimeout() {
+    return false;
+  }
 
-	/**
-	 * Sleeps one minute between checks.
-	 */
-	@Override
-	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		return 60000;
-	}
+  /**
+   * Sleeps one minute between checks.
+   */
+  @Override
+  protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+    return 60000;
+  }
 
-	@Override
-	protected PingResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-		return new PingResult(time, latency, alertLevel, error);
-	}
+  @Override
+  protected PingResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
+    return new PingResult(time, latency, alertLevel, error);
+  }
 
-	@Override
-	protected PingResult newSampleResult(long time, long latency, AlertLevel alertLevel, Object sample) {
-		return new PingResult(time, latency, alertLevel);
-	}
+  @Override
+  protected PingResult newSampleResult(long time, long latency, AlertLevel alertLevel, Object sample) {
+    return new PingResult(time, latency, alertLevel);
+  }
 }

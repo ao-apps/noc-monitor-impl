@@ -39,38 +39,38 @@ import java.util.List;
  */
 public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	//private final Server _linuxServer;
+  //private final Server _linuxServer;
 
-	public MemoryNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			hostNode.hostsNode.rootNode,
-			hostNode,
-			MemoryNodeWorker.getWorker(
-				hostNode.getPersistenceDirectory(),
-				linuxServer
-			),
-			port,
-			csf,
-			ssf
-		);
-		//this._linuxServer = linuxServer;
-	}
+  public MemoryNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      hostNode.hostsNode.rootNode,
+      hostNode,
+      MemoryNodeWorker.getWorker(
+        hostNode.getPersistenceDirectory(),
+        linuxServer
+      ),
+      port,
+      csf,
+      ssf
+    );
+    //this._linuxServer = linuxServer;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.label");
+  }
 
-	@Override
-	public List<String> getColumnHeaders() {
-		return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memTotal"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memFree"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.buffers"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.cached"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapTotal"),
-			PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapFree")
-		);
-	}
+  @Override
+  public List<String> getColumnHeaders() {
+    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memTotal"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memFree"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.buffers"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.cached"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapTotal"),
+      PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapFree")
+    );
+  }
 }

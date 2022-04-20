@@ -38,19 +38,19 @@ import com.aoindustries.noc.monitor.portmon.PortMonitor;
  */
 public class AOServDaemonPortMonitor extends PortMonitor {
 
-	private final Server linuxServer;
-	private final String appProtocol;
-	private final URIParameters monitoringParameters;
+  private final Server linuxServer;
+  private final String appProtocol;
+  private final URIParameters monitoringParameters;
 
-	public AOServDaemonPortMonitor(Server linuxServer, InetAddress ipAddress, Port port, String appProtocol, URIParameters monitoringParameters) {
-		super(ipAddress, port);
-		this.linuxServer = linuxServer;
-		this.appProtocol = appProtocol;
-		this.monitoringParameters = monitoringParameters;
-	}
+  public AOServDaemonPortMonitor(Server linuxServer, InetAddress ipAddress, Port port, String appProtocol, URIParameters monitoringParameters) {
+    super(ipAddress, port);
+    this.linuxServer = linuxServer;
+    this.appProtocol = appProtocol;
+    this.monitoringParameters = monitoringParameters;
+  }
 
-	@Override
-	public String checkPort() throws Exception {
-		return linuxServer.checkPort(ipAddress, port, appProtocol, monitoringParameters);
-	}
+  @Override
+  public String checkPort() throws Exception {
+    return linuxServer.checkPort(ipAddress, port, appProtocol, monitoringParameters);
+  }
 }

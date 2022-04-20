@@ -51,308 +51,328 @@ import javax.swing.SwingUtilities;
  */
 public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
 
-	private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
 
-	/**
-	 * The most recent timer task
-	 */
-	private final Object timerTaskLock = new Object();
-	private Future<?> timerTask;
+  /**
+   * The most recent timer task
+   */
+  private final Object timerTaskLock = new Object();
+  private Future<?> timerTask;
 
-	private volatile TableResult lastResult;
-	private volatile AlertLevel alertLevel = null;
-	private volatile Function<Locale, String> alertMessage = null;
+  private volatile TableResult lastResult;
+  private volatile AlertLevel alertLevel = null;
+  private volatile Function<Locale, String> alertMessage = null;
 
-	private final List<TableResultNodeImpl> tableResultNodeImpls = new ArrayList<>();
+  private final List<TableResultNodeImpl> tableResultNodeImpls = new ArrayList<>();
 
-	protected final File persistenceFile;
+  protected final File persistenceFile;
 
-	protected TableResultNodeWorker(File persistenceFile) {
-		this.persistenceFile = persistenceFile;
-	}
+  protected TableResultNodeWorker(File persistenceFile) {
+    this.persistenceFile = persistenceFile;
+  }
 
-	final TableResult getLastResult() {
-		return lastResult;
-	}
+  final TableResult getLastResult() {
+    return lastResult;
+  }
 
-	public final AlertLevel getAlertLevel() {
-		return alertLevel;
-	}
+  public final AlertLevel getAlertLevel() {
+    return alertLevel;
+  }
 
-	final Function<Locale, String> getAlertMessage() {
-		return alertMessage;
-	}
+  final Function<Locale, String> getAlertMessage() {
+    return alertMessage;
+  }
 
-	/**
-	 * The default startup delay is within five minutes.
-	 */
-	protected int getNextStartupDelay() {
-		return RootNodeImpl.getNextStartupDelayFiveMinutes();
-	}
+  /**
+   * The default startup delay is within five minutes.
+   */
+  protected int getNextStartupDelay() {
+    return RootNodeImpl.getNextStartupDelayFiveMinutes();
+  }
 
-	private void start() {
-		synchronized(timerTaskLock) {
-			assert timerTask==null : "thread already started";
-			timerTask = RootNodeImpl.schedule(this, getNextStartupDelay());
-		}
-	}
+  private void start() {
+    synchronized (timerTaskLock) {
+      assert timerTask == null : "thread already started";
+      timerTask = RootNodeImpl.schedule(this, getNextStartupDelay());
+    }
+  }
 
-	private void stop() {
-		synchronized(timerTaskLock) {
-			if(timerTask!=null) {
-				timerTask.cancel(true);
-				timerTask = null;
-			}
-		}
-	}
+  private void stop() {
+    synchronized (timerTaskLock) {
+      if (timerTask != null) {
+        timerTask.cancel(true);
+        timerTask = null;
+      }
+    }
+  }
 
-	private QR getQueryResultWithTimeout() throws InterruptedException, TimeoutException, Exception {
-		Future<QR> future = RootNodeImpl.executors.getUnbounded().submit(this::getQueryResult);
-		try {
-			return future.get(getTimeout(), getTimeoutUnit());
-		} catch(InterruptedException | TimeoutException err) {
-			cancel(future);
-			throw err;
-		}
-	}
+  private QR getQueryResultWithTimeout() throws InterruptedException, TimeoutException, Exception {
+    Future<QR> future = RootNodeImpl.executors.getUnbounded().submit(this::getQueryResult);
+    try {
+      return future.get(getTimeout(), getTimeoutUnit());
+    } catch (InterruptedException | TimeoutException err) {
+      cancel(future);
+      throw err;
+    }
+  }
 
-	/**
-	 * Enables incremental alert level ramp-up, where the node's alert level
-	 * is only incremented one step at a time per monitoring pass.  This makes
-	 * the resource more tolerant of intermittent problems, at the cost of
-	 * slower reaction time.
-	 * <p>
-	 * <b>Implementation Note:</b><br>
-	 * Enabled by default
-	 * </p>
-	 *
-	 * @see  SingleResultNodeWorker#isIncrementalRampUp(boolean)
-	 * @see  TableMultiResultNodeWorker#isIncrementalRampUp(boolean)
-	 */
-	protected boolean isIncrementalRampUp(boolean isError) {
-		return true;
-	}
+  /**
+   * Enables incremental alert level ramp-up, where the node's alert level
+   * is only incremented one step at a time per monitoring pass.  This makes
+   * the resource more tolerant of intermittent problems, at the cost of
+   * slower reaction time.
+   * <p>
+   * <b>Implementation Note:</b><br>
+   * Enabled by default
+   * </p>
+   *
+   * @see  SingleResultNodeWorker#isIncrementalRampUp(boolean)
+   * @see  TableMultiResultNodeWorker#isIncrementalRampUp(boolean)
+   */
+  protected boolean isIncrementalRampUp(boolean isError) {
+    return true;
+  }
 
-	@Override
-	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	public final void run() {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  @Override
+  @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
+  public final void run() {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		boolean lastSuccessful = false;
-		synchronized(timerTaskLock) {if(timerTask==null) return;}
-		AlertLevel maxAlertLevel = alertLevel;
-		try {
-			long startMillis = System.currentTimeMillis();
-			long startNanos = System.nanoTime();
+    boolean lastSuccessful = false;
+    synchronized (timerTaskLock) {
+      if (timerTask == null) {
+        return;
+      }
+    }
+    AlertLevel maxAlertLevel = alertLevel;
+    try {
+      long startMillis = System.currentTimeMillis();
+      long startNanos = System.nanoTime();
 
-			AlertLevel curAlertLevel = alertLevel;
-			if(curAlertLevel == null) curAlertLevel = AlertLevel.NONE;
+      AlertLevel curAlertLevel = alertLevel;
+      if (curAlertLevel == null) {
+        curAlertLevel = AlertLevel.NONE;
+      }
 
-			int columns;
-			int rows;
-			SerializableFunction<Locale, ? extends List<String>> columnHeaders;
-			SerializableFunction<Locale, ? extends List<?>> tableData;
-			List<AlertLevel> alertLevels;
-			boolean isError;
-			try {
-				QR queryResult = getQueryResultWithTimeout();
-				SerializableFunction<Locale, ? extends List<? extends TD>> successfulTableData = getTableData(queryResult);
-				columns = getColumns();
-				rows = successfulTableData.apply(Locale.getDefault()).size() / columns; // TODO: Is possible to delay getting number of rows until locale known?
-				columnHeaders = getColumnHeaders();
-				alertLevels = Collections.unmodifiableList(getAlertLevels(queryResult));
-				isError = false;
-				lastSuccessful = true;
-				tableData = successfulTableData;
-			} catch(Exception err) {
-				columns = 1;
-				rows = 1;
-				columnHeaders = locale -> Collections.singletonList(
-					PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
-				);
-				tableData = locale -> ThreadLocale.call(locale,
-					() -> {
-						String msg = err.getLocalizedMessage();
-						if(msg == null || msg.isEmpty()) msg = err.toString();
-						return Collections.singletonList(
-							PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
-						);
-					}
-				);
-				alertLevels = Collections.singletonList(
-					// Don't downgrade UNKNOWN to CRITICAL on error
-					EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel)
-				);
-				isError = true;
-				lastSuccessful = false;
-			}
-			long pingNanos = System.nanoTime() - startNanos;
+      int columns;
+      int rows;
+      SerializableFunction<Locale, ? extends List<String>> columnHeaders;
+      SerializableFunction<Locale, ? extends List<?>> tableData;
+      List<AlertLevel> alertLevels;
+      boolean isError;
+      try {
+        QR queryResult = getQueryResultWithTimeout();
+        SerializableFunction<Locale, ? extends List<? extends TD>> successfulTableData = getTableData(queryResult);
+        columns = getColumns();
+        rows = successfulTableData.apply(Locale.getDefault()).size() / columns; // TODO: Is possible to delay getting number of rows until locale known?
+        columnHeaders = getColumnHeaders();
+        alertLevels = Collections.unmodifiableList(getAlertLevels(queryResult));
+        isError = false;
+        lastSuccessful = true;
+        tableData = successfulTableData;
+      } catch (Exception err) {
+        columns = 1;
+        rows = 1;
+        columnHeaders = locale -> Collections.singletonList(
+          PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
+        );
+        tableData = locale -> ThreadLocale.call(locale,
+          () -> {
+            String msg = err.getLocalizedMessage();
+            if (msg == null || msg.isEmpty()) {
+              msg = err.toString();
+            }
+            return Collections.singletonList(
+              PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
+            );
+          }
+        );
+        alertLevels = Collections.singletonList(
+          // Don't downgrade UNKNOWN to CRITICAL on error
+          EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel)
+        );
+        isError = true;
+        lastSuccessful = false;
+      }
+      long pingNanos = System.nanoTime() - startNanos;
 
-			synchronized(timerTaskLock) {if(timerTask==null) return;}
+      synchronized (timerTaskLock) {
+        if (timerTask == null) {
+          return;
+        }
+      }
 
-			TableResult result = new TableResult(
-				startMillis,
-				pingNanos,
-				isError,
-				columns,
-				rows,
-				columnHeaders,
-				tableData,
-				alertLevels
-			);
-			lastResult = result;
+      TableResult result = new TableResult(
+        startMillis,
+        pingNanos,
+        isError,
+        columns,
+        rows,
+        columnHeaders,
+        tableData,
+        alertLevels
+      );
+      lastResult = result;
 
-			AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(curAlertLevel, result);
-			maxAlertLevel = alertLevelAndMessage.getAlertLevel();
-			AlertLevel newAlertLevel;
-			// TODO: Immediate jump to UNKNOWN like TableMultiResultNodeWorker?
-			if(maxAlertLevel.compareTo(curAlertLevel) < 0) {
-				// If maxAlertLevel < current, drop current to be the max
-				newAlertLevel = maxAlertLevel;
-			} else if(isIncrementalRampUp(isError) && curAlertLevel.compareTo(maxAlertLevel) < 0) {
-				// If current < maxAlertLevel, increment by one
-				newAlertLevel = AlertLevel.fromOrdinal(curAlertLevel.ordinal() + 1);
-			} else {
-				newAlertLevel = maxAlertLevel;
-			}
+      AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(curAlertLevel, result);
+      maxAlertLevel = alertLevelAndMessage.getAlertLevel();
+      AlertLevel newAlertLevel;
+      // TODO: Immediate jump to UNKNOWN like TableMultiResultNodeWorker?
+      if (maxAlertLevel.compareTo(curAlertLevel) < 0) {
+        // If maxAlertLevel < current, drop current to be the max
+        newAlertLevel = maxAlertLevel;
+      } else if (isIncrementalRampUp(isError) && curAlertLevel.compareTo(maxAlertLevel) < 0) {
+        // If current < maxAlertLevel, increment by one
+        newAlertLevel = AlertLevel.fromOrdinal(curAlertLevel.ordinal() + 1);
+      } else {
+        newAlertLevel = maxAlertLevel;
+      }
 
-			AlertLevel oldAlertLevel = alertLevel;
-			if(oldAlertLevel == null) oldAlertLevel = AlertLevel.UNKNOWN;
-			alertLevel = newAlertLevel;
-			alertMessage = alertLevelAndMessage.getAlertMessage();
-			tableResultUpdated(result);
-			if(oldAlertLevel!=newAlertLevel) {
-				synchronized(tableResultNodeImpls) {
-					for(TableResultNodeImpl tableResultNodeImpl : tableResultNodeImpls) {
-						tableResultNodeImpl.nodeAlertLevelChanged(
-							oldAlertLevel,
-							newAlertLevel,
-							alertMessage
-						);
-					}
-				}
-			}
-		} catch(ThreadDeath td) {
-			lastSuccessful = false;
-			throw td;
-		} catch(Throwable t) {
-			logger.log(Level.SEVERE, null, t);
-			lastSuccessful = false;
-		} finally {
-			// Reschedule next timer task if still running
-			synchronized(timerTaskLock) {
-				if(timerTask!=null) {
-					timerTask = RootNodeImpl.schedule(
-						this,
-						getSleepDelay(lastSuccessful, maxAlertLevel)
-					);
-				}
-			}
-		}
-	}
+      AlertLevel oldAlertLevel = alertLevel;
+      if (oldAlertLevel == null) {
+        oldAlertLevel = AlertLevel.UNKNOWN;
+      }
+      alertLevel = newAlertLevel;
+      alertMessage = alertLevelAndMessage.getAlertMessage();
+      tableResultUpdated(result);
+      if (oldAlertLevel != newAlertLevel) {
+        synchronized (tableResultNodeImpls) {
+          for (TableResultNodeImpl tableResultNodeImpl : tableResultNodeImpls) {
+            tableResultNodeImpl.nodeAlertLevelChanged(
+              oldAlertLevel,
+              newAlertLevel,
+              alertMessage
+            );
+          }
+        }
+      }
+    } catch (ThreadDeath td) {
+      lastSuccessful = false;
+      throw td;
+    } catch (Throwable t) {
+      logger.log(Level.SEVERE, null, t);
+      lastSuccessful = false;
+    } finally {
+      // Reschedule next timer task if still running
+      synchronized (timerTaskLock) {
+        if (timerTask != null) {
+          timerTask = RootNodeImpl.schedule(
+            this,
+            getSleepDelay(lastSuccessful, maxAlertLevel)
+          );
+        }
+      }
+    }
+  }
 
-	/**
-	 * Gets the timeout value.  Defaults to <code>5</code>.
-	 */
-	protected long getTimeout() {
-		return 5;
-	}
+  /**
+   * Gets the timeout value.  Defaults to <code>5</code>.
+   */
+  protected long getTimeout() {
+    return 5;
+  }
 
-	/**
-	 * Gets the timeout time unit.  Defaults to <code>TimeUnit.MINUTES</code>.
-	 */
-	protected TimeUnit getTimeoutUnit() {
-		return TimeUnit.MINUTES;
-	}
+  /**
+   * Gets the timeout time unit.  Defaults to <code>TimeUnit.MINUTES</code>.
+   */
+  protected TimeUnit getTimeoutUnit() {
+    return TimeUnit.MINUTES;
+  }
 
-	final void addTableResultNodeImpl(TableResultNodeImpl tableResultNodeImpl) {
-		synchronized(tableResultNodeImpls) {
-			boolean needsStart = tableResultNodeImpls.isEmpty();
-			assert !CollectionUtils.containsByIdentity(tableResultNodeImpls, tableResultNodeImpl);
-			tableResultNodeImpls.add(tableResultNodeImpl);
-			if(needsStart) start();
-		}
-	}
+  final void addTableResultNodeImpl(TableResultNodeImpl tableResultNodeImpl) {
+    synchronized (tableResultNodeImpls) {
+      boolean needsStart = tableResultNodeImpls.isEmpty();
+      assert !CollectionUtils.containsByIdentity(tableResultNodeImpls, tableResultNodeImpl);
+      tableResultNodeImpls.add(tableResultNodeImpl);
+      if (needsStart) {
+        start();
+      }
+    }
+  }
 
-	final void removeTableResultNodeImpl(TableResultNodeImpl tableResultNodeImpl) {
-		synchronized(tableResultNodeImpls) {
-			if(tableResultNodeImpls.isEmpty()) throw new AssertionError("tableResultNodeImpls is empty");
-			boolean found = false;
-			for(int c=tableResultNodeImpls.size()-1;c>=0;c--) {
-				if(tableResultNodeImpls.get(c)==tableResultNodeImpl) {
-					tableResultNodeImpls.remove(c);
-					found = true;
-					break;
-				}
-			}
-			if(!found && logger.isLoggable(Level.WARNING)) logger.log(Level.WARNING, "tableResultNodeImpl not found in tableResultNodeImpls: " + tableResultNodeImpl);
-			assert !CollectionUtils.containsByIdentity(tableResultNodeImpls, tableResultNodeImpl);
-			if(tableResultNodeImpls.isEmpty()) {
-				stop();
-			}
-		}
-	}
+  final void removeTableResultNodeImpl(TableResultNodeImpl tableResultNodeImpl) {
+    synchronized (tableResultNodeImpls) {
+      if (tableResultNodeImpls.isEmpty()) {
+        throw new AssertionError("tableResultNodeImpls is empty");
+      }
+      boolean found = false;
+      for (int c=tableResultNodeImpls.size()-1;c >= 0;c--) {
+        if (tableResultNodeImpls.get(c) == tableResultNodeImpl) {
+          tableResultNodeImpls.remove(c);
+          found = true;
+          break;
+        }
+      }
+      if (!found && logger.isLoggable(Level.WARNING)) {
+        logger.log(Level.WARNING, "tableResultNodeImpl not found in tableResultNodeImpls: " + tableResultNodeImpl);
+      }
+      assert !CollectionUtils.containsByIdentity(tableResultNodeImpls, tableResultNodeImpl);
+      if (tableResultNodeImpls.isEmpty()) {
+        stop();
+      }
+    }
+  }
 
-	/**
-	 * Notifies all of the listeners.
-	 */
-	private void tableResultUpdated(TableResult tableResult) {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  /**
+   * Notifies all of the listeners.
+   */
+  private void tableResultUpdated(TableResult tableResult) {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		synchronized(tableResultNodeImpls) {
-			for(TableResultNodeImpl tableResultNodeImpl : tableResultNodeImpls) {
-				tableResultNodeImpl.tableResultUpdated(tableResult);
-			}
-		}
-	}
+    synchronized (tableResultNodeImpls) {
+      for (TableResultNodeImpl tableResultNodeImpl : tableResultNodeImpls) {
+        tableResultNodeImpl.tableResultUpdated(tableResult);
+      }
+    }
+  }
 
-	/**
-	 * The default sleep delay is five minutes when successful or
-	 * one minute when unsuccessful.
-	 *
-	 * @param  alertLevel  When {@code null}, treated as {@link AlertLevel#UNKNOWN}
-	 */
-	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		return (lastSuccessful && alertLevel == AlertLevel.NONE) ? (5L * 60 * 1000) : (60L * 1000);
-	}
+  /**
+   * The default sleep delay is five minutes when successful or
+   * one minute when unsuccessful.
+   *
+   * @param  alertLevel  When {@code null}, treated as {@link AlertLevel#UNKNOWN}
+   */
+  protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+    return (lastSuccessful && alertLevel == AlertLevel.NONE) ? (5L * 60 * 1000) : (60L * 1000);
+  }
 
-	/**
-	 * Determines the alert level and message for the provided result.  This result may also represent the error state.
-	 * The error state will always have columns=1, rows=1, and tableData.size()==1
-	 */
-	public abstract AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result);
+  /**
+   * Determines the alert level and message for the provided result.  This result may also represent the error state.
+   * The error state will always have columns=1, rows=1, and tableData.size() == 1
+   */
+  public abstract AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result);
 
-	/**
-	 * Gets the number of columns in the table data.
-	 */
-	protected abstract int getColumns();
+  /**
+   * Gets the number of columns in the table data.
+   */
+  protected abstract int getColumns();
 
-	/**
-	 * Gets the column headers.
-	 */
-	protected abstract SerializableFunction<Locale, ? extends List<String>> getColumnHeaders();
+  /**
+   * Gets the column headers.
+   */
+  protected abstract SerializableFunction<Locale, ? extends List<String>> getColumnHeaders();
 
-	/**
-	 * Gets the current table data for this worker.
-	 */
-	protected abstract QR getQueryResult() throws InterruptedException, Exception;
+  /**
+   * Gets the current table data for this worker.
+   */
+  protected abstract QR getQueryResult() throws InterruptedException, Exception;
 
-	/**
-	 * Gets the table data for the query result.  This must be processed quickly.
-	 */
-	protected abstract SerializableFunction<Locale, ? extends List<? extends TD>> getTableData(QR queryResult) throws Exception;
+  /**
+   * Gets the table data for the query result.  This must be processed quickly.
+   */
+  protected abstract SerializableFunction<Locale, ? extends List<? extends TD>> getTableData(QR queryResult) throws Exception;
 
-	/**
-	 * Cancels the current getTableData call on a best-effort basis.
-	 * Implementations of this method <b>must not block</b>.
-	 * This default implementation calls <code>future.cancel(true)</code>.
-	 */
-	protected void cancel(Future<QR> future) {
-		future.cancel(true);
-	}
+  /**
+   * Cancels the current getTableData call on a best-effort basis.
+   * Implementations of this method <b>must not block</b>.
+   * This default implementation calls <code>future.cancel(true)</code>.
+   */
+  protected void cancel(Future<QR> future) {
+    future.cancel(true);
+  }
 
-	/**
-	 * Gets the alert levels for the provided data.
-	 */
-	protected abstract List<AlertLevel> getAlertLevels(QR queryResult);
+  /**
+   * Gets the alert levels for the provided data.
+   */
+  protected abstract List<AlertLevel> getAlertLevels(QR queryResult);
 }

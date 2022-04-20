@@ -37,24 +37,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class HardDrivesTemperatureNode extends TableResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			hardDrivesNode.hostNode.hostsNode.rootNode,
-			hardDrivesNode,
-			HardDrivesTemperatureNodeWorker.getWorker(
-				new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
-				hardDrivesNode.getLinuxServer()
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      hardDrivesNode.hostNode.hostsNode.rootNode,
+      hardDrivesNode,
+      HardDrivesTemperatureNodeWorker.getWorker(
+        new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
+        hardDrivesNode.getLinuxServer()
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HardDrivesTemperatureNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HardDrivesTemperatureNode.label");
+  }
 }

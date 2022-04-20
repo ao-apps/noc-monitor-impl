@@ -39,30 +39,30 @@ import java.util.List;
  */
 public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public TimeNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			hostNode.hostsNode.rootNode,
-			hostNode,
-			TimeNodeWorker.getWorker(
-				hostNode.getPersistenceDirectory(),
-				linuxServer
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  public TimeNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      hostNode.hostsNode.rootNode,
+      hostNode,
+      TimeNodeWorker.getWorker(
+        hostNode.getPersistenceDirectory(),
+        linuxServer
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "TimeNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "TimeNode.label");
+  }
 
-	@Override
-	public List<?> getColumnHeaders() {
-		return Collections.singletonList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "TimeNode.columnHeader.clockSkew")
-		);
-	}
+  @Override
+  public List<?> getColumnHeaders() {
+    return Collections.singletonList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "TimeNode.columnHeader.clockSkew")
+    );
+  }
 }

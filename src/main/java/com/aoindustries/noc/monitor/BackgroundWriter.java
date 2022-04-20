@@ -60,78 +60,80 @@ import java.util.zip.GZIPOutputStream;
  */
 final class BackgroundWriter {
 
-	/** Make no instances. */
-	private BackgroundWriter() {throw new AssertionError();}
+  /** Make no instances. */
+  private BackgroundWriter() {
+    throw new AssertionError();
+  }
 
-	private static final Logger logger = Logger.getLogger(BackgroundWriter.class.getName());
+  private static final Logger logger = Logger.getLogger(BackgroundWriter.class.getName());
 
-	private static class QueueEntry {
+  private static class QueueEntry {
 
-		private final File newPersistenceFile;
-		private final Serializable object;
-		private final boolean gzip;
+    private final File newPersistenceFile;
+    private final Serializable object;
+    private final boolean gzip;
 
-		private QueueEntry(File newPersistenceFile, Serializable object, boolean gzip) {
-			this.newPersistenceFile = newPersistenceFile;
-			this.object = object;
-			this.gzip = gzip;
-		}
-	}
+    private QueueEntry(File newPersistenceFile, Serializable object, boolean gzip) {
+      this.newPersistenceFile = newPersistenceFile;
+      this.object = object;
+      this.gzip = gzip;
+    }
+  }
 
-	// These are both synchronized on queue
-	private static final LinkedHashMap<File, QueueEntry> queue = new LinkedHashMap<>();
-	private static boolean running = false;
+  // These are both synchronized on queue
+  private static final LinkedHashMap<File, QueueEntry> queue = new LinkedHashMap<>();
+  private static boolean running = false;
 
-	/**
-	 * Queues the object for write.  No defensive copy of the object is made - do not change after giving to this method.
-	 */
-	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) {
-		QueueEntry queueEntry = new QueueEntry(newPersistenceFile, serializable, gzip);
-		synchronized(queue) {
-			if(queue.put(persistenceFile, queueEntry)!=null) {
-				logger.finer("DEBUG: BackgroundWriter: Updating existing in queue");
-			}
-			if(!running) {
-				RootNodeImpl.executors.getUnbounded().submit(() -> {
-					int counter = 0;
-					while (true) {
-						// Get the next file from the queue until done
-						File persistenceFile1;
-						QueueEntry queueEntry1;
-						synchronized (queue) {
-							Iterator<Map.Entry<File, QueueEntry>> iter = queue.entrySet().iterator();
-							if(!iter.hasNext()) {
-								running = false;
-								logger.finer("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
-								return;
-							}
-							Map.Entry<File, QueueEntry> first = iter.next();
-							persistenceFile1 = first.getKey();
-							queueEntry1 = first.getValue();
-							iter.remove();
-							counter++;
-						}
-						try {
-							try (
-								ObjectOutputStream oout = new ObjectOutputStream(
-									queueEntry1.gzip
-									? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile)))
-									: new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile))
-								)
-							) {
-								oout.writeObject(queueEntry1.object);
-							}
-							FileUtils.renameAllowNonAtomic(queueEntry1.newPersistenceFile, persistenceFile1);
-						} catch(ThreadDeath td) {
-							throw td;
-						} catch(Throwable t) {
-							logger.log(Level.SEVERE, null, t);
-						}
-					}
-				});
-				running = true;
-			}
-		}
-	}
+  /**
+   * Queues the object for write.  No defensive copy of the object is made - do not change after giving to this method.
+   */
+  @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
+  static void enqueueObject(File persistenceFile, File newPersistenceFile, Serializable serializable, boolean gzip) {
+    QueueEntry queueEntry = new QueueEntry(newPersistenceFile, serializable, gzip);
+    synchronized (queue) {
+      if (queue.put(persistenceFile, queueEntry) != null) {
+        logger.finer("DEBUG: BackgroundWriter: Updating existing in queue");
+      }
+      if (!running) {
+        RootNodeImpl.executors.getUnbounded().submit(() -> {
+          int counter = 0;
+          while (true) {
+            // Get the next file from the queue until done
+            File persistenceFile1;
+            QueueEntry queueEntry1;
+            synchronized (queue) {
+              Iterator<Map.Entry<File, QueueEntry>> iter = queue.entrySet().iterator();
+              if (!iter.hasNext()) {
+                running = false;
+                logger.finer("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
+                return;
+              }
+              Map.Entry<File, QueueEntry> first = iter.next();
+              persistenceFile1 = first.getKey();
+              queueEntry1 = first.getValue();
+              iter.remove();
+              counter++;
+            }
+            try {
+              try (
+                ObjectOutputStream oout = new ObjectOutputStream(
+                  queueEntry1.gzip
+                  ? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile)))
+                  : new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile))
+                )
+              ) {
+                oout.writeObject(queueEntry1.object);
+              }
+              FileUtils.renameAllowNonAtomic(queueEntry1.newPersistenceFile, persistenceFile1);
+            } catch (ThreadDeath td) {
+              throw td;
+            } catch (Throwable t) {
+              logger.log(Level.SEVERE, null, t);
+            }
+          }
+        });
+        running = true;
+      }
+    }
+  }
 }

@@ -37,54 +37,58 @@ import java.io.InputStream;
  */
 public class DeviceBitRateResultSerializer extends BufferedSerializer<NetDeviceBitRateResult> {
 
-	private static final int VERSION = 1;
+  private static final int VERSION = 1;
 
-	@Override
-	protected void serialize(NetDeviceBitRateResult value, ByteArrayOutputStream buffer) throws IOException {
-		try (StreamableOutput out = new StreamableOutput(buffer)) {
-			out.writeCompressedInt(VERSION);
-			out.writeLong(value.getTime());
-			out.writeLong(value.getLatency());
-			out.writeByte(value.getAlertLevel().ordinal());
-			String error = value.getError();
-			out.writeNullUTF(error);
-			if(error==null) {
-				out.writeLong(value.getTxBitsPerSecond());
-				out.writeLong(value.getRxBitsPerSecond());
-				out.writeLong(value.getTxPacketsPerSecond());
-				out.writeLong(value.getRxPacketsPerSecond());
-				out.writeLong(value.getBpsLow());
-				out.writeLong(value.getBpsMedium());
-				out.writeLong(value.getBpsHigh());
-				out.writeLong(value.getBpsCritical());
-			}
-		}
-	}
+  @Override
+  protected void serialize(NetDeviceBitRateResult value, ByteArrayOutputStream buffer) throws IOException {
+    try (StreamableOutput out = new StreamableOutput(buffer)) {
+      out.writeCompressedInt(VERSION);
+      out.writeLong(value.getTime());
+      out.writeLong(value.getLatency());
+      out.writeByte(value.getAlertLevel().ordinal());
+      String error = value.getError();
+      out.writeNullUTF(error);
+      if (error == null) {
+        out.writeLong(value.getTxBitsPerSecond());
+        out.writeLong(value.getRxBitsPerSecond());
+        out.writeLong(value.getTxPacketsPerSecond());
+        out.writeLong(value.getRxPacketsPerSecond());
+        out.writeLong(value.getBpsLow());
+        out.writeLong(value.getBpsMedium());
+        out.writeLong(value.getBpsHigh());
+        out.writeLong(value.getBpsCritical());
+      }
+    }
+  }
 
-	@Override
-	public NetDeviceBitRateResult deserialize(InputStream rawIn) throws IOException {
-		try (StreamableInput in = new StreamableInput(rawIn)) {
-			int version = in.readCompressedInt();
-			if(version==1) {
-				long time = in.readLong();
-				long latency = in.readLong();
-				AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
-				String error = in.readNullUTF();
-				if(error!=null) return new NetDeviceBitRateResult(time, latency, alertLevel, error);
-				return new NetDeviceBitRateResult(
-					time,
-					latency,
-					alertLevel,
-					in.readLong(),
-					in.readLong(),
-					in.readLong(),
-					in.readLong(),
-					in.readLong(),
-					in.readLong(),
-					in.readLong(),
-					in.readLong()
-				);
-			} else throw new IOException("Unsupported object version: "+version);
-		}
-	}
+  @Override
+  public NetDeviceBitRateResult deserialize(InputStream rawIn) throws IOException {
+    try (StreamableInput in = new StreamableInput(rawIn)) {
+      int version = in.readCompressedInt();
+      if (version == 1) {
+        long time = in.readLong();
+        long latency = in.readLong();
+        AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
+        String error = in.readNullUTF();
+        if (error != null) {
+          return new NetDeviceBitRateResult(time, latency, alertLevel, error);
+        }
+        return new NetDeviceBitRateResult(
+          time,
+          latency,
+          alertLevel,
+          in.readLong(),
+          in.readLong(),
+          in.readLong(),
+          in.readLong(),
+          in.readLong(),
+          in.readLong(),
+          in.readLong(),
+          in.readLong()
+        );
+      } else {
+        throw new IOException("Unsupported object version: "+version);
+      }
+    }
+  }
 }

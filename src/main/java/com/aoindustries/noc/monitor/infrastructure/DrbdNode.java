@@ -39,24 +39,24 @@ import java.sql.SQLException;
  */
 public class DrbdNode extends TableResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
-		super(
-			raidNode.hostNode.hostsNode.rootNode,
-			raidNode,
-			DrbdNodeWorker.getWorker(
-				new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
-				raidNode.getAOServer()
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  public DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    super(
+      raidNode.hostNode.hostsNode.rootNode,
+      raidNode,
+      DrbdNodeWorker.getWorker(
+        new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
+        raidNode.getAOServer()
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "DrbdNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "DrbdNode.label");
+  }
 }

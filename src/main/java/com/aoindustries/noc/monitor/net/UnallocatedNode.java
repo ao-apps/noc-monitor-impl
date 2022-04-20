@@ -44,102 +44,104 @@ import java.util.List;
  */
 public class UnallocatedNode extends NodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	final RootNodeImpl rootNode;
+  final RootNodeImpl rootNode;
 
-	private boolean started;
+  private boolean started;
 
-	private volatile IpAddressesNode _ipAddressesNode;
+  private volatile IpAddressesNode _ipAddressesNode;
 
-	public UnallocatedNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(port, csf, ssf);
-		this.rootNode = rootNode;
-	}
+  public UnallocatedNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(port, csf, ssf);
+    this.rootNode = rootNode;
+  }
 
-	@Override
-	public RootNodeImpl getParent() {
-		return rootNode;
-	}
+  @Override
+  public RootNodeImpl getParent() {
+    return rootNode;
+  }
 
-	@Override
-	public boolean getAllowsChildren() {
-		return true;
-	}
+  @Override
+  public boolean getAllowsChildren() {
+    return true;
+  }
 
-	@Override
-	public List<IpAddressesNode> getChildren() {
-		return getSnapshot(
-			this._ipAddressesNode
-		);
-	}
+  @Override
+  public List<IpAddressesNode> getChildren() {
+    return getSnapshot(
+      this._ipAddressesNode
+    );
+  }
 
-	/**
-	 * The alert level is equal to the highest alert level of its children.
-	 */
-	@Override
-	public AlertLevel getAlertLevel() {
-		return constrainAlertLevel(
-			AlertLevelUtils.getMaxAlertLevel(
-				this._ipAddressesNode
-			)
-		);
-	}
+  /**
+   * The alert level is equal to the highest alert level of its children.
+   */
+  @Override
+  public AlertLevel getAlertLevel() {
+    return constrainAlertLevel(
+      AlertLevelUtils.getMaxAlertLevel(
+        this._ipAddressesNode
+      )
+    );
+  }
 
-	/**
-	 * No alert messages.
-	 */
-	@Override
-	public String getAlertMessage() {
-		return null;
-	}
+  /**
+   * No alert messages.
+   */
+  @Override
+  public String getAlertMessage() {
+    return null;
+  }
 
-	@Override
-	public AlertCategory getAlertCategory() {
-		return AlertCategory.MONITORING;
-	}
+  @Override
+  public AlertCategory getAlertCategory() {
+    return AlertCategory.MONITORING;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "UnallocatedNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "UnallocatedNode.label");
+  }
 
-	public void start() throws IOException, SQLException {
-		synchronized(this) {
-			if(started) throw new IllegalStateException();
-			started = true;
-			if(_ipAddressesNode==null) {
-				_ipAddressesNode = new IpAddressesNode(this, port, csf, ssf);
-				_ipAddressesNode.start();
-				rootNode.nodeAdded();
-			}
-		}
-	}
+  public void start() throws IOException, SQLException {
+    synchronized (this) {
+      if (started) {
+        throw new IllegalStateException();
+      }
+      started = true;
+      if (_ipAddressesNode == null) {
+        _ipAddressesNode = new IpAddressesNode(this, port, csf, ssf);
+        _ipAddressesNode.start();
+        rootNode.nodeAdded();
+      }
+    }
+  }
 
-	public void stop() {
-		synchronized(this) {
-			started = false;
-			if(_ipAddressesNode!=null) {
-				_ipAddressesNode.stop();
-				_ipAddressesNode = null;
-				rootNode.nodeRemoved();
-			}
-		}
-	}
+  public void stop() {
+    synchronized (this) {
+      started = false;
+      if (_ipAddressesNode != null) {
+        _ipAddressesNode.stop();
+        _ipAddressesNode = null;
+        rootNode.nodeRemoved();
+      }
+    }
+  }
 
-	File getPersistenceDirectory() throws IOException {
-		File dir = new File(rootNode.getPersistenceDirectory(), "unallocated");
-		if(!dir.exists()) {
-			if(!dir.mkdir()) {
-				throw new IOException(
-					PACKAGE_RESOURCES.getMessage(
-						rootNode.locale,
-						"error.mkdirFailed",
-						dir.getCanonicalPath()
-					)
-				);
-			}
-		}
-		return dir;
-	}
+  File getPersistenceDirectory() throws IOException {
+    File dir = new File(rootNode.getPersistenceDirectory(), "unallocated");
+    if (!dir.exists()) {
+      if (!dir.mkdir()) {
+        throw new IOException(
+          PACKAGE_RESOURCES.getMessage(
+            rootNode.locale,
+            "error.mkdirFailed",
+            dir.getCanonicalPath()
+          )
+        );
+      }
+    }
+    return dir;
+  }
 }

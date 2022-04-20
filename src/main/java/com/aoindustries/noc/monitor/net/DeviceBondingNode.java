@@ -37,24 +37,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class DeviceBondingNode extends SingleResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	DeviceBondingNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
-			netDeviceNode,
-			DeviceBondingNodeWorker.getWorker(
-				new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
-				netDeviceNode.getNetDevice()
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  DeviceBondingNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
+      netDeviceNode,
+      DeviceBondingNodeWorker.getWorker(
+        new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
+        netDeviceNode.getNetDevice()
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBondingNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBondingNode.label");
+  }
 }

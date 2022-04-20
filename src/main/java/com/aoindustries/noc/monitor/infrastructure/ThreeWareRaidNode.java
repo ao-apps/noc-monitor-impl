@@ -38,24 +38,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class ThreeWareRaidNode extends SingleResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public ThreeWareRaidNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			raidNode.hostNode.hostsNode.rootNode,
-			raidNode,
-			ThreeWareRaidNodeWorker.getWorker(
-				new File(raidNode.getPersistenceDirectory(), "3ware"),
-				raidNode.getAOServer()
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  public ThreeWareRaidNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      raidNode.hostNode.hostsNode.rootNode,
+      raidNode,
+      ThreeWareRaidNodeWorker.getWorker(
+        new File(raidNode.getPersistenceDirectory(), "3ware"),
+        raidNode.getAOServer()
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "ThreeWareRaidNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "ThreeWareRaidNode.label");
+  }
 }

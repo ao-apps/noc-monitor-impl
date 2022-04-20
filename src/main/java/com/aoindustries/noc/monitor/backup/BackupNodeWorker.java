@@ -55,155 +55,157 @@ import java.util.function.Function;
  */
 class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, Object> {
 
-	private static final int HISTORY_SIZE = 100;
+  private static final int HISTORY_SIZE = 100;
 
-	/**
-	 * One unique worker is made per persistence file (and should match the failoverFileReplication exactly)
-	 */
-	private static final Map<String, BackupNodeWorker> workerCache = new HashMap<>();
-	static BackupNodeWorker getWorker(File persistenceFile, FileReplication failoverFileReplication) throws IOException {
-		String path = persistenceFile.getCanonicalPath();
-		synchronized(workerCache) {
-			BackupNodeWorker worker = workerCache.get(path);
-			if(worker==null) {
-				worker = new BackupNodeWorker(persistenceFile, failoverFileReplication);
-				workerCache.put(path, worker);
-			} else {
-				if(!worker.failoverFileReplication.equals(failoverFileReplication)) throw new AssertionError("worker.failoverFileReplication!=failoverFileReplication: "+worker.failoverFileReplication+"!="+failoverFileReplication);
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence file (and should match the failoverFileReplication exactly)
+   */
+  private static final Map<String, BackupNodeWorker> workerCache = new HashMap<>();
+  static BackupNodeWorker getWorker(File persistenceFile, FileReplication failoverFileReplication) throws IOException {
+    String path = persistenceFile.getCanonicalPath();
+    synchronized (workerCache) {
+      BackupNodeWorker worker = workerCache.get(path);
+      if (worker == null) {
+        worker = new BackupNodeWorker(persistenceFile, failoverFileReplication);
+        workerCache.put(path, worker);
+      } else {
+        if (!worker.failoverFileReplication.equals(failoverFileReplication)) {
+          throw new AssertionError("worker.failoverFileReplication != failoverFileReplication: "+worker.failoverFileReplication+" != "+failoverFileReplication);
+        }
+      }
+      return worker;
+    }
+  }
 
-	// Will use whichever connector first created this worker, even if other accounts connect later.
-	private final FileReplication failoverFileReplication;
+  // Will use whichever connector first created this worker, even if other accounts connect later.
+  private final FileReplication failoverFileReplication;
 
-	BackupNodeWorker(File persistenceFile, FileReplication failoverFileReplication) {
-		super(persistenceFile);
-		this.failoverFileReplication = failoverFileReplication;
-	}
+  BackupNodeWorker(File persistenceFile, FileReplication failoverFileReplication) {
+    super(persistenceFile);
+    this.failoverFileReplication = failoverFileReplication;
+  }
 
-	/**
-	 * Determines the alert message for the provided result.
-	 *
-	 * If there is not any data (no backups logged, make high level)
-	 */
-	@Override
-	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
-		AlertLevel highestAlertLevel;
-		Function<Locale, String> highestAlertMessage;
-		if(result.isError()) {
-			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
-		} else {
-			List<?> tableData = result.getTableData(Locale.getDefault());
-			if(tableData.isEmpty()) {
-				highestAlertLevel = AlertLevel.MEDIUM;
-				highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.noBackupPassesLogged");
-			} else {
-				// We try to find the most recent successful pass
-				// If <30 hours NONE
-				// if <48 hours LOW
-				// otherwise MEDIUM
-				long lastSuccessfulTime = -1;
-				for(int index=0, len=tableData.size();index<len;index+=6) {
-					boolean successful = (Boolean)tableData.get(index+5);
-					if(successful) {
-						lastSuccessfulTime = ((TimeWithTimeZone)tableData.get(index)).getTime();
-						break;
-					}
-				}
-				if(lastSuccessfulTime==-1) {
-					// No success found, is MEDIUM
-					highestAlertLevel = AlertLevel.MEDIUM;
-					highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
-				} else {
-					long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime) / (60L * 60 * 1000);
-					if(hoursSince<0) {
-						highestAlertLevel = AlertLevel.CRITICAL;
-						highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassInFuture");
-					} else {
-						if(hoursSince<30) {
-							highestAlertLevel = AlertLevel.NONE;
-						} else if(hoursSince<48) {
-							highestAlertLevel = AlertLevel.LOW;
-						} else {
-							highestAlertLevel = AlertLevel.MEDIUM;
-						}
-						if(hoursSince<=48) {
-							highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPass", hoursSince);
-						} else {
-							long days = hoursSince / 24;
-							long hours = hoursSince % 24;
-							highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassDays", days, hours);
-						}
-					}
-				}
-				// We next see if the last pass failed - if so this will be considered low priority (higher priority is time-based above)
-				boolean lastSuccessful = (Boolean)tableData.get(5);
-				if(!lastSuccessful) {
-					if(AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
-						highestAlertLevel = AlertLevel.LOW;
-						highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastPassNotSuccessful");
-					}
-				}
-			}
-		}
-		return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
-	}
+  /**
+   * Determines the alert message for the provided result.
+   *
+   * If there is not any data (no backups logged, make high level)
+   */
+  @Override
+  public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
+    AlertLevel highestAlertLevel;
+    Function<Locale, String> highestAlertMessage;
+    if (result.isError()) {
+      highestAlertLevel = result.getAlertLevels().get(0);
+      highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
+    } else {
+      List<?> tableData = result.getTableData(Locale.getDefault());
+      if (tableData.isEmpty()) {
+        highestAlertLevel = AlertLevel.MEDIUM;
+        highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.noBackupPassesLogged");
+      } else {
+        // We try to find the most recent successful pass
+        // If <30 hours NONE
+        // if <48 hours LOW
+        // otherwise MEDIUM
+        long lastSuccessfulTime = -1;
+        for (int index=0, len=tableData.size();index<len;index+=6) {
+          boolean successful = (Boolean)tableData.get(index+5);
+          if (successful) {
+            lastSuccessfulTime = ((TimeWithTimeZone)tableData.get(index)).getTime();
+            break;
+          }
+        }
+        if (lastSuccessfulTime == -1) {
+          // No success found, is MEDIUM
+          highestAlertLevel = AlertLevel.MEDIUM;
+          highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
+        } else {
+          long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime) / (60L * 60 * 1000);
+          if (hoursSince<0) {
+            highestAlertLevel = AlertLevel.CRITICAL;
+            highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassInFuture");
+          } else {
+            if (hoursSince<30) {
+              highestAlertLevel = AlertLevel.NONE;
+            } else if (hoursSince<48) {
+              highestAlertLevel = AlertLevel.LOW;
+            } else {
+              highestAlertLevel = AlertLevel.MEDIUM;
+            }
+            if (hoursSince <= 48) {
+              highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPass", hoursSince);
+            } else {
+              long days = hoursSince / 24;
+              long hours = hoursSince % 24;
+              highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassDays", days, hours);
+            }
+          }
+        }
+        // We next see if the last pass failed - if so this will be considered low priority (higher priority is time-based above)
+        boolean lastSuccessful = (Boolean)tableData.get(5);
+        if (!lastSuccessful) {
+          if (AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
+            highestAlertLevel = AlertLevel.LOW;
+            highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastPassNotSuccessful");
+          }
+        }
+      }
+    }
+    return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
+  }
 
-	@Override
-	protected int getColumns() {
-		return 6;
-	}
+  @Override
+  protected int getColumns() {
+    return 6;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"),
-			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.duration"),
-			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"),
-			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.updated"),
-			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.bytes"),
-			PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.successful")
-		);
-	}
+  @Override
+  protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
+    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"),
+      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.duration"),
+      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"),
+      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.updated"),
+      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.bytes"),
+      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.successful")
+    );
+  }
 
-	@Override
-	protected List<FileReplicationLog> getQueryResult() throws Exception {
-		return failoverFileReplication.getFailoverFileLogs(HISTORY_SIZE);
-	}
+  @Override
+  protected List<FileReplicationLog> getQueryResult() throws Exception {
+    return failoverFileReplication.getFailoverFileLogs(HISTORY_SIZE);
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<Object>> getTableData(List<FileReplicationLog> failoverFileLogs) throws Exception {
-		if(failoverFileLogs.isEmpty()) {
-			return locale -> Collections.emptyList();
-		} else {
-			Host host = failoverFileReplication.getHost();
-			Server linuxServer = host.getLinuxServer();
-			TimeZone timeZone = linuxServer==null ? null : linuxServer.getTimeZone().getTimeZone();
-			List<Object> tableData = new ArrayList<>(failoverFileLogs.size()*6);
-			//int lineNum = 0;
-			for(FileReplicationLog failoverFileLog : failoverFileLogs) {
-				//lineNum++;
-				Timestamp startTime = failoverFileLog.getStartTime();
-				tableData.add(new TimeWithTimeZone(startTime.getTime(), timeZone));
-				tableData.add(Strings.getTimeLengthString(failoverFileLog.getEndTime().getTime() - startTime.getTime()));
-				tableData.add(failoverFileLog.getScanned());
-				tableData.add(failoverFileLog.getUpdated());
-				tableData.add(Strings.getApproximateSize(failoverFileLog.getBytes()));
-				tableData.add(failoverFileLog.isSuccessful());
-			}
-			return locale -> tableData;
-		}
-	}
+  @Override
+  protected SerializableFunction<Locale, List<Object>> getTableData(List<FileReplicationLog> failoverFileLogs) throws Exception {
+    if (failoverFileLogs.isEmpty()) {
+      return locale -> Collections.emptyList();
+    } else {
+      Host host = failoverFileReplication.getHost();
+      Server linuxServer = host.getLinuxServer();
+      TimeZone timeZone = linuxServer == null ? null : linuxServer.getTimeZone().getTimeZone();
+      List<Object> tableData = new ArrayList<>(failoverFileLogs.size()*6);
+      //int lineNum = 0;
+      for (FileReplicationLog failoverFileLog : failoverFileLogs) {
+        //lineNum++;
+        Timestamp startTime = failoverFileLog.getStartTime();
+        tableData.add(new TimeWithTimeZone(startTime.getTime(), timeZone));
+        tableData.add(Strings.getTimeLengthString(failoverFileLog.getEndTime().getTime() - startTime.getTime()));
+        tableData.add(failoverFileLog.getScanned());
+        tableData.add(failoverFileLog.getUpdated());
+        tableData.add(Strings.getApproximateSize(failoverFileLog.getBytes()));
+        tableData.add(failoverFileLog.isSuccessful());
+      }
+      return locale -> tableData;
+    }
+  }
 
-	@Override
-	protected List<AlertLevel> getAlertLevels(List<FileReplicationLog> queryResult) {
-		List<AlertLevel> alertLevels = new ArrayList<>(queryResult.size());
-		for(FileReplicationLog failoverFileLog : queryResult) {
-			// If pass failed then it is HIGH, otherwise it is NONE
-			alertLevels.add(failoverFileLog.isSuccessful() ? AlertLevel.NONE : AlertLevel.MEDIUM);
-		}
-		return alertLevels;
-	}
+  @Override
+  protected List<AlertLevel> getAlertLevels(List<FileReplicationLog> queryResult) {
+    List<AlertLevel> alertLevels = new ArrayList<>(queryResult.size());
+    for (FileReplicationLog failoverFileLog : queryResult) {
+      // If pass failed then it is HIGH, otherwise it is NONE
+      alertLevels.add(failoverFileLog.isSuccessful() ? AlertLevel.NONE : AlertLevel.MEDIUM);
+    }
+    return alertLevels;
+  }
 }

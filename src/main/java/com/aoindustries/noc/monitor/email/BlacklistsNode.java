@@ -39,27 +39,27 @@ import java.sql.SQLException;
  */
 public class BlacklistsNode extends TableResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	//private final IpAddress ipAddress;
+  //private final IpAddress ipAddress;
 
-	public BlacklistsNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
-		super(
-			ipAddressNode.ipAddressesNode.rootNode,
-			ipAddressNode,
-			BlacklistsNodeWorker.getWorker(
-				new File(ipAddressNode.getPersistenceDirectory(), "blacklists"),
-				ipAddressNode.getIpAddress()
-			),
-			port,
-			csf,
-			ssf
-		);
-		//this.ipAddress = ipAddressNode.getIpAddress();
-	}
+  public BlacklistsNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    super(
+      ipAddressNode.ipAddressesNode.rootNode,
+      ipAddressNode,
+      BlacklistsNodeWorker.getWorker(
+        new File(ipAddressNode.getPersistenceDirectory(), "blacklists"),
+        ipAddressNode.getIpAddress()
+      ),
+      port,
+      csf,
+      ssf
+    );
+    //this.ipAddress = ipAddressNode.getIpAddress();
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "BlacklistsNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "BlacklistsNode.label");
+  }
 }

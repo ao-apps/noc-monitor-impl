@@ -49,147 +49,151 @@ import javax.swing.SwingUtilities;
  */
 public class DatabasesNode extends NodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	final ServerNode mysqlServerNode;
-	final SlaveNode mysqlSlaveNode;
-	private final List<DatabaseNode> mysqlDatabaseNodes = new ArrayList<>();
-	private boolean started;
+  final ServerNode mysqlServerNode;
+  final SlaveNode mysqlSlaveNode;
+  private final List<DatabaseNode> mysqlDatabaseNodes = new ArrayList<>();
+  private boolean started;
 
-	DatabasesNode(ServerNode mysqlServerNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(port, csf, ssf);
-		this.mysqlServerNode = mysqlServerNode;
-		this.mysqlSlaveNode = null;
-	}
+  DatabasesNode(ServerNode mysqlServerNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(port, csf, ssf);
+    this.mysqlServerNode = mysqlServerNode;
+    this.mysqlSlaveNode = null;
+  }
 
-	DatabasesNode(SlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(port, csf, ssf);
-		this.mysqlServerNode = mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode;
-		this.mysqlSlaveNode = mysqlSlaveNode;
-	}
+  DatabasesNode(SlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(port, csf, ssf);
+    this.mysqlServerNode = mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode;
+    this.mysqlSlaveNode = mysqlSlaveNode;
+  }
 
-	@Override
-	public NodeImpl getParent() {
-		return mysqlSlaveNode!=null ? mysqlSlaveNode : mysqlServerNode;
-	}
+  @Override
+  public NodeImpl getParent() {
+    return mysqlSlaveNode != null ? mysqlSlaveNode : mysqlServerNode;
+  }
 
-	@Override
-	public boolean getAllowsChildren() {
-		return true;
-	}
+  @Override
+  public boolean getAllowsChildren() {
+    return true;
+  }
 
-	@Override
-	public List<DatabaseNode> getChildren() {
-		synchronized(mysqlDatabaseNodes) {
-			return getSnapshot(mysqlDatabaseNodes);
-		}
-	}
+  @Override
+  public List<DatabaseNode> getChildren() {
+    synchronized (mysqlDatabaseNodes) {
+      return getSnapshot(mysqlDatabaseNodes);
+    }
+  }
 
-	/**
-	 * The alert level is equal to the highest alert level of its children.
-	 */
-	@Override
-	public AlertLevel getAlertLevel() {
-		AlertLevel level;
-		synchronized(mysqlDatabaseNodes) {
-			level = AlertLevelUtils.getMaxAlertLevel(
-				mysqlDatabaseNodes
-			);
-		}
-		return constrainAlertLevel(level);
-	}
+  /**
+   * The alert level is equal to the highest alert level of its children.
+   */
+  @Override
+  public AlertLevel getAlertLevel() {
+    AlertLevel level;
+    synchronized (mysqlDatabaseNodes) {
+      level = AlertLevelUtils.getMaxAlertLevel(
+        mysqlDatabaseNodes
+      );
+    }
+    return constrainAlertLevel(level);
+  }
 
-	/**
-	 * No alert messages.
-	 */
-	@Override
-	public String getAlertMessage() {
-		return null;
-	}
+  /**
+   * No alert messages.
+   */
+  @Override
+  public String getAlertMessage() {
+    return null;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale, "MySQLDatabasesNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale, "MySQLDatabasesNode.label");
+  }
 
-	private final TableListener tableListener = (Table<?> table) -> {
-		try {
-			verifyMySQLDatabases();
-		} catch(IOException | SQLException err) {
-			throw new WrappedException(err);
-		}
-	};
+  private final TableListener tableListener = (Table<?> table) -> {
+    try {
+      verifyMySQLDatabases();
+    } catch (IOException | SQLException err) {
+      throw new WrappedException(err);
+    }
+  };
 
-	void start() throws IOException, SQLException {
-		synchronized(mysqlDatabaseNodes) {
-			if(started) throw new IllegalStateException();
-			started = true;
-			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getMysql().getDatabase().addTableListener(tableListener, 100);
-		}
-		verifyMySQLDatabases();
-	}
+  void start() throws IOException, SQLException {
+    synchronized (mysqlDatabaseNodes) {
+      if (started) {
+        throw new IllegalStateException();
+      }
+      started = true;
+      mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getMysql().getDatabase().addTableListener(tableListener, 100);
+    }
+    verifyMySQLDatabases();
+  }
 
-	void stop() {
-		synchronized(mysqlDatabaseNodes) {
-			started = false;
-			mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getMysql().getDatabase().removeTableListener(tableListener);
-			for(DatabaseNode mysqlDatabaseNode : mysqlDatabaseNodes) {
-				mysqlDatabaseNode.stop();
-				mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
-			}
-			mysqlDatabaseNodes.clear();
-		}
-	}
+  void stop() {
+    synchronized (mysqlDatabaseNodes) {
+      started = false;
+      mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.conn.getMysql().getDatabase().removeTableListener(tableListener);
+      for (DatabaseNode mysqlDatabaseNode : mysqlDatabaseNodes) {
+        mysqlDatabaseNode.stop();
+        mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
+      }
+      mysqlDatabaseNodes.clear();
+    }
+  }
 
-	private void verifyMySQLDatabases() throws IOException, SQLException {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  private void verifyMySQLDatabases() throws IOException, SQLException {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		synchronized(mysqlDatabaseNodes) {
-			if(!started) return;
-		}
+    synchronized (mysqlDatabaseNodes) {
+      if (!started) {
+        return;
+      }
+    }
 
-		List<Database> mysqlDatabases = mysqlServerNode.getMySQLServer().getMySQLDatabases();
-		synchronized(mysqlDatabaseNodes) {
-			if(started) {
-				// Remove old ones
-				Iterator<DatabaseNode> mysqlDatabaseNodeIter = mysqlDatabaseNodes.iterator();
-				while(mysqlDatabaseNodeIter.hasNext()) {
-					DatabaseNode mysqlDatabaseNode = mysqlDatabaseNodeIter.next();
-					Database mysqlDatabase = mysqlDatabaseNode.getMySQLDatabase();
-					if(!mysqlDatabases.contains(mysqlDatabase)) {
-						mysqlDatabaseNode.stop();
-						mysqlDatabaseNodeIter.remove();
-						mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
-					}
-				}
-				// Add new ones
-				for(int c=0;c<mysqlDatabases.size();c++) {
-					Database mysqlDatabase = mysqlDatabases.get(c);
-					if(c>=mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
-						// Insert into proper index
-						DatabaseNode mysqlDatabaseNode = new DatabaseNode(this, mysqlDatabase, mysqlSlaveNode!=null ? mysqlSlaveNode.getFailoverMySQLReplication() : null, port, csf, ssf);
-						mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
-						mysqlDatabaseNode.start();
-						mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
-					}
-				}
-			}
-		}
-	}
+    List<Database> mysqlDatabases = mysqlServerNode.getMySQLServer().getMySQLDatabases();
+    synchronized (mysqlDatabaseNodes) {
+      if (started) {
+        // Remove old ones
+        Iterator<DatabaseNode> mysqlDatabaseNodeIter = mysqlDatabaseNodes.iterator();
+        while (mysqlDatabaseNodeIter.hasNext()) {
+          DatabaseNode mysqlDatabaseNode = mysqlDatabaseNodeIter.next();
+          Database mysqlDatabase = mysqlDatabaseNode.getMySQLDatabase();
+          if (!mysqlDatabases.contains(mysqlDatabase)) {
+            mysqlDatabaseNode.stop();
+            mysqlDatabaseNodeIter.remove();
+            mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
+          }
+        }
+        // Add new ones
+        for (int c=0;c<mysqlDatabases.size();c++) {
+          Database mysqlDatabase = mysqlDatabases.get(c);
+          if (c >= mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
+            // Insert into proper index
+            DatabaseNode mysqlDatabaseNode = new DatabaseNode(this, mysqlDatabase, mysqlSlaveNode != null ? mysqlSlaveNode.getFailoverMySQLReplication() : null, port, csf, ssf);
+            mysqlDatabaseNodes.add(c, mysqlDatabaseNode);
+            mysqlDatabaseNode.start();
+            mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
+          }
+        }
+      }
+    }
+  }
 
-	File getPersistenceDirectory() throws IOException {
-		File dir = new File((mysqlSlaveNode!=null ? mysqlSlaveNode.getPersistenceDirectory() : mysqlServerNode.getPersistenceDirectory()), "mysql_databases");
-		if(!dir.exists()) {
-			if(!dir.mkdir()) {
-				throw new IOException(
-					PACKAGE_RESOURCES.getMessage(
-						mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
-						"error.mkdirFailed",
-						dir.getCanonicalPath()
-					)
-				);
-			}
-		}
-		return dir;
-	}
+  File getPersistenceDirectory() throws IOException {
+    File dir = new File((mysqlSlaveNode != null ? mysqlSlaveNode.getPersistenceDirectory() : mysqlServerNode.getPersistenceDirectory()), "mysql_databases");
+    if (!dir.exists()) {
+      if (!dir.mkdir()) {
+        throw new IOException(
+          PACKAGE_RESOURCES.getMessage(
+            mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+            "error.mkdirFailed",
+            dir.getCanonicalPath()
+          )
+        );
+      }
+    }
+    return dir;
+  }
 }

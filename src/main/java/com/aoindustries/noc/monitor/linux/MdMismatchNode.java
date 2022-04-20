@@ -37,24 +37,24 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class MdMismatchNode extends TableResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	MdMismatchNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			raidNode.hostNode.hostsNode.rootNode,
-			raidNode,
-			MdMismatchWorker.getWorker(
-				new File(raidNode.getPersistenceDirectory(), "md_mismatch"),
-				raidNode.getAOServer()
-			),
-			port,
-			csf,
-			ssf
-		);
-	}
+  MdMismatchNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      raidNode.hostNode.hostsNode.rootNode,
+      raidNode,
+      MdMismatchWorker.getWorker(
+        new File(raidNode.getPersistenceDirectory(), "md_mismatch"),
+        raidNode.getAOServer()
+      ),
+      port,
+      csf,
+      ssf
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MdMismatchNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MdMismatchNode.label");
+  }
 }

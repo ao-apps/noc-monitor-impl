@@ -61,229 +61,247 @@ import org.xbill.DNS.Type;
  */
 class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryResult>, Object> {
 
-	static class DnsQueryResult {
-		final String query;
-		final long latency;
-		final String result;
-		final String message;
-		final AlertLevel alertLevel;
+  static class DnsQueryResult {
+    final String query;
+    final long latency;
+    final String result;
+    final String message;
+    final AlertLevel alertLevel;
 
-		DnsQueryResult(String query, long latency, String result, String message, AlertLevel alertLevel) {
-			this.query = query;
-			this.latency = latency;
-			this.result = result;
-			this.message = message;
-			this.alertLevel = alertLevel;
-		}
-	}
+    DnsQueryResult(String query, long latency, String result, String message, AlertLevel alertLevel) {
+      this.query = query;
+      this.latency = latency;
+      this.result = result;
+      this.message = message;
+      this.alertLevel = alertLevel;
+    }
+  }
 
-	/**
-	 * One unique worker is made per persistence file (and should match the ipAddress exactly)
-	 */
-	private static final Map<String, DnsNodeWorker> workerCache = new HashMap<>();
-	static DnsNodeWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
-		String path = persistenceFile.getCanonicalPath();
-		synchronized(workerCache) {
-			DnsNodeWorker worker = workerCache.get(path);
-			if(worker==null) {
-				worker = new DnsNodeWorker(persistenceFile, ipAddress);
-				workerCache.put(path, worker);
-			} else {
-				if(!worker.ipAddress.equals(ipAddress)) throw new AssertionError("worker.ipAddress!=ipAddress: "+worker.ipAddress+"!="+ipAddress);
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence file (and should match the ipAddress exactly)
+   */
+  private static final Map<String, DnsNodeWorker> workerCache = new HashMap<>();
+  static DnsNodeWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
+    String path = persistenceFile.getCanonicalPath();
+    synchronized (workerCache) {
+      DnsNodeWorker worker = workerCache.get(path);
+      if (worker == null) {
+        worker = new DnsNodeWorker(persistenceFile, ipAddress);
+        workerCache.put(path, worker);
+      } else {
+        if (!worker.ipAddress.equals(ipAddress)) {
+          throw new AssertionError("worker.ipAddress != ipAddress: "+worker.ipAddress+" != "+ipAddress);
+        }
+      }
+      return worker;
+    }
+  }
 
-	private final IpAddress ipAddress;
+  private final IpAddress ipAddress;
 
-	DnsNodeWorker(File persistenceFile, IpAddress ipAddress) {
-		super(persistenceFile);
-		this.ipAddress = ipAddress;
-	}
+  DnsNodeWorker(File persistenceFile, IpAddress ipAddress) {
+    super(persistenceFile);
+    this.ipAddress = ipAddress;
+  }
 
-	@Override
-	protected int getColumns() {
-		return 4;
-	}
+  @Override
+  protected int getColumns() {
+    return 4;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
-			PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
-			PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
-			PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.message")
-		);
-	}
+  @Override
+  protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
+    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
+      PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
+      PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
+      PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.message")
+    );
+  }
 
-	@Override
-	protected List<DnsQueryResult> getQueryResult() throws Exception {
-		IpAddress currentIpAddress = ipAddress.getTable().getConnector().getNet().getIpAddress().get(ipAddress.getPkey());
-		IpAddressMonitoring iam = currentIpAddress.getMonitoring();
-		if(iam == null) return Collections.emptyList();
-		InetAddress ip = currentIpAddress.getExternalInetAddress();
-		if(ip==null) ip = currentIpAddress.getInetAddress();
-		String expectedHostname = currentIpAddress.getHostname().toString();
-		if(!expectedHostname.endsWith(".")) expectedHostname += '.';
-		// Priority is higher when assigned, lower when unassigned
-		final AlertLevel problemAlertLevel = currentIpAddress.getDevice() != null ? AlertLevel.MEDIUM : AlertLevel.LOW;
-		StringBuilder sb = new StringBuilder();
-		List<DnsQueryResult> results = new ArrayList<>();
-		boolean didHostnameAVerification = false;
-		// Reverse DNS
-		if(iam.getVerifyDnsPtr()) {
-			//String ptrQuery = IpAddress.getReverseDnsQuery(ip);
-			Name ptrQuery = ReverseMap.fromAddress(ip.toString());
-			long ptrStartNanos = System.nanoTime();
-			Lookup ptrLookup = new Lookup(ptrQuery, Type.PTR);
-			ptrLookup.run();
-			long ptrLatency = System.nanoTime()-ptrStartNanos;
-			if(ptrLookup.getResult()!=Lookup.SUCCESSFUL) {
-				results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrLookup.getErrorString(), "", problemAlertLevel));
-			} else {
-				Record[] ptrRecords = ptrLookup.getAnswers();
-				if(ptrRecords.length==0) {
-					results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + RecordType.PTR +" records found", problemAlertLevel));
-				} else {
-					String ptrList;
-					boolean expectedHostnameFound = false;
-					{
-						sb.setLength(0);
-						for(Record rec : ptrRecords) {
-							if(sb.length()>0) sb.append(", ");
-							PTRRecord ptrRecord = (PTRRecord)rec;
-							String hostname = ptrRecord.getTarget().toString();
-							sb.append(hostname);
-							if(expectedHostname.equals(hostname)) expectedHostnameFound = true;
-						}
-						ptrList = sb.toString();
-					}
-					boolean hasPtrResult = false;
-					if(ptrRecords.length > 1) {
-						results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + RecordType.PTR +" record found", problemAlertLevel));
-						hasPtrResult = true;
-					}
-					if(!expectedHostnameFound) {
-						results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "Hostname not in results: "+expectedHostname, problemAlertLevel));
-						hasPtrResult = true;
-					}
-					if(!hasPtrResult) {
-						results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "", AlertLevel.NONE));
-					}
-					if(iam.getVerifyDnsA()) {
-						// Lookup each A record, making sure one of its IP addresses is the current IP
-						for(Record rec : ptrRecords) {
-							PTRRecord ptrRecord = (PTRRecord)rec;
-							verifyDnsA(ptrRecord.getTarget(), results, problemAlertLevel, sb, ip);
-						}
-						if(expectedHostnameFound) didHostnameAVerification = true;
-					}
-				}
-			}
-		}
-		// Check forward DNS for the hostname, if not already done as part of the above
-		if(iam.getVerifyDnsA() && !didHostnameAVerification) {
-			verifyDnsA(new Name(expectedHostname), results, problemAlertLevel, sb, ip);
-		}
-		return results;
-	}
+  @Override
+  protected List<DnsQueryResult> getQueryResult() throws Exception {
+    IpAddress currentIpAddress = ipAddress.getTable().getConnector().getNet().getIpAddress().get(ipAddress.getPkey());
+    IpAddressMonitoring iam = currentIpAddress.getMonitoring();
+    if (iam == null) {
+      return Collections.emptyList();
+    }
+    InetAddress ip = currentIpAddress.getExternalInetAddress();
+    if (ip == null) {
+      ip = currentIpAddress.getInetAddress();
+    }
+    String expectedHostname = currentIpAddress.getHostname().toString();
+    if (!expectedHostname.endsWith(".")) {
+      expectedHostname += '.';
+    }
+    // Priority is higher when assigned, lower when unassigned
+    final AlertLevel problemAlertLevel = currentIpAddress.getDevice() != null ? AlertLevel.MEDIUM : AlertLevel.LOW;
+    StringBuilder sb = new StringBuilder();
+    List<DnsQueryResult> results = new ArrayList<>();
+    boolean didHostnameAVerification = false;
+    // Reverse DNS
+    if (iam.getVerifyDnsPtr()) {
+      //String ptrQuery = IpAddress.getReverseDnsQuery(ip);
+      Name ptrQuery = ReverseMap.fromAddress(ip.toString());
+      long ptrStartNanos = System.nanoTime();
+      Lookup ptrLookup = new Lookup(ptrQuery, Type.PTR);
+      ptrLookup.run();
+      long ptrLatency = System.nanoTime()-ptrStartNanos;
+      if (ptrLookup.getResult() != Lookup.SUCCESSFUL) {
+        results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrLookup.getErrorString(), "", problemAlertLevel));
+      } else {
+        Record[] ptrRecords = ptrLookup.getAnswers();
+        if (ptrRecords.length == 0) {
+          results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + RecordType.PTR +" records found", problemAlertLevel));
+        } else {
+          String ptrList;
+          boolean expectedHostnameFound = false;
+          {
+            sb.setLength(0);
+            for (Record rec : ptrRecords) {
+              if (sb.length()>0) {
+                sb.append(", ");
+              }
+              PTRRecord ptrRecord = (PTRRecord)rec;
+              String hostname = ptrRecord.getTarget().toString();
+              sb.append(hostname);
+              if (expectedHostname.equals(hostname)) {
+                expectedHostnameFound = true;
+              }
+            }
+            ptrList = sb.toString();
+          }
+          boolean hasPtrResult = false;
+          if (ptrRecords.length > 1) {
+            results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + RecordType.PTR +" record found", problemAlertLevel));
+            hasPtrResult = true;
+          }
+          if (!expectedHostnameFound) {
+            results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "Hostname not in results: "+expectedHostname, problemAlertLevel));
+            hasPtrResult = true;
+          }
+          if (!hasPtrResult) {
+            results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "", AlertLevel.NONE));
+          }
+          if (iam.getVerifyDnsA()) {
+            // Lookup each A record, making sure one of its IP addresses is the current IP
+            for (Record rec : ptrRecords) {
+              PTRRecord ptrRecord = (PTRRecord)rec;
+              verifyDnsA(ptrRecord.getTarget(), results, problemAlertLevel, sb, ip);
+            }
+            if (expectedHostnameFound) {
+              didHostnameAVerification = true;
+            }
+          }
+        }
+      }
+    }
+    // Check forward DNS for the hostname, if not already done as part of the above
+    if (iam.getVerifyDnsA() && !didHostnameAVerification) {
+      verifyDnsA(new Name(expectedHostname), results, problemAlertLevel, sb, ip);
+    }
+    return results;
+  }
 
-	private static void verifyDnsA(Name target, List<DnsQueryResult> results, AlertLevel problemAlertLevel, StringBuilder sb, InetAddress ip) {
-		long aStartNanos = System.nanoTime();
-		Lookup aLookup = new Lookup(target, Type.A);
-		aLookup.run();
-		long aLatency = System.nanoTime() - aStartNanos;
-		if(aLookup.getResult()!=Lookup.SUCCESSFUL) {
-			results.add(new DnsQueryResult(target.toString(), aLatency, aLookup.getErrorString(), "", problemAlertLevel));
-		} else {
-			Record[] aRecords = aLookup.getAnswers();
-			if(aRecords.length==0) {
-				results.add(new DnsQueryResult(target.toString(), aLatency, "", "No A records found", problemAlertLevel));
-			} else {
-				String ipList;
-				boolean ipFound = false;
-				{
-					sb.setLength(0);
-					for(Record rec : aRecords) {
-						if(sb.length()>0) sb.append(", ");
-						ARecord aRecord = (ARecord)rec;
-						String aIp = aRecord.getAddress().getHostAddress();
-						sb.append(aIp);
-						if(ip.toString().equals(aIp)) ipFound = true;
-					}
-					ipList = sb.toString();
-				}
-				String aMessage;
-				AlertLevel aAlertLevel;
-				if(!ipFound) {
-					aMessage = "Address not in results: "+ip;
-					aAlertLevel = problemAlertLevel;
-				} else {
-					aMessage = "";
-					aAlertLevel = AlertLevel.NONE;
-				}
-				results.add(new DnsQueryResult(target.toString(), aLatency, ipList, aMessage, aAlertLevel));
-			}
-		}
-	}
+  private static void verifyDnsA(Name target, List<DnsQueryResult> results, AlertLevel problemAlertLevel, StringBuilder sb, InetAddress ip) {
+    long aStartNanos = System.nanoTime();
+    Lookup aLookup = new Lookup(target, Type.A);
+    aLookup.run();
+    long aLatency = System.nanoTime() - aStartNanos;
+    if (aLookup.getResult() != Lookup.SUCCESSFUL) {
+      results.add(new DnsQueryResult(target.toString(), aLatency, aLookup.getErrorString(), "", problemAlertLevel));
+    } else {
+      Record[] aRecords = aLookup.getAnswers();
+      if (aRecords.length == 0) {
+        results.add(new DnsQueryResult(target.toString(), aLatency, "", "No A records found", problemAlertLevel));
+      } else {
+        String ipList;
+        boolean ipFound = false;
+        {
+          sb.setLength(0);
+          for (Record rec : aRecords) {
+            if (sb.length()>0) {
+              sb.append(", ");
+            }
+            ARecord aRecord = (ARecord)rec;
+            String aIp = aRecord.getAddress().getHostAddress();
+            sb.append(aIp);
+            if (ip.toString().equals(aIp)) {
+              ipFound = true;
+            }
+          }
+          ipList = sb.toString();
+        }
+        String aMessage;
+        AlertLevel aAlertLevel;
+        if (!ipFound) {
+          aMessage = "Address not in results: "+ip;
+          aAlertLevel = problemAlertLevel;
+        } else {
+          aMessage = "";
+          aAlertLevel = AlertLevel.NONE;
+        }
+        results.add(new DnsQueryResult(target.toString(), aLatency, ipList, aMessage, aAlertLevel));
+      }
+    }
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<Object>> getTableData(List<DnsQueryResult> results) throws Exception {
-		List<Object> tableData = new ArrayList<>(results.size()*4);
-		for(DnsQueryResult result : results) {
-			tableData.add(result.query);
-			tableData.add(new NanoInterval(result.latency));
-			tableData.add(result.result);
-			tableData.add(result.message);
-		}
-		return locale -> tableData;
-	}
+  @Override
+  protected SerializableFunction<Locale, List<Object>> getTableData(List<DnsQueryResult> results) throws Exception {
+    List<Object> tableData = new ArrayList<>(results.size()*4);
+    for (DnsQueryResult result : results) {
+      tableData.add(result.query);
+      tableData.add(new NanoInterval(result.latency));
+      tableData.add(result.result);
+      tableData.add(result.message);
+    }
+    return locale -> tableData;
+  }
 
-	@Override
-	protected List<AlertLevel> getAlertLevels(List<DnsQueryResult> results) {
-		List<AlertLevel> alertLevels = new ArrayList<>(results.size());
-		for(DnsQueryResult result : results) {
-			alertLevels.add(result.alertLevel);
-		}
-		return alertLevels;
-	}
+  @Override
+  protected List<AlertLevel> getAlertLevels(List<DnsQueryResult> results) {
+    List<AlertLevel> alertLevels = new ArrayList<>(results.size());
+    for (DnsQueryResult result : results) {
+      alertLevels.add(result.alertLevel);
+    }
+    return alertLevels;
+  }
 
-	@Override
-	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
-		AlertLevel highestAlertLevel = AlertLevel.NONE;
-		Function<Locale, String> highestAlertMessage = null;
-		if(result.isError()) {
-			highestAlertLevel = result.getAlertLevels().get(0);
-			highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
-		} else {
-			List<?> tableData = result.getTableData(Locale.getDefault());
-			for(int index=0, len=tableData.size();index<len;index+=4) {
-				AlertLevel alertLevel = result.getAlertLevels().get(index/4);
-				if(alertLevel.compareTo(highestAlertLevel)>0) {
-					highestAlertLevel = alertLevel;
-					Object resultQuery = tableData.get(index);
-					Object resultResult = tableData.get(index+2);
-					Object resultMessage = tableData.get(index+3);
-					highestAlertMessage = locale -> resultQuery + "->" + resultResult + ": " + resultMessage;
-				}
-			}
-		}
-		return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
-	}
+  @Override
+  public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
+    AlertLevel highestAlertLevel = AlertLevel.NONE;
+    Function<Locale, String> highestAlertMessage = null;
+    if (result.isError()) {
+      highestAlertLevel = result.getAlertLevels().get(0);
+      highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
+    } else {
+      List<?> tableData = result.getTableData(Locale.getDefault());
+      for (int index=0, len=tableData.size();index<len;index+=4) {
+        AlertLevel alertLevel = result.getAlertLevels().get(index/4);
+        if (alertLevel.compareTo(highestAlertLevel)>0) {
+          highestAlertLevel = alertLevel;
+          Object resultQuery = tableData.get(index);
+          Object resultResult = tableData.get(index+2);
+          Object resultMessage = tableData.get(index+3);
+          highestAlertMessage = locale -> resultQuery + "->" + resultResult + ": " + resultMessage;
+        }
+      }
+    }
+    return new AlertLevelAndMessage(highestAlertLevel, highestAlertMessage);
+  }
 
-	/**
-	 * The sleep delay is 15 minutes when unsuccessful or one hour when successful.
-	 */
-	@Override
-	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		return lastSuccessful && alertLevel==AlertLevel.NONE ? 60L * 60L * 1000L : 15L * 60L * 1000L;
-	}
+  /**
+   * The sleep delay is 15 minutes when unsuccessful or one hour when successful.
+   */
+  @Override
+  protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+    return lastSuccessful && alertLevel == AlertLevel.NONE ? 60L * 60L * 1000L : 15L * 60L * 1000L;
+  }
 
-	/**
-	 * The startup delay is within fifteen minutes.
-	 */
-	@Override
-	protected int getNextStartupDelay() {
-		return RootNodeImpl.getNextStartupDelayFifteenMinutes();
-	}
+  /**
+   * The startup delay is within fifteen minutes.
+   */
+  @Override
+  protected int getNextStartupDelay() {
+    return RootNodeImpl.getNextStartupDelayFifteenMinutes();
+  }
 }

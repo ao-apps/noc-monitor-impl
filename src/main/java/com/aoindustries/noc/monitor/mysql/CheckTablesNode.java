@@ -39,37 +39,37 @@ import java.rmi.server.RMIServerSocketFactory;
  */
 public class CheckTablesNode extends TableResultNodeImpl {
 
-	private static final long serialVersionUID = 2L;
+  private static final long serialVersionUID = 2L;
 
-	final DatabaseNode mysqlDatabaseNode;
+  final DatabaseNode mysqlDatabaseNode;
 
-	CheckTablesNode(DatabaseNode mysqlDatabaseNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
-		super(
-			mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
-			mysqlDatabaseNode,
-			CheckTablesNodeWorker.getWorker(
-				mysqlDatabaseNode,
-				new File(mysqlDatabaseNode.getPersistenceDirectory(), "check_tables")
-			),
-			port,
-			csf,
-			ssf
-		);
-		this.mysqlDatabaseNode = mysqlDatabaseNode;
-	}
+  CheckTablesNode(DatabaseNode mysqlDatabaseNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+    super(
+      mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
+      mysqlDatabaseNode,
+      CheckTablesNodeWorker.getWorker(
+        mysqlDatabaseNode,
+        new File(mysqlDatabaseNode.getPersistenceDirectory(), "check_tables")
+      ),
+      port,
+      csf,
+      ssf
+    );
+    this.mysqlDatabaseNode = mysqlDatabaseNode;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLCheckTablesNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLCheckTablesNode.label");
+  }
 
-	/**
-	 * The maximum alert level is constrained by the mysql_databases table.
-	 */
-	@Override
-	protected AlertLevel getMaxAlertLevel() {
-		return AlertLevelUtils.getMonitoringAlertLevel(
-			mysqlDatabaseNode.mysqlDatabase.getMaxCheckTableAlertLevel()
-		);
-	}
+  /**
+   * The maximum alert level is constrained by the mysql_databases table.
+   */
+  @Override
+  protected AlertLevel getMaxAlertLevel() {
+    return AlertLevelUtils.getMonitoringAlertLevel(
+      mysqlDatabaseNode.mysqlDatabase.getMaxCheckTableAlertLevel()
+    );
+  }
 }

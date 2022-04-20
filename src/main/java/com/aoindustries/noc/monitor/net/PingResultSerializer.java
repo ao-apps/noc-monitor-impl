@@ -37,31 +37,35 @@ import java.io.InputStream;
  */
 public class PingResultSerializer extends BufferedSerializer<PingResult> {
 
-	private static final int VERSION = 1;
+  private static final int VERSION = 1;
 
-	@Override
-	protected void serialize(PingResult value, ByteArrayOutputStream buffer) throws IOException {
-		try (StreamableOutput out = new StreamableOutput(buffer)) {
-			out.writeCompressedInt(VERSION);
-			out.writeLong(value.getTime());
-			out.writeLong(value.getLatency());
-			out.writeByte(value.getAlertLevel().ordinal());
-			out.writeNullUTF(value.getError());
-		}
-	}
+  @Override
+  protected void serialize(PingResult value, ByteArrayOutputStream buffer) throws IOException {
+    try (StreamableOutput out = new StreamableOutput(buffer)) {
+      out.writeCompressedInt(VERSION);
+      out.writeLong(value.getTime());
+      out.writeLong(value.getLatency());
+      out.writeByte(value.getAlertLevel().ordinal());
+      out.writeNullUTF(value.getError());
+    }
+  }
 
-	@Override
-	public PingResult deserialize(InputStream rawIn) throws IOException {
-		try (StreamableInput in = new StreamableInput(rawIn)) {
-			int version = in.readCompressedInt();
-			if(version==1) {
-				long time = in.readLong();
-				long latency = in.readLong();
-				AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
-				String error = in.readNullUTF();
-				if(error!=null) return new PingResult(time, latency, alertLevel, error);
-				return new PingResult(time, latency, alertLevel);
-			} else throw new IOException("Unsupported object version: "+version);
-		}
-	}
+  @Override
+  public PingResult deserialize(InputStream rawIn) throws IOException {
+    try (StreamableInput in = new StreamableInput(rawIn)) {
+      int version = in.readCompressedInt();
+      if (version == 1) {
+        long time = in.readLong();
+        long latency = in.readLong();
+        AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
+        String error = in.readNullUTF();
+        if (error != null) {
+          return new PingResult(time, latency, alertLevel, error);
+        }
+        return new PingResult(time, latency, alertLevel);
+      } else {
+        throw new IOException("Unsupported object version: "+version);
+      }
+    }
+  }
 }

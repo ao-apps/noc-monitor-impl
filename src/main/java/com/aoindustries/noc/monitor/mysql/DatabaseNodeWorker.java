@@ -48,165 +48,169 @@ import java.util.Map;
  */
 class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus>, Object> {
 
-	//private static final Logger logger = Logger.getLogger(MySQLDatabaseNodeWorker.class.getName());
+  //private static final Logger logger = Logger.getLogger(MySQLDatabaseNodeWorker.class.getName());
 
-	/**
-	 * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
-	 */
-	private static final Map<String, DatabaseNodeWorker> workerCache = new HashMap<>();
-	static DatabaseNodeWorker getWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
-		String path = persistenceFile.getCanonicalPath();
-		synchronized(workerCache) {
-			DatabaseNodeWorker worker = workerCache.get(path);
-			if(worker==null) {
-				worker = new DatabaseNodeWorker(persistenceFile, mysqlDatabase, mysqlSlave);
-				workerCache.put(path, worker);
-			} else {
-				if(!worker.mysqlDatabase.equals(mysqlDatabase)) throw new AssertionError("worker.mysqlDatabase!=mysqlDatabase: "+worker.mysqlDatabase+"!="+mysqlDatabase);
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
+   */
+  private static final Map<String, DatabaseNodeWorker> workerCache = new HashMap<>();
+  static DatabaseNodeWorker getWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
+    String path = persistenceFile.getCanonicalPath();
+    synchronized (workerCache) {
+      DatabaseNodeWorker worker = workerCache.get(path);
+      if (worker == null) {
+        worker = new DatabaseNodeWorker(persistenceFile, mysqlDatabase, mysqlSlave);
+        workerCache.put(path, worker);
+      } else {
+        if (!worker.mysqlDatabase.equals(mysqlDatabase)) {
+          throw new AssertionError("worker.mysqlDatabase != mysqlDatabase: "+worker.mysqlDatabase+" != "+mysqlDatabase);
+        }
+      }
+      return worker;
+    }
+  }
 
-	// Will use whichever connector first created this worker, even if other accounts connect later.
-	private final Database mysqlDatabase;
-	private final MysqlReplication mysqlSlave;
-	final boolean isSlowServer;
-	private final Object lastTableStatusesLock = new Object();
-	private List<Database.TableStatus> lastTableStatuses;
+  // Will use whichever connector first created this worker, even if other accounts connect later.
+  private final Database mysqlDatabase;
+  private final MysqlReplication mysqlSlave;
+  final boolean isSlowServer;
+  private final Object lastTableStatusesLock = new Object();
+  private List<Database.TableStatus> lastTableStatuses;
 
-	DatabaseNodeWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
-		super(persistenceFile);
-		this.mysqlDatabase = mysqlDatabase;
-		this.mysqlSlave = mysqlSlave;
-		String hostname = mysqlDatabase.getMySQLServer().getLinuxServer().getHostname().toString();
-		this.isSlowServer =
-			hostname.equals("www.swimconnection.com")
-			// || hostname.equals("www1.leagle.com")
-		;
-	}
+  DatabaseNodeWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
+    super(persistenceFile);
+    this.mysqlDatabase = mysqlDatabase;
+    this.mysqlSlave = mysqlSlave;
+    String hostname = mysqlDatabase.getMySQLServer().getLinuxServer().getHostname().toString();
+    this.isSlowServer =
+      hostname.equals("www.swimconnection.com")
+      // || hostname.equals("www1.leagle.com")
+    ;
+  }
 
-	@Override
-	protected int getColumns() {
-		return 18;
-	}
+  @Override
+  protected int getColumns() {
+    return 18;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-		return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
-			PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment")
-		);
-	}
+  @Override
+  protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
+    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
+      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment")
+    );
+  }
 
-	@Override
-	protected List<Database.TableStatus> getQueryResult() throws Exception {
-		List<Database.TableStatus> tableStatuses = mysqlDatabase.getTableStatus(mysqlSlave);
-		setLastTableStatuses(tableStatuses);
-		return tableStatuses;
-	}
+  @Override
+  protected List<Database.TableStatus> getQueryResult() throws Exception {
+    List<Database.TableStatus> tableStatuses = mysqlDatabase.getTableStatus(mysqlSlave);
+    setLastTableStatuses(tableStatuses);
+    return tableStatuses;
+  }
 
-	@Override
-	protected SerializableFunction<Locale, List<Object>> getTableData(List<Database.TableStatus> tableStatuses) throws Exception {
-		List<Object> tableData = new ArrayList<>(tableStatuses.size()*18);
-		for(Database.TableStatus tableStatus : tableStatuses) {
-			tableData.add(tableStatus.getName());
-			tableData.add(tableStatus.getEngine());
-			tableData.add(tableStatus.getVersion());
-			tableData.add(tableStatus.getRowFormat());
-			tableData.add(tableStatus.getRows());
-			tableData.add(tableStatus.getAvgRowLength());
-			tableData.add(tableStatus.getDataLength());
-			tableData.add(tableStatus.getMaxDataLength());
-			tableData.add(tableStatus.getIndexLength());
-			tableData.add(tableStatus.getDataFree());
-			tableData.add(tableStatus.getAutoIncrement());
-			tableData.add(tableStatus.getCreateTime());
-			tableData.add(tableStatus.getUpdateTime());
-			tableData.add(tableStatus.getCheckTime());
-			tableData.add(tableStatus.getCollation());
-			tableData.add(tableStatus.getChecksum());
-			tableData.add(tableStatus.getCreateOptions());
-			tableData.add(tableStatus.getComment());
-		}
-		return locale -> tableData;
-	}
+  @Override
+  protected SerializableFunction<Locale, List<Object>> getTableData(List<Database.TableStatus> tableStatuses) throws Exception {
+    List<Object> tableData = new ArrayList<>(tableStatuses.size()*18);
+    for (Database.TableStatus tableStatus : tableStatuses) {
+      tableData.add(tableStatus.getName());
+      tableData.add(tableStatus.getEngine());
+      tableData.add(tableStatus.getVersion());
+      tableData.add(tableStatus.getRowFormat());
+      tableData.add(tableStatus.getRows());
+      tableData.add(tableStatus.getAvgRowLength());
+      tableData.add(tableStatus.getDataLength());
+      tableData.add(tableStatus.getMaxDataLength());
+      tableData.add(tableStatus.getIndexLength());
+      tableData.add(tableStatus.getDataFree());
+      tableData.add(tableStatus.getAutoIncrement());
+      tableData.add(tableStatus.getCreateTime());
+      tableData.add(tableStatus.getUpdateTime());
+      tableData.add(tableStatus.getCheckTime());
+      tableData.add(tableStatus.getCollation());
+      tableData.add(tableStatus.getChecksum());
+      tableData.add(tableStatus.getCreateOptions());
+      tableData.add(tableStatus.getComment());
+    }
+    return locale -> tableData;
+  }
 
-	@SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter") // Passed unmodifiable
-	private void setLastTableStatuses(List<Database.TableStatus> tableStatuses) {
-		synchronized(lastTableStatusesLock) {
-			this.lastTableStatuses = tableStatuses;
-			lastTableStatusesLock.notifyAll();
-		}
-	}
+  @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter") // Passed unmodifiable
+  private void setLastTableStatuses(List<Database.TableStatus> tableStatuses) {
+    synchronized (lastTableStatusesLock) {
+      this.lastTableStatuses = tableStatuses;
+      lastTableStatusesLock.notifyAll();
+    }
+  }
 
-	/**
-	 * Gets the last table statuses.  May wait for the data to become available,
-	 * will not return null.  May wait for a very long time in some cases.
-	 */
-	@SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
-	List<Database.TableStatus> getLastTableStatuses() throws InterruptedException {
-		synchronized(lastTableStatusesLock) {
-			while(lastTableStatuses == null) {
-				lastTableStatusesLock.wait();
-			}
-			return lastTableStatuses;
-		}
-	}
+  /**
+   * Gets the last table statuses.  May wait for the data to become available,
+   * will not return null.  May wait for a very long time in some cases.
+   */
+  @SuppressWarnings("ReturnOfCollectionOrArrayField") // Returning unmodifiable
+  List<Database.TableStatus> getLastTableStatuses() throws InterruptedException {
+    synchronized (lastTableStatusesLock) {
+      while (lastTableStatuses == null) {
+        lastTableStatusesLock.wait();
+      }
+      return lastTableStatuses;
+    }
+  }
 
-	/**
-	 * If is a slowServer (many tables), only updates once every 12 hours.
-	 * Otherwise updates once every five minutes.
-	 */
-	@Override
-	protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
-		if(isSlowServer) return 12L * 60 * 60 * 1000; // Only update once every 12 hours
-		return 5L * 60 * 1000;
-	}
+  /**
+   * If is a slowServer (many tables), only updates once every 12 hours.
+   * Otherwise updates once every five minutes.
+   */
+  @Override
+  protected long getSleepDelay(boolean lastSuccessful, AlertLevel alertLevel) {
+    if (isSlowServer) {
+      return 12L * 60 * 60 * 1000; // Only update once every 12 hours
+    }
+    return 5L * 60 * 1000;
+  }
 
-	@Override
-	protected long getTimeout() {
-		return isSlowServer ? 30 : 5;
-	}
+  @Override
+  protected long getTimeout() {
+    return isSlowServer ? 30 : 5;
+  }
 
-	@Override
-	protected List<AlertLevel> getAlertLevels(List<Database.TableStatus> tableStatuses) {
-		List<AlertLevel> alertLevels = new ArrayList<>(tableStatuses.size());
-		for(Database.TableStatus tableStatus : tableStatuses) {
-			AlertLevel alertLevel = AlertLevel.NONE;
-			// Could compare data length to max data length and warn, but max data length is incredibly high in MySQL 5.0+
-			alertLevels.add(alertLevel);
-		}
-		return alertLevels;
-	}
+  @Override
+  protected List<AlertLevel> getAlertLevels(List<Database.TableStatus> tableStatuses) {
+    List<AlertLevel> alertLevels = new ArrayList<>(tableStatuses.size());
+    for (Database.TableStatus tableStatus : tableStatuses) {
+      AlertLevel alertLevel = AlertLevel.NONE;
+      // Could compare data length to max data length and warn, but max data length is incredibly high in MySQL 5.0+
+      alertLevels.add(alertLevel);
+    }
+    return alertLevels;
+  }
 
-	/**
-	 * Determines the alert message for the provided result.
-	 */
-	@Override
-	public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
-		if(result.isError()) {
-			return new AlertLevelAndMessage(
-				result.getAlertLevels().get(0),
-				locale -> result.getTableData(locale).get(0).toString()
-			);
-		} else {
-			return AlertLevelAndMessage.NONE;
-		}
-	}
+  /**
+   * Determines the alert message for the provided result.
+   */
+  @Override
+  public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
+    if (result.isError()) {
+      return new AlertLevelAndMessage(
+        result.getAlertLevels().get(0),
+        locale -> result.getTableData(locale).get(0).toString()
+      );
+    } else {
+      return AlertLevelAndMessage.NONE;
+    }
+  }
 }

@@ -42,32 +42,32 @@ import java.sql.SQLException;
  */
 public class VirtualServersNode extends HostsNode {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public VirtualServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(rootNode, port, csf, ssf);
-	}
+  public VirtualServersNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(rootNode, port, csf, ssf);
+  }
 
-	@Override
-	public AlertCategory getAlertCategory() {
-		return AlertCategory.MONITORING;
-	}
+  @Override
+  public AlertCategory getAlertCategory() {
+    return AlertCategory.MONITORING;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(rootNode.locale, "VirtualServersNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "VirtualServersNode.label");
+  }
 
-	@Override
-	protected boolean includeHost(Host host) throws SQLException, IOException {
-		Server linuxServer = host.getLinuxServer();
-		return
-			// Is Xen dom0
-			host.getVirtualServer()!=null
-			|| (
-				// Is ao-box in fail-over
-				linuxServer!=null && linuxServer.getFailoverServer()!=null
-			)
-		;
-	}
+  @Override
+  protected boolean includeHost(Host host) throws SQLException, IOException {
+    Server linuxServer = host.getLinuxServer();
+    return
+      // Is Xen dom0
+      host.getVirtualServer() != null
+      || (
+        // Is ao-box in fail-over
+        linuxServer != null && linuxServer.getFailoverServer() != null
+      )
+    ;
+  }
 }

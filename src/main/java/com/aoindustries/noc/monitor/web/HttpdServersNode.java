@@ -54,174 +54,194 @@ import javax.swing.SwingUtilities;
  */
 public class HttpdServersNode extends NodeImpl {
 
-	private static final Logger logger = Logger.getLogger(HttpdServersNode.class.getName());
+  private static final Logger logger = Logger.getLogger(HttpdServersNode.class.getName());
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	final HostNode hostNode;
-	private final Server linuxServer;
-	private final List<HttpdServerNode> httpdServerNodes = new ArrayList<>();
-	private boolean started;
+  final HostNode hostNode;
+  private final Server linuxServer;
+  private final List<HttpdServerNode> httpdServerNodes = new ArrayList<>();
+  private boolean started;
 
-	public HttpdServersNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-		super(port, csf, ssf);
-		this.hostNode = hostNode;
-		this.linuxServer = linuxServer;
-	}
+  public HttpdServersNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+    super(port, csf, ssf);
+    this.hostNode = hostNode;
+    this.linuxServer = linuxServer;
+  }
 
-	@Override
-	public HostNode getParent() {
-		return hostNode;
-	}
+  @Override
+  public HostNode getParent() {
+    return hostNode;
+  }
 
-	public Server getAOServer() {
-		return linuxServer;
-	}
+  public Server getAOServer() {
+    return linuxServer;
+  }
 
-	@Override
-	public boolean getAllowsChildren() {
-		return true;
-	}
+  @Override
+  public boolean getAllowsChildren() {
+    return true;
+  }
 
-	@Override
-	public List<HttpdServerNode> getChildren() {
-		synchronized(httpdServerNodes) {
-			return getSnapshot(httpdServerNodes);
-		}
-	}
+  @Override
+  public List<HttpdServerNode> getChildren() {
+    synchronized (httpdServerNodes) {
+      return getSnapshot(httpdServerNodes);
+    }
+  }
 
-	/**
-	 * The alert level is equal to the highest alert level of its children.
-	 */
-	@Override
-	public AlertLevel getAlertLevel() {
-		AlertLevel level;
-		synchronized(httpdServerNodes) {
-			level = AlertLevelUtils.getMaxAlertLevel(httpdServerNodes);
-		}
-		return constrainAlertLevel(level);
-	}
+  /**
+   * The alert level is equal to the highest alert level of its children.
+   */
+  @Override
+  public AlertLevel getAlertLevel() {
+    AlertLevel level;
+    synchronized (httpdServerNodes) {
+      level = AlertLevelUtils.getMaxAlertLevel(httpdServerNodes);
+    }
+    return constrainAlertLevel(level);
+  }
 
-	/**
-	 * No alert messages.
-	 */
-	@Override
-	public String getAlertMessage() {
-		return null;
-	}
+  /**
+   * No alert messages.
+   */
+  @Override
+  public String getAlertMessage() {
+    return null;
+  }
 
-	@Override
-	public String getLabel() {
-		return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "HttpdServersNode.label");
-	}
+  @Override
+  public String getLabel() {
+    return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "HttpdServersNode.label");
+  }
 
-	private final TableListener tableListener = (Table<?> table) -> {
-		try {
-			verifyHttpdServers();
-		} catch(IOException | SQLException err) {
-			throw new WrappedException(err);
-		}
-	};
+  private final TableListener tableListener = (Table<?> table) -> {
+    try {
+      verifyHttpdServers();
+    } catch (IOException | SQLException err) {
+      throw new WrappedException(err);
+    }
+  };
 
-	public void start() throws IOException, SQLException {
-		synchronized(httpdServerNodes) {
-			if(started) throw new IllegalStateException();
-			started = true;
-			hostNode.hostsNode.rootNode.conn.getWeb().getHttpdServer().addTableListener(tableListener, 100);
-		}
-		verifyHttpdServers();
-	}
+  public void start() throws IOException, SQLException {
+    synchronized (httpdServerNodes) {
+      if (started) {
+        throw new IllegalStateException();
+      }
+      started = true;
+      hostNode.hostsNode.rootNode.conn.getWeb().getHttpdServer().addTableListener(tableListener, 100);
+    }
+    verifyHttpdServers();
+  }
 
-	public void stop() {
-		synchronized(httpdServerNodes) {
-			started = false;
-			hostNode.hostsNode.rootNode.conn.getWeb().getHttpdServer().removeTableListener(tableListener);
-			for(HttpdServerNode httpdServerNode : httpdServerNodes) {
-				httpdServerNode.stop();
-				hostNode.hostsNode.rootNode.nodeRemoved();
-			}
-			httpdServerNodes.clear();
-		}
-	}
+  public void stop() {
+    synchronized (httpdServerNodes) {
+      started = false;
+      hostNode.hostsNode.rootNode.conn.getWeb().getHttpdServer().removeTableListener(tableListener);
+      for (HttpdServerNode httpdServerNode : httpdServerNodes) {
+        httpdServerNode.stop();
+        hostNode.hostsNode.rootNode.nodeRemoved();
+      }
+      httpdServerNodes.clear();
+    }
+  }
 
-	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-	private void verifyHttpdServers() throws IOException, SQLException {
-		assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
+  @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
+  private void verifyHttpdServers() throws IOException, SQLException {
+    assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-		synchronized(httpdServerNodes) {
-			if(!started) return;
-		}
+    synchronized (httpdServerNodes) {
+      if (!started) {
+        return;
+      }
+    }
 
-		List<HttpdServer> httpdServers = linuxServer.getHttpdServers();
-		if(logger.isLoggable(Level.FINER)) logger.finer("httpdServers = " + httpdServers);
-		synchronized(httpdServerNodes) {
-			if(started) {
-				// Remove old ones
-				Iterator<HttpdServerNode> httpdServerNodeIter = httpdServerNodes.iterator();
-				while(httpdServerNodeIter.hasNext()) {
-					HttpdServerNode httpdServerNode = httpdServerNodeIter.next();
-					HttpdServer existingHttpdServer = httpdServerNode.getHttpdServer();
-					// Look for existing node with matching HttpdServer with the same name
-					boolean hasMatch = false;
-					for(HttpdServer httpdServer : httpdServers) {
-						if(httpdServer.equals(existingHttpdServer)) {
-							if(Objects.equals(httpdServer.getName(), existingHttpdServer.getName())) {
-								if(logger.isLoggable(Level.FINER)) logger.finer("Found with matching name " + existingHttpdServer.getName() + ", keeping node");
-								hasMatch = true;
-							} else {
-								if(logger.isLoggable(Level.FINE)) logger.fine("Name changed from " + existingHttpdServer.getName() + " to " + httpdServer.getName() + ", removing node");
-								// Name changed, remove old node
-								// matches remains false
-							}
-							break;
-						}
-					}
-					if(!hasMatch) {
-						httpdServerNode.stop();
-						httpdServerNodeIter.remove();
-						hostNode.hostsNode.rootNode.nodeRemoved();
-					}
-				}
-				// Add new ones
-				for(int c = 0; c < httpdServers.size(); c++) {
-					HttpdServer httpdServer = httpdServers.get(c);
-					if(c >= httpdServerNodes.size() || !httpdServer.equals(httpdServerNodes.get(c).getHttpdServer())) {
-						if(logger.isLoggable(Level.FINER)) logger.finer("Adding node for " + httpdServer.getName());
-						try {
-							// Insert into proper index
-							if(logger.isLoggable(Level.FINER)) logger.finer("Creating node for " + httpdServer.getName());
-							HttpdServerNode httpdServerNode = new HttpdServerNode(this, httpdServer, port, csf, ssf);
-							if(logger.isLoggable(Level.FINER)) logger.finer("Adding node to list for " + httpdServer.getName());
-							httpdServerNodes.add(c, httpdServerNode);
-							if(logger.isLoggable(Level.FINER)) logger.finer("Starting node for " + httpdServer.getName());
-							httpdServerNode.start();
-							if(logger.isLoggable(Level.FINE)) logger.fine("Notifying added for " + httpdServer.getName());
-							hostNode.hostsNode.rootNode.nodeAdded();
-						} catch(ThreadDeath td) {
-							throw td;
-						} catch(Throwable t) {
-							logger.log(Level.SEVERE, null, t);
-							throw t;
-						}
-					}
-				}
-			}
-		}
-	}
+    List<HttpdServer> httpdServers = linuxServer.getHttpdServers();
+    if (logger.isLoggable(Level.FINER)) {
+      logger.finer("httpdServers = " + httpdServers);
+    }
+    synchronized (httpdServerNodes) {
+      if (started) {
+        // Remove old ones
+        Iterator<HttpdServerNode> httpdServerNodeIter = httpdServerNodes.iterator();
+        while (httpdServerNodeIter.hasNext()) {
+          HttpdServerNode httpdServerNode = httpdServerNodeIter.next();
+          HttpdServer existingHttpdServer = httpdServerNode.getHttpdServer();
+          // Look for existing node with matching HttpdServer with the same name
+          boolean hasMatch = false;
+          for (HttpdServer httpdServer : httpdServers) {
+            if (httpdServer.equals(existingHttpdServer)) {
+              if (Objects.equals(httpdServer.getName(), existingHttpdServer.getName())) {
+                if (logger.isLoggable(Level.FINER)) {
+                  logger.finer("Found with matching name " + existingHttpdServer.getName() + ", keeping node");
+                }
+                hasMatch = true;
+              } else {
+                if (logger.isLoggable(Level.FINE)) {
+                  logger.fine("Name changed from " + existingHttpdServer.getName() + " to " + httpdServer.getName() + ", removing node");
+                }
+                // Name changed, remove old node
+                // matches remains false
+              }
+              break;
+            }
+          }
+          if (!hasMatch) {
+            httpdServerNode.stop();
+            httpdServerNodeIter.remove();
+            hostNode.hostsNode.rootNode.nodeRemoved();
+          }
+        }
+        // Add new ones
+        for (int c = 0; c < httpdServers.size(); c++) {
+          HttpdServer httpdServer = httpdServers.get(c);
+          if (c >= httpdServerNodes.size() || !httpdServer.equals(httpdServerNodes.get(c).getHttpdServer())) {
+            if (logger.isLoggable(Level.FINER)) {
+              logger.finer("Adding node for " + httpdServer.getName());
+            }
+            try {
+              // Insert into proper index
+              if (logger.isLoggable(Level.FINER)) {
+                logger.finer("Creating node for " + httpdServer.getName());
+              }
+              HttpdServerNode httpdServerNode = new HttpdServerNode(this, httpdServer, port, csf, ssf);
+              if (logger.isLoggable(Level.FINER)) {
+                logger.finer("Adding node to list for " + httpdServer.getName());
+              }
+              httpdServerNodes.add(c, httpdServerNode);
+              if (logger.isLoggable(Level.FINER)) {
+                logger.finer("Starting node for " + httpdServer.getName());
+              }
+              httpdServerNode.start();
+              if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Notifying added for " + httpdServer.getName());
+              }
+              hostNode.hostsNode.rootNode.nodeAdded();
+            } catch (ThreadDeath td) {
+              throw td;
+            } catch (Throwable t) {
+              logger.log(Level.SEVERE, null, t);
+              throw t;
+            }
+          }
+        }
+      }
+    }
+  }
 
-	File getPersistenceDirectory() throws IOException {
-		File dir = new File(hostNode.getPersistenceDirectory(), "httpd_servers");
-		if(!dir.exists()) {
-			if(!dir.mkdir()) {
-				throw new IOException(
-					PACKAGE_RESOURCES.getMessage(
-						hostNode.hostsNode.rootNode.locale,
-						"error.mkdirFailed",
-						dir.getCanonicalPath()
-					)
-				);
-			}
-		}
-		return dir;
-	}
+  File getPersistenceDirectory() throws IOException {
+    File dir = new File(hostNode.getPersistenceDirectory(), "httpd_servers");
+    if (!dir.exists()) {
+      if (!dir.mkdir()) {
+        throw new IOException(
+          PACKAGE_RESOURCES.getMessage(
+            hostNode.hostsNode.rootNode.locale,
+            "error.mkdirFailed",
+            dir.getCanonicalPath()
+          )
+        );
+      }
+    }
+    return dir;
+  }
 }

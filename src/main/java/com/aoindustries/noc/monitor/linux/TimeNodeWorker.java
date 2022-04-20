@@ -54,82 +54,94 @@ import java.util.Map;
  */
 class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResult> {
 
-	/**
-	 * One unique worker is made per persistence directory (and should match linuxServer exactly)
-	 */
-	private static final Map<String, TimeNodeWorker> workerCache = new HashMap<>();
-	static TimeNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
-		String path = persistenceDirectory.getCanonicalPath();
-		synchronized(workerCache) {
-			TimeNodeWorker worker = workerCache.get(path);
-			if(worker==null) {
-				worker = new TimeNodeWorker(persistenceDirectory, linuxServer);
-				workerCache.put(path, worker);
-			} else {
-				if(!worker._linuxServer.equals(linuxServer)) throw new AssertionError("worker.linuxServer!=linuxServer: "+worker._linuxServer+"!="+linuxServer);
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence directory (and should match linuxServer exactly)
+   */
+  private static final Map<String, TimeNodeWorker> workerCache = new HashMap<>();
+  static TimeNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
+    String path = persistenceDirectory.getCanonicalPath();
+    synchronized (workerCache) {
+      TimeNodeWorker worker = workerCache.get(path);
+      if (worker == null) {
+        worker = new TimeNodeWorker(persistenceDirectory, linuxServer);
+        workerCache.put(path, worker);
+      } else {
+        if (!worker._linuxServer.equals(linuxServer)) {
+          throw new AssertionError("worker.linuxServer != linuxServer: "+worker._linuxServer+" != "+linuxServer);
+        }
+      }
+      return worker;
+    }
+  }
 
-	private final Server _linuxServer;
-	private Server currentLinuxServer;
+  private final Server _linuxServer;
+  private Server currentLinuxServer;
 
-	private TimeNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
-		super(new File(persistenceDirectory, "time"), new TimeResultSerializer());
-		this._linuxServer = currentLinuxServer = linuxServer;
-	}
+  private TimeNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
+    super(new File(persistenceDirectory, "time"), new TimeResultSerializer());
+    this._linuxServer = currentLinuxServer = linuxServer;
+  }
 
-	@Override
-	protected int getHistorySize() {
-		return 2000;
-	}
+  @Override
+  protected int getHistorySize() {
+    return 2000;
+  }
 
-	@Override
-	protected MilliInterval getSample() throws Exception {
-		// Get the latest limits
-		currentLinuxServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());
+  @Override
+  protected MilliInterval getSample() throws Exception {
+    // Get the latest limits
+    currentLinuxServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());
 
-		long requestTime = System.currentTimeMillis();
-		long startNanos = System.nanoTime();
-		long systemTime = currentLinuxServer.getSystemTimeMillis();
-		long latency = System.nanoTime() - startNanos;
-		long lRemainder = latency % 2000000;
-		long skew = systemTime - (requestTime + latency/2000000);
-		if(lRemainder >= 1000000) skew--;
+    long requestTime = System.currentTimeMillis();
+    long startNanos = System.nanoTime();
+    long systemTime = currentLinuxServer.getSystemTimeMillis();
+    long latency = System.nanoTime() - startNanos;
+    long lRemainder = latency % 2000000;
+    long skew = systemTime - (requestTime + latency/2000000);
+    if (lRemainder >= 1000000) {
+      skew--;
+    }
 
-		return new MilliInterval(skew);
-	}
+    return new MilliInterval(skew);
+  }
 
-	private static AlertLevel getAlertLevel(long skew) {
-		if(skew >= 60000 || skew <= -60000) return AlertLevel.CRITICAL;
-		if(skew >=  4000 || skew <=  -4000) return AlertLevel.HIGH;
-		if(skew >=  2000 || skew <=  -2000) return AlertLevel.MEDIUM;
-		if(skew >=  1000 || skew <=  -1000) return AlertLevel.MEDIUM;
-		return AlertLevel.NONE;
-	}
+  private static AlertLevel getAlertLevel(long skew) {
+    if (skew >= 60000 || skew <= -60000) {
+      return AlertLevel.CRITICAL;
+    }
+    if (skew >=  4000 || skew <=  -4000) {
+      return AlertLevel.HIGH;
+    }
+    if (skew >=  2000 || skew <=  -2000) {
+      return AlertLevel.MEDIUM;
+    }
+    if (skew >=  1000 || skew <=  -1000) {
+      return AlertLevel.MEDIUM;
+    }
+    return AlertLevel.NONE;
+  }
 
-	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(MilliInterval sample, Iterable<? extends TimeResult> previousResults) throws Exception {
-		final long currentSkew = sample.getIntervalMillis();
+  @Override
+  protected AlertLevelAndMessage getAlertLevelAndMessage(MilliInterval sample, Iterable<? extends TimeResult> previousResults) throws Exception {
+    final long currentSkew = sample.getIntervalMillis();
 
-		return new AlertLevelAndMessage(
-			getAlertLevel(currentSkew),
-			locale -> PACKAGE_RESOURCES.getMessage(
-				locale,
-				"TimeNodeWorker.alertMessage",
-				currentSkew
-			)
-		);
-	}
+    return new AlertLevelAndMessage(
+      getAlertLevel(currentSkew),
+      locale -> PACKAGE_RESOURCES.getMessage(
+        locale,
+        "TimeNodeWorker.alertMessage",
+        currentSkew
+      )
+    );
+  }
 
-	@Override
-	protected TimeResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-		return new TimeResult(time, latency, alertLevel, error);
-	}
+  @Override
+  protected TimeResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
+    return new TimeResult(time, latency, alertLevel, error);
+  }
 
-	@Override
-	protected TimeResult newSampleResult(long time, long latency, AlertLevel alertLevel, MilliInterval sample) {
-		return new TimeResult(time, latency, alertLevel, sample.getIntervalMillis());
-	}
+  @Override
+  protected TimeResult newSampleResult(long time, long latency, AlertLevel alertLevel, MilliInterval sample) {
+    return new TimeResult(time, latency, alertLevel, sample.getIntervalMillis());
+  }
 }

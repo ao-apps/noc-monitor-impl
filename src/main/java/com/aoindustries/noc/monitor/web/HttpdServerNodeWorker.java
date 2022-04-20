@@ -43,146 +43,152 @@ import java.util.logging.Logger;
  */
 class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, HttpdServerResult> {
 
-	private static final Logger logger = Logger.getLogger(HttpdServerNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(HttpdServerNodeWorker.class.getName());
 
-	/**
-	 * One unique worker is made per persistence file (and should match httpdServer exactly)
-	 */
-	private static final Map<String, HttpdServerNodeWorker> workerCache = new HashMap<>();
-	static HttpdServerNodeWorker getWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
-		String path = persistenceFile.getCanonicalPath();
-		synchronized(workerCache) {
-			HttpdServerNodeWorker worker = workerCache.get(path);
-			if(worker==null) {
-				if(logger.isLoggable(Level.FINE)) logger.fine("Creating new worker for " + httpdServer.getName());
-				worker = new HttpdServerNodeWorker(persistenceFile, httpdServer);
-				workerCache.put(path, worker);
-			} else {
-				if(logger.isLoggable(Level.FINER)) logger.finer("Found existing worker for " + httpdServer.getName());
-				if(!worker._httpdServer.equals(httpdServer)) throw new AssertionError("worker.httpdServer!=httpdServer: "+worker._httpdServer+"!="+httpdServer);
-			}
-			return worker;
-		}
-	}
+  /**
+   * One unique worker is made per persistence file (and should match httpdServer exactly)
+   */
+  private static final Map<String, HttpdServerNodeWorker> workerCache = new HashMap<>();
+  static HttpdServerNodeWorker getWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
+    String path = persistenceFile.getCanonicalPath();
+    synchronized (workerCache) {
+      HttpdServerNodeWorker worker = workerCache.get(path);
+      if (worker == null) {
+        if (logger.isLoggable(Level.FINE)) {
+          logger.fine("Creating new worker for " + httpdServer.getName());
+        }
+        worker = new HttpdServerNodeWorker(persistenceFile, httpdServer);
+        workerCache.put(path, worker);
+      } else {
+        if (logger.isLoggable(Level.FINER)) {
+          logger.finer("Found existing worker for " + httpdServer.getName());
+        }
+        if (!worker._httpdServer.equals(httpdServer)) {
+          throw new AssertionError("worker.httpdServer != httpdServer: "+worker._httpdServer+" != "+httpdServer);
+        }
+      }
+      return worker;
+    }
+  }
 
-	private final HttpdServer _httpdServer;
-	private HttpdServer currentHttpdServer;
+  private final HttpdServer _httpdServer;
+  private HttpdServer currentHttpdServer;
 
-	private HttpdServerNodeWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
-		super(persistenceFile, new HttpdServerResultSerializer());
-		this._httpdServer = currentHttpdServer = httpdServer;
-	}
+  private HttpdServerNodeWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
+    super(persistenceFile, new HttpdServerResultSerializer());
+    this._httpdServer = currentHttpdServer = httpdServer;
+  }
 
-	@Override
-	protected int getHistorySize() {
-		return 2000;
-	}
+  @Override
+  protected int getHistorySize() {
+    return 2000;
+  }
 
-	@Override
-	protected List<Integer> getSample() throws Exception {
-		// Get the latest limits
-		currentHttpdServer = _httpdServer.getTable().getConnector().getWeb().getHttpdServer().get(_httpdServer.getPkey());
-		int concurrency = currentHttpdServer.getConcurrency();
-		return Arrays.asList(
-			concurrency,
-			currentHttpdServer.getMaxConcurrency(),
-			currentHttpdServer.getMonitoringConcurrencyLow(),
-			currentHttpdServer.getMonitoringConcurrencyMedium(),
-			currentHttpdServer.getMonitoringConcurrencyHigh(),
-			currentHttpdServer.getMonitoringConcurrencyCritical()
-		);
-	}
+  @Override
+  protected List<Integer> getSample() throws Exception {
+    // Get the latest limits
+    currentHttpdServer = _httpdServer.getTable().getConnector().getWeb().getHttpdServer().get(_httpdServer.getPkey());
+    int concurrency = currentHttpdServer.getConcurrency();
+    return Arrays.asList(
+      concurrency,
+      currentHttpdServer.getMaxConcurrency(),
+      currentHttpdServer.getMonitoringConcurrencyLow(),
+      currentHttpdServer.getMonitoringConcurrencyMedium(),
+      currentHttpdServer.getMonitoringConcurrencyHigh(),
+      currentHttpdServer.getMonitoringConcurrencyCritical()
+    );
+  }
 
-	@Override
-	protected AlertLevelAndMessage getAlertLevelAndMessage(List<Integer> sample, Iterable<? extends HttpdServerResult> previousResults) throws Exception {
-		int concurrency = sample.get(0);
-		int concurrencyCritical = currentHttpdServer.getMonitoringConcurrencyCritical();
-		if(concurrencyCritical != -1 && concurrency >= concurrencyCritical) {
-			return new AlertLevelAndMessage(
-				AlertLevel.CRITICAL,
-				locale -> PACKAGE_RESOURCES.getMessage(
-					locale,
-					"HttpdServerNodeWorker.alertMessage.critical",
-					concurrencyCritical,
-					concurrency
-				)
-			);
-		}
-		int concurrencyHigh = currentHttpdServer.getMonitoringConcurrencyHigh();
-		if(concurrencyHigh != -1 && concurrency >= concurrencyHigh) {
-			return new AlertLevelAndMessage(
-				AlertLevel.HIGH,
-				locale -> PACKAGE_RESOURCES.getMessage(
-					locale,
-					"HttpdServerNodeWorker.alertMessage.high",
-					concurrencyHigh,
-					concurrency
-				)
-			);
-		}
-		int concurrencyMedium = currentHttpdServer.getMonitoringConcurrencyMedium();
-		if(concurrencyMedium != -1 && concurrency >= concurrencyMedium) {
-			return new AlertLevelAndMessage(
-				AlertLevel.MEDIUM,
-				locale -> PACKAGE_RESOURCES.getMessage(
-					locale,
-					"HttpdServerNodeWorker.alertMessage.medium",
-					concurrencyMedium,
-					concurrency
-				)
-			);
-		}
-		int concurrencyLow = currentHttpdServer.getMonitoringConcurrencyLow();
-		if(concurrencyLow != -1 && concurrency >= concurrencyLow) {
-			return new AlertLevelAndMessage(
-				AlertLevel.LOW,
-				locale -> PACKAGE_RESOURCES.getMessage(
-					locale,
-					"HttpdServerNodeWorker.alertMessage.low",
-					concurrencyLow,
-					concurrency
-				)
-			);
-		}
-		if(concurrencyLow == -1) {
-			return new AlertLevelAndMessage(
-				AlertLevel.NONE,
-				locale -> PACKAGE_RESOURCES.getMessage(
-					locale,
-					"HttpdServerNodeWorker.alertMessage.notAny",
-					concurrency
-				)
-			);
-		} else {
-			return new AlertLevelAndMessage(
-				AlertLevel.NONE,
-				locale -> PACKAGE_RESOURCES.getMessage(
-					locale,
-					"HttpdServerNodeWorker.alertMessage.none",
-					concurrencyLow,
-					concurrency
-				)
-			);
-		}
-	}
+  @Override
+  protected AlertLevelAndMessage getAlertLevelAndMessage(List<Integer> sample, Iterable<? extends HttpdServerResult> previousResults) throws Exception {
+    int concurrency = sample.get(0);
+    int concurrencyCritical = currentHttpdServer.getMonitoringConcurrencyCritical();
+    if (concurrencyCritical != -1 && concurrency >= concurrencyCritical) {
+      return new AlertLevelAndMessage(
+        AlertLevel.CRITICAL,
+        locale -> PACKAGE_RESOURCES.getMessage(
+          locale,
+          "HttpdServerNodeWorker.alertMessage.critical",
+          concurrencyCritical,
+          concurrency
+        )
+      );
+    }
+    int concurrencyHigh = currentHttpdServer.getMonitoringConcurrencyHigh();
+    if (concurrencyHigh != -1 && concurrency >= concurrencyHigh) {
+      return new AlertLevelAndMessage(
+        AlertLevel.HIGH,
+        locale -> PACKAGE_RESOURCES.getMessage(
+          locale,
+          "HttpdServerNodeWorker.alertMessage.high",
+          concurrencyHigh,
+          concurrency
+        )
+      );
+    }
+    int concurrencyMedium = currentHttpdServer.getMonitoringConcurrencyMedium();
+    if (concurrencyMedium != -1 && concurrency >= concurrencyMedium) {
+      return new AlertLevelAndMessage(
+        AlertLevel.MEDIUM,
+        locale -> PACKAGE_RESOURCES.getMessage(
+          locale,
+          "HttpdServerNodeWorker.alertMessage.medium",
+          concurrencyMedium,
+          concurrency
+        )
+      );
+    }
+    int concurrencyLow = currentHttpdServer.getMonitoringConcurrencyLow();
+    if (concurrencyLow != -1 && concurrency >= concurrencyLow) {
+      return new AlertLevelAndMessage(
+        AlertLevel.LOW,
+        locale -> PACKAGE_RESOURCES.getMessage(
+          locale,
+          "HttpdServerNodeWorker.alertMessage.low",
+          concurrencyLow,
+          concurrency
+        )
+      );
+    }
+    if (concurrencyLow == -1) {
+      return new AlertLevelAndMessage(
+        AlertLevel.NONE,
+        locale -> PACKAGE_RESOURCES.getMessage(
+          locale,
+          "HttpdServerNodeWorker.alertMessage.notAny",
+          concurrency
+        )
+      );
+    } else {
+      return new AlertLevelAndMessage(
+        AlertLevel.NONE,
+        locale -> PACKAGE_RESOURCES.getMessage(
+          locale,
+          "HttpdServerNodeWorker.alertMessage.none",
+          concurrencyLow,
+          concurrency
+        )
+      );
+    }
+  }
 
-	@Override
-	protected HttpdServerResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-		return new HttpdServerResult(time, latency, alertLevel, error);
-	}
+  @Override
+  protected HttpdServerResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
+    return new HttpdServerResult(time, latency, alertLevel, error);
+  }
 
-	@Override
-	protected HttpdServerResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<Integer> sample) {
-		return new HttpdServerResult(
-			time,
-			latency,
-			alertLevel,
-			sample.get(0),
-			sample.get(1),
-			sample.get(2),
-			sample.get(3),
-			sample.get(4),
-			sample.get(5)
-		);
-	}
+  @Override
+  protected HttpdServerResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<Integer> sample) {
+    return new HttpdServerResult(
+      time,
+      latency,
+      alertLevel,
+      sample.get(0),
+      sample.get(1),
+      sample.get(2),
+      sample.get(3),
+      sample.get(4),
+      sample.get(5)
+    );
+  }
 }

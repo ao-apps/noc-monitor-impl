@@ -43,114 +43,116 @@ import java.util.List;
  */
 public class DatabaseNode extends TableResultNodeImpl {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	final DatabaseNodeWorker databaseWorker;
-	final DatabasesNode mysqlDatabasesNode;
-	final Database mysqlDatabase;
-	private final MysqlReplication mysqlSlave;
-	private final Database.Name _label;
+  final DatabaseNodeWorker databaseWorker;
+  final DatabasesNode mysqlDatabasesNode;
+  final Database mysqlDatabase;
+  private final MysqlReplication mysqlSlave;
+  private final Database.Name _label;
 
-	private boolean started;
+  private boolean started;
 
-	private volatile CheckTablesNode mysqlCheckTablesNode;
+  private volatile CheckTablesNode mysqlCheckTablesNode;
 
-	DatabaseNode(DatabasesNode mysqlDatabasesNode, Database mysqlDatabase, MysqlReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
-		super(
-			mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
-			mysqlDatabasesNode,
-			DatabaseNodeWorker.getWorker(
-				new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName()+".show_full_tables"),
-				mysqlDatabase,
-				mysqlSlave
-			),
-			port,
-			csf,
-			ssf
-		);
-		this.databaseWorker = (DatabaseNodeWorker)worker;
-		this.mysqlDatabasesNode = mysqlDatabasesNode;
-		this.mysqlDatabase = mysqlDatabase;
-		this.mysqlSlave = mysqlSlave;
-		this._label = mysqlDatabase.getName();
-	}
+  DatabaseNode(DatabasesNode mysqlDatabasesNode, Database mysqlDatabase, MysqlReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+    super(
+      mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
+      mysqlDatabasesNode,
+      DatabaseNodeWorker.getWorker(
+        new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName()+".show_full_tables"),
+        mysqlDatabase,
+        mysqlSlave
+      ),
+      port,
+      csf,
+      ssf
+    );
+    this.databaseWorker = (DatabaseNodeWorker)worker;
+    this.mysqlDatabasesNode = mysqlDatabasesNode;
+    this.mysqlDatabase = mysqlDatabase;
+    this.mysqlSlave = mysqlSlave;
+    this._label = mysqlDatabase.getName();
+  }
 
-	Database getMySQLDatabase() {
-		return mysqlDatabase;
-	}
+  Database getMySQLDatabase() {
+    return mysqlDatabase;
+  }
 
-	MysqlReplication getMySQLSlave() {
-		return mysqlSlave;
-	}
+  MysqlReplication getMySQLSlave() {
+    return mysqlSlave;
+  }
 
-	@Override
-	public boolean getAllowsChildren() {
-		return true;
-	}
+  @Override
+  public boolean getAllowsChildren() {
+    return true;
+  }
 
-	@Override
-	public List<CheckTablesNode> getChildren() {
-		return getSnapshot(this.mysqlCheckTablesNode);
-	}
+  @Override
+  public List<CheckTablesNode> getChildren() {
+    return getSnapshot(this.mysqlCheckTablesNode);
+  }
 
-	/**
-	 * The alert level is equal to the highest alert level of its children.
-	 */
-	@Override
-	public AlertLevel getAlertLevel() {
-		return constrainAlertLevel(
-			AlertLevelUtils.getMaxAlertLevel(
-				super.getAlertLevel(),
-				this.mysqlCheckTablesNode
-			)
-		);
-	}
+  /**
+   * The alert level is equal to the highest alert level of its children.
+   */
+  @Override
+  public AlertLevel getAlertLevel() {
+    return constrainAlertLevel(
+      AlertLevelUtils.getMaxAlertLevel(
+        super.getAlertLevel(),
+        this.mysqlCheckTablesNode
+      )
+    );
+  }
 
-	@Override
-	public String getLabel() {
-		return _label.toString();
-	}
+  @Override
+  public String getLabel() {
+    return _label.toString();
+  }
 
-	File getPersistenceDirectory() throws IOException {
-		File dir = new File(mysqlDatabasesNode.getPersistenceDirectory(), _label.toString());
-		if(!dir.exists()) {
-			if(!dir.mkdir()) {
-				throw new IOException(
-					PACKAGE_RESOURCES.getMessage(
-						mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
-						"error.mkdirFailed",
-						dir.getCanonicalPath()
-					)
-				);
-			}
-		}
-		return dir;
-	}
+  File getPersistenceDirectory() throws IOException {
+    File dir = new File(mysqlDatabasesNode.getPersistenceDirectory(), _label.toString());
+    if (!dir.exists()) {
+      if (!dir.mkdir()) {
+        throw new IOException(
+          PACKAGE_RESOURCES.getMessage(
+            mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+            "error.mkdirFailed",
+            dir.getCanonicalPath()
+          )
+        );
+      }
+    }
+    return dir;
+  }
 
-	@Override
-	public void start() throws IOException {
-		synchronized(this) {
-			if(started) throw new IllegalStateException();
-			started = true;
-			if(mysqlCheckTablesNode==null) {
-				mysqlCheckTablesNode = new CheckTablesNode(this, port, csf, ssf);
-				mysqlCheckTablesNode.start();
-				mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
-			}
-			super.start();
-		}
-	}
+  @Override
+  public void start() throws IOException {
+    synchronized (this) {
+      if (started) {
+        throw new IllegalStateException();
+      }
+      started = true;
+      if (mysqlCheckTablesNode == null) {
+        mysqlCheckTablesNode = new CheckTablesNode(this, port, csf, ssf);
+        mysqlCheckTablesNode.start();
+        mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
+      }
+      super.start();
+    }
+  }
 
-	@Override
-	public void stop() {
-		synchronized(this) {
-			started = false;
-			super.stop();
-			if(mysqlCheckTablesNode!=null) {
-				mysqlCheckTablesNode.stop();
-				mysqlCheckTablesNode = null;
-				mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
-			}
-		}
-	}
+  @Override
+  public void stop() {
+    synchronized (this) {
+      started = false;
+      super.stop();
+      if (mysqlCheckTablesNode != null) {
+        mysqlCheckTablesNode.stop();
+        mysqlCheckTablesNode = null;
+        mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
+      }
+    }
+  }
 }

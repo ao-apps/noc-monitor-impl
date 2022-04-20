@@ -21,11 +21,11 @@
  * along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
  */
 module com.aoindustries.noc.monitor.devel {
-	exports com.aoindustries.noc.monitor.i18n;
-	exports com.aoindustries.noc.monitor.cluster.i18n;
-	// Direct
-	requires com.aoapps.hodgepodge; // <groupId>com.aoapps</groupId><artifactId>ao-hodgepodge</artifactId>
-	requires static jsr305; // <groupId>com.google.code.findbugs</groupId><artifactId>jsr305</artifactId>
-	// Java SE
-	requires java.logging;
+  exports com.aoindustries.noc.monitor.i18n;
+  exports com.aoindustries.noc.monitor.cluster.i18n;
+  // Direct
+  requires com.aoapps.hodgepodge; // <groupId>com.aoapps</groupId><artifactId>ao-hodgepodge</artifactId>
+  requires static jsr305; // <groupId>com.google.code.findbugs</groupId><artifactId>jsr305</artifactId>
+  // Java SE
+  requires java.logging;
 }
