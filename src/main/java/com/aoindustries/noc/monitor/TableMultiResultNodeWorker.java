@@ -91,18 +91,18 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
 
   protected TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
     this.results = new PersistentLinkedList<>(
-      PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
-      //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
-      /*
-      new TwoCopyBarrierBuffer(
-        persistenceFile,
-        ProtectionLevel.BARRIER,
-        4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash page size??? Can't find specs.
-        60L*1000L, // TODO: Flash: 60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
-        5L*60L*1000L // TODO: Flash: 24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
-      ),
-       */
-      serializer
+        PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
+        //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
+        /*
+        new TwoCopyBarrierBuffer(
+          persistenceFile,
+          ProtectionLevel.BARRIER,
+          4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash page size??? Can't find specs.
+          60L*1000L, // TODO: Flash: 60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
+          5L*60L*1000L // TODO: Flash: 24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
+        ),
+         */
+        serializer
     );
   }
 
@@ -113,8 +113,8 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
     //System.out.println("DEBUG: getResults");
     //try {
       synchronized (results) {
-        return Collections.unmodifiableList(new ArrayList<>(results));
-      }
+      return Collections.unmodifiableList(new ArrayList<>(results));
+    }
     //} catch (ThreadDeath td) {
     //    throw td;
     //} catch (Throwable t) {
@@ -165,7 +165,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
     } catch (ExecutionException err) {
       // Unwrap exception here
       Throwable cause = err.getCause();
-      throw (cause instanceof Exception) ? (Exception)cause : err;
+      throw (cause instanceof Exception) ? (Exception) cause : err;
     }
   }
 
@@ -228,17 +228,17 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
         }
         sample = null;
         alertLevelAndMessage = new AlertLevelAndMessage(
-          // Don't downgrade UNKNOWN to CRITICAL on error
-          EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-          locale -> ThreadLocale.call(locale,
-            () -> {
-              String msg = err.getLocalizedMessage();
-              if (msg == null || msg.isEmpty()) {
-                msg = err.toString();
-              }
-              return PACKAGE_RESOURCES.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);
-            }
-          )
+            // Don't downgrade UNKNOWN to CRITICAL on error
+            EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
+            locale -> ThreadLocale.call(locale,
+                () -> {
+                  String msg = err.getLocalizedMessage();
+                  if (msg == null || msg.isEmpty()) {
+                    msg = err.toString();
+                  }
+                  return PACKAGE_RESOURCES.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);
+                }
+            )
         );
         lastSuccessful = false;
       }
@@ -260,17 +260,17 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
       R added;
       if (error != null) {
         added = newErrorResult(
-          startMillis,
-          pingNanos,
-          alertLevelAndMessage.getAlertLevel(),
-          error
+            startMillis,
+            pingNanos,
+            alertLevelAndMessage.getAlertLevel(),
+            error
         );
       } else {
         added = newSampleResult(
-          startMillis,
-          pingNanos,
-          alertLevelAndMessage.getAlertLevel(),
-          sample
+            startMillis,
+            pingNanos,
+            alertLevelAndMessage.getAlertLevel(),
+            sample
         );
       }
 
@@ -278,7 +278,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
       R removed = null;
       synchronized (results) {
         results.addFirst(added);
-        if (results.size()>getHistorySize()) {
+        if (results.size() > getHistorySize()) {
           removed = results.removeLast();
         }
       }
@@ -313,9 +313,9 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
         synchronized (tableMultiResultNodeImpls) {
           for (TableMultiResultNodeImpl<R> tableMultiResultNodeImpl : tableMultiResultNodeImpls) {
             tableMultiResultNodeImpl.nodeAlertLevelChanged(
-              oldAlertLevel,
-              newAlertLevel,
-              alertLevelAndMessage.getAlertMessage()
+                oldAlertLevel,
+                newAlertLevel,
+                alertLevelAndMessage.getAlertMessage()
             );
           }
         }
@@ -330,8 +330,8 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
       synchronized (timerTaskLock) {
         if (timerTask != null) {
           timerTask = RootNodeImpl.schedule(
-            this,
-            getSleepDelay(lastSuccessful, alertLevel)
+              this,
+              getSleepDelay(lastSuccessful, alertLevel)
           );
         }
       }
@@ -355,7 +355,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
         throw new AssertionError("tableMultiResultNodeImpls is empty");
       }
       boolean found = false;
-      for (int c=tableMultiResultNodeImpls.size()-1;c >= 0;c--) {
+      for (int c = tableMultiResultNodeImpls.size() - 1; c >= 0; c--) {
         if (tableMultiResultNodeImpls.get(c) == tableMultiResultNodeImpl) {
           tableMultiResultNodeImpls.remove(c);
           found = true;

@@ -43,15 +43,15 @@ public class DrbdNode extends TableResultNodeImpl {
 
   public DrbdNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
-      raidNode.hostNode.hostsNode.rootNode,
-      raidNode,
-      DrbdNodeWorker.getWorker(
-        new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
-        raidNode.getAOServer()
-      ),
-      port,
-      csf,
-      ssf
+        raidNode.hostNode.hostsNode.rootNode,
+        raidNode,
+        DrbdNodeWorker.getWorker(
+            new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
+            raidNode.getAOServer()
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 

@@ -57,6 +57,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
    * One unique worker is made per persistence directory (and should match linuxServer exactly)
    */
   private static final Map<String, MemoryNodeWorker> workerCache = new HashMap<>();
+
   static MemoryNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     synchronized (workerCache) {
@@ -66,7 +67,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
         workerCache.put(path, worker);
       } else {
         if (!worker._linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: "+worker._linuxServer+" != "+linuxServer);
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker._linuxServer + " != " + linuxServer);
         }
       }
       return worker;
@@ -102,7 +103,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
     List<String> lines = Strings.splitLines(meminfo);
     for (String line : lines) {
       if (line.endsWith(" kB")) {
-        line = line.substring(0, line.length()-3);
+        line = line.substring(0, line.length() - 3);
         if (line.startsWith("MemTotal:")) {
           memTotal = Long.parseLong(line.substring("MemTotal:".length()).trim()) << 10;
           // * 1024
@@ -141,17 +142,17 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
     }
 
     return Arrays.asList(
-      new ApproximateDisplayExactSize(memTotal),
-      new ApproximateDisplayExactSize(memFree),
-      new ApproximateDisplayExactSize(buffers),
-      new ApproximateDisplayExactSize(cached),
-      new ApproximateDisplayExactSize(swapTotal),
-      new ApproximateDisplayExactSize(swapFree)
+        new ApproximateDisplayExactSize(memTotal),
+        new ApproximateDisplayExactSize(memFree),
+        new ApproximateDisplayExactSize(buffers),
+        new ApproximateDisplayExactSize(cached),
+        new ApproximateDisplayExactSize(swapTotal),
+        new ApproximateDisplayExactSize(swapFree)
     );
   }
 
   private static AlertLevel getAlertLevel(long memoryPercent) {
-    if (memoryPercent<0) {
+    if (memoryPercent < 0) {
       return AlertLevel.UNKNOWN;
     }
     if (memoryPercent >= 95) {
@@ -179,12 +180,12 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
     long swapFree = sample.get(5).getSize();
     long memoryPercent = ((memTotal - (memFree + buffers + cached)) + (swapTotal - swapFree)) * 100 / (memTotal + swapTotal);
     return new AlertLevelAndMessage(
-      getAlertLevel(memoryPercent),
-      locale -> PACKAGE_RESOURCES.getMessage(
-        locale,
-        "MemoryNodeWorker.alertMessage",
-        memoryPercent
-      )
+        getAlertLevel(memoryPercent),
+        locale -> PACKAGE_RESOURCES.getMessage(
+            locale,
+            "MemoryNodeWorker.alertMessage",
+            memoryPercent
+        )
     );
   }
 
@@ -196,15 +197,15 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
   @Override
   protected MemoryResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<ApproximateDisplayExactSize> sample) {
     return new MemoryResult(
-      time,
-      latency,
-      alertLevel,
-      sample.get(0).getSize(),
-      sample.get(1).getSize(),
-      sample.get(2).getSize(),
-      sample.get(3).getSize(),
-      sample.get(4).getSize(),
-      sample.get(5).getSize()
+        time,
+        latency,
+        alertLevel,
+        sample.get(0).getSize(),
+        sample.get(1).getSize(),
+        sample.get(2).getSize(),
+        sample.get(3).getSize(),
+        sample.get(4).getSize(),
+        sample.get(5).getSize()
     );
   }
 }

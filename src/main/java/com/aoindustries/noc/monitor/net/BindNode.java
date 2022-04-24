@@ -48,21 +48,21 @@ public class BindNode extends TableMultiResultNodeImpl<NetBindResult> {
 
   BindNode(BindsNode netBindsNode, BindsNode.NetMonitorSetting netMonitorSetting, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
-      netBindsNode.ipAddressNode.ipAddressesNode.rootNode,
-      netBindsNode,
-      BindNodeWorker.getWorker(
-        new File(
-          netBindsNode.getPersistenceDirectory(),
-          netMonitorSetting.getPort().getPort()+"_"+netMonitorSetting.getPort().getProtocol().name()
+        netBindsNode.ipAddressNode.ipAddressesNode.rootNode,
+        netBindsNode,
+        BindNodeWorker.getWorker(
+            new File(
+                netBindsNode.getPersistenceDirectory(),
+                netMonitorSetting.getPort().getPort() + "_" + netMonitorSetting.getPort().getProtocol().name()
+            ),
+            netMonitorSetting
         ),
-        netMonitorSetting
-      ),
-      port,
-      csf,
-      ssf
+        port,
+        csf,
+        ssf
     );
     this.netMonitorSetting = netMonitorSetting;
-    this.label = netMonitorSetting.getPort()+" ("+netMonitorSetting.getNetBind().getAppProtocol().getProtocol()+')';
+    this.label = netMonitorSetting.getPort() + " (" + netMonitorSetting.getNetBind().getAppProtocol().getProtocol() + ')';
   }
 
   BindsNode.NetMonitorSetting getNetMonitorSetting() {

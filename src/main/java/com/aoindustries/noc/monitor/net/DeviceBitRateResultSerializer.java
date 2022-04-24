@@ -74,20 +74,20 @@ public class DeviceBitRateResultSerializer extends BufferedSerializer<NetDeviceB
           return new NetDeviceBitRateResult(time, latency, alertLevel, error);
         }
         return new NetDeviceBitRateResult(
-          time,
-          latency,
-          alertLevel,
-          in.readLong(),
-          in.readLong(),
-          in.readLong(),
-          in.readLong(),
-          in.readLong(),
-          in.readLong(),
-          in.readLong(),
-          in.readLong()
+            time,
+            latency,
+            alertLevel,
+            in.readLong(),
+            in.readLong(),
+            in.readLong(),
+            in.readLong(),
+            in.readLong(),
+            in.readLong(),
+            in.readLong(),
+            in.readLong()
         );
       } else {
-        throw new IOException("Unsupported object version: "+version);
+        throw new IOException("Unsupported object version: " + version);
       }
     }
   }

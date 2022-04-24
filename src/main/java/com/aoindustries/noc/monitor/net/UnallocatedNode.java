@@ -70,7 +70,7 @@ public class UnallocatedNode extends NodeImpl {
   @Override
   public List<IpAddressesNode> getChildren() {
     return getSnapshot(
-      this._ipAddressesNode
+        this._ipAddressesNode
     );
   }
 
@@ -80,9 +80,9 @@ public class UnallocatedNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        this._ipAddressesNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            this._ipAddressesNode
+        )
     );
   }
 
@@ -134,11 +134,11 @@ public class UnallocatedNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

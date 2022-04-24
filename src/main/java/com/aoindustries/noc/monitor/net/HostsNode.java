@@ -161,7 +161,7 @@ public abstract class HostsNode extends NodeImpl {
           }
         }
         // Add new ones
-        for (int c=0;c<hosts.size();c++) {
+        for (int c = 0; c < hosts.size(); c++) {
           Host host = hosts.get(c);
           if (c >= hostNodes.size() || !host.equals(hostNodes.get(c).getHost())) {
             // Insert into proper index
@@ -183,11 +183,11 @@ public abstract class HostsNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

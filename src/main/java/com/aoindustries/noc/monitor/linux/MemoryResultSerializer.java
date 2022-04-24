@@ -72,18 +72,18 @@ public class MemoryResultSerializer extends BufferedSerializer<MemoryResult> {
           return new MemoryResult(time, latency, alertLevel, error);
         }
         return new MemoryResult(
-          time,
-          latency,
-          alertLevel,
-          in.readLong(),
-          in.readLong(),
-          in.readLong(),
-          in.readLong(),
-          in.readLong(),
-          in.readLong()
+            time,
+            latency,
+            alertLevel,
+            in.readLong(),
+            in.readLong(),
+            in.readLong(),
+            in.readLong(),
+            in.readLong(),
+            in.readLong()
         );
       } else {
-        throw new IOException("Unsupported object version: "+version);
+        throw new IOException("Unsupported object version: " + version);
       }
     }
   }

@@ -81,6 +81,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
    * One unique worker is made per persistence file (and should match the ipAddress exactly)
    */
   private static final Map<String, DnsNodeWorker> workerCache = new HashMap<>();
+
   static DnsNodeWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -90,7 +91,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
         workerCache.put(path, worker);
       } else {
         if (!worker.ipAddress.equals(ipAddress)) {
-          throw new AssertionError("worker.ipAddress != ipAddress: "+worker.ipAddress+" != "+ipAddress);
+          throw new AssertionError("worker.ipAddress != ipAddress: " + worker.ipAddress + " != " + ipAddress);
         }
       }
       return worker;
@@ -112,9 +113,9 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
     return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
-      PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
-      PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
-      PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.message")
+        PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
+        PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
+        PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.message")
     );
   }
 
@@ -145,23 +146,23 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
       long ptrStartNanos = System.nanoTime();
       Lookup ptrLookup = new Lookup(ptrQuery, Type.PTR);
       ptrLookup.run();
-      long ptrLatency = System.nanoTime()-ptrStartNanos;
+      long ptrLatency = System.nanoTime() - ptrStartNanos;
       if (ptrLookup.getResult() != Lookup.SUCCESSFUL) {
         results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrLookup.getErrorString(), "", problemAlertLevel));
       } else {
         Record[] ptrRecords = ptrLookup.getAnswers();
         if (ptrRecords.length == 0) {
-          results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + RecordType.PTR +" records found", problemAlertLevel));
+          results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, "", "No " + RecordType.PTR + " records found", problemAlertLevel));
         } else {
           String ptrList;
           boolean expectedHostnameFound = false;
           {
             sb.setLength(0);
             for (Record rec : ptrRecords) {
-              if (sb.length()>0) {
+              if (sb.length() > 0) {
                 sb.append(", ");
               }
-              PTRRecord ptrRecord = (PTRRecord)rec;
+              PTRRecord ptrRecord = (PTRRecord) rec;
               String hostname = ptrRecord.getTarget().toString();
               sb.append(hostname);
               if (expectedHostname.equals(hostname)) {
@@ -172,11 +173,11 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
           }
           boolean hasPtrResult = false;
           if (ptrRecords.length > 1) {
-            results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + RecordType.PTR +" record found", problemAlertLevel));
+            results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + RecordType.PTR + " record found", problemAlertLevel));
             hasPtrResult = true;
           }
           if (!expectedHostnameFound) {
-            results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "Hostname not in results: "+expectedHostname, problemAlertLevel));
+            results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "Hostname not in results: " + expectedHostname, problemAlertLevel));
             hasPtrResult = true;
           }
           if (!hasPtrResult) {
@@ -185,7 +186,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
           if (iam.getVerifyDnsA()) {
             // Lookup each A record, making sure one of its IP addresses is the current IP
             for (Record rec : ptrRecords) {
-              PTRRecord ptrRecord = (PTRRecord)rec;
+              PTRRecord ptrRecord = (PTRRecord) rec;
               verifyDnsA(ptrRecord.getTarget(), results, problemAlertLevel, sb, ip);
             }
             if (expectedHostnameFound) {
@@ -219,10 +220,10 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
         {
           sb.setLength(0);
           for (Record rec : aRecords) {
-            if (sb.length()>0) {
+            if (sb.length() > 0) {
               sb.append(", ");
             }
-            ARecord aRecord = (ARecord)rec;
+            ARecord aRecord = (ARecord) rec;
             String aIp = aRecord.getAddress().getHostAddress();
             sb.append(aIp);
             if (ip.toString().equals(aIp)) {
@@ -234,7 +235,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
         String aMessage;
         AlertLevel aAlertLevel;
         if (!ipFound) {
-          aMessage = "Address not in results: "+ip;
+          aMessage = "Address not in results: " + ip;
           aAlertLevel = problemAlertLevel;
         } else {
           aMessage = "";
@@ -247,7 +248,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 
   @Override
   protected SerializableFunction<Locale, List<Object>> getTableData(List<DnsQueryResult> results) throws Exception {
-    List<Object> tableData = new ArrayList<>(results.size()*4);
+    List<Object> tableData = new ArrayList<>(results.size() * 4);
     for (DnsQueryResult result : results) {
       tableData.add(result.query);
       tableData.add(new NanoInterval(result.latency));
@@ -275,13 +276,13 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
       highestAlertMessage = locale -> result.getTableData(locale).get(0).toString();
     } else {
       List<?> tableData = result.getTableData(Locale.getDefault());
-      for (int index=0, len=tableData.size();index<len;index+=4) {
-        AlertLevel alertLevel = result.getAlertLevels().get(index/4);
-        if (alertLevel.compareTo(highestAlertLevel)>0) {
+      for (int index = 0, len = tableData.size(); index < len; index += 4) {
+        AlertLevel alertLevel = result.getAlertLevels().get(index / 4);
+        if (alertLevel.compareTo(highestAlertLevel) > 0) {
           highestAlertLevel = alertLevel;
           Object resultQuery = tableData.get(index);
-          Object resultResult = tableData.get(index+2);
-          Object resultMessage = tableData.get(index+3);
+          Object resultResult = tableData.get(index + 2);
+          Object resultMessage = tableData.get(index + 3);
           highestAlertMessage = locale -> resultQuery + "->" + resultResult + ": " + resultMessage;
         }
       }

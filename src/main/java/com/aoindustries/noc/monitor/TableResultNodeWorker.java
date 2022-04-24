@@ -174,22 +174,22 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
         columns = 1;
         rows = 1;
         columnHeaders = locale -> Collections.singletonList(
-          PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
+            PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
         );
         tableData = locale -> ThreadLocale.call(locale,
-          () -> {
-            String msg = err.getLocalizedMessage();
-            if (msg == null || msg.isEmpty()) {
-              msg = err.toString();
+            () -> {
+              String msg = err.getLocalizedMessage();
+              if (msg == null || msg.isEmpty()) {
+                msg = err.toString();
+              }
+              return Collections.singletonList(
+                  PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
+              );
             }
-            return Collections.singletonList(
-              PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
-            );
-          }
         );
         alertLevels = Collections.singletonList(
-          // Don't downgrade UNKNOWN to CRITICAL on error
-          EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel)
+            // Don't downgrade UNKNOWN to CRITICAL on error
+            EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel)
         );
         isError = true;
         lastSuccessful = false;
@@ -203,14 +203,14 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
       }
 
       TableResult result = new TableResult(
-        startMillis,
-        pingNanos,
-        isError,
-        columns,
-        rows,
-        columnHeaders,
-        tableData,
-        alertLevels
+          startMillis,
+          pingNanos,
+          isError,
+          columns,
+          rows,
+          columnHeaders,
+          tableData,
+          alertLevels
       );
       lastResult = result;
 
@@ -239,9 +239,9 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
         synchronized (tableResultNodeImpls) {
           for (TableResultNodeImpl tableResultNodeImpl : tableResultNodeImpls) {
             tableResultNodeImpl.nodeAlertLevelChanged(
-              oldAlertLevel,
-              newAlertLevel,
-              alertMessage
+                oldAlertLevel,
+                newAlertLevel,
+                alertMessage
             );
           }
         }
@@ -257,8 +257,8 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
       synchronized (timerTaskLock) {
         if (timerTask != null) {
           timerTask = RootNodeImpl.schedule(
-            this,
-            getSleepDelay(lastSuccessful, maxAlertLevel)
+              this,
+              getSleepDelay(lastSuccessful, maxAlertLevel)
           );
         }
       }
@@ -296,7 +296,7 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
         throw new AssertionError("tableResultNodeImpls is empty");
       }
       boolean found = false;
-      for (int c=tableResultNodeImpls.size()-1;c >= 0;c--) {
+      for (int c = tableResultNodeImpls.size() - 1; c >= 0; c--) {
         if (tableResultNodeImpls.get(c) == tableResultNodeImpl) {
           tableResultNodeImpls.remove(c);
           found = true;

@@ -56,6 +56,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
    * One unique worker is made per persistence file (and should match the linuxServer exactly)
    */
   private static final Map<String, MdMismatchWorker> workerCache = new HashMap<>();
+
   static MdMismatchWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -65,7 +66,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
         workerCache.put(path, worker);
       } else {
         if (!worker.linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: "+worker.linuxServer+" != "+linuxServer);
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker.linuxServer + " != " + linuxServer);
         }
       }
       return worker;
@@ -94,16 +95,16 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
       List<?> tableData = result.getTableData(Locale.getDefault());
       List<AlertLevel> alertLevels = result.getAlertLevels();
       for (
-        int index=0, len=tableData.size();
+        int index = 0, len = tableData.size();
         index < len;
         index += 3
       ) {
         AlertLevel alertLevel = alertLevels.get(index / 3);
-        if (alertLevel.compareTo(highestAlertLevel)>0) {
+        if (alertLevel.compareTo(highestAlertLevel) > 0) {
           highestAlertLevel = alertLevel;
           Object device = tableData.get(index);
-          Object level = tableData.get(index+1);
-          Object count = tableData.get(index+2);
+          Object level = tableData.get(index + 1);
+          Object count = tableData.get(index + 2);
           highestAlertMessage = locale -> device + " " + level + " " + count;
         }
       }
@@ -119,8 +120,8 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
     return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.device"),
-      PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
-      PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.count")
+        PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
+        PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.count")
     );
   }
 
@@ -152,10 +153,10 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
         if (report.getLevel() == Server.RaidLevel.raid1) {
           // Allow small amount of mismatch for RAID1 only
           alertLevel =
-            count >= RAID1_HIGH_THRESHOLD ? AlertLevel.HIGH
-            : count >= RAID1_MEDIUM_THRESHOLD ? AlertLevel.MEDIUM
-            : count >= RAID1_LOW_THRESHOLD ? AlertLevel.LOW
-            : AlertLevel.NONE
+              count >= RAID1_HIGH_THRESHOLD ? AlertLevel.HIGH
+                  : count >= RAID1_MEDIUM_THRESHOLD ? AlertLevel.MEDIUM
+                  : count >= RAID1_LOW_THRESHOLD ? AlertLevel.LOW
+                  : AlertLevel.NONE
           ;
         } else {
           // All other types allow no mismatch

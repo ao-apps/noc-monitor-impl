@@ -47,6 +47,7 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
    * One unique worker is made per persistence directory (and should match mysqlReplication exactly)
    */
   private static final Map<String, SlaveStatusNodeWorker> workerCache = new HashMap<>();
+
   static SlaveStatusNodeWorker getWorker(File persistenceDirectory, MysqlReplication mysqlReplication) throws IOException {
     File persistenceFile = new File(persistenceDirectory, "slave_status");
     String path = persistenceFile.getCanonicalPath();
@@ -57,7 +58,7 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
         workerCache.put(path, worker);
       } else {
         if (!worker._mysqlReplication.equals(mysqlReplication)) {
-          throw new AssertionError("worker.mysqlReplication != mysqlReplication: "+worker._mysqlReplication+" != "+mysqlReplication);
+          throw new AssertionError("worker.mysqlReplication != mysqlReplication: " + worker._mysqlReplication + " != " + mysqlReplication);
         }
       }
       return worker;
@@ -95,27 +96,27 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
     int secondsBehindHigh = currentFailoverMySQLReplication.getMonitoringSecondsBehindHigh();
     int secondsBehindCritical = currentFailoverMySQLReplication.getMonitoringSecondsBehindCritical();
     String alertThresholds =
-      (secondsBehindLow == -1 ? "-" : Integer.toString(secondsBehindLow))
-      + " / "
-      + (secondsBehindMedium == -1 ? "-" : Integer.toString(secondsBehindMedium))
-      + " / "
-      + (secondsBehindHigh == -1 ? "-" : Integer.toString(secondsBehindHigh))
-      + " / "
-      + (secondsBehindCritical == -1 ? "-" : Integer.toString(secondsBehindCritical))
+        (secondsBehindLow == -1 ? "-" : Integer.toString(secondsBehindLow))
+            + " / "
+            + (secondsBehindMedium == -1 ? "-" : Integer.toString(secondsBehindMedium))
+            + " / "
+            + (secondsBehindHigh == -1 ? "-" : Integer.toString(secondsBehindHigh))
+            + " / "
+            + (secondsBehindCritical == -1 ? "-" : Integer.toString(secondsBehindCritical))
     ;
 
     return Arrays.asList(
-      slaveStatus.getSecondsBehindMaster(),
-      masterStatus.getFile(),
-      masterStatus.getPosition(),
-      slaveStatus.getSlaveIOState(),
-      slaveStatus.getMasterLogFile(),
-      slaveStatus.getReadMasterLogPos(),
-      slaveStatus.getSlaveIORunning(),
-      slaveStatus.getSlaveSQLRunning(),
-      slaveStatus.getLastErrno(),
-      slaveStatus.getLastError(),
-      alertThresholds
+        slaveStatus.getSecondsBehindMaster(),
+        masterStatus.getFile(),
+        masterStatus.getPosition(),
+        slaveStatus.getSlaveIOState(),
+        slaveStatus.getMasterLogFile(),
+        slaveStatus.getReadMasterLogPos(),
+        slaveStatus.getSlaveIORunning(),
+        slaveStatus.getSlaveSQLRunning(),
+        slaveStatus.getLastErrno(),
+        slaveStatus.getLastError(),
+        alertThresholds
     );
   }
 
@@ -138,11 +139,11 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
       }
 
       return new AlertLevelAndMessage(
-        alertLevel,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "MySQLSlaveStatusNodeWorker.alertMessage.secondsBehindMaster.null"
-        )
+          alertLevel,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "MySQLSlaveStatusNodeWorker.alertMessage.secondsBehindMaster.null"
+          )
       );
     }
     try {
@@ -150,79 +151,79 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
       int secondsBehindCritical = currentFailoverMySQLReplication.getMonitoringSecondsBehindCritical();
       if (secondsBehindCritical != -1 && secondsBehind >= secondsBehindCritical) {
         return new AlertLevelAndMessage(
-          AlertLevel.CRITICAL,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "MySQLSlaveStatusNodeWorker.alertMessage.critical",
-            secondsBehindCritical,
-            secondsBehind
-          )
+            AlertLevel.CRITICAL,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "MySQLSlaveStatusNodeWorker.alertMessage.critical",
+                secondsBehindCritical,
+                secondsBehind
+            )
         );
       }
       int secondsBehindHigh = currentFailoverMySQLReplication.getMonitoringSecondsBehindHigh();
       if (secondsBehindHigh != -1 && secondsBehind >= secondsBehindHigh) {
         return new AlertLevelAndMessage(
-          AlertLevel.HIGH,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "MySQLSlaveStatusNodeWorker.alertMessage.high",
-            secondsBehindHigh,
-            secondsBehind
-          )
+            AlertLevel.HIGH,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "MySQLSlaveStatusNodeWorker.alertMessage.high",
+                secondsBehindHigh,
+                secondsBehind
+            )
         );
       }
       int secondsBehindMedium = currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium();
       if (secondsBehindMedium != -1 && secondsBehind >= secondsBehindMedium) {
         return new AlertLevelAndMessage(
-          AlertLevel.MEDIUM,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "MySQLSlaveStatusNodeWorker.alertMessage.medium",
-            secondsBehindMedium,
-            secondsBehind
-          )
+            AlertLevel.MEDIUM,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "MySQLSlaveStatusNodeWorker.alertMessage.medium",
+                secondsBehindMedium,
+                secondsBehind
+            )
         );
       }
       int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();
       if (secondsBehindLow != -1 && secondsBehind >= secondsBehindLow) {
         return new AlertLevelAndMessage(
-          AlertLevel.LOW,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "MySQLSlaveStatusNodeWorker.alertMessage.low",
-            secondsBehindLow,
-            secondsBehind
-          )
+            AlertLevel.LOW,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "MySQLSlaveStatusNodeWorker.alertMessage.low",
+                secondsBehindLow,
+                secondsBehind
+            )
         );
       }
       if (secondsBehindLow == -1) {
         return new AlertLevelAndMessage(
-          AlertLevel.NONE,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "MySQLSlaveStatusNodeWorker.alertMessage.notAny",
-            secondsBehind
-          )
+            AlertLevel.NONE,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "MySQLSlaveStatusNodeWorker.alertMessage.notAny",
+                secondsBehind
+            )
         );
       } else {
         return new AlertLevelAndMessage(
-          AlertLevel.NONE,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "MySQLSlaveStatusNodeWorker.alertMessage.none",
-            secondsBehindLow,
-            secondsBehind
-          )
+            AlertLevel.NONE,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "MySQLSlaveStatusNodeWorker.alertMessage.none",
+                secondsBehindLow,
+                secondsBehind
+            )
         );
       }
     } catch (NumberFormatException err) {
       return new AlertLevelAndMessage(
-        AlertLevel.CRITICAL,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "MySQLSlaveStatusNodeWorker.alertMessage.secondsBehindMaster.invalid",
-          secondsBehindMaster
-        )
+          AlertLevel.CRITICAL,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "MySQLSlaveStatusNodeWorker.alertMessage.secondsBehindMaster.invalid",
+              secondsBehindMaster
+          )
       );
     }
   }
@@ -235,20 +236,20 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
   @Override
   protected MySQLReplicationResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<String> sample) {
     return new MySQLReplicationResult(
-      time,
-      latency,
-      alertLevel,
-      sample.get(0),
-      sample.get(1),
-      sample.get(2),
-      sample.get(3),
-      sample.get(4),
-      sample.get(5),
-      sample.get(6),
-      sample.get(7),
-      sample.get(8),
-      sample.get(9),
-      sample.get(10)
+        time,
+        latency,
+        alertLevel,
+        sample.get(0),
+        sample.get(1),
+        sample.get(2),
+        sample.get(3),
+        sample.get(4),
+        sample.get(5),
+        sample.get(6),
+        sample.get(7),
+        sample.get(8),
+        sample.get(9),
+        sample.get(10)
     );
   }
 }

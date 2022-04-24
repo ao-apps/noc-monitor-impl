@@ -45,15 +45,15 @@ public class BlacklistsNode extends TableResultNodeImpl {
 
   public BlacklistsNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
-      ipAddressNode.ipAddressesNode.rootNode,
-      ipAddressNode,
-      BlacklistsNodeWorker.getWorker(
-        new File(ipAddressNode.getPersistenceDirectory(), "blacklists"),
-        ipAddressNode.getIpAddress()
-      ),
-      port,
-      csf,
-      ssf
+        ipAddressNode.ipAddressesNode.rootNode,
+        ipAddressNode,
+        BlacklistsNodeWorker.getWorker(
+            new File(ipAddressNode.getPersistenceDirectory(), "blacklists"),
+            ipAddressNode.getIpAddress()
+        ),
+        port,
+        csf,
+        ssf
     );
     //this.ipAddress = ipAddressNode.getIpAddress();
   }

@@ -234,11 +234,11 @@ public class HttpdServersNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

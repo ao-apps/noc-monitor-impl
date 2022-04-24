@@ -45,15 +45,15 @@ public class DnsNode extends TableResultNodeImpl {
 
   public DnsNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
-      ipAddressNode.ipAddressesNode.rootNode,
-      ipAddressNode,
-      DnsNodeWorker.getWorker(
-        new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
-        ipAddressNode.getIpAddress()
-      ),
-      port,
-      csf,
-      ssf
+        ipAddressNode.ipAddressesNode.rootNode,
+        ipAddressNode,
+        DnsNodeWorker.getWorker(
+            new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
+            ipAddressNode.getIpAddress()
+        ),
+        port,
+        csf,
+        ssf
     );
     //this.ipAddress = ipAddressNode.getIpAddress();
   }

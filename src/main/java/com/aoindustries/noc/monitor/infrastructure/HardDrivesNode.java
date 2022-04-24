@@ -83,9 +83,9 @@ public class HardDrivesNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        this._hardDriveTemperatureNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            this._hardDriveTemperatureNode
+        )
     );
   }
 
@@ -132,11 +132,11 @@ public class HardDrivesNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

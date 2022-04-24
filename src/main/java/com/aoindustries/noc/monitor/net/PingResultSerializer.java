@@ -64,7 +64,7 @@ public class PingResultSerializer extends BufferedSerializer<PingResult> {
         }
         return new PingResult(time, latency, alertLevel);
       } else {
-        throw new IOException("Unsupported object version: "+version);
+        throw new IOException("Unsupported object version: " + version);
       }
     }
   }

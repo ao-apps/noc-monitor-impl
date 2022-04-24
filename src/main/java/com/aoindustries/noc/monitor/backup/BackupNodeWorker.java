@@ -61,6 +61,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
    * One unique worker is made per persistence file (and should match the failoverFileReplication exactly)
    */
   private static final Map<String, BackupNodeWorker> workerCache = new HashMap<>();
+
   static BackupNodeWorker getWorker(File persistenceFile, FileReplication failoverFileReplication) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -70,7 +71,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
         workerCache.put(path, worker);
       } else {
         if (!worker.failoverFileReplication.equals(failoverFileReplication)) {
-          throw new AssertionError("worker.failoverFileReplication != failoverFileReplication: "+worker.failoverFileReplication+" != "+failoverFileReplication);
+          throw new AssertionError("worker.failoverFileReplication != failoverFileReplication: " + worker.failoverFileReplication + " != " + failoverFileReplication);
         }
       }
       return worker;
@@ -108,10 +109,10 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
         // if <48 hours LOW
         // otherwise MEDIUM
         long lastSuccessfulTime = -1;
-        for (int index=0, len=tableData.size();index<len;index+=6) {
-          boolean successful = (Boolean)tableData.get(index+5);
+        for (int index = 0, len = tableData.size(); index < len; index += 6) {
+          boolean successful = (Boolean) tableData.get(index + 5);
           if (successful) {
-            lastSuccessfulTime = ((TimeWithTimeZone)tableData.get(index)).getTime();
+            lastSuccessfulTime = ((TimeWithTimeZone) tableData.get(index)).getTime();
             break;
           }
         }
@@ -121,13 +122,13 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
           highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.noSuccessfulPassesFound", result.getRows());
         } else {
           long hoursSince = (System.currentTimeMillis() - lastSuccessfulTime) / (60L * 60 * 1000);
-          if (hoursSince<0) {
+          if (hoursSince < 0) {
             highestAlertLevel = AlertLevel.CRITICAL;
             highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastSuccessfulPassInFuture");
           } else {
-            if (hoursSince<30) {
+            if (hoursSince < 30) {
               highestAlertLevel = AlertLevel.NONE;
-            } else if (hoursSince<48) {
+            } else if (hoursSince < 48) {
               highestAlertLevel = AlertLevel.LOW;
             } else {
               highestAlertLevel = AlertLevel.MEDIUM;
@@ -142,9 +143,9 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
           }
         }
         // We next see if the last pass failed - if so this will be considered low priority (higher priority is time-based above)
-        boolean lastSuccessful = (Boolean)tableData.get(5);
+        boolean lastSuccessful = (Boolean) tableData.get(5);
         if (!lastSuccessful) {
-          if (AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
+          if (AlertLevel.LOW.compareTo(highestAlertLevel) > 0) {
             highestAlertLevel = AlertLevel.LOW;
             highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.lastPassNotSuccessful");
           }
@@ -162,11 +163,11 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
     return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.startTime"),
-      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.duration"),
-      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"),
-      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.updated"),
-      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.bytes"),
-      PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.successful")
+        PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.duration"),
+        PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.scanned"),
+        PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.updated"),
+        PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.bytes"),
+        PACKAGE_RESOURCES.getMessage(locale, "BackupNodeWorker.columnHeader.successful")
     );
   }
 
@@ -183,7 +184,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
       Host host = failoverFileReplication.getHost();
       Server linuxServer = host.getLinuxServer();
       TimeZone timeZone = linuxServer == null ? null : linuxServer.getTimeZone().getTimeZone();
-      List<Object> tableData = new ArrayList<>(failoverFileLogs.size()*6);
+      List<Object> tableData = new ArrayList<>(failoverFileLogs.size() * 6);
       //int lineNum = 0;
       for (FileReplicationLog failoverFileLog : failoverFileLogs) {
         //lineNum++;

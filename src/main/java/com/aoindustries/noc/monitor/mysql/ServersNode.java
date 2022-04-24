@@ -164,7 +164,7 @@ public class ServersNode extends NodeImpl {
           }
         }
         // Add new ones
-        for (int c=0;c<mysqlServers.size();c++) {
+        for (int c = 0; c < mysqlServers.size(); c++) {
           com.aoindustries.aoserv.client.mysql.Server mysqlServer = mysqlServers.get(c);
           if (c >= mysqlServerNodes.size() || !mysqlServer.equals(mysqlServerNodes.get(c).getMySQLServer())) {
             // Insert into proper index
@@ -183,11 +183,11 @@ public class ServersNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

@@ -59,8 +59,8 @@ public class IpAddressNode extends NodeImpl {
     InetAddress ip = ipAddress.getInetAddress();
     InetAddress externalIp = ipAddress.getExternalInetAddress();
     return
-      (externalIp == null ? ip.toString() : (ip.toString()+"@"+externalIp.toString()))
-      + "/" + ipAddress.getHostname()
+        (externalIp == null ? ip.toString() : (ip.toString() + "@" + externalIp.toString()))
+            + "/" + ipAddress.getHostname()
     ;
   }
 
@@ -70,9 +70,9 @@ public class IpAddressNode extends NodeImpl {
     InetAddress externalIp = ipAddress.getExternalInetAddress();
     IpAddressMonitoring iam;
     return
-      // Must have ping monitoring enabled
-      ((iam = ipAddress.getMonitoring()) != null)
-      && iam.getPingMonitorEnabled()
+        // Must have ping monitoring enabled
+        ((iam = ipAddress.getMonitoring()) != null)
+            && iam.getPingMonitorEnabled()
     ;
   }
 
@@ -80,7 +80,9 @@ public class IpAddressNode extends NodeImpl {
   private final IpAddress ipAddress;
   private final String label;
 
-  private static class ChildLock {/* Empty lock class to help heap profile */}
+  private static class ChildLock {
+    // Empty lock class to help heap profile
+  }
   private final ChildLock childLock = new ChildLock();
   private boolean started;
 
@@ -115,10 +117,10 @@ public class IpAddressNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-      this.pingNode,
-      this.netBindsNode,
-      this.dnsNode,
-      this.blacklistsNode
+        this.pingNode,
+        this.netBindsNode,
+        this.dnsNode,
+        this.blacklistsNode
     );
   }
 
@@ -128,12 +130,12 @@ public class IpAddressNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        this.pingNode,
-        this.netBindsNode,
-        this.dnsNode,
-        this.blacklistsNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            this.pingNode,
+            this.netBindsNode,
+            this.dnsNode,
+            this.blacklistsNode
+        )
     );
   }
 
@@ -223,8 +225,8 @@ public class IpAddressNode extends NodeImpl {
     IpAddress _currentIpAddress = ipAddress.getTable().getConnector().getNet().getIpAddress().get(ipAddress.getPkey());
     boolean isPingable = isPingable(ipAddressesNode, _currentIpAddress);
     boolean isLoopback =
-      ipAddressesNode.netDeviceNode != null
-      && ipAddressesNode.netDeviceNode.getNetDevice().getDeviceId().isLoopback();
+        ipAddressesNode.netDeviceNode != null
+            && ipAddressesNode.netDeviceNode.getNetDevice().getDeviceId().isLoopback();
     InetAddress ip = _currentIpAddress.getExternalInetAddress();
     if (ip == null) {
       ip = _currentIpAddress.getInetAddress();
@@ -261,12 +263,12 @@ public class IpAddressNode extends NodeImpl {
           }
         }
         if (
-          // Must have DNS verification enabled
-          iam != null
-          && (
-            iam.getVerifyDnsPtr()
-            || iam.getVerifyDnsA()
-          )
+            // Must have DNS verification enabled
+            iam != null
+                && (
+                iam.getVerifyDnsPtr()
+                    || iam.getVerifyDnsA()
+            )
         ) {
           if (dnsNode == null) {
             dnsNode = new DnsNode(this, port, csf, ssf);
@@ -281,10 +283,10 @@ public class IpAddressNode extends NodeImpl {
           }
         }
         if (
-          // Skip loopback device
-          !isLoopback
-          // Skip private IP addresses
-          && !(ip.isUniqueLocal() || ip.isLoopback())
+            // Skip loopback device
+            !isLoopback
+                // Skip private IP addresses
+                && !(ip.isUniqueLocal() || ip.isLoopback())
         ) {
           if (blacklistsNode == null) {
             blacklistsNode = new BlacklistsNode(this, port, csf, ssf);
@@ -307,11 +309,11 @@ public class IpAddressNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            ipAddressesNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                ipAddressesNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

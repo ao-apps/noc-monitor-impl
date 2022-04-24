@@ -55,6 +55,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
    * One unique worker is made per persistence directory (and should match the IP address exactly)
    */
   private static final Map<String, PingNodeWorker> workerCache = new HashMap<>();
+
   static PingNodeWorker getWorker(File persistenceDirectory, IpAddress ipAddress) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     com.aoapps.net.InetAddress ip = ipAddress.getInetAddress();
@@ -67,7 +68,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
         workerCache.put(path, worker);
       } else {
         if (!worker.ipAddress.equals(pingAddress)) {
-          throw new AssertionError("worker.ipAddress != pingAddress: "+worker.ipAddress+" != "+pingAddress);
+          throw new AssertionError("worker.ipAddress != pingAddress: " + worker.ipAddress + " != " + pingAddress);
         }
       }
       return worker;
@@ -114,7 +115,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
    * =0   NONE
    */
   private static AlertLevel getAlertLevel(int packetLossPercent) {
-    if (packetLossPercent<0) {
+    if (packetLossPercent < 0) {
       return AlertLevel.UNKNOWN;
     }
     if (packetLossPercent >= 40) {
@@ -156,12 +157,12 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
   protected AlertLevelAndMessage getAlertLevelAndMessage(Object sample, Iterable<? extends PingResult> previousResults) throws Exception {
     int packetLossPercent = getPacketLossPercent(previousResults);
     return new AlertLevelAndMessage(
-      getAlertLevel(packetLossPercent),
-      locale -> PACKAGE_RESOURCES.getMessage(
-        locale,
-        "PingNodeWorker.alertMessage",
-        packetLossPercent
-      )
+        getAlertLevel(packetLossPercent),
+        locale -> PACKAGE_RESOURCES.getMessage(
+            locale,
+            "PingNodeWorker.alertMessage",
+            packetLossPercent
+        )
     );
   }
 

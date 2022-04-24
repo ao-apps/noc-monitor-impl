@@ -49,8 +49,8 @@ public class WebSiteDatabase extends Database {
   private static String getProperty(String name) throws IOException {
     if (props == null) {
       props = PropertiesUtils.loadFromResource(
-        WebSiteDatabase.class,
-        "/com/aoindustries/noc/monitor/signup/WebSiteDatabase.properties"
+          WebSiteDatabase.class,
+          "/com/aoindustries/noc/monitor/signup/WebSiteDatabase.properties"
       );
     }
     return props.getProperty(name);
@@ -83,20 +83,20 @@ public class WebSiteDatabase extends Database {
 
   private WebSiteDatabase() throws IOException {
     super(
-      getDatabaseDriver(),
-      getDatabaseURL(),
-      getDatabaseUsername(),
-      getDatabasePassword(),
-      getDatabasePoolSize(),
-      getDatabaseMaxConnectionAge(),
-      logger
+        getDatabaseDriver(),
+        getDatabaseURL(),
+        getDatabaseUsername(),
+        getDatabasePassword(),
+        getDatabasePoolSize(),
+        getDatabaseMaxConnectionAge(),
+        logger
     );
   }
 
   public static WebSiteDatabase getDatabase() throws IOException {
     synchronized (WebSiteDatabase.class) {
       if (websiteDatabase == null) {
-        websiteDatabase=new WebSiteDatabase();
+        websiteDatabase = new WebSiteDatabase();
       }
       return websiteDatabase;
     }

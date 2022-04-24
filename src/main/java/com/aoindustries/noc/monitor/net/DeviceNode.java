@@ -57,7 +57,9 @@ public class DeviceNode extends NodeImpl {
   private final Device _device;
   private final String _label;
 
-  private static class ChildLock {/* Empty lock class to help heap profile */}
+  private static class ChildLock {
+    // Empty lock class to help heap profile
+  }
   private final ChildLock childLock = new ChildLock();
   private boolean started;
 
@@ -91,9 +93,9 @@ public class DeviceNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-      this._netDeviceBitRateNode,
-      this._netDeviceBondingNode,
-      this._ipAddressesNode
+        this._netDeviceBitRateNode,
+        this._netDeviceBondingNode,
+        this._ipAddressesNode
     );
   }
 
@@ -103,11 +105,11 @@ public class DeviceNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        this._netDeviceBitRateNode,
-        this._netDeviceBondingNode,
-        this._ipAddressesNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            this._netDeviceBitRateNode,
+            this._netDeviceBondingNode,
+            this._ipAddressesNode
+        )
     );
   }
 
@@ -190,11 +192,11 @@ public class DeviceNode extends NodeImpl {
       if (started) {
         // bit rate and network bonding monitoring only supported for Server
         if (
-          linuxServer != null
-          // bit rate for non-loopback devices
-          && !netDeviceID.isLoopback()
-          // and non-BMC
-          && !netDeviceID.getName().equals(DeviceId.BMC)
+            linuxServer != null
+                // bit rate for non-loopback devices
+                && !netDeviceID.isLoopback()
+                // and non-BMC
+                && !netDeviceID.getName().equals(DeviceId.BMC)
         ) {
           if (_netDeviceBitRateNode == null) {
             _netDeviceBitRateNode = new DeviceBitRateNode(this, port, csf, ssf);
@@ -210,12 +212,12 @@ public class DeviceNode extends NodeImpl {
         }
         // bonding
         if (
-          linuxServer != null
-          && (
-            _label.equals(DeviceId.BOND0) // TODO: Flag for "net_devices.isBonded"
-            || _label.equals(DeviceId.BOND1)
-            || _label.equals(DeviceId.BOND2)
-          )
+            linuxServer != null
+                && (
+                _label.equals(DeviceId.BOND0) // TODO: Flag for "net_devices.isBonded"
+                    || _label.equals(DeviceId.BOND1)
+                    || _label.equals(DeviceId.BOND2)
+            )
         ) {
           if (_netDeviceBondingNode == null) {
             _netDeviceBondingNode = new DeviceBondingNode(this, port, csf, ssf);
@@ -252,11 +254,11 @@ public class DeviceNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            _networkDevicesNode.hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                _networkDevicesNode.hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

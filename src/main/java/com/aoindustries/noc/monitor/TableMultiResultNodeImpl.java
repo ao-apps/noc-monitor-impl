@@ -111,10 +111,10 @@ public abstract class TableMultiResultNodeImpl<R extends TableMultiResult> exten
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
     rootNode.nodeAlertLevelChanged(
-      this,
-      constrainAlertLevel(oldAlertLevel),
-      constrainAlertLevel(newAlertLevel),
-      newAlertMessage == null ? null : newAlertMessage.apply(rootNode.locale)
+        this,
+        constrainAlertLevel(oldAlertLevel),
+        constrainAlertLevel(newAlertLevel),
+        newAlertMessage == null ? null : newAlertMessage.apply(rootNode.locale)
     );
   }
 
@@ -128,7 +128,7 @@ public abstract class TableMultiResultNodeImpl<R extends TableMultiResult> exten
   @Override
   public final void removeTableMultiResultListener(TableMultiResultListener<? super R> tableMultiResultListener) {
     synchronized (tableMultiResultListeners) {
-      for (int c=tableMultiResultListeners.size()-1;c >= 0;c--) {
+      for (int c = tableMultiResultListeners.size() - 1; c >= 0; c--) {
         if (tableMultiResultListeners.get(c).equals(tableMultiResultListener)) {
           tableMultiResultListeners.remove(c);
           // Remove only once, in case add and remove come in out of order with quick GUI changes

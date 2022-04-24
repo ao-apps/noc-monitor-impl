@@ -50,23 +50,23 @@ public class BackupNode extends TableResultNodeImpl {
 
   BackupNode(BackupsNode backupsNode, FileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
-      backupsNode.hostNode.hostsNode.rootNode,
-      backupsNode,
-      BackupNodeWorker.getWorker(
-        new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
-        failoverFileReplication
-      ),
-      port,
-      csf,
-      ssf
+        backupsNode.hostNode.hostsNode.rootNode,
+        backupsNode,
+        BackupNodeWorker.getWorker(
+            new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
+            failoverFileReplication
+        ),
+        port,
+        csf,
+        ssf
     );
     this.failoverFileReplication = failoverFileReplication;
     BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
     this.label = PACKAGE_RESOURCES.getMessage(
-      rootNode.locale,
-      "BackupNode.label",
-      backupPartition == null ? "null" : backupPartition.getLinuxServer().getHostname(),
-      backupPartition == null ? "null" : backupPartition.getPath()
+        rootNode.locale,
+        "BackupNode.label",
+        backupPartition == null ? "null" : backupPartition.getLinuxServer().getHostname(),
+        backupPartition == null ? "null" : backupPartition.getPath()
     );
   }
 
@@ -85,8 +85,8 @@ public class BackupNode extends TableResultNodeImpl {
       curAlertLevel = AlertLevel.NONE;
     }
     return worker.getAlertLevelAndMessage(
-      curAlertLevel,
-      result
+        curAlertLevel,
+        result
     );
   }
 }

@@ -112,10 +112,10 @@ public abstract class TableResultNodeImpl extends NodeImpl implements TableResul
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
     rootNode.nodeAlertLevelChanged(
-      this,
-      constrainAlertLevel(oldAlertLevel),
-      constrainAlertLevel(newAlertLevel),
-      alertMessage == null ? null : alertMessage.apply(rootNode.locale)
+        this,
+        constrainAlertLevel(oldAlertLevel),
+        constrainAlertLevel(newAlertLevel),
+        alertMessage == null ? null : alertMessage.apply(rootNode.locale)
     );
   }
 
@@ -129,7 +129,7 @@ public abstract class TableResultNodeImpl extends NodeImpl implements TableResul
   @Override
   public final void removeTableResultListener(TableResultListener tableResultListener) {
     synchronized (tableResultListeners) {
-      for (int c=tableResultListeners.size()-1;c >= 0;c--) {
+      for (int c = tableResultListeners.size() - 1; c >= 0; c--) {
         if (tableResultListeners.get(c).equals(tableResultListener)) {
           tableResultListeners.remove(c);
           // Remove only once, in case add and remove come in out of order with quick GUI changes

@@ -62,12 +62,12 @@ public class VirtualServersNode extends HostsNode {
   protected boolean includeHost(Host host) throws SQLException, IOException {
     Server linuxServer = host.getLinuxServer();
     return
-      // Is Xen dom0
-      host.getVirtualServer() != null
-      || (
-        // Is ao-box in fail-over
-        linuxServer != null && linuxServer.getFailoverServer() != null
-      )
+        // Is Xen dom0
+        host.getVirtualServer() != null
+            || (
+            // Is ao-box in fail-over
+            linuxServer != null && linuxServer.getFailoverServer() != null
+        )
     ;
   }
 }

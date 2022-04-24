@@ -41,15 +41,15 @@ public class MdMismatchNode extends TableResultNodeImpl {
 
   MdMismatchNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      raidNode.hostNode.hostsNode.rootNode,
-      raidNode,
-      MdMismatchWorker.getWorker(
-        new File(raidNode.getPersistenceDirectory(), "md_mismatch"),
-        raidNode.getAOServer()
-      ),
-      port,
-      csf,
-      ssf
+        raidNode.hostNode.hostsNode.rootNode,
+        raidNode,
+        MdMismatchWorker.getWorker(
+            new File(raidNode.getPersistenceDirectory(), "md_mismatch"),
+            raidNode.getAOServer()
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 

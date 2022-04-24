@@ -78,49 +78,51 @@ public final class AOServClusterBuilder {
   }
 
   private static final Resources RESOURCES =
-    Resources.getResources(ResourceBundle::getBundle, AOServClusterBuilder.class);
+      Resources.getResources(ResourceBundle::getBundle, AOServClusterBuilder.class);
 
   private static boolean is7200rpm(String model) {
     return
-      // 3Ware, have not yet found way to accurately know which port equates to which /dev/sd[a-z] entry
-      // just assuming all are 7200 RPM drives.
-         model.equals("9650SE-12M DISK")      // ?? GB
-      || model.equals("9650SE-16M DISK")      // ?? GB
-      // IBM
-      || model.equals("IC35L120AVV207-0")     // 120 GB
-      // Maxtor
-      || model.equals("Maxtor 5T040H4")       // 40 GB
-      || model.equals("MAXTOR 6L060J3")       // 60 GB
-      || model.equals("Maxtor 6Y080L0")       // 80 GB
-      || model.equals("Maxtor 6L250R0")       // 250 GB
-      // Seagate
-      || model.equals("ST380811AS")           // 80 GB
-      || model.equals("ST3500320NS")          // 500 GB
-      || model.equals("ST3750330NS")          // 750 GB
-      // Western Digital
-      || model.startsWith("WDC WD800BB-")     // 80 GB
-      || model.startsWith("WDC WD800JB-")     // 80 GB
-      || model.startsWith("WDC WD1200JB-")    // 120 GB
-      || model.startsWith("WDC WD1200JD-")    // 120 GB
-      || model.startsWith("WDC WD1200JS-")    // 120 GB
-      || model.startsWith("WDC WD2000JB-")    // 200 GB
-      || model.startsWith("WDC WD2500JB-")    // 250 GB
-      || model.startsWith("WDC WD2500YD-")    // 250 GB
-      || model.startsWith("WDC WD3200YS-")    // 320 GB
+        // 3Ware, have not yet found way to accurately know which port equates to which /dev/sd[a-z] entry
+        // just assuming all are 7200 RPM drives.
+        model.equals("9650SE-12M DISK")      // ?? GB
+            || model.equals("9650SE-16M DISK")      // ?? GB
+            // IBM
+            || model.equals("IC35L120AVV207-0")     // 120 GB
+            // Maxtor
+            || model.equals("Maxtor 5T040H4")       // 40 GB
+            || model.equals("MAXTOR 6L060J3")       // 60 GB
+            || model.equals("Maxtor 6Y080L0")       // 80 GB
+            || model.equals("Maxtor 6L250R0")       // 250 GB
+            // Seagate
+            || model.equals("ST380811AS")           // 80 GB
+            || model.equals("ST3500320NS")          // 500 GB
+            || model.equals("ST3750330NS")          // 750 GB
+            // Western Digital
+            || model.startsWith("WDC WD800BB-")     // 80 GB
+            || model.startsWith("WDC WD800JB-")     // 80 GB
+            || model.startsWith("WDC WD1200JB-")    // 120 GB
+            || model.startsWith("WDC WD1200JD-")    // 120 GB
+            || model.startsWith("WDC WD1200JS-")    // 120 GB
+            || model.startsWith("WDC WD2000JB-")    // 200 GB
+            || model.startsWith("WDC WD2500JB-")    // 250 GB
+            || model.startsWith("WDC WD2500YD-")    // 250 GB
+            || model.startsWith("WDC WD3200YS-")    // 320 GB
     ;
   }
+
   private static boolean is10000rpm(String model) {
     return
-      // Fujitsu
-         model.equals("MAW3073NP")            // 73 GB
+        // Fujitsu
+        model.equals("MAW3073NP")            // 73 GB
       // Western Digital
       || model.startsWith("WDC WD740GD-")     // 74 GB
     ;
   }
+
   private static boolean is15000rpm(String model) {
     return
-      // Seagate
-      model.equals("ST3146855LC")             // 146 GB
+        // Seagate
+        model.equals("ST3146855LC")             // 146 GB
     ;
   }
 
@@ -138,20 +140,20 @@ public final class AOServClusterBuilder {
     }
     int osv = osvObj.getPkey();
     if (
-      osv != OperatingSystemVersion.CENTOS_5_DOM0_I686
-      && osv != OperatingSystemVersion.CENTOS_5_DOM0_X86_64
-      && osv != OperatingSystemVersion.CENTOS_7_DOM0_X86_64
+        osv != OperatingSystemVersion.CENTOS_5_DOM0_I686
+            && osv != OperatingSystemVersion.CENTOS_5_DOM0_X86_64
+            && osv != OperatingSystemVersion.CENTOS_7_DOM0_X86_64
     ) {
       return false;
     }
     // This should be a physical server and not a virtual server
     PhysicalServer physicalServer = host.getPhysicalServer();
     if (physicalServer == null) {
-      throw new SQLException("Dom0 server is not a physical server: "+linuxServer);
+      throw new SQLException("Dom0 server is not a physical server: " + linuxServer);
     }
     VirtualServer virtualServer = host.getVirtualServer();
     if (virtualServer != null) {
-      throw new SQLException("Dom0 server is a virtual server: "+linuxServer);
+      throw new SQLException("Dom0 server is a virtual server: " + linuxServer);
     }
     return true;
   }
@@ -163,11 +165,11 @@ public final class AOServClusterBuilder {
    * @see Cluster
    */
   public static SortedSet<Cluster> getClusters(
-    final AOServConnector conn,
-    final List<Server> linuxServers,
-    final Map<String, Map<String, String>> hddModelReports,
-    final Map<String, Server.LvmReport> lvmReports,
-    final boolean useTarget
+      final AOServConnector conn,
+      final List<Server> linuxServers,
+      final Map<String, Map<String, String>> hddModelReports,
+      final Map<String, Server.LvmReport> lvmReports,
+      final boolean useTarget
   ) throws SQLException, InterruptedException, ExecutionException, IOException {
     List<ServerFarm> serverFarms = conn.getInfrastructure().getServerFarm().getRows();
 
@@ -186,17 +188,17 @@ public final class AOServClusterBuilder {
       }
       if (foundDom0) {
         futures.add(
-          RootNodeImpl.executors.getUnbounded().submit(() -> getCluster(conn, serverFarm, linuxServers, hddModelReports, lvmReports, useTarget))
+            RootNodeImpl.executors.getUnbounded().submit(() -> getCluster(conn, serverFarm, linuxServers, hddModelReports, lvmReports, useTarget))
         );
       }
     }
 
     // Package the results
     return Collections.unmodifiableSortedSet(
-      ConcurrentUtils.getAll(
-        futures,
-        new TreeSet<>()
-      )
+        ConcurrentUtils.getAll(
+            futures,
+            new TreeSet<>()
+        )
     );
   }
 
@@ -206,12 +208,12 @@ public final class AOServClusterBuilder {
    * @param  useTarget  if true will use the target values, otherwise will use the live values
    */
   public static Cluster getCluster(
-    AOServConnector conn,
-    ServerFarm serverFarm,
-    List<Server> linuxServers,
-    Map<String, Map<String, String>> hddModelReports,
-    Map<String, Server.LvmReport> lvmReports,
-    boolean useTarget
+      AOServConnector conn,
+      ServerFarm serverFarm,
+      List<Server> linuxServers,
+      Map<String, Map<String, String>> hddModelReports,
+      Map<String, Server.LvmReport> lvmReports,
+      boolean useTarget
   ) throws SQLException, IOException {
     final Account.Name rootAccounting = conn.getAccount().getAccount().getRootAccount_name();
 
@@ -225,14 +227,14 @@ public final class AOServClusterBuilder {
           PhysicalServer physicalServer = host.getPhysicalServer();
           String hostname = linuxServer.getHostname().toString();
           cluster = cluster.addDom0(
-            hostname,
-            /*rack,*/
-            physicalServer.getRam(),
-            ProcessorType.valueOf(physicalServer.getProcessorType().getType()),
-            ProcessorArchitecture.valueOf(host.getOperatingSystemVersion().getArchitecture(conn).getName().toUpperCase(Locale.ENGLISH)),
-            physicalServer.getProcessorSpeed(),
-            physicalServer.getProcessorCores(),
-            physicalServer.getSupportsHvm()
+              hostname,
+              /*rack,*/
+              physicalServer.getRam(),
+              ProcessorType.valueOf(physicalServer.getProcessorType().getType()),
+              ProcessorArchitecture.valueOf(host.getOperatingSystemVersion().getArchitecture(conn).getName().toUpperCase(Locale.ENGLISH)),
+              physicalServer.getProcessorSpeed(),
+              physicalServer.getProcessorCores(),
+              physicalServer.getSupportsHvm()
           );
           Dom0 dom0 = cluster.getDom0(hostname);
           if (dom0 == null) {
@@ -242,21 +244,21 @@ public final class AOServClusterBuilder {
           // Add Dom0Disks when first needed for a physical volume
           Map<String, String> hddModelReport = hddModelReports.get(hostname);
           if (hddModelReport == null) {
-            throw new AssertionError("hddmodel report not found for "+hostname);
+            throw new AssertionError("hddmodel report not found for " + hostname);
           }
           Set<String> addedDisks = AoCollections.newHashSet(hddModelReport.size());
           // Add physical volumes
           Server.LvmReport lvmReport = lvmReports.get(hostname);
           if (lvmReport == null) {
-            throw new AssertionError("LvmReport not found for "+hostname);
+            throw new AssertionError("LvmReport not found for " + hostname);
           }
           for (Map.Entry<String, Server.LvmReport.PhysicalVolume> entry : lvmReport.getPhysicalVolumes().entrySet()) {
             String partition = entry.getKey();
             Server.LvmReport.PhysicalVolume lvmPhysicalVolume = entry.getValue();
             // Count the number of digits on the right of partition
             int digitCount = 0;
-            for (int c=partition.length()-1; c >= 0; c--) {
-              char ch=partition.charAt(c);
+            for (int c = partition.length() - 1; c >= 0; c--) {
+              char ch = partition.charAt(c);
               if (ch >= '0' && ch <= '9') {
                 digitCount++;
               } else {
@@ -264,15 +266,15 @@ public final class AOServClusterBuilder {
               }
             }
             if (digitCount == 0) {
-              throw new AssertionError("No partition number found on physical volume: "+partition);
+              throw new AssertionError("No partition number found on physical volume: " + partition);
             }
-            String device = partition.substring(0, partition.length()-digitCount);
-            short partitionNum = Short.parseShort(partition.substring(partition.length()-digitCount));
+            String device = partition.substring(0, partition.length() - digitCount);
+            short partitionNum = Short.parseShort(partition.substring(partition.length() - digitCount));
             if (!addedDisks.contains(device)) {
               // Add the Dom0Disk
               String model = hddModelReport.get(device);
               if (model == null) {
-                throw new AssertionError("device not found in hddmodel report: "+device+" on "+hostname);
+                throw new AssertionError("device not found in hddmodel report: " + device + " on " + hostname);
               }
               int speed;
               if (is7200rpm(model)) {
@@ -282,7 +284,7 @@ public final class AOServClusterBuilder {
               } else if (is15000rpm(model)) {
                 speed = 15000;
               } else {
-                throw new AssertionError("Unknown hard drive model: "+model);
+                throw new AssertionError("Unknown hard drive model: " + model);
               }
               cluster = cluster.addDom0Disk(hostname, device, speed);
               addedDisks.add(device);
@@ -291,13 +293,13 @@ public final class AOServClusterBuilder {
             long extents = lvmPhysicalVolume.getPvPeCount();
             if (extents == 0) {
               // Not allocated, need to calculate ourselves using the default extents size
-              extents = lvmPhysicalVolume.getPvSize()/DomUDisk.EXTENTS_SIZE;
+              extents = lvmPhysicalVolume.getPvSize() / DomUDisk.EXTENTS_SIZE;
             }
             cluster = cluster.addPhysicalVolume(
-              hostname,
-              device,
-              partitionNum,
-              extents
+                hostname,
+                device,
+                partitionNum,
+                extents
             );
           }
         }
@@ -311,30 +313,30 @@ public final class AOServClusterBuilder {
         PhysicalServer physicalServer = host.getPhysicalServer();
         VirtualServer virtualServer = host.getVirtualServer();
         if (physicalServer == null && virtualServer == null) {
-          throw new SQLException("Host is neither a physical server nor a virtual server: "+host);
+          throw new SQLException("Host is neither a physical server nor a virtual server: " + host);
         }
         if (physicalServer != null && virtualServer != null) {
-          throw new SQLException("Host is both a physical server and a virtual server: "+host);
+          throw new SQLException("Host is both a physical server and a virtual server: " + host);
         }
         if (virtualServer != null) {
           // Must always be in the package with the same name as the root account
           Account.Name packageName = host.getPackage().getName();
           if (!packageName.equals(rootAccounting)) {
-            throw new SQLException("All virtual servers should have a package name equal to the root account name: servers.package.name != root_account.accounting: "+packageName+" != "+rootAccounting);
+            throw new SQLException("All virtual servers should have a package name equal to the root account name: servers.package.name != root_account.accounting: " + packageName + " != " + rootAccounting);
           }
           String hostname = host.getName();
           cluster = cluster.addDomU(
-            hostname,
-            useTarget ? virtualServer.getPrimaryRamTarget() : virtualServer.getPrimaryRam(),
-            useTarget ? virtualServer.getSecondaryRamTarget() : virtualServer.getSecondaryRam(),
-            virtualServer.getMinimumProcessorType() == null ? null : ProcessorType.valueOf(virtualServer.getMinimumProcessorType().getType()),
-            ProcessorArchitecture.valueOf(virtualServer.getMinimumProcessorArchitecture().getName().toUpperCase(Locale.ENGLISH)),
-            useTarget ? virtualServer.getMinimumProcessorSpeedTarget() : virtualServer.getMinimumProcessorSpeed(),
-            useTarget ? virtualServer.getProcessorCoresTarget() : virtualServer.getProcessorCores(),
-            useTarget ? virtualServer.getProcessorWeightTarget() : virtualServer.getProcessorWeight(),
-            virtualServer.getRequiresHvm(),
-            virtualServer.isPrimaryPhysicalServerLocked(),
-            virtualServer.isSecondaryPhysicalServerLocked()
+              hostname,
+              useTarget ? virtualServer.getPrimaryRamTarget() : virtualServer.getPrimaryRam(),
+              useTarget ? virtualServer.getSecondaryRamTarget() : virtualServer.getSecondaryRam(),
+              virtualServer.getMinimumProcessorType() == null ? null : ProcessorType.valueOf(virtualServer.getMinimumProcessorType().getType()),
+              ProcessorArchitecture.valueOf(virtualServer.getMinimumProcessorArchitecture().getName().toUpperCase(Locale.ENGLISH)),
+              useTarget ? virtualServer.getMinimumProcessorSpeedTarget() : virtualServer.getMinimumProcessorSpeed(),
+              useTarget ? virtualServer.getProcessorCoresTarget() : virtualServer.getProcessorCores(),
+              useTarget ? virtualServer.getProcessorWeightTarget() : virtualServer.getProcessorWeight(),
+              virtualServer.getRequiresHvm(),
+              virtualServer.isPrimaryPhysicalServerLocked(),
+              virtualServer.isSecondaryPhysicalServerLocked()
           );
           DomU domU = cluster.getDomU(hostname);
           if (domU == null) {
@@ -342,11 +344,11 @@ public final class AOServClusterBuilder {
           }
           for (VirtualDisk virtualDisk : virtualServer.getVirtualDisks()) {
             cluster = cluster.addDomUDisk(
-              hostname,
-              virtualDisk.getDevice(),
-              useTarget ? virtualDisk.getMinimumDiskSpeedTarget() : virtualDisk.getMinimumDiskSpeed(),
-              virtualDisk.getExtents(),
-              useTarget ? virtualDisk.getWeightTarget() : virtualDisk.getWeight()
+                hostname,
+                virtualDisk.getDevice(),
+                useTarget ? virtualDisk.getMinimumDiskSpeedTarget() : virtualDisk.getMinimumDiskSpeed(),
+                virtualDisk.getExtents(),
+                useTarget ? virtualDisk.getWeightTarget() : virtualDisk.getWeight()
             );
           }
         }
@@ -363,11 +365,11 @@ public final class AOServClusterBuilder {
    * @see  #getClusterConfiguration
    */
   public static SortedSet<ClusterConfiguration> getClusterConfigurations(
-    final Locale locale,
-    final AOServConnector conn,
-    final SortedSet<Cluster> clusters,
-    final Map<String, List<Server.DrbdReport>> drbdReports,
-    final Map<String, Server.LvmReport> lvmReports
+      final Locale locale,
+      final AOServConnector conn,
+      final SortedSet<Cluster> clusters,
+      final Map<String, List<Server.DrbdReport>> drbdReports,
+      final Map<String, Server.LvmReport> lvmReports
   ) throws InterruptedException, ExecutionException {
     //final List<Server> linuxServers = conn.linuxServers.getRows();
     //final Map<String, Map<String, String>> hddModelReports = getHddModelReports(linuxServers, locale);
@@ -379,16 +381,16 @@ public final class AOServClusterBuilder {
     List<Future<ClusterConfiguration>> futures = new ArrayList<>(clusters.size());
     for (final Cluster cluster : clusters) {
       futures.add(
-        RootNodeImpl.executors.getUnbounded().submit(() -> getClusterConfiguration(locale, conn, cluster, drbdReports, lvmReports))
+          RootNodeImpl.executors.getUnbounded().submit(() -> getClusterConfiguration(locale, conn, cluster, drbdReports, lvmReports))
       );
     }
 
     // Package the results
     return Collections.unmodifiableSortedSet(
-      ConcurrentUtils.getAll(
-        futures,
-        new TreeSet<>()
-      )
+        ConcurrentUtils.getAll(
+            futures,
+            new TreeSet<>()
+        )
     );
   }
 
@@ -397,16 +399,16 @@ public final class AOServClusterBuilder {
    * any sanity checks on the data, it merely parses it and ensures correct values.
    */
   public static Map<String, List<Server.DrbdReport>> getDrbdReports(
-    final List<Server> linuxServers,
-    final Locale locale
+      final List<Server> linuxServers,
+      final Locale locale
   ) throws SQLException, InterruptedException, ExecutionException, IOException {
     // Query concurrently for each of the drbdcstate's to get a good snapshot and determine primary/secondary locations
     Map<String, Future<List<Server.DrbdReport>>> futures = AoCollections.newHashMap(linuxServers.size());
     for (final Server linuxServer : linuxServers) {
       if (isEnabledDom0(linuxServer)) {
         futures.put(
-          linuxServer.getHostname().toString(),
-          RootNodeImpl.executors.getUnbounded().submit(linuxServer::getDrbdReport)
+            linuxServer.getHostname().toString(),
+            RootNodeImpl.executors.getUnbounded().submit(linuxServer::getDrbdReport)
         );
       }
     }
@@ -420,15 +422,15 @@ public final class AOServClusterBuilder {
    * any sanity checks on the data, it merely parses it and ensures correct values.
    */
   public static Map<String, Server.LvmReport> getLvmReports(
-    final List<Server> linuxServers,
-    final Locale locale
+      final List<Server> linuxServers,
+      final Locale locale
   ) throws SQLException, InterruptedException, ExecutionException, IOException {
     Map<String, Future<Server.LvmReport>> futures = AoCollections.newHashMap(linuxServers.size());
     for (final Server linuxServer : linuxServers) {
       if (isEnabledDom0(linuxServer)) {
         futures.put(
-          linuxServer.getHostname().toString(),
-          RootNodeImpl.executors.getUnbounded().submit(linuxServer::getLvmReport)
+            linuxServer.getHostname().toString(),
+            RootNodeImpl.executors.getUnbounded().submit(linuxServer::getLvmReport)
         );
       }
     }
@@ -442,15 +444,15 @@ public final class AOServClusterBuilder {
    * any sanity checks on the data, it merely parses it and ensures correct values.
    */
   public static Map<String, Map<String, String>> getHddModelReports(
-    final List<Server> linuxServers,
-    final Locale locale
+      final List<Server> linuxServers,
+      final Locale locale
   ) throws SQLException, InterruptedException, ExecutionException, IOException {
     Map<String, Future<Map<String, String>>> futures = AoCollections.newHashMap(linuxServers.size());
     for (final Server linuxServer : linuxServers) {
       if (isEnabledDom0(linuxServer)) {
         futures.put(
-          linuxServer.getHostname().toString(),
-          RootNodeImpl.executors.getUnbounded().submit(linuxServer::getHddModelReport)
+            linuxServer.getHostname().toString(),
+            RootNodeImpl.executors.getUnbounded().submit(linuxServer::getHddModelReport)
         );
       }
     }
@@ -463,11 +465,11 @@ public final class AOServClusterBuilder {
    * Loads the configuration for the provided cluster.
    */
   public static ClusterConfiguration getClusterConfiguration(
-    Locale locale,
-    AOServConnector conn,
-    Cluster cluster,
-    Map<String, List<Server.DrbdReport>> drbdReports,
-    Map<String, Server.LvmReport> lvmReports
+      Locale locale,
+      AOServConnector conn,
+      Cluster cluster,
+      Map<String, List<Server.DrbdReport>> drbdReports,
+      Map<String, Server.LvmReport> lvmReports
   ) throws ParseException, IOException, SQLException {
     final Account.Name rootAccounting = conn.getAccount().getAccount().getRootAccount_name();
 
@@ -485,44 +487,44 @@ public final class AOServClusterBuilder {
         lineNum++;
         // Must be a virtual server
         String domUHostname = report.getResourceHostname();
-        Host domUServer = conn.getNet().getHost().get(rootAccounting+"/"+domUHostname);
+        Host domUServer = conn.getNet().getHost().get(rootAccounting + "/" + domUHostname);
         if (domUServer == null) {
           throw new ParseException(
-            RESOURCES.getMessage(
-              locale,
-              "ParseException.serverNotFound",
-              domUHostname
-            ),
-            lineNum
+              RESOURCES.getMessage(
+                  locale,
+                  "ParseException.serverNotFound",
+                  domUHostname
+              ),
+              lineNum
           );
         }
         VirtualServer domUVirtualServer = domUServer.getVirtualServer();
         if (domUVirtualServer == null) {
           throw new ParseException(
-            RESOURCES.getMessage(
-              locale,
-              "ParseException.notVirtualServer",
-              domUHostname
-            ),
-            lineNum
+              RESOURCES.getMessage(
+                  locale,
+                  "ParseException.notVirtualServer",
+                  domUHostname
+              ),
+              lineNum
           );
         }
         String domUDevice = report.getResourceDevice();
         if (
-          domUDevice.length() != 4
-          || domUDevice.charAt(0) != 'x'
-          || domUDevice.charAt(1) != 'v'
-          || domUDevice.charAt(2) != 'd'
-          || domUDevice.charAt(3)<'a'
-          || domUDevice.charAt(3)>'z'
+            domUDevice.length() != 4
+                || domUDevice.charAt(0) != 'x'
+                || domUDevice.charAt(1) != 'v'
+                || domUDevice.charAt(2) != 'd'
+                || domUDevice.charAt(3) < 'a'
+                || domUDevice.charAt(3) > 'z'
         ) {
           throw new ParseException(
-            RESOURCES.getMessage(
-              locale,
-              "ParseException.unexpectedResourceEnding",
-              domUDevice
-            ),
-            lineNum
+              RESOURCES.getMessage(
+                  locale,
+                  "ParseException.unexpectedResourceEnding",
+                  domUDevice
+              ),
+              lineNum
           );
         }
         Server.DrbdReport.Role localRole = report.getLocalRole();
@@ -531,14 +533,14 @@ public final class AOServClusterBuilder {
           String previousValue = drbdPrimaryDom0s.put(domUHostname, dom0Hostname);
           if (previousValue != null && !previousValue.equals(dom0Hostname)) {
             throw new ParseException(
-              RESOURCES.getMessage(
-                locale,
-                "ParseException.multiPrimary",
-                domUHostname,
-                previousValue,
-                dom0Hostname
-              ),
-              lineNum
+                RESOURCES.getMessage(
+                    locale,
+                    "ParseException.multiPrimary",
+                    domUHostname,
+                    previousValue,
+                    dom0Hostname
+                ),
+                lineNum
             );
           }
         } else if (localRole == Server.DrbdReport.Role.Secondary) {
@@ -546,24 +548,24 @@ public final class AOServClusterBuilder {
           String previousValue = drbdSecondaryDom0s.put(domUHostname, dom0Hostname);
           if (previousValue != null && !previousValue.equals(dom0Hostname)) {
             throw new ParseException(
-              RESOURCES.getMessage(
-                locale,
-                "ParseException.multiSecondary",
-                domUHostname,
-                previousValue,
-                dom0Hostname
-              ),
-              lineNum
+                RESOURCES.getMessage(
+                    locale,
+                    "ParseException.multiSecondary",
+                    domUHostname,
+                    previousValue,
+                    dom0Hostname
+                ),
+                lineNum
             );
           }
         } else {
           throw new ParseException(
-            RESOURCES.getMessage(
-              locale,
-              "ParseException.unexpectedState",
-              localRole
-            ),
-            lineNum
+              RESOURCES.getMessage(
+                  locale,
+                  "ParseException.unexpectedState",
+                  localRole
+              ),
+              lineNum
           );
         }
 
@@ -573,13 +575,13 @@ public final class AOServClusterBuilder {
           //System.err.println("-- "+domUHostname);
           //System.err.println("INSERT INTO virtual_disks VALUES(DEFAULT, "+domUVirtualServer.getPkey()+", '"+device+"', NULL, extents, 1, false, false);");
           throw new ParseException(
-            RESOURCES.getMessage(
-              locale,
-              "ParseException.virtualDiskNotFound",
-              domUHostname,
-              domUDevice
-            ),
-            lineNum
+              RESOURCES.getMessage(
+                  locale,
+                  "ParseException.virtualDiskNotFound",
+                  domUHostname,
+                  domUDevice
+              ),
+              lineNum
           );
         }
       }
@@ -589,36 +591,36 @@ public final class AOServClusterBuilder {
     for (Map.Entry<String, DomU> entry : cluster.getDomUs().entrySet()) {
       String domUHostname = entry.getKey();
       DomU domU = entry.getValue();
-      Host domUServer = conn.getNet().getHost().get(rootAccounting+"/"+domUHostname);
+      Host domUServer = conn.getNet().getHost().get(rootAccounting + "/" + domUHostname);
       //VirtualServer domUVirtualServer = domUServer.getVirtualServer();
 
       String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
       if (primaryDom0Hostname == null) {
         throw new ParseException(
-          RESOURCES.getMessage(
-            locale,
-            "ParseException.primaryNotFound",
-            domUHostname
-          ),
-          0
+            RESOURCES.getMessage(
+                locale,
+                "ParseException.primaryNotFound",
+                domUHostname
+            ),
+            0
         );
       }
 
       String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
       if (secondaryDom0Hostname == null) {
         throw new ParseException(
-          RESOURCES.getMessage(
-            locale,
-            "ParseException.secondaryNotFound",
-            domUHostname
-          ),
-          0
+            RESOURCES.getMessage(
+                locale,
+                "ParseException.secondaryNotFound",
+                domUHostname
+            ),
+            0
         );
       }
       clusterConfiguration = clusterConfiguration.addDomUConfiguration(
-        domU,
-        cluster.getDom0(primaryDom0Hostname),
-        cluster.getDom0(secondaryDom0Hostname)
+          domU,
+          cluster.getDom0(primaryDom0Hostname),
+          cluster.getDom0(secondaryDom0Hostname)
       );
       //DomUConfiguration domUConfiguration = clusterConfiguration.getDomUConfiguration(domU);
       //assert domUConfiguration != null : "domUConfiguration is null";
@@ -634,13 +636,13 @@ public final class AOServClusterBuilder {
         }
         if (foundCount != 1) {
           throw new ParseException(
-            RESOURCES.getMessage(
-              locale,
-              "ParseException.drbdDomUDiskShouldBeFoundOnce",
-              domUDisk.getDevice(),
-              primaryDom0Hostname
-            ),
-            0
+              RESOURCES.getMessage(
+                  locale,
+                  "ParseException.drbdDomUDiskShouldBeFoundOnce",
+                  domUDisk.getDevice(),
+                  primaryDom0Hostname
+              ),
+              0
           );
         }
 
@@ -653,22 +655,22 @@ public final class AOServClusterBuilder {
         }
         if (foundCount != 1) {
           throw new ParseException(
-            RESOURCES.getMessage(
-              locale,
-              "ParseException.drbdDomUDiskShouldBeFoundOnce",
-              domUDisk.getDevice(),
-              secondaryDom0Hostname
-            ),
-            0
+              RESOURCES.getMessage(
+                  locale,
+                  "ParseException.drbdDomUDiskShouldBeFoundOnce",
+                  domUDisk.getDevice(),
+                  secondaryDom0Hostname
+              ),
+              0
           );
         }
 
         // Add to the configuration
         clusterConfiguration = clusterConfiguration.addDomUDiskConfiguration(
-          domU,
-          domUDisk,
-          getPhysicalVolumeConfigurations(cluster, domUDisk, lvmReports, primaryDom0Hostname),
-          getPhysicalVolumeConfigurations(cluster, domUDisk, lvmReports, secondaryDom0Hostname)
+            domU,
+            domUDisk,
+            getPhysicalVolumeConfigurations(cluster, domUDisk, lvmReports, primaryDom0Hostname),
+            getPhysicalVolumeConfigurations(cluster, domUDisk, lvmReports, secondaryDom0Hostname)
         );
       }
     }
@@ -688,7 +690,7 @@ public final class AOServClusterBuilder {
             DomU domU = cluster.getDomU(vgName);
             if (domU == null) {
               if (!vgName.equals("backup")) {
-                throw new AssertionError("Volume group found but there is no virtual server of the same name: "+dom0Hostname+":/dev/"+vgName);
+                throw new AssertionError("Volume group found but there is no virtual server of the same name: " + dom0Hostname + ":/dev/" + vgName);
               }
             } else {
               // Make sure primary or secondary on this Dom0
@@ -696,20 +698,20 @@ public final class AOServClusterBuilder {
               String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
               String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
               if (
-                !primaryDom0Hostname.equals(dom0Hostname)
-                && !secondaryDom0Hostname.equals(dom0Hostname)
+                  !primaryDom0Hostname.equals(dom0Hostname)
+                      && !secondaryDom0Hostname.equals(dom0Hostname)
               ) {
-                throw new AssertionError("Volume group found but the virtual server is neither primary nor secondary on this physical server: "+dom0Hostname+":/dev/"+vgName);
+                throw new AssertionError("Volume group found but the virtual server is neither primary nor secondary on this physical server: " + dom0Hostname + ":/dev/" + vgName);
               }
 
               // Make sure every logical volume found in LVM equals a domUDisk
               for (String lvName : volumeGroup.getLogicalVolumes().keySet()) {
                 if (!lvName.endsWith("-drbd")) {
-                  throw new AssertionError("lvName does not end with -drbd: "+lvName);
+                  throw new AssertionError("lvName does not end with -drbd: " + lvName);
                 }
-                DomUDisk domUDisk = domU.getDomUDisk(lvName.substring(0, lvName.length()-5));
+                DomUDisk domUDisk = domU.getDomUDisk(lvName.substring(0, lvName.length() - 5));
                 if (domUDisk == null) {
-                  throw new AssertionError("Logical volume found but the virtual server does not have a corresponding virtual disk: "+dom0Hostname+":/dev/"+vgName+"/"+lvName);
+                  throw new AssertionError("Logical volume found but the virtual server does not have a corresponding virtual disk: " + dom0Hostname + ":/dev/" + vgName + "/" + lvName);
                 }
               }
             }
@@ -725,31 +727,31 @@ public final class AOServClusterBuilder {
    * Gets the physical volume configuration for the provided disk on the provided Dom0.
    */
   private static List<PhysicalVolumeConfiguration> getPhysicalVolumeConfigurations(
-    Cluster cluster,
-    DomUDisk domUDisk,
-    Map<String, Server.LvmReport> lvmReports,
-    String dom0Hostname
+      Cluster cluster,
+      DomUDisk domUDisk,
+      Map<String, Server.LvmReport> lvmReports,
+      String dom0Hostname
   ) {
     Server.LvmReport lvmReport = lvmReports.get(dom0Hostname);
     if (lvmReport == null) {
-      throw new AssertionError("No lvm report found for "+dom0Hostname);
+      throw new AssertionError("No lvm report found for " + dom0Hostname);
     }
     // Find the Dom0
     Dom0 dom0 = cluster.getDom0(dom0Hostname);
     if (dom0 == null) {
-      throw new AssertionError("Dom0 not found: "+dom0Hostname);
+      throw new AssertionError("Dom0 not found: " + dom0Hostname);
     }
     // Should have a volume group equal to its hostname
     String domUHostname = domUDisk.getDomUHostname();
     Server.LvmReport.VolumeGroup volumeGroup = lvmReport.getVolumeGroup(domUHostname);
     if (volumeGroup == null) {
-      throw new AssertionError("No volume group named "+domUHostname+" found on "+dom0Hostname);
+      throw new AssertionError("No volume group named " + domUHostname + " found on " + dom0Hostname);
     }
     // Should have a logical volume named {device}-drbd
-    String logicalVolumeName = domUDisk.getDevice()+"-drbd";
+    String logicalVolumeName = domUDisk.getDevice() + "-drbd";
     Server.LvmReport.LogicalVolume logicalVolume = volumeGroup.getLogicalVolume(logicalVolumeName);
     if (logicalVolume == null) {
-      throw new AssertionError("No logical volume named "+logicalVolumeName+" found on "+dom0Hostname+":"+domUHostname);
+      throw new AssertionError("No logical volume named " + logicalVolumeName + " found on " + dom0Hostname + ":" + domUHostname);
     }
     // Each logical volume may have any number of segments
     List<PhysicalVolumeConfiguration> configs = new ArrayList<>();
@@ -767,8 +769,8 @@ public final class AOServClusterBuilder {
         String partition = stripe.getPhysicalVolume().getPvName();
         // Count the number of digits on the right of partition
         int digitCount = 0;
-        for (int c=partition.length()-1; c >= 0; c--) {
-          char ch=partition.charAt(c);
+        for (int c = partition.length() - 1; c >= 0; c--) {
+          char ch = partition.charAt(c);
           if (ch >= '0' && ch <= '9') {
             digitCount++;
           } else {
@@ -776,33 +778,33 @@ public final class AOServClusterBuilder {
           }
         }
         if (digitCount == 0) {
-          throw new AssertionError("No partition number found on physical volume: "+partition);
+          throw new AssertionError("No partition number found on physical volume: " + partition);
         }
-        String device = partition.substring(0, partition.length()-digitCount);
-        short partitionNum = Short.parseShort(partition.substring(partition.length()-digitCount));
+        String device = partition.substring(0, partition.length() - digitCount);
+        short partitionNum = Short.parseShort(partition.substring(partition.length() - digitCount));
 
         // Find the Dom0Disk
         Dom0Disk dom0Disk = dom0.getDom0Disk(device);
         if (dom0Disk == null) {
-          throw new AssertionError("Unable to find Dom0Disk: "+dom0Hostname+":"+device);
+          throw new AssertionError("Unable to find Dom0Disk: " + dom0Hostname + ":" + device);
         }
 
         // Find the Dom0 physical volume
         PhysicalVolume physicalVolume = dom0Disk.getPhysicalVolume(partitionNum);
         if (physicalVolume == null) {
-          throw new AssertionError("Unable to find PhysicalVolume: "+dom0Hostname+":"+device+partitionNum);
+          throw new AssertionError("Unable to find PhysicalVolume: " + dom0Hostname + ":" + device + partitionNum);
         }
 
         // Add the new physical volume config
         long firstPhysicalExtent = stripe.getFirstPe();
         long extents = stripe.getLastPe() - firstPhysicalExtent + 1;
         configs.add(
-          PhysicalVolumeConfiguration.newInstance(
-            physicalVolume,
-            firstLogicalExtent,
-            firstPhysicalExtent,
-            extents
-          )
+            PhysicalVolumeConfiguration.newInstance(
+                physicalVolume,
+                firstLogicalExtent,
+                firstPhysicalExtent,
+                extents
+            )
         );
         firstLogicalExtent += extents;
       }

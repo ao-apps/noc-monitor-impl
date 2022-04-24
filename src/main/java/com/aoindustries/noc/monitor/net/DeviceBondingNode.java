@@ -41,15 +41,15 @@ public class DeviceBondingNode extends SingleResultNodeImpl {
 
   DeviceBondingNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
-      netDeviceNode,
-      DeviceBondingNodeWorker.getWorker(
-        new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
-        netDeviceNode.getNetDevice()
-      ),
-      port,
-      csf,
-      ssf
+        netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
+        netDeviceNode,
+        DeviceBondingNodeWorker.getWorker(
+            new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
+            netDeviceNode.getNetDevice()
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 

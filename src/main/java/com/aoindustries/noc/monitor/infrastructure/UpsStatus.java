@@ -41,7 +41,7 @@ class UpsStatus {
       return Float.NaN;
     }
     if (value.endsWith(" Volts")) {
-      value = value.substring(0, value.length()-6);
+      value = value.substring(0, value.length() - 6);
     }
     value = value.trim();
     return value.length() == 0 ? Float.NaN : Float.parseFloat(value);
@@ -52,7 +52,7 @@ class UpsStatus {
       return Float.NaN;
     }
     if (value.endsWith(" Hz")) {
-      value = value.substring(0, value.length()-3);
+      value = value.substring(0, value.length() - 3);
     }
     value = value.trim();
     return value.length() == 0 ? Float.NaN : Float.parseFloat(value);
@@ -63,9 +63,9 @@ class UpsStatus {
       return Float.NaN;
     }
     if (value.endsWith(" Percent Load Capacity")) {
-      value = value.substring(0, value.length()-22);
+      value = value.substring(0, value.length() - 22);
     } else if (value.endsWith(" Percent")) {
-      value = value.substring(0, value.length()-8);
+      value = value.substring(0, value.length() - 8);
     }
     value = value.trim();
     return value.length() == 0 ? Float.NaN : Float.parseFloat(value);
@@ -84,28 +84,28 @@ class UpsStatus {
       return null;
     }
     if (
-      value.endsWith(" Minutes")
-      || value.endsWith(" minutes")
+        value.endsWith(" Minutes")
+            || value.endsWith(" minutes")
     ) {
-      value = value.substring(0, value.length()-8).trim();
+      value = value.substring(0, value.length() - 8).trim();
       return new MilliInterval(
-        (long)(
-          Float.parseFloat(value)
-          * 60L
-          * 1000L
-        )
+          (long) (
+              Float.parseFloat(value)
+                  * 60L
+                  * 1000L
+          )
       );
     }
     if (
-      value.endsWith(" Seconds")
-      || value.endsWith(" seconds")
+        value.endsWith(" Seconds")
+            || value.endsWith(" seconds")
     ) {
-      value = value.substring(0, value.length()-8).trim();
+      value = value.substring(0, value.length() - 8).trim();
       return new MilliInterval(
-        (long)(
-          Float.parseFloat(value)
-          * 1000L
-        )
+          (long) (
+              Float.parseFloat(value)
+                  * 1000L
+          )
       );
     }
     throw new IllegalArgumentException(value);
@@ -115,9 +115,9 @@ class UpsStatus {
     if (value == null) {
       return Float.NaN;
     } else if (value.endsWith(" C Internal")) {
-      value = value.substring(0, value.length()-11);
+      value = value.substring(0, value.length() - 11);
     } else if (value.endsWith(" C")) {
-      value = value.substring(0, value.length()-2);
+      value = value.substring(0, value.length() - 2);
     }
     value = value.trim();
     return value.length() == 0 ? Float.NaN : Float.parseFloat(value);
@@ -176,7 +176,7 @@ class UpsStatus {
         throw new LocalizedParseException(0, PACKAGE_RESOURCES, "UpsStatus.parse.noColon", line);
       }
       String name = line.substring(0, colonPos).trim();
-      String value = line.substring(colonPos+1).trim();
+      String value = line.substring(colonPos + 1).trim();
       if ("UPSNAME"  .equals(name)) {
         _upsname   = value;
       } else if ("STATUS"   .equals(name)) {
@@ -364,27 +364,27 @@ class UpsStatus {
 
   UpsResult getResult(long time, long latency, AlertLevel alertLevel) {
     return new UpsResult(
-      time,
-      latency,
-      alertLevel,
-      upsname,
-      status,
-      linev,
-      lotrans,
-      hitrans,
-      linefreq,
-      outputv,
-      nomoutv,
-      loadpct,
-      bcharge,
-      battv,
-      nombattv,
-      extbatts,
-      badbatts,
-      tonbatt,
-      cumonbatt,
-      timeleft,
-      itemp
+        time,
+        latency,
+        alertLevel,
+        upsname,
+        status,
+        linev,
+        lotrans,
+        hitrans,
+        linefreq,
+        outputv,
+        nomoutv,
+        loadpct,
+        bcharge,
+        battv,
+        nombattv,
+        extbatts,
+        badbatts,
+        tonbatt,
+        cumonbatt,
+        timeleft,
+        itemp
     );
   }
 }

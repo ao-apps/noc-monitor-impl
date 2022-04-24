@@ -51,6 +51,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
    * One unique worker is made per persistence file (and should match the linuxServer exactly)
    */
   private static final Map<String, ThreeWareRaidNodeWorker> workerCache = new HashMap<>();
+
   static ThreeWareRaidNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -60,7 +61,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
         workerCache.put(path, worker);
       } else {
         if (!worker.linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: "+worker.linuxServer+" != "+linuxServer);
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker.linuxServer + " != " + linuxServer);
         }
       }
       return worker;
@@ -88,13 +89,13 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
     Function<Locale, String> error = result.getError();
     if (error != null) {
       return new AlertLevelAndMessage(
-        // Don't downgrade UNKNOWN to CRITICAL on error
-        EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "ThreeWareRaidNode.alertMessage.error",
-          error.apply(locale)
-        )
+          // Don't downgrade UNKNOWN to CRITICAL on error
+          EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "ThreeWareRaidNode.alertMessage.error",
+              error.apply(locale)
+          )
       );
     }
     String report = result.getReport();
@@ -103,100 +104,100 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
     if (!"\nNo controller found.\nMake sure appropriate AMCC/3ware device driver(s) are loaded.\n\n".equals(report)) {
       List<String> lines = Strings.splitLines(report);
       // Should have at least four lines
-      if (lines.size()<4) {
+      if (lines.size() < 4) {
         return new AlertLevelAndMessage(
-          AlertLevel.CRITICAL,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "ThreeWareRaidNode.alertMessage.fourLinesOrMore",
-            lines.size()
-          )
+            AlertLevel.CRITICAL,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "ThreeWareRaidNode.alertMessage.fourLinesOrMore",
+                lines.size()
+            )
         );
       }
-      if (lines.get(0).length()>0) {
+      if (lines.get(0).length() > 0) {
         return new AlertLevelAndMessage(
-          AlertLevel.CRITICAL,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "ThreeWareRaidNode.alertMessage.firstLineShouldBeBlank",
-            lines.get(0)
-          )
+            AlertLevel.CRITICAL,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "ThreeWareRaidNode.alertMessage.firstLineShouldBeBlank",
+                lines.get(0)
+            )
         );
       }
       if (
-           !"Ctl   Model        Ports   Drives   Units   NotOpt   RRate   VRate   BBU".equals(lines.get(1))
-        && !"Ctl   Model        (V)Ports  Drives   Units   NotOpt  RRate   VRate  BBU".equals(lines.get(1))
+          !"Ctl   Model        Ports   Drives   Units   NotOpt   RRate   VRate   BBU".equals(lines.get(1))
+              && !"Ctl   Model        (V)Ports  Drives   Units   NotOpt  RRate   VRate  BBU".equals(lines.get(1))
       ) {
         return new AlertLevelAndMessage(
-          AlertLevel.CRITICAL,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "ThreeWareRaidNode.alertMessage.secondLineNotColumns",
-            lines.get(1)
-          )
+            AlertLevel.CRITICAL,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "ThreeWareRaidNode.alertMessage.secondLineNotColumns",
+                lines.get(1)
+            )
         );
       }
       if (!"------------------------------------------------------------------------".equals(lines.get(2))) {
         return new AlertLevelAndMessage(
-          AlertLevel.CRITICAL,
-          locale -> PACKAGE_RESOURCES.getMessage(
-            locale,
-            "ThreeWareRaidNode.alertMessage.thirdLineSeparator",
-            lines.get(2)
-          )
+            AlertLevel.CRITICAL,
+            locale -> PACKAGE_RESOURCES.getMessage(
+                locale,
+                "ThreeWareRaidNode.alertMessage.thirdLineSeparator",
+                lines.get(2)
+            )
         );
       }
-      for (int c=3; c<lines.size(); c++) {
+      for (int c = 3; c < lines.size(); c++) {
         String line = lines.get(c);
-        if (line.length()>0) {
+        if (line.length() > 0) {
           List<String> values = Strings.splitCommaSpace(line);
           if (values.size() != 9) {
             return new AlertLevelAndMessage(
-              AlertLevel.CRITICAL,
-              locale -> PACKAGE_RESOURCES.getMessage(
-                locale,
-                "ThreeWareRaidNode.alertMessage.notNineValues",
-                values.size(),
-                line
-              )
+                AlertLevel.CRITICAL,
+                locale -> PACKAGE_RESOURCES.getMessage(
+                    locale,
+                    "ThreeWareRaidNode.alertMessage.notNineValues",
+                    values.size(),
+                    line
+                )
             );
           }
           String notOptString = values.get(5);
           try {
             int notOpt = Integer.parseInt(notOptString);
-            if (notOpt>0) {
-              if (AlertLevel.HIGH.compareTo(highestAlertLevel)>0) {
+            if (notOpt > 0) {
+              if (AlertLevel.HIGH.compareTo(highestAlertLevel) > 0) {
                 highestAlertLevel = AlertLevel.HIGH;
                 highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(
-                  locale,
-                  notOpt == 1 ? "ThreeWareRaidNode.alertMessage.notOpt.singular" : "ThreeWareRaidNode.alertMessage.notOpt.plural",
-                  values.get(0),
-                  notOpt
+                    locale,
+                    notOpt == 1 ? "ThreeWareRaidNode.alertMessage.notOpt.singular" : "ThreeWareRaidNode.alertMessage.notOpt.plural",
+                    values.get(0),
+                    notOpt
                 );
               }
             }
           } catch (NumberFormatException err) {
             return new AlertLevelAndMessage(
-              AlertLevel.CRITICAL,
-              locale -> PACKAGE_RESOURCES.getMessage(
-                locale,
-                "ThreeWareRaidNode.alertMessage.badNotOpt",
-                notOptString
-              )
+                AlertLevel.CRITICAL,
+                locale -> PACKAGE_RESOURCES.getMessage(
+                    locale,
+                    "ThreeWareRaidNode.alertMessage.badNotOpt",
+                    notOptString
+                )
             );
           }
           String bbu = values.get(8);
           if (
-            !"OK".equals(bbu)   // Not OK BBU
-            && !"-".equals(bbu) // No BBU
+              !"OK".equals(bbu)   // Not OK BBU
+                  && !"-".equals(bbu) // No BBU
           ) {
-            if (AlertLevel.MEDIUM.compareTo(highestAlertLevel)>0) {
+            if (AlertLevel.MEDIUM.compareTo(highestAlertLevel) > 0) {
               highestAlertLevel = AlertLevel.MEDIUM;
               highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(
-                locale,
-                "ThreeWareRaidNode.alertMessage.bbuNotOk",
-                values.get(0),
-                bbu
+                  locale,
+                  "ThreeWareRaidNode.alertMessage.bbuNotOk",
+                  values.get(0),
+                  bbu
               );
             }
           }

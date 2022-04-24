@@ -167,10 +167,10 @@ public class CertificatesNode extends NodeImpl {
             }
           }
           if (
-            // Does not exist
-            newCert == null
-            // or label changed
-            || !CertificateNode.getLabel(newCert).equals(sslCertificateNode.getLabel())
+              // Does not exist
+              newCert == null
+                  // or label changed
+                  || !CertificateNode.getLabel(newCert).equals(sslCertificateNode.getLabel())
           ) {
             sslCertificateNode.stop();
             sslCertificateNodeIter.remove();
@@ -203,10 +203,10 @@ public class CertificatesNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

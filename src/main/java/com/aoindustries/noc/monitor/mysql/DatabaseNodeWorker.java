@@ -54,6 +54,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
    * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
    */
   private static final Map<String, DatabaseNodeWorker> workerCache = new HashMap<>();
+
   static DatabaseNodeWorker getWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -63,7 +64,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
         workerCache.put(path, worker);
       } else {
         if (!worker.mysqlDatabase.equals(mysqlDatabase)) {
-          throw new AssertionError("worker.mysqlDatabase != mysqlDatabase: "+worker.mysqlDatabase+" != "+mysqlDatabase);
+          throw new AssertionError("worker.mysqlDatabase != mysqlDatabase: " + worker.mysqlDatabase + " != " + mysqlDatabase);
         }
       }
       return worker;
@@ -83,8 +84,8 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
     this.mysqlSlave = mysqlSlave;
     String hostname = mysqlDatabase.getMySQLServer().getLinuxServer().getHostname().toString();
     this.isSlowServer =
-      hostname.equals("www.swimconnection.com")
-      // || hostname.equals("www1.leagle.com")
+        hostname.equals("www.swimconnection.com")
+    // || hostname.equals("www1.leagle.com")
     ;
   }
 
@@ -96,23 +97,23 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
     return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
-      PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment")
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
+        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment")
     );
   }
 
@@ -125,7 +126,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 
   @Override
   protected SerializableFunction<Locale, List<Object>> getTableData(List<Database.TableStatus> tableStatuses) throws Exception {
-    List<Object> tableData = new ArrayList<>(tableStatuses.size()*18);
+    List<Object> tableData = new ArrayList<>(tableStatuses.size() * 18);
     for (Database.TableStatus tableStatus : tableStatuses) {
       tableData.add(tableStatus.getName());
       tableData.add(tableStatus.getEngine());
@@ -206,8 +207,8 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
   public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
     if (result.isError()) {
       return new AlertLevelAndMessage(
-        result.getAlertLevels().get(0),
-        locale -> result.getTableData(locale).get(0).toString()
+          result.getAlertLevels().get(0),
+          locale -> result.getTableData(locale).get(0).toString()
       );
     } else {
       return AlertLevelAndMessage.NONE;

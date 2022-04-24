@@ -63,6 +63,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
    * One unique worker is made per persistence file (and should match the sslCertificate exactly)
    */
   private static final Map<String, CertificateNodeWorker> workerCache = new HashMap<>();
+
   static CertificateNodeWorker getWorker(File persistenceFile, Certificate sslCertificate) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -72,7 +73,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
         workerCache.put(path, worker);
       } else {
         if (!worker.sslCertificate.equals(sslCertificate)) {
-          throw new AssertionError("worker.sslCertificate != sslCertificate: "+worker.sslCertificate+" != "+sslCertificate);
+          throw new AssertionError("worker.sslCertificate != sslCertificate: " + worker.sslCertificate + " != " + sslCertificate);
         }
       }
       return worker;
@@ -117,9 +118,9 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
         AlertLevel alertLevel = alertLevels.get(index / NUM_COLS);
         if (alertLevel.compareTo(highestAlertLevel) > 0) {
           highestAlertLevel = alertLevel;
-          String message = (String)tableData.get(index + 2);
+          String message = (String) tableData.get(index + 2);
           if (message == null || message.isEmpty()) {
-            message = (String)tableData.get(index + 1);
+            message = (String) tableData.get(index + 1);
           }
           final String msg = message;
           highestAlertMessage = locale -> msg;
@@ -137,8 +138,8 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
     return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.check"),
-      PACKAGE_RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.value"),
-      PACKAGE_RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.message")
+        PACKAGE_RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.value"),
+        PACKAGE_RESOURCES.getMessage(locale, "SslCertificateNodeWorker.columnHeader.message")
     );
   }
 

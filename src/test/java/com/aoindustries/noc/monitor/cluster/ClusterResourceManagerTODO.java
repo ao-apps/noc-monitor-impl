@@ -118,16 +118,16 @@ public class ClusterResourceManagerTODO extends TestCase {
   }
 
   private static SortedSet<Cluster> addDom0(
-    SortedSet<Cluster> oldClusters,
-    String clusterName,
-    String hostname,
-    //Rack rack,
-    int ram,
-    ProcessorType processorType,
-    ProcessorArchitecture processorArchitecture,
-    int processorSpeed,
-    int processorCores,
-    boolean supportsHvm
+      SortedSet<Cluster> oldClusters,
+      String clusterName,
+      String hostname,
+      //Rack rack,
+      int ram,
+      ProcessorType processorType,
+      ProcessorArchitecture processorArchitecture,
+      int processorSpeed,
+      int processorCores,
+      boolean supportsHvm
   ) {
     // Find the cluster
     Cluster oldCluster = null;
@@ -138,12 +138,12 @@ public class ClusterResourceManagerTODO extends TestCase {
       }
     }
     if (oldCluster == null) {
-      throw new AssertionError("Cluster not found: "+clusterName);
+      throw new AssertionError("Cluster not found: " + clusterName);
     }
 
     // Make sure not already in cluster
     if (oldCluster.getDom0(hostname) != null) {
-      throw new AssertionError("Cluster already has Dom0 named "+hostname);
+      throw new AssertionError("Cluster already has Dom0 named " + hostname);
     }
 
     Cluster newCluster = oldCluster.addDom0(hostname, ram, processorType, processorArchitecture, processorSpeed, processorCores, supportsHvm);
@@ -157,11 +157,11 @@ public class ClusterResourceManagerTODO extends TestCase {
   }
 
   private static SortedSet<Cluster> addDom0Disk(
-    SortedSet<Cluster> oldClusters,
-    String clusterName,
-    String hostname,
-    String device,
-    int speed
+      SortedSet<Cluster> oldClusters,
+      String clusterName,
+      String hostname,
+      String device,
+      int speed
   ) {
     // Find the cluster
     Cluster oldCluster = null;
@@ -172,7 +172,7 @@ public class ClusterResourceManagerTODO extends TestCase {
       }
     }
     if (oldCluster == null) {
-      throw new AssertionError("Cluster not found: "+clusterName);
+      throw new AssertionError("Cluster not found: " + clusterName);
     }
 
     Cluster newCluster = oldCluster.addDom0Disk(hostname, device, speed);
@@ -186,12 +186,12 @@ public class ClusterResourceManagerTODO extends TestCase {
   }
 
   private static SortedSet<Cluster> addPhysicalVolume(
-    SortedSet<Cluster> oldClusters,
-    String clusterName,
-    String hostname,
-    String device,
-    short parition,
-    long extents
+      SortedSet<Cluster> oldClusters,
+      String clusterName,
+      String hostname,
+      String device,
+      short parition,
+      long extents
   ) {
     // Find the cluster
     Cluster oldCluster = null;
@@ -202,7 +202,7 @@ public class ClusterResourceManagerTODO extends TestCase {
       }
     }
     if (oldCluster == null) {
-      throw new AssertionError("Cluster not found: "+clusterName);
+      throw new AssertionError("Cluster not found: " + clusterName);
     }
 
     Cluster newCluster = oldCluster.addPhysicalVolume(hostname, device, parition, extents);
@@ -255,27 +255,27 @@ public class ClusterResourceManagerTODO extends TestCase {
     clusters = addDom0(clusters, "fc", "xen914-6.fc.aoindustries.com", 24576, ProcessorType.XEON_LV, ProcessorArchitecture.X86_64, 2333, 8, true);
     // Add drives
     String[] sataDevices = {
-      "/dev/sda",
-      "/dev/sdb",
-      "/dev/sdc",
-      "/dev/sdd",
-      "/dev/sde",
-      "/dev/sdf",
-      "/dev/sdg",
-      "/dev/sdh",
-      "/dev/sdi",
-      "/dev/sdj",
-      "/dev/sdk",
-      "/dev/sdl"
+        "/dev/sda",
+        "/dev/sdb",
+        "/dev/sdc",
+        "/dev/sdd",
+        "/dev/sde",
+        "/dev/sdf",
+        "/dev/sdg",
+        "/dev/sdh",
+        "/dev/sdi",
+        "/dev/sdj",
+        "/dev/sdk",
+        "/dev/sdl"
     };
     for (String sataDevice : sataDevices) {
       clusters = addSata500(clusters, "fc", "xen914-6.fc.aoindustries.com", sataDevice);
     }
     String[] scsiDevices = {
-      "/dev/sdm",
-      "/dev/sdn",
-      "/dev/sdo",
-      "/dev/sdp"
+        "/dev/sdm",
+        "/dev/sdn",
+        "/dev/sdo",
+        "/dev/sdp"
     };
     for (String scsiDevice : scsiDevices) {
       clusters = addScsi146(clusters, "fc", "xen914-6.fc.aoindustries.com", scsiDevice);
@@ -287,27 +287,27 @@ public class ClusterResourceManagerTODO extends TestCase {
     clusters = addDom0(clusters, "fc", "xen914-7.fc.aoindustries.com", 24576, ProcessorType.XEON_LV, ProcessorArchitecture.X86_64, 2333, 8, true);
     // Add drives
     String[] sataDevices = {
-      "/dev/sda",
-      "/dev/sdb",
-      "/dev/sdc",
-      "/dev/sdd",
-      "/dev/sde",
-      "/dev/sdf",
-      "/dev/sdg",
-      "/dev/sdh",
-      "/dev/sdi",
-      "/dev/sdj",
-      "/dev/sdk",
-      "/dev/sdl"
+        "/dev/sda",
+        "/dev/sdb",
+        "/dev/sdc",
+        "/dev/sdd",
+        "/dev/sde",
+        "/dev/sdf",
+        "/dev/sdg",
+        "/dev/sdh",
+        "/dev/sdi",
+        "/dev/sdj",
+        "/dev/sdk",
+        "/dev/sdl"
     };
     for (String sataDevice : sataDevices) {
       clusters = addSata500(clusters, "fc", "xen914-7.fc.aoindustries.com", sataDevice);
     }
     String[] scsiDevices = {
-      "/dev/sdm",
-      "/dev/sdn",
-      "/dev/sdo",
-      "/dev/sdp"
+        "/dev/sdm",
+        "/dev/sdn",
+        "/dev/sdo",
+        "/dev/sdp"
     };
     for (String scsiDevice : scsiDevices) {
       clusters = addScsi146(clusters, "fc", "xen914-7.fc.aoindustries.com", scsiDevice);
@@ -319,8 +319,8 @@ public class ClusterResourceManagerTODO extends TestCase {
     if (sata) {
       // Add drives
       String[] sataDevices = {
-        "/dev/sdo",
-        "/dev/sdp"
+          "/dev/sdo",
+          "/dev/sdp"
       };
       for (String sataDevice : sataDevices) {
         clusters = addSata500(clusters, "fc", "xen907-1.fc.aoindustries.com", sataDevice);
@@ -328,8 +328,8 @@ public class ClusterResourceManagerTODO extends TestCase {
     }
     if (scsi) {
       String[] scsiDevices = {
-        "/dev/sdq",
-        "/dev/sdr"
+          "/dev/sdq",
+          "/dev/sdr"
       };
       for (String scsiDevice : scsiDevices) {
         clusters = addScsi146(clusters, "fc", "xen907-1.fc.aoindustries.com", scsiDevice);
@@ -341,21 +341,21 @@ public class ClusterResourceManagerTODO extends TestCase {
   private static SortedSet<Cluster> addDrivesXen9145(SortedSet<Cluster> clusters) {
     // Add drives
     String[] sataDevices = {
-      "/dev/sdg",
-      "/dev/sdh",
-      "/dev/sdi",
-      "/dev/sdj",
-      "/dev/sdk",
-      "/dev/sdl"
+        "/dev/sdg",
+        "/dev/sdh",
+        "/dev/sdi",
+        "/dev/sdj",
+        "/dev/sdk",
+        "/dev/sdl"
     };
     for (String sataDevice : sataDevices) {
       clusters = addSata500(clusters, "fc", "xen914-5.fc.lnxhosting.ca", sataDevice);
     }
     String[] scsiDevices = {
-      "/dev/sdm",
-      "/dev/sdn",
-      "/dev/sdo",
-      "/dev/sdp"
+        "/dev/sdm",
+        "/dev/sdn",
+        "/dev/sdo",
+        "/dev/sdp"
     };
     for (String scsiDevice : scsiDevices) {
       clusters = addScsi146(clusters, "fc", "xen914-5.fc.lnxhosting.ca", scsiDevice);
@@ -367,13 +367,13 @@ public class ClusterResourceManagerTODO extends TestCase {
     if (sata) {
       // Add drives
       String[] sataDevices = {
-        "/dev/sdh",
-        "/dev/sdi",
-        "/dev/sdj",
-        "/dev/sdk",
-        "/dev/sdl",
-        "/dev/sdm",
-        "/dev/sdn"
+          "/dev/sdh",
+          "/dev/sdi",
+          "/dev/sdj",
+          "/dev/sdk",
+          "/dev/sdl",
+          "/dev/sdm",
+          "/dev/sdn"
       };
       for (String sataDevice : sataDevices) {
         clusters = addSata500(clusters, "fc", "xen917-5.fc.aoindustries.com", sataDevice);
@@ -381,8 +381,8 @@ public class ClusterResourceManagerTODO extends TestCase {
     }
     if (scsi) {
       String[] scsiDevices = {
-        "/dev/sdo",
-        "/dev/sdp"
+          "/dev/sdo",
+          "/dev/sdp"
       };
       for (String scsiDevice : scsiDevices) {
         clusters = addScsi146(clusters, "fc", "xen917-5.fc.aoindustries.com", scsiDevice);
@@ -458,7 +458,7 @@ public class ClusterResourceManagerTODO extends TestCase {
     for (ClusterConfiguration clusterConfiguration : clusterConfigurations) {
       System.out.println(clusterConfiguration);
       for (HeuristicFunction heuristicFunction : heuristicFunctions) {
-        System.out.println("    "+heuristicFunction.getClass().getName()+": "+heuristicFunction.getHeuristic(clusterConfiguration, 0));
+        System.out.println("    " + heuristicFunction.getClass().getName() + ": " + heuristicFunction.getHeuristic(clusterConfiguration, 0));
       }
     }
   }
@@ -480,9 +480,9 @@ public class ClusterResourceManagerTODO extends TestCase {
     }
     Transition transition = path.getTransition();
     if (transition == null) {
-      System.out.println("            Initial State ("+path.getHeuristic()+")");
+      System.out.println("            Initial State (" + path.getHeuristic() + ")");
     } else {
-      System.out.println("            "+transition+" ("+path.getHeuristic()+")");
+      System.out.println("            " + transition + " (" + path.getHeuristic() + ")");
     }
   }
 
@@ -498,19 +498,19 @@ public class ClusterResourceManagerTODO extends TestCase {
     for (final ClusterConfiguration clusterConfiguration : clusterConfigurations) {
       System.out.println(clusterConfiguration);
       for (final HeuristicFunction heuristicFunction : heuristicFunctions) {
-        System.out.println("    "+heuristicFunction.getClass().getName());
+        System.out.println("    " + heuristicFunction.getClass().getName());
         //System.out.println("        Initial State ("+heuristicFunction.getHeuristic(clusterConfiguration, 0)+")");
         ClusterOptimizer optimized = new ClusterOptimizer(clusterConfiguration, heuristicFunction, ALLOW_PATH_THROUGH_CRITICAL, RANDOMIZE_CHILDREN);
         ListElement shortestPath = optimized.getOptimizedClusterConfiguration((ListElement path, long loopCount) -> {
           // TODO: Emphasize anything with a critical alert level when showing transitions
-          System.out.println("        Goal found using "+path.getPathLen()+(path.getPathLen() == 1 ? " transition" : " transitions")+" in "+loopCount+(loopCount == 1?" iteration" : " iterations"));
+          System.out.println("        Goal found using " + path.getPathLen() + (path.getPathLen() == 1 ? " transition" : " transitions") + " in " + loopCount + (loopCount == 1 ? " iteration" : " iterations"));
           printTransitions(path);
           // Stop at the first one found
           return FIND_SHORTEST_PATH;
         });
         if (shortestPath == null) {
           System.out.println("        Goal not found");
-        } else if (FIND_SHORTEST_PATH && shortestPath.getPathLen()>0) {
+        } else if (FIND_SHORTEST_PATH && shortestPath.getPathLen() > 0) {
           System.out.println("        Yeah! Shortest path to optimal configuration found!!!");
         }
       }

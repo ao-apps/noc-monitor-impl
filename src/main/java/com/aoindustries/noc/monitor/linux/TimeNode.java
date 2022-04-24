@@ -43,15 +43,15 @@ public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
 
   public TimeNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      hostNode.hostsNode.rootNode,
-      hostNode,
-      TimeNodeWorker.getWorker(
-        hostNode.getPersistenceDirectory(),
-        linuxServer
-      ),
-      port,
-      csf,
-      ssf
+        hostNode.hostsNode.rootNode,
+        hostNode,
+        TimeNodeWorker.getWorker(
+            hostNode.getPersistenceDirectory(),
+            linuxServer
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 

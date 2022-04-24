@@ -110,28 +110,6 @@ public class HostNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-      this._backupsNode,
-      this._netDevicesNode,
-      this._httpdServersNode,
-      this._mysqlServersNode,
-      this._hardDrivesNode,
-      this._raidNode,
-      this._sslCertificatesNode,
-      this._upsNode,
-      this._filesystemsNode,
-      this._loadAverageNode,
-      this._memoryNode,
-      this._timeNode
-    );
-  }
-
-  /**
-   * The alert level is equal to the highest alert level of its children.
-   */
-  @Override
-  public AlertLevel getAlertLevel() {
-    return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
         this._backupsNode,
         this._netDevicesNode,
         this._httpdServersNode,
@@ -144,7 +122,29 @@ public class HostNode extends NodeImpl {
         this._loadAverageNode,
         this._memoryNode,
         this._timeNode
-      )
+    );
+  }
+
+  /**
+   * The alert level is equal to the highest alert level of its children.
+   */
+  @Override
+  public AlertLevel getAlertLevel() {
+    return constrainAlertLevel(
+        AlertLevelUtils.getMaxAlertLevel(
+            this._backupsNode,
+            this._netDevicesNode,
+            this._httpdServersNode,
+            this._mysqlServersNode,
+            this._hardDrivesNode,
+            this._raidNode,
+            this._sslCertificatesNode,
+            this._upsNode,
+            this._filesystemsNode,
+            this._loadAverageNode,
+            this._memoryNode,
+            this._timeNode
+        )
     );
   }
 
@@ -382,12 +382,12 @@ public class HostNode extends NodeImpl {
     synchronized (this) {
       if (started) {
         if (
-          linuxServer != null
-          && (
-            osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
-            || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
-            || osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
-          )
+            linuxServer != null
+                && (
+                osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
+                    || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
+                    || osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
+            )
         ) {
           // Has hddtemp monitoring
           if (_hardDrivesNode == null) {
@@ -484,9 +484,9 @@ public class HostNode extends NodeImpl {
     synchronized (this) {
       if (started) {
         if (
-          linuxServer == null
-          || physicalServer == null
-          || physicalServer.getUpsType() != PhysicalServer.UpsType.apc
+            linuxServer == null
+                || physicalServer == null
+                || physicalServer.getUpsType() != PhysicalServer.UpsType.apc
         ) {
           // No UPS monitoring
           if (_upsNode != null) {
@@ -635,10 +635,10 @@ public class HostNode extends NodeImpl {
     if (!packDir.exists()) {
       if (!packDir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            packDir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                packDir.getCanonicalPath()
+            )
         );
       }
     }
@@ -646,10 +646,10 @@ public class HostNode extends NodeImpl {
     if (!serverDir.exists()) {
       if (!serverDir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            serverDir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                serverDir.getCanonicalPath()
+            )
         );
       }
     }

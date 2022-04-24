@@ -68,11 +68,11 @@ public class SlaveNode extends NodeImpl {
       com.aoindustries.aoserv.client.linux.Server linuxServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
       Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
       BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
-      this._label = bp.getLinuxServer().getHostname()+":"+bp.getPath()+"/"+linuxServer.getHostname()+"/var/lib/mysql/"+mysqlServer.getName();
+      this._label = bp.getLinuxServer().getHostname() + ":" + bp.getPath() + "/" + linuxServer.getHostname() + "/var/lib/mysql/" + mysqlServer.getName();
     } else {
       // ao_server-based
       Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
-      this._label = mysqlReplication.getLinuxServer().getHostname()+":/var/lib/mysql/"+mysqlServer.getName();
+      this._label = mysqlReplication.getLinuxServer().getHostname() + ":/var/lib/mysql/" + mysqlServer.getName();
     }
   }
 
@@ -93,8 +93,8 @@ public class SlaveNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-      this._mysqlSlaveStatusNode,
-      this._mysqlDatabasesNode
+        this._mysqlSlaveStatusNode,
+        this._mysqlDatabasesNode
     );
   }
 
@@ -104,7 +104,7 @@ public class SlaveNode extends NodeImpl {
   @Override
   protected AlertLevel getMaxAlertLevel() {
     return AlertLevelUtils.getMonitoringAlertLevel(
-      _mysqlReplication.getMaxAlertLevel()
+        _mysqlReplication.getMaxAlertLevel()
     );
   }
 
@@ -114,10 +114,10 @@ public class SlaveNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        this._mysqlSlaveStatusNode,
-        this._mysqlDatabasesNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            this._mysqlSlaveStatusNode,
+            this._mysqlDatabasesNode
+        )
     );
   }
 
@@ -177,11 +177,11 @@ public class SlaveNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

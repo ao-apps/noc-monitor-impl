@@ -45,15 +45,15 @@ public class CheckTablesNode extends TableResultNodeImpl {
 
   CheckTablesNode(DatabaseNode mysqlDatabaseNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
-      mysqlDatabaseNode,
-      CheckTablesNodeWorker.getWorker(
+        mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
         mysqlDatabaseNode,
-        new File(mysqlDatabaseNode.getPersistenceDirectory(), "check_tables")
-      ),
-      port,
-      csf,
-      ssf
+        CheckTablesNodeWorker.getWorker(
+            mysqlDatabaseNode,
+            new File(mysqlDatabaseNode.getPersistenceDirectory(), "check_tables")
+        ),
+        port,
+        csf,
+        ssf
     );
     this.mysqlDatabaseNode = mysqlDatabaseNode;
   }
@@ -69,7 +69,7 @@ public class CheckTablesNode extends TableResultNodeImpl {
   @Override
   protected AlertLevel getMaxAlertLevel() {
     return AlertLevelUtils.getMonitoringAlertLevel(
-      mysqlDatabaseNode.mysqlDatabase.getMaxCheckTableAlertLevel()
+        mysqlDatabaseNode.mysqlDatabase.getMaxCheckTableAlertLevel()
     );
   }
 }

@@ -111,24 +111,24 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
       if (!(obj instanceof RootNodeCacheKey)) {
         return false;
       }
-      RootNodeCacheKey other = (RootNodeCacheKey)obj;
+      RootNodeCacheKey other = (RootNodeCacheKey) obj;
       return
-        locale.equals(other.locale)
-        && connector.equals(other.connector)
-        && port == other.port
-        && csf.equals(other.csf)
-        && ssf.equals(other.ssf)
+          locale.equals(other.locale)
+              && connector.equals(other.connector)
+              && port == other.port
+              && csf.equals(other.csf)
+              && ssf.equals(other.ssf)
       ;
     }
 
     @Override
     public int hashCode() {
       return
-        locale.hashCode()
-        ^ (connector.hashCode()*7)
-        ^ (port*11)
-        ^ (csf.hashCode()*13)
-        ^ (ssf.hashCode()*17)
+          locale.hashCode()
+              ^ (connector.hashCode() * 7)
+              ^ (port * 11)
+              ^ (csf.hashCode() * 13)
+              ^ (ssf.hashCode() * 17)
       ;
     }
   }
@@ -137,11 +137,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
   @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
   static RootNodeImpl getRootNode(
-    Locale locale,
-    AOServConnector connector,
-    int port,
-    RMIClientSocketFactory csf,
-    RMIServerSocketFactory ssf
+      Locale locale,
+      AOServConnector connector,
+      int port,
+      RMIClientSocketFactory csf,
+      RMIServerSocketFactory ssf
   ) throws RemoteException {
     RootNodeCacheKey key = new RootNodeCacheKey(locale, connector, port, csf, ssf);
     synchronized (rootNodeCache) {
@@ -197,11 +197,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-      this.otherDevicesNode,
-      this.physicalServersNode,
-      this.virtualServersNode,
-      this.unallocatedNode,
-      this.signupsNode
+        this.otherDevicesNode,
+        this.physicalServersNode,
+        this.virtualServersNode,
+        this.unallocatedNode,
+        this.signupsNode
     );
   }
 
@@ -211,13 +211,13 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        this.otherDevicesNode,
-        this.physicalServersNode,
-        this.virtualServersNode,
-        this.unallocatedNode,
-        this.signupsNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            this.otherDevicesNode,
+            this.physicalServersNode,
+            this.virtualServersNode,
+            this.unallocatedNode,
+            this.signupsNode
+        )
     );
   }
 
@@ -297,7 +297,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   @Override
   public void removeTreeListener(TreeListener treeListener) {
     synchronized (treeListeners) {
-      for (int c=treeListeners.size()-1;c >= 0;c--) {
+      for (int c = treeListeners.size() - 1; c >= 0; c--) {
         if (treeListeners.get(c) == treeListener) {
           treeListeners.remove(c);
           // Remove only once, in case add and remove come in out of order with quick GUI changes
@@ -333,7 +333,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
         while (!Thread.currentThread().isInterrupted()) {
           long sendingCounter;
           synchronized (treeListeners) {
-            if (lastCounterSent<currentCounter) {
+            if (lastCounterSent < currentCounter) {
               nodeAddedSignalers.remove(treeListener);
               removed = true;
               break;
@@ -390,7 +390,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
         while (!Thread.currentThread().isInterrupted()) {
           long sendingCounter;
           synchronized (treeListeners) {
-            if (lastCounterSent<currentCounter) {
+            if (lastCounterSent < currentCounter) {
               nodeRemovedSignalers.remove(treeListener);
               removed = true;
               break;
@@ -530,13 +530,13 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     if (oldAlertLevel != newAlertLevel) {
       AlertChange change = new AlertChange(
-        node,
-        node.getFullPath(locale),
-        oldAlertLevel,
-        newAlertLevel,
-        alertMessage,
-        oldAlertCategory,
-        newAlertCategory
+          node,
+          node.getFullPath(locale),
+          oldAlertLevel,
+          newAlertLevel,
+          alertMessage,
+          oldAlertCategory,
+          newAlertCategory
       );
       synchronized (treeListeners) {
         for (TreeListener treeListener : treeListeners) {
@@ -578,11 +578,11 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }
@@ -591,6 +591,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
   private static int lastStartupDelay5;
   private static final Object lastStartupDelay5Lock = new Object();
+
   static int getNextStartupDelayFiveMinutes() {
     synchronized (lastStartupDelay5Lock) {
       lastStartupDelay5 = (lastStartupDelay5 + 5037) % (5 * 60 * 1000);
@@ -600,9 +601,10 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
   private static int lastStartupDelay15;
   private static final Object lastStartupDelay15Lock = new Object();
+
   public static int getNextStartupDelayFifteenMinutes() {
     synchronized (lastStartupDelay15Lock) {
-      lastStartupDelay15= (lastStartupDelay15 + 15037) % (15 * 60 * 1000);
+      lastStartupDelay15 = (lastStartupDelay15 + 15037) % (15 * 60 * 1000);
       return lastStartupDelay15;
     }
   }

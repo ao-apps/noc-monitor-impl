@@ -45,15 +45,15 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
 
   PingNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      ipAddressNode.ipAddressesNode.rootNode,
-      ipAddressNode,
-      PingNodeWorker.getWorker(
-        ipAddressNode.getPersistenceDirectory(),
-        ipAddressNode.getIpAddress()
-      ),
-      port,
-      csf,
-      ssf
+        ipAddressNode.ipAddressesNode.rootNode,
+        ipAddressNode,
+        PingNodeWorker.getWorker(
+            ipAddressNode.getPersistenceDirectory(),
+            ipAddressNode.getIpAddress()
+        ),
+        port,
+        csf,
+        ssf
     );
     //this.ipAddressNode = ipAddressNode;
   }

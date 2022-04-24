@@ -57,9 +57,9 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
   private static final int NUM_COLS = 7;
 
   private static final int
-    LOW_DAYS = 15,
-    MEDIUM_DAYS = 21,
-    HIGH_DAYS = 28
+      LOW_DAYS = 15,
+      MEDIUM_DAYS = 21,
+      HIGH_DAYS = 28
   ;
 
   private static final int OUT_OF_SYNC_HIGH_THRESHOLD = 512;
@@ -68,6 +68,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
    * One unique worker is made per persistence file (and should match the linuxServer exactly)
    */
   private static final Map<String, DrbdNodeWorker> workerCache = new HashMap<>();
+
   static DrbdNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -77,7 +78,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
         workerCache.put(path, worker);
       } else {
         if (!worker.linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: "+worker.linuxServer+" != "+linuxServer);
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker.linuxServer + " != " + linuxServer);
         }
       }
       return worker;
@@ -110,23 +111,23 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
       List<?> tableData = result.getTableData(Locale.getDefault());
       List<AlertLevel> alertLevels = result.getAlertLevels();
       for (
-        int index=0, len=tableData.size();
-        index<len;
+        int index = 0, len = tableData.size();
+        index < len;
         index += NUM_COLS
       ) {
         AlertLevel alertLevel = alertLevels.get(index / NUM_COLS);
-        if (alertLevel.compareTo(highestAlertLevel)>0) {
+        if (alertLevel.compareTo(highestAlertLevel) > 0) {
           highestAlertLevel = alertLevel;
-          String device = (String)tableData.get(index);
-          String resource = (String)tableData.get(index + 1);
-          String cstate = (String)tableData.get(index + 2);
-          String dstate = (String)tableData.get(index + 3);
-          String roles = (String)tableData.get(index + 4);
-          TimeWithTimeZone lastVerified = (TimeWithTimeZone)tableData.get(index + 5);
-          Long outOfSync = (Long)tableData.get(index + 6);
+          String device = (String) tableData.get(index);
+          String resource = (String) tableData.get(index + 1);
+          String cstate = (String) tableData.get(index + 2);
+          String dstate = (String) tableData.get(index + 3);
+          String roles = (String) tableData.get(index + 4);
+          TimeWithTimeZone lastVerified = (TimeWithTimeZone) tableData.get(index + 5);
+          Long outOfSync = (Long) tableData.get(index + 6);
           highestAlertMessage = locale -> ThreadLocale.call(
-            locale,
-            () -> device+" "+resource+" "+cstate+" "+dstate+" "+roles+" "+lastVerified+" "+outOfSync
+              locale,
+              () -> device + " " + resource + " " + cstate + " " + dstate + " " + roles + " " + lastVerified + " " + outOfSync
           );
         }
       }
@@ -142,12 +143,12 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
     return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.device"),
-      PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"),
-      PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"),
-      PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.ds"),
-      PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.roles"),
-      PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.lastVerified"),
-      PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.outOfSync")
+        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"),
+        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"),
+        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.ds"),
+        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.roles"),
+        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.lastVerified"),
+        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.outOfSync")
     );
   }
 
@@ -161,14 +162,14 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
     List<Object> tableData = new ArrayList<>(reports.size() * NUM_COLS);
     for (DrbdReport report : reports) {
       tableData.add(report.getDevice());
-      tableData.add(report.getResourceHostname()+'-'+report.getResourceDevice());
+      tableData.add(report.getResourceHostname() + '-' + report.getResourceDevice());
       tableData.add(Objects.toString(report.getConnectionState(), null));
       DrbdReport.DiskState localDiskState = report.getLocalDiskState();
       DrbdReport.DiskState remoteDiskState = report.getRemoteDiskState();
-      tableData.add(localDiskState == null && remoteDiskState == null ? null : (localDiskState+"/"+remoteDiskState));
+      tableData.add(localDiskState == null && remoteDiskState == null ? null : (localDiskState + "/" + remoteDiskState));
       DrbdReport.Role localRole = report.getLocalRole();
       DrbdReport.Role remoteRole = report.getRemoteRole();
-      tableData.add(localRole == null && remoteRole == null ? null : (localRole+"/"+remoteRole));
+      tableData.add(localRole == null && remoteRole == null ? null : (localRole + "/" + remoteRole));
       Long lastVerified = report.getLastVerified();
       tableData.add(lastVerified == null ? null : new TimeWithTimeZone(lastVerified, timeZone));
       tableData.add(report.getOutOfSync());
@@ -193,25 +194,25 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
       } else {
         DrbdReport.ConnectionState connectionState = report.getConnectionState();
         if (
-          (
-            connectionState != DrbdReport.ConnectionState.Connected
-            && connectionState != DrbdReport.ConnectionState.VerifyS
-            && connectionState != DrbdReport.ConnectionState.VerifyT
-          ) || report.getLocalDiskState() != DrbdReport.DiskState.UpToDate
-          || report.getRemoteDiskState() != DrbdReport.DiskState.UpToDate
-          || !(
-            (report.getLocalRole() == DrbdReport.Role.Primary && report.getRemoteRole() == DrbdReport.Role.Secondary)
-            || (report.getLocalRole() == DrbdReport.Role.Secondary && report.getRemoteRole() == DrbdReport.Role.Primary)
-            // Secondary/Secondary occurs when a virtual server is shutdown
-            || (report.getLocalRole() == DrbdReport.Role.Secondary && report.getRemoteRole() == DrbdReport.Role.Secondary)
-          )
+            (
+                connectionState != DrbdReport.ConnectionState.Connected
+                    && connectionState != DrbdReport.ConnectionState.VerifyS
+                    && connectionState != DrbdReport.ConnectionState.VerifyT
+            ) || report.getLocalDiskState() != DrbdReport.DiskState.UpToDate
+                || report.getRemoteDiskState() != DrbdReport.DiskState.UpToDate
+                || !(
+                (report.getLocalRole() == DrbdReport.Role.Primary && report.getRemoteRole() == DrbdReport.Role.Secondary)
+                    || (report.getLocalRole() == DrbdReport.Role.Secondary && report.getRemoteRole() == DrbdReport.Role.Primary)
+                    // Secondary/Secondary occurs when a virtual server is shutdown
+                    || (report.getLocalRole() == DrbdReport.Role.Secondary && report.getRemoteRole() == DrbdReport.Role.Secondary)
+            )
         ) {
           alertLevel = AlertLevel.HIGH;
         } else {
           // Only check the verified time when primary on at last one side
           if (
-            report.getLocalRole() == DrbdReport.Role.Primary
-            || report.getRemoteRole() == DrbdReport.Role.Primary
+              report.getLocalRole() == DrbdReport.Role.Primary
+                  || report.getRemoteRole() == DrbdReport.Role.Primary
           ) {
             // Check the time since last verified
             Long lastVerified = report.getLastVerified();
@@ -220,8 +221,8 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
               alertLevel = AlertLevel.HIGH;
             } else {
               long daysSince = TimeUnit.DAYS.convert(
-                Math.abs(currentTime - lastVerified),
-                TimeUnit.MILLISECONDS
+                  Math.abs(currentTime - lastVerified),
+                  TimeUnit.MILLISECONDS
               );
               if (daysSince >= HIGH_DAYS) {
                 alertLevel = AlertLevel.HIGH;

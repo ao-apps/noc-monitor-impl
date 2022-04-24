@@ -49,15 +49,15 @@ public class CertificateNode extends TableResultNodeImpl {
 
   CertificateNode(CertificatesNode sslCertificatesNode, Certificate sslCertificate, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
-      sslCertificatesNode.hostNode.hostsNode.rootNode,
-      sslCertificatesNode,
-      CertificateNodeWorker.getWorker(
-        new File(sslCertificatesNode.getPersistenceDirectory(), Integer.toString(sslCertificate.getPkey())),
-        sslCertificate
-      ),
-      port,
-      csf,
-      ssf
+        sslCertificatesNode.hostNode.hostsNode.rootNode,
+        sslCertificatesNode,
+        CertificateNodeWorker.getWorker(
+            new File(sslCertificatesNode.getPersistenceDirectory(), Integer.toString(sslCertificate.getPkey())),
+            sslCertificate
+        ),
+        port,
+        csf,
+        ssf
     );
     this._sslCertificate = sslCertificate;
     this._label = getLabel(sslCertificate);

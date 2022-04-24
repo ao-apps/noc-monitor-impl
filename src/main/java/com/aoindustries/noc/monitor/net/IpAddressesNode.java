@@ -104,7 +104,7 @@ public class IpAddressesNode extends NodeImpl {
     AlertLevel level;
     synchronized (ipAddressNodes) {
       level = AlertLevelUtils.getMaxAlertLevel(
-        ipAddressNodes
+          ipAddressNodes
       );
     }
     return constrainAlertLevel(level);
@@ -170,7 +170,7 @@ public class IpAddressesNode extends NodeImpl {
       ipAddresses = new ArrayList<>(ndIPs.size());
       for (IpAddress ipAddress : ndIPs) {
         if (ipAddress.getInetAddress().isUnspecified()) {
-          throw new AssertionError("Unspecified IP address on Device: "+device);
+          throw new AssertionError("Unspecified IP address on Device: " + device);
         }
         IpAddressMonitoring iam = ipAddress.getMonitoring();
         if (iam != null && iam.getEnabled()) {
@@ -183,13 +183,13 @@ public class IpAddressesNode extends NodeImpl {
       ipAddresses = new ArrayList<>(allIPs.size());
       for (IpAddress ip : allIPs) {
         if (
-          !ip.getInetAddress().isUnspecified()
-          && ip.getDevice() == null
+            !ip.getInetAddress().isUnspecified()
+                && ip.getDevice() == null
         ) {
           IpAddressMonitoring iam = ip.getMonitoring();
           if (
-            iam != null
-            && iam.getEnabled()
+              iam != null
+                  && iam.getEnabled()
           ) {
             ipAddresses.add(ip);
           }
@@ -212,10 +212,10 @@ public class IpAddressesNode extends NodeImpl {
             }
           }
           if (
-            // Node no longer exists
-            newIpAddress == null
-            // Node has a new label
-            || !IpAddressNode.getLabel(newIpAddress).equals(ipAddressNode.getLabel())
+              // Node no longer exists
+              newIpAddress == null
+                  // Node has a new label
+                  || !IpAddressNode.getLabel(newIpAddress).equals(ipAddressNode.getLabel())
           ) {
             ipAddressNode.stop();
             ipAddressNodeIter.remove();
@@ -223,7 +223,7 @@ public class IpAddressesNode extends NodeImpl {
           }
         }
         // Add new ones
-        for (int c=0;c<ipAddresses.size();c++) {
+        for (int c = 0; c < ipAddresses.size(); c++) {
           IpAddress ipAddress = ipAddresses.get(c);
           if (c >= ipAddressNodes.size() || !ipAddress.equals(ipAddressNodes.get(c).getIpAddress())) {
             // Insert into proper index
@@ -239,19 +239,19 @@ public class IpAddressesNode extends NodeImpl {
 
   File getPersistenceDirectory() throws IOException {
     File dir = new File(
-      netDeviceNode != null
-        ? netDeviceNode.getPersistenceDirectory()
-        : unallocatedNode.getPersistenceDirectory(),
-      "ip_addresses"
+        netDeviceNode != null
+            ? netDeviceNode.getPersistenceDirectory()
+            : unallocatedNode.getPersistenceDirectory(),
+        "ip_addresses"
     );
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

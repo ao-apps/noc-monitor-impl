@@ -93,7 +93,7 @@ public class DatabasesNode extends NodeImpl {
     AlertLevel level;
     synchronized (mysqlDatabaseNodes) {
       level = AlertLevelUtils.getMaxAlertLevel(
-        mysqlDatabaseNodes
+          mysqlDatabaseNodes
       );
     }
     return constrainAlertLevel(level);
@@ -167,7 +167,7 @@ public class DatabasesNode extends NodeImpl {
           }
         }
         // Add new ones
-        for (int c=0;c<mysqlDatabases.size();c++) {
+        for (int c = 0; c < mysqlDatabases.size(); c++) {
           Database mysqlDatabase = mysqlDatabases.get(c);
           if (c >= mysqlDatabaseNodes.size() || !mysqlDatabase.equals(mysqlDatabaseNodes.get(c).getMySQLDatabase())) {
             // Insert into proper index
@@ -186,11 +186,11 @@ public class DatabasesNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

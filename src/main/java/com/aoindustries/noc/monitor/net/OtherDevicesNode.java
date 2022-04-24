@@ -63,12 +63,12 @@ public class OtherDevicesNode extends HostsNode {
     PhysicalServer physicalServer = host.getPhysicalServer();
     Server linuxServer = host.getLinuxServer();
     return
-      // Is not a physical server
-      (physicalServer == null || physicalServer.getRam() == -1)
-      // Is not a Xen dom0
-      && host.getVirtualServer() == null
-      // Is not an ao-box in fail-over
-      && (linuxServer == null || linuxServer.getFailoverServer() == null)
+        // Is not a physical server
+        (physicalServer == null || physicalServer.getRam() == -1)
+            // Is not a Xen dom0
+            && host.getVirtualServer() == null
+            // Is not an ao-box in fail-over
+            && (linuxServer == null || linuxServer.getFailoverServer() == null)
     ;
   }
 }

@@ -111,10 +111,10 @@ public abstract class SingleResultNodeImpl extends NodeImpl implements SingleRes
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
     rootNode.nodeAlertLevelChanged(
-      this,
-      constrainAlertLevel(oldAlertLevel),
-      constrainAlertLevel(newAlertLevel),
-      alertMessage == null ? null : alertMessage.apply(rootNode.locale)
+        this,
+        constrainAlertLevel(oldAlertLevel),
+        constrainAlertLevel(newAlertLevel),
+        alertMessage == null ? null : alertMessage.apply(rootNode.locale)
     );
   }
 
@@ -128,7 +128,7 @@ public abstract class SingleResultNodeImpl extends NodeImpl implements SingleRes
   @Override
   public final void removeSingleResultListener(SingleResultListener singleResultListener) {
     synchronized (singleResultListeners) {
-      for (int c=singleResultListeners.size()-1;c >= 0;c--) {
+      for (int c = singleResultListeners.size() - 1; c >= 0; c--) {
         if (singleResultListeners.get(c).equals(singleResultListener)) {
           singleResultListeners.remove(c);
           // Remove only once, in case add and remove come in out of order with quick GUI changes?

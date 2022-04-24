@@ -96,30 +96,30 @@ public class UpsResultSerializer extends BufferedSerializer<UpsResult> {
           return new UpsResult(time, latency, alertLevel, error);
         }
         return new UpsResult(
-          time,
-          latency,
-          alertLevel,
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readCompressedInt(),
-          in.readCompressedInt(),
-          readTimeSpan(in),
-          version == 1 ? null : readTimeSpan(in), // cumonbatt added in version 2
-          readTimeSpan(in),
-          in.readFloat()
+            time,
+            latency,
+            alertLevel,
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readCompressedInt(),
+            in.readCompressedInt(),
+            readTimeSpan(in),
+            version == 1 ? null : readTimeSpan(in), // cumonbatt added in version 2
+            readTimeSpan(in),
+            in.readFloat()
         );
       } else {
-        throw new IOException("Unsupported object version: "+version);
+        throw new IOException("Unsupported object version: " + version);
       }
     }
   }

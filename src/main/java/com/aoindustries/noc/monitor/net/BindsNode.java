@@ -203,12 +203,12 @@ public class BindsNode extends NodeImpl {
       if (!(obj instanceof NetMonitorSetting)) {
         return false;
       }
-      NetMonitorSetting other = (NetMonitorSetting)obj;
+      NetMonitorSetting other = (NetMonitorSetting) obj;
       return
-        port == other.port
-        && host.equals(other.host)
-        && netBind.equals(other.netBind)
-        && ipAddress.equals(other.ipAddress)
+          port == other.port
+              && host.equals(other.host)
+              && netBind.equals(other.netBind)
+              && ipAddress.equals(other.ipAddress)
       ;
     }
 
@@ -280,24 +280,24 @@ public class BindsNode extends NodeImpl {
     for (Bind netBind : directNetBinds) {
       if (netBind.isMonitoringEnabled() && !netBind.isDisabled()) {
         netMonitorSettings.add(
-          new NetMonitorSetting(
-            host,
-            netBind,
-            inetaddress,
-            netBind.getPort()
-          )
+            new NetMonitorSetting(
+                host,
+                netBind,
+                inetaddress,
+                netBind.getPort()
+            )
         );
       }
     }
     for (Bind netBind : wildcardNetBinds) {
       if (netBind.isMonitoringEnabled() && !netBind.isDisabled()) {
         netMonitorSettings.add(
-          new NetMonitorSetting(
-            host,
-            netBind,
-            inetaddress,
-            netBind.getPort()
-          )
+            new NetMonitorSetting(
+                host,
+                netBind,
+                inetaddress,
+                netBind.getPort()
+            )
         );
       }
     }
@@ -334,7 +334,7 @@ public class BindsNode extends NodeImpl {
           }
         }
         // Add new ones
-        for (int c=0;c<netMonitorSettings.size();c++) {
+        for (int c = 0; c < netMonitorSettings.size(); c++) {
           NetMonitorSetting netMonitorSetting = netMonitorSettings.get(c);
           if (c >= netBindNodes.size() || !netMonitorSetting.equals(netBindNodes.get(c).getNetMonitorSetting())) {
             // Insert into proper index
@@ -353,11 +353,11 @@ public class BindsNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            ipAddressNode.ipAddressesNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                ipAddressNode.ipAddressesNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

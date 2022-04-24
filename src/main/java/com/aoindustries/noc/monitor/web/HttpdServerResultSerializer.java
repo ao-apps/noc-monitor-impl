@@ -72,15 +72,15 @@ public class HttpdServerResultSerializer extends BufferedSerializer<HttpdServerR
           return new HttpdServerResult(time, latency, alertLevel, error);
         }
         return new HttpdServerResult(
-          time,
-          latency,
-          alertLevel,
-          in.readCompressedInt(),
-          in.readCompressedInt(),
-          in.readCompressedInt(),
-          in.readCompressedInt(),
-          in.readCompressedInt(),
-          in.readCompressedInt()
+            time,
+            latency,
+            alertLevel,
+            in.readCompressedInt(),
+            in.readCompressedInt(),
+            in.readCompressedInt(),
+            in.readCompressedInt(),
+            in.readCompressedInt(),
+            in.readCompressedInt()
         );
       } else {
         throw new IOException("Unsupported object version: " + version);

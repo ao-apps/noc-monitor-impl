@@ -76,7 +76,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
    * Any null child is skipped.
    */
   protected static <E extends NodeImpl> List<E> getSnapshot(
-    E child
+      E child
   ) {
     if (child == null) {
       return Collections.emptyList();
@@ -89,8 +89,8 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
    * Any null child is skipped.
    */
   protected static <E extends NodeImpl> List<E> getSnapshot(
-    E child1,
-    E child2
+      E child1,
+      E child2
   ) {
     if (child1 == null) {
       return getSnapshot(child2);
@@ -109,9 +109,9 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
    * Any null child is skipped.
    */
   protected static <E extends NodeImpl> List<E> getSnapshot(
-    E child1,
-    E child2,
-    E child3
+      E child1,
+      E child2,
+      E child3
   ) {
     if (child1 == null) {
       return getSnapshot(child2, child3);
@@ -134,10 +134,10 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
    * Any null child is skipped.
    */
   protected static <E extends NodeImpl> List<E> getSnapshot(
-    E child1,
-    E child2,
-    E child3,
-    E child4
+      E child1,
+      E child2,
+      E child3,
+      E child4
   ) {
     if (child1 == null) {
       return getSnapshot(child2, child3, child4);
@@ -256,7 +256,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
       parent = parent.getParent();
     }
     while (!path.isEmpty()) {
-      if (fullPath.length()>0) {
+      if (fullPath.length() > 0) {
         fullPath.append(pathSeparator);
       }
       fullPath.append(path.pop().getLabel());

@@ -57,6 +57,7 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
    * One unique worker is made per persistence file (and should match the NetMonitorSetting)
    */
   private static final Map<String, BindNodeWorker> workerCache = new HashMap<>();
+
   @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
   static BindNodeWorker getWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
     try {
@@ -67,7 +68,7 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
           worker = new BindNodeWorker(persistenceFile, netMonitorSetting);
           workerCache.put(path, worker);
         } else if (!worker.netMonitorSetting.equals(netMonitorSetting)) {
-          throw new AssertionError("worker.netMonitorSetting != netMonitorSetting: "+worker.netMonitorSetting+" != "+netMonitorSetting);
+          throw new AssertionError("worker.netMonitorSetting != netMonitorSetting: " + worker.netMonitorSetting + " != " + netMonitorSetting);
         }
         return worker;
       }
@@ -101,9 +102,9 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
     // If loopback or private IP, make the monitoring request through the master->daemon channel
     InetAddress ipAddress = netMonitorSetting.getIpAddress();
     if (
-      ipAddress.isUniqueLocal()
-      || ipAddress.isLoopback()
-      || netPort.getPort() == 25 // Port 25 cannot be monitored directly from several networks
+        ipAddress.isUniqueLocal()
+            || ipAddress.isLoopback()
+            || netPort.getPort() == 25 // Port 25 cannot be monitored directly from several networks
     ) {
       Host host = netMonitorSetting.getServer();
       Server linuxServer = host.getLinuxServer();
@@ -111,18 +112,18 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
         throw new LocalizedIllegalArgumentException(PACKAGE_RESOURCES, "NetBindNodeWorker.host.notLinuxServer", host.toString());
       }
       portMonitor = new AOServDaemonPortMonitor(
-        linuxServer,
-        ipAddress,
-        netPort,
-        currentNetBind.getAppProtocol().getProtocol(),
-        currentNetBind.getMonitoringParameters()
+          linuxServer,
+          ipAddress,
+          netPort,
+          currentNetBind.getAppProtocol().getProtocol(),
+          currentNetBind.getMonitoringParameters()
       );
     } else {
       portMonitor = PortMonitor.getPortMonitor(
-        ipAddress,
-        netMonitorSetting.getPort(),
-        currentNetBind.getAppProtocol().getProtocol(),
-        currentNetBind.getMonitoringParameters()
+          ipAddress,
+          netMonitorSetting.getPort(),
+          currentNetBind.getAppProtocol().getProtocol(),
+          currentNetBind.getMonitoringParameters()
       );
     }
     return portMonitor.checkPort();
@@ -140,8 +141,8 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
   @Override
   protected AlertLevelAndMessage getAlertLevelAndMessage(String sample, Iterable<? extends NetBindResult> previousResults) throws Exception {
     return new AlertLevelAndMessage(
-      AlertLevel.NONE,
-      locale -> sample
+        AlertLevel.NONE,
+        locale -> sample
     );
   }
 

@@ -84,8 +84,8 @@ public class ServerNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-      this._mysqlSlavesNode,
-      this._mysqlDatabasesNode
+        this._mysqlSlavesNode,
+        this._mysqlDatabasesNode
     );
   }
 
@@ -95,10 +95,10 @@ public class ServerNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        this._mysqlSlavesNode,
-        this._mysqlDatabasesNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            this._mysqlSlavesNode,
+            this._mysqlDatabasesNode
+        )
     );
   }
 
@@ -176,7 +176,7 @@ public class ServerNode extends NodeImpl {
     }
 
     boolean hasMysqlReplication = _mysqlServer.getFailoverMySQLReplications().stream()
-      .anyMatch(mysqlReplication -> WrappedException.call(mysqlReplication::isMonitoringEnabled));
+        .anyMatch(mysqlReplication -> WrappedException.call(mysqlReplication::isMonitoringEnabled));
     synchronized (this) {
       if (started) {
         if (hasMysqlReplication) {
@@ -201,11 +201,11 @@ public class ServerNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            _mysqlServersNode.hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                _mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

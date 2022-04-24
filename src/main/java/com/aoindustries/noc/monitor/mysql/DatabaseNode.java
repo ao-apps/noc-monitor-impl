@@ -57,18 +57,18 @@ public class DatabaseNode extends TableResultNodeImpl {
 
   DatabaseNode(DatabasesNode mysqlDatabasesNode, Database mysqlDatabase, MysqlReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
-      mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
-      mysqlDatabasesNode,
-      DatabaseNodeWorker.getWorker(
-        new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName()+".show_full_tables"),
-        mysqlDatabase,
-        mysqlSlave
-      ),
-      port,
-      csf,
-      ssf
+        mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
+        mysqlDatabasesNode,
+        DatabaseNodeWorker.getWorker(
+            new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName() + ".show_full_tables"),
+            mysqlDatabase,
+            mysqlSlave
+        ),
+        port,
+        csf,
+        ssf
     );
-    this.databaseWorker = (DatabaseNodeWorker)worker;
+    this.databaseWorker = (DatabaseNodeWorker) worker;
     this.mysqlDatabasesNode = mysqlDatabasesNode;
     this.mysqlDatabase = mysqlDatabase;
     this.mysqlSlave = mysqlSlave;
@@ -99,10 +99,10 @@ public class DatabaseNode extends TableResultNodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        super.getAlertLevel(),
-        this.mysqlCheckTablesNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            super.getAlertLevel(),
+            this.mysqlCheckTablesNode
+        )
     );
   }
 
@@ -116,11 +116,11 @@ public class DatabaseNode extends TableResultNodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

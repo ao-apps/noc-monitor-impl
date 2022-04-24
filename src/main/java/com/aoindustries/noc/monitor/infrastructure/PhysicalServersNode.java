@@ -64,9 +64,9 @@ public class PhysicalServersNode extends HostsNode {
     PhysicalServer physicalServer = host.getPhysicalServer();
     Server linuxServer = host.getLinuxServer();
     return
-      physicalServer != null && physicalServer.getRam() != -1
-      // Ignore ao-box in fail-over
-      && (linuxServer == null || linuxServer.getFailoverServer() == null)
+        physicalServer != null && physicalServer.getRam() != -1
+            // Ignore ao-box in fail-over
+            && (linuxServer == null || linuxServer.getFailoverServer() == null)
     ;
   }
 }

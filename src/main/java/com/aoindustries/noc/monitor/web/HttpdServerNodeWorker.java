@@ -49,6 +49,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
    * One unique worker is made per persistence file (and should match httpdServer exactly)
    */
   private static final Map<String, HttpdServerNodeWorker> workerCache = new HashMap<>();
+
   static HttpdServerNodeWorker getWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -64,7 +65,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
           logger.finer("Found existing worker for " + httpdServer.getName());
         }
         if (!worker._httpdServer.equals(httpdServer)) {
-          throw new AssertionError("worker.httpdServer != httpdServer: "+worker._httpdServer+" != "+httpdServer);
+          throw new AssertionError("worker.httpdServer != httpdServer: " + worker._httpdServer + " != " + httpdServer);
         }
       }
       return worker;
@@ -90,12 +91,12 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
     currentHttpdServer = _httpdServer.getTable().getConnector().getWeb().getHttpdServer().get(_httpdServer.getPkey());
     int concurrency = currentHttpdServer.getConcurrency();
     return Arrays.asList(
-      concurrency,
-      currentHttpdServer.getMaxConcurrency(),
-      currentHttpdServer.getMonitoringConcurrencyLow(),
-      currentHttpdServer.getMonitoringConcurrencyMedium(),
-      currentHttpdServer.getMonitoringConcurrencyHigh(),
-      currentHttpdServer.getMonitoringConcurrencyCritical()
+        concurrency,
+        currentHttpdServer.getMaxConcurrency(),
+        currentHttpdServer.getMonitoringConcurrencyLow(),
+        currentHttpdServer.getMonitoringConcurrencyMedium(),
+        currentHttpdServer.getMonitoringConcurrencyHigh(),
+        currentHttpdServer.getMonitoringConcurrencyCritical()
     );
   }
 
@@ -105,69 +106,69 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
     int concurrencyCritical = currentHttpdServer.getMonitoringConcurrencyCritical();
     if (concurrencyCritical != -1 && concurrency >= concurrencyCritical) {
       return new AlertLevelAndMessage(
-        AlertLevel.CRITICAL,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "HttpdServerNodeWorker.alertMessage.critical",
-          concurrencyCritical,
-          concurrency
-        )
+          AlertLevel.CRITICAL,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "HttpdServerNodeWorker.alertMessage.critical",
+              concurrencyCritical,
+              concurrency
+          )
       );
     }
     int concurrencyHigh = currentHttpdServer.getMonitoringConcurrencyHigh();
     if (concurrencyHigh != -1 && concurrency >= concurrencyHigh) {
       return new AlertLevelAndMessage(
-        AlertLevel.HIGH,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "HttpdServerNodeWorker.alertMessage.high",
-          concurrencyHigh,
-          concurrency
-        )
+          AlertLevel.HIGH,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "HttpdServerNodeWorker.alertMessage.high",
+              concurrencyHigh,
+              concurrency
+          )
       );
     }
     int concurrencyMedium = currentHttpdServer.getMonitoringConcurrencyMedium();
     if (concurrencyMedium != -1 && concurrency >= concurrencyMedium) {
       return new AlertLevelAndMessage(
-        AlertLevel.MEDIUM,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "HttpdServerNodeWorker.alertMessage.medium",
-          concurrencyMedium,
-          concurrency
-        )
+          AlertLevel.MEDIUM,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "HttpdServerNodeWorker.alertMessage.medium",
+              concurrencyMedium,
+              concurrency
+          )
       );
     }
     int concurrencyLow = currentHttpdServer.getMonitoringConcurrencyLow();
     if (concurrencyLow != -1 && concurrency >= concurrencyLow) {
       return new AlertLevelAndMessage(
-        AlertLevel.LOW,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "HttpdServerNodeWorker.alertMessage.low",
-          concurrencyLow,
-          concurrency
-        )
+          AlertLevel.LOW,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "HttpdServerNodeWorker.alertMessage.low",
+              concurrencyLow,
+              concurrency
+          )
       );
     }
     if (concurrencyLow == -1) {
       return new AlertLevelAndMessage(
-        AlertLevel.NONE,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "HttpdServerNodeWorker.alertMessage.notAny",
-          concurrency
-        )
+          AlertLevel.NONE,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "HttpdServerNodeWorker.alertMessage.notAny",
+              concurrency
+          )
       );
     } else {
       return new AlertLevelAndMessage(
-        AlertLevel.NONE,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "HttpdServerNodeWorker.alertMessage.none",
-          concurrencyLow,
-          concurrency
-        )
+          AlertLevel.NONE,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "HttpdServerNodeWorker.alertMessage.none",
+              concurrencyLow,
+              concurrency
+          )
       );
     }
   }
@@ -180,15 +181,15 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
   @Override
   protected HttpdServerResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<Integer> sample) {
     return new HttpdServerResult(
-      time,
-      latency,
-      alertLevel,
-      sample.get(0),
-      sample.get(1),
-      sample.get(2),
-      sample.get(3),
-      sample.get(4),
-      sample.get(5)
+        time,
+        latency,
+        alertLevel,
+        sample.get(0),
+        sample.get(1),
+        sample.get(2),
+        sample.get(3),
+        sample.get(4),
+        sample.get(5)
     );
   }
 }

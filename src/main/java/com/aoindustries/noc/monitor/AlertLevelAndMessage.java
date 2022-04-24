@@ -68,10 +68,10 @@ public class AlertLevelAndMessage {
       return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
     }
     if (
-      diff == 0
-      // Use the new alert if the old one had an empty message (like NONE above)
-      && this.alertMessage == null
-      && newAlertMessage != null
+        diff == 0
+            // Use the new alert if the old one had an empty message (like NONE above)
+            && this.alertMessage == null
+            && newAlertMessage != null
     ) {
       return new AlertLevelAndMessage(newAlertLevel, newAlertMessage);
     }

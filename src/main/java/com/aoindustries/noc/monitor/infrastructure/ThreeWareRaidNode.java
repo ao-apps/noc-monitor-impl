@@ -42,15 +42,15 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
 
   public ThreeWareRaidNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      raidNode.hostNode.hostsNode.rootNode,
-      raidNode,
-      ThreeWareRaidNodeWorker.getWorker(
-        new File(raidNode.getPersistenceDirectory(), "3ware"),
-        raidNode.getAOServer()
-      ),
-      port,
-      csf,
-      ssf
+        raidNode.hostNode.hostsNode.rootNode,
+        raidNode,
+        ThreeWareRaidNodeWorker.getWorker(
+            new File(raidNode.getPersistenceDirectory(), "3ware"),
+            raidNode.getAOServer()
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 

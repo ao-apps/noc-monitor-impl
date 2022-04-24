@@ -174,7 +174,7 @@ public class DevicesNode extends NodeImpl {
           }
         }
         // Add new ones
-        for (int c=0;c<netDevices.size();c++) {
+        for (int c = 0; c < netDevices.size(); c++) {
           Device device = netDevices.get(c);
           if (c >= netDeviceNodes.size() || !device.equals(netDeviceNodes.get(c).getNetDevice())) {
             // Insert into proper index
@@ -193,11 +193,11 @@ public class DevicesNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

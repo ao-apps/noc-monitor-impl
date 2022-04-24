@@ -76,22 +76,22 @@ public class LoadAverageResultSerializer extends BufferedSerializer<LoadAverageR
           return new LoadAverageResult(time, latency, alertLevel, error);
         }
         return new LoadAverageResult(
-          time,
-          latency,
-          alertLevel,
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readCompressedInt(),
-          in.readCompressedInt(),
-          in.readCompressedInt(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat(),
-          in.readFloat()
+            time,
+            latency,
+            alertLevel,
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readCompressedInt(),
+            in.readCompressedInt(),
+            in.readCompressedInt(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat(),
+            in.readFloat()
         );
       } else {
-        throw new IOException("Unsupported object version: "+version);
+        throw new IOException("Unsupported object version: " + version);
       }
     }
   }

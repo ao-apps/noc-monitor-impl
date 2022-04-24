@@ -58,6 +58,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
    * One unique worker is made per persistence directory (and should match linuxServer exactly)
    */
   private static final Map<String, TimeNodeWorker> workerCache = new HashMap<>();
+
   static TimeNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     synchronized (workerCache) {
@@ -67,7 +68,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
         workerCache.put(path, worker);
       } else {
         if (!worker._linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: "+worker._linuxServer+" != "+linuxServer);
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker._linuxServer + " != " + linuxServer);
         }
       }
       return worker;
@@ -97,7 +98,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
     long systemTime = currentLinuxServer.getSystemTimeMillis();
     long latency = System.nanoTime() - startNanos;
     long lRemainder = latency % 2000000;
-    long skew = systemTime - (requestTime + latency/2000000);
+    long skew = systemTime - (requestTime + latency / 2000000);
     if (lRemainder >= 1000000) {
       skew--;
     }
@@ -126,12 +127,12 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
     final long currentSkew = sample.getIntervalMillis();
 
     return new AlertLevelAndMessage(
-      getAlertLevel(currentSkew),
-      locale -> PACKAGE_RESOURCES.getMessage(
-        locale,
-        "TimeNodeWorker.alertMessage",
-        currentSkew
-      )
+        getAlertLevel(currentSkew),
+        locale -> PACKAGE_RESOURCES.getMessage(
+            locale,
+            "TimeNodeWorker.alertMessage",
+            currentSkew
+        )
     );
   }
 

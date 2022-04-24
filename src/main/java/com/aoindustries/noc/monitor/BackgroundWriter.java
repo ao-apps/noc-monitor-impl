@@ -105,7 +105,7 @@ final class BackgroundWriter {
               Iterator<Map.Entry<File, QueueEntry>> iter = queue.entrySet().iterator();
               if (!iter.hasNext()) {
                 running = false;
-                logger.finer("DEBUG: BackgroundWriter: Total burst from queue: "+counter);
+                logger.finer("DEBUG: BackgroundWriter: Total burst from queue: " + counter);
                 return;
               }
               Map.Entry<File, QueueEntry> first = iter.next();
@@ -117,11 +117,11 @@ final class BackgroundWriter {
             try {
               try (
                 ObjectOutputStream oout = new ObjectOutputStream(
-                  queueEntry1.gzip
-                  ? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile)))
-                  : new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile))
-                )
-              ) {
+                      queueEntry1.gzip
+                          ? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile)))
+                          : new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile))
+                  )
+                  ) {
                 oout.writeObject(queueEntry1.object);
               }
               FileUtils.renameAllowNonAtomic(queueEntry1.newPersistenceFile, persistenceFile1);

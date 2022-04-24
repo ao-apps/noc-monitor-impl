@@ -67,13 +67,13 @@ public class TimeResultSerializer extends BufferedSerializer<TimeResult> {
           return new TimeResult(time, latency, alertLevel, error);
         }
         return new TimeResult(
-          time,
-          latency,
-          alertLevel,
-          in.readLong()
+            time,
+            latency,
+            alertLevel,
+            in.readLong()
         );
       } else {
-        throw new IOException("Unsupported object version: "+version);
+        throw new IOException("Unsupported object version: " + version);
       }
     }
   }

@@ -43,15 +43,15 @@ public class SignupsNode extends TableResultNodeImpl {
 
   public SignupsNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      rootNode,
-      rootNode,
-      SignupsNodeWorker.getWorker(
-        new File(rootNode.getPersistenceDirectory(), "signups"),
-        rootNode.conn
-      ),
-      port,
-      csf,
-      ssf
+        rootNode,
+        rootNode,
+        SignupsNodeWorker.getWorker(
+            new File(rootNode.getPersistenceDirectory(), "signups"),
+            rootNode.conn
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 

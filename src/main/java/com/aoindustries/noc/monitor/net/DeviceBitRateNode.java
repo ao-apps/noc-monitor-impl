@@ -41,15 +41,15 @@ public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRate
 
   DeviceBitRateNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
-      netDeviceNode,
-      DeviceBitRateNodeWorker.getWorker(
-        netDeviceNode.getPersistenceDirectory(),
-        netDeviceNode.getNetDevice()
-      ),
-      port,
-      csf,
-      ssf
+        netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
+        netDeviceNode,
+        DeviceBitRateNodeWorker.getWorker(
+            netDeviceNode.getPersistenceDirectory(),
+            netDeviceNode.getNetDevice()
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 
@@ -61,10 +61,10 @@ public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRate
   @Override
   public List<String> getColumnHeaders() {
     return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txBitRate"),
-      PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"),
-      PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"),
-      PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
-      PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.alertThresholds")
+        PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"),
+        PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"),
+        PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
+        PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.alertThresholds")
     );
   }
 }

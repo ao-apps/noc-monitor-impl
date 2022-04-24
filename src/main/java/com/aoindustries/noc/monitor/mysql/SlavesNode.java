@@ -148,8 +148,8 @@ public class SlavesNode extends NodeImpl {
     }
 
     List<MysqlReplication> mysqlReplications = mysqlServerNode.getMySQLServer().getFailoverMySQLReplications().stream()
-      .filter(mysqlReplication -> WrappedException.call(mysqlReplication::isMonitoringEnabled))
-      .collect(Collectors.toList());
+        .filter(mysqlReplication -> WrappedException.call(mysqlReplication::isMonitoringEnabled))
+        .collect(Collectors.toList());
     synchronized (mysqlSlaveNodes) {
       if (started) {
         // Remove old ones
@@ -164,7 +164,7 @@ public class SlavesNode extends NodeImpl {
           }
         }
         // Add new ones
-        for (int c=0;c<mysqlReplications.size();c++) {
+        for (int c = 0; c < mysqlReplications.size(); c++) {
           MysqlReplication mysqlReplication = mysqlReplications.get(c);
           if (c >= mysqlSlaveNodes.size() || !mysqlReplication.equals(mysqlSlaveNodes.get(c).getFailoverMySQLReplication())) {
             // Insert into proper index
@@ -183,11 +183,11 @@ public class SlavesNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

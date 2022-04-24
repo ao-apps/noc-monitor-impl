@@ -58,6 +58,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
    * One unique worker is made per persistence file (and should match the linuxServer exactly)
    */
   private static final Map<String, MdStatNodeWorker> workerCache = new HashMap<>();
+
   static MdStatNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
@@ -67,7 +68,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
         workerCache.put(path, worker);
       } else {
         if (!worker.linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: "+worker.linuxServer+" != "+linuxServer);
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker.linuxServer + " != " + linuxServer);
         }
       }
       return worker;
@@ -110,13 +111,13 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
     Function<Locale, String> error = result.getError();
     if (error != null) {
       return new AlertLevelAndMessage(
-        // Don't downgrade UNKNOWN to CRITICAL on error
-        EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "MdStatNode.alertMessage.error",
-          error.apply(locale)
-        )
+          // Don't downgrade UNKNOWN to CRITICAL on error
+          EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "MdStatNode.alertMessage.error",
+              error.apply(locale)
+          )
       );
     }
     String report = result.getReport();
@@ -126,17 +127,17 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
     Function<Locale, String> highestAlertMessage = null;
     for (String line : lines) {
       if (
-        !line.startsWith("Personalities :")
-        && !line.startsWith("unused devices:")
-        && !(
-          line.startsWith("      bitmap: ")
-          && line.endsWith(" chunk")
-        )
-        // Skip routine RAID check progress line:
-        && !(
-          line.startsWith("      [")
-          && line.contains("]  check = ")
-        )
+          !line.startsWith("Personalities :")
+              && !line.startsWith("unused devices:")
+              && !(
+              line.startsWith("      bitmap: ")
+                  && line.endsWith(" chunk")
+          )
+              // Skip routine RAID check progress line:
+              && !(
+              line.startsWith("      [")
+                  && line.contains("]  check = ")
+          )
       ) {
         if (line.indexOf(':') != -1) {
           // Must contain raid type
@@ -150,40 +151,40 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
             lastRaidLevel = RaidLevel.RAID6;
           } else {
             return new AlertLevelAndMessage(
-              AlertLevel.CRITICAL,
-              locale -> PACKAGE_RESOURCES.getMessage(
-                locale,
-                "MdStatNode.alertMessage.noRaidType",
-                line
-              )
+                AlertLevel.CRITICAL,
+                locale -> PACKAGE_RESOURCES.getMessage(
+                    locale,
+                    "MdStatNode.alertMessage.noRaidType",
+                    line
+                )
             );
           }
         } else {
           // Resync is low priority
           if (
-            (
-              line.contains("resync")
-              || line.contains("recovery")
-            )
-            && line.contains("finish")
-            && line.contains("speed")
+              (
+                  line.contains("resync")
+                      || line.contains("recovery")
+              )
+                  && line.contains("finish")
+                  && line.contains("speed")
           ) {
-            if (AlertLevel.LOW.compareTo(highestAlertLevel)>0) {
+            if (AlertLevel.LOW.compareTo(highestAlertLevel) > 0) {
               highestAlertLevel = AlertLevel.LOW;
               highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(
-                locale,
-                "MdStatNode.alertMessage.resync",
-                line.trim()
+                  locale,
+                  "MdStatNode.alertMessage.resync",
+                  line.trim()
               );
             }
           } else {
             int pos1 = line.indexOf('[');
             if (pos1 != -1) {
-              int pos2=line.indexOf(']', pos1+1);
+              int pos2 = line.indexOf(']', pos1 + 1);
               if (pos2 != -1) {
-                pos1 = line.indexOf('[', pos2+1);
+                pos1 = line.indexOf('[', pos2 + 1);
                 if (pos1 != -1) {
-                  pos2=line.indexOf(']', pos1+1);
+                  pos2 = line.indexOf(']', pos1 + 1);
                   if (pos2 != -1) {
                     // Count the down and up between the brackets
                     final int upCount;
@@ -191,7 +192,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
                     {
                       int up = 0;
                       int down = 0;
-                      for (int pos=pos1+1;pos<pos2;pos++) {
+                      for (int pos = pos1 + 1; pos < pos2; pos++) {
                         char ch = line.charAt(pos);
                         if (ch == 'U') {
                           up++;
@@ -199,12 +200,12 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
                           down++;
                         } else {
                           return new AlertLevelAndMessage(
-                            AlertLevel.CRITICAL,
-                            locale -> PACKAGE_RESOURCES.getMessage(
-                              locale,
-                              "MdStatNode.alertMessage.invalidCharacter",
-                              ch
-                            )
+                              AlertLevel.CRITICAL,
+                              locale -> PACKAGE_RESOURCES.getMessage(
+                                  locale,
+                                  "MdStatNode.alertMessage.invalidCharacter",
+                                  ch
+                              )
                           );
                         }
                       }
@@ -231,10 +232,10 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
                         throw new AssertionError("upCount should have already matched");
                       }
                       alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
-                        locale,
-                        "MdStatNode.alertMessage.raid1",
-                        upCount,
-                        downCount
+                          locale,
+                          "MdStatNode.alertMessage.raid1",
+                          upCount,
+                          downCount
                       );
                     } else if (lastRaidLevel == RaidLevel.RAID5) {
                       if (downCount == 0) {
@@ -247,10 +248,10 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
                         throw new AssertionError("downCount should have already matched");
                       }
                       alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
-                        locale,
-                        "MdStatNode.alertMessage.raid5",
-                        upCount,
-                        downCount
+                          locale,
+                          "MdStatNode.alertMessage.raid5",
+                          upCount,
+                          downCount
                       );
                     } else if (lastRaidLevel == RaidLevel.RAID6) {
                       if (downCount == 0) {
@@ -265,57 +266,57 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
                         throw new AssertionError("downCount should have already matched");
                       }
                       alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
-                        locale,
-                        "MdStatNode.alertMessage.raid6",
-                        upCount,
-                        downCount
+                          locale,
+                          "MdStatNode.alertMessage.raid6",
+                          upCount,
+                          downCount
                       );
                     } else {
                       final RaidLevel raidLevel = lastRaidLevel;
                       return new AlertLevelAndMessage(
-                        AlertLevel.CRITICAL,
-                        locale -> PACKAGE_RESOURCES.getMessage(
-                          locale,
-                          "MdStatNode.alertMessage.unexpectedRaidLevel",
-                          raidLevel
-                        )
+                          AlertLevel.CRITICAL,
+                          locale -> PACKAGE_RESOURCES.getMessage(
+                              locale,
+                              "MdStatNode.alertMessage.unexpectedRaidLevel",
+                              raidLevel
+                          )
                       );
                     }
-                    if (alertLevel.compareTo(highestAlertLevel)>0) {
+                    if (alertLevel.compareTo(highestAlertLevel) > 0) {
                       highestAlertLevel = alertLevel;
                       highestAlertMessage = alertMessage;
                     }
                   } else {
                     return new AlertLevelAndMessage(
-                      AlertLevel.CRITICAL,
-                      locale -> PACKAGE_RESOURCES.getMessage(
-                        locale,
-                        "MdStatNode.alertMessage.unableToFindCharacter",
-                        ']',
-                        line
-                      )
+                        AlertLevel.CRITICAL,
+                        locale -> PACKAGE_RESOURCES.getMessage(
+                            locale,
+                            "MdStatNode.alertMessage.unableToFindCharacter",
+                            ']',
+                            line
+                        )
                     );
                   }
                 } else {
                   return new AlertLevelAndMessage(
-                    AlertLevel.CRITICAL,
-                    locale -> PACKAGE_RESOURCES.getMessage(
-                      locale,
-                      "MdStatNode.alertMessage.unableToFindCharacter",
-                      '[',
-                      line
-                    )
+                      AlertLevel.CRITICAL,
+                      locale -> PACKAGE_RESOURCES.getMessage(
+                          locale,
+                          "MdStatNode.alertMessage.unableToFindCharacter",
+                          '[',
+                          line
+                      )
                   );
                 }
               } else {
                 return new AlertLevelAndMessage(
-                  AlertLevel.CRITICAL,
-                  locale -> PACKAGE_RESOURCES.getMessage(
-                    locale,
-                    "MdStatNode.alertMessage.unableToFindCharacter",
-                    ']',
-                    line
-                  )
+                    AlertLevel.CRITICAL,
+                    locale -> PACKAGE_RESOURCES.getMessage(
+                        locale,
+                        "MdStatNode.alertMessage.unableToFindCharacter",
+                        ']',
+                        line
+                    )
                 );
               }
             }

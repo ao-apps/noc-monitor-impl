@@ -82,10 +82,10 @@ public class RaidNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-      this._threeWareRaidNode,
-      this._mdStatNode,
-      this._mdMismatchNode,
-      this._drbdNode
+        this._threeWareRaidNode,
+        this._mdStatNode,
+        this._mdMismatchNode,
+        this._drbdNode
     );
   }
 
@@ -95,12 +95,12 @@ public class RaidNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
-      AlertLevelUtils.getMaxAlertLevel(
-        this._threeWareRaidNode,
-        this._mdStatNode,
-        this._mdMismatchNode,
-        this._drbdNode
-      )
+        AlertLevelUtils.getMaxAlertLevel(
+            this._threeWareRaidNode,
+            this._mdStatNode,
+            this._mdMismatchNode,
+            this._drbdNode
+        )
     );
   }
 
@@ -127,8 +127,8 @@ public class RaidNode extends NodeImpl {
       }
       started = true;
       if (
-        osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
-        || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
+          osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
+              || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
       ) {
         if (_threeWareRaidNode == null) {
           _threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
@@ -149,9 +149,9 @@ public class RaidNode extends NodeImpl {
       }
       // We only run DRBD in xen outers
       if (
-        osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
-        || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
-        || osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
+          osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
+              || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
+              || osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
       ) {
         if (_drbdNode == null) {
           _drbdNode = new DrbdNode(this, port, csf, ssf);
@@ -193,11 +193,11 @@ public class RaidNode extends NodeImpl {
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
-          PACKAGE_RESOURCES.getMessage(
-            hostNode.hostsNode.rootNode.locale,
-            "error.mkdirFailed",
-            dir.getCanonicalPath()
-          )
+            PACKAGE_RESOURCES.getMessage(
+                hostNode.hostsNode.rootNode.locale,
+                "error.mkdirFailed",
+                dir.getCanonicalPath()
+            )
         );
       }
     }

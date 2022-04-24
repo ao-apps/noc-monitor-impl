@@ -53,25 +53,26 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
    * If items must be removed, then VERSION must be incremented and code must perform necessary adjustments when reading objects.
    */
   private static final String[] commonResults = {
-    "Connected successfully",
-    "SSH-2.0-OpenSSH_4.3",
-    "SSH-1.99-OpenSSH_4.3",
-    "SSH-1.99-OpenSSH_3.9p1",
-    "1",
-    "Login successful.",
-    "User logged in",
-    "Mailbox locked and ready",
-    "[IN-USE] Unable to lock maildrop: Mailbox is locked by POP server",
-    "SSH-2.0-OpenSSH_5.3",
-    "SSH-2.0-OpenSSH_3.8.1p1 Debian-8.sarge.6",
-    "SSH-2.0-dropbear_2012.55",
-    "SSH-2.0-OpenSSH_6.6.1",
-    "SSH-2.0-dropbear_2013.60",
-    "SSH-2.0-OpenSSH_7.4",
-    "Connected successfully (SSL disabled)",
-    "Connected successfully over SSL"
+      "Connected successfully",
+      "SSH-2.0-OpenSSH_4.3",
+      "SSH-1.99-OpenSSH_4.3",
+      "SSH-1.99-OpenSSH_3.9p1",
+      "1",
+      "Login successful.",
+      "User logged in",
+      "Mailbox locked and ready",
+      "[IN-USE] Unable to lock maildrop: Mailbox is locked by POP server",
+      "SSH-2.0-OpenSSH_5.3",
+      "SSH-2.0-OpenSSH_3.8.1p1 Debian-8.sarge.6",
+      "SSH-2.0-dropbear_2012.55",
+      "SSH-2.0-OpenSSH_6.6.1",
+      "SSH-2.0-dropbear_2013.60",
+      "SSH-2.0-OpenSSH_7.4",
+      "Connected successfully (SSL disabled)",
+      "Connected successfully over SSL"
   };
   private static final Map<String, Integer> commonResultsMap = AoCollections.newHashMap(commonResults.length);
+
   static {
     for (int c = 0; c < commonResults.length; c++) {
       commonResultsMap.put(commonResults[c], c);
@@ -84,11 +85,11 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
    * The different encoding types.
    */
   private static final byte
-    ERROR = 0,
-    NULL_RESULT = 1,
-    COMMON_RESULTS = 2,
-    MESSAGE_ACCEPTED = 3,
-    RAW = 4
+      ERROR = 0,
+      NULL_RESULT = 1,
+      COMMON_RESULTS = 2,
+      MESSAGE_ACCEPTED = 3,
+      RAW = 4
   ;
 
   private static final ConcurrentMap<String, Boolean> commonResultsSuggested = new ConcurrentHashMap<>();
@@ -116,15 +117,15 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
           } else {
             if (result.endsWith(MESSAGE_ACCEPTED_SUFFIX)) {
               out.writeByte(MESSAGE_ACCEPTED);
-              out.writeUTF(result.substring(0, result.length()-MESSAGE_ACCEPTED_SUFFIX.length()));
+              out.writeUTF(result.substring(0, result.length() - MESSAGE_ACCEPTED_SUFFIX.length()));
             } else {
               if (
-                logger.isLoggable(Level.INFO)
-                && !result.startsWith("User logged in SESSIONID=")
-                && !result.startsWith("Mailbox locked and ready SESSIONID=")
-                && commonResultsSuggested.putIfAbsent(result, Boolean.TRUE) == null
+                  logger.isLoggable(Level.INFO)
+                      && !result.startsWith("User logged in SESSIONID=")
+                      && !result.startsWith("Mailbox locked and ready SESSIONID=")
+                      && commonResultsSuggested.putIfAbsent(result, Boolean.TRUE) == null
               ) {
-                logger.info("Suggested value for commonResultsMap: \""+result+"\"");
+                logger.info("Suggested value for commonResultsMap: \"" + result + "\"");
               }
               out.writeByte(RAW);
               out.writeUTF(result);
@@ -148,9 +149,9 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
           case ERROR : return new NetBindResult(time, latency, alertLevel, in.readUTF(), null);
           case NULL_RESULT : return new NetBindResult(time, latency, alertLevel, null, null);
           case COMMON_RESULTS : return new NetBindResult(time, latency, alertLevel, null, commonResults[in.readCompressedInt()]);
-          case MESSAGE_ACCEPTED : return new NetBindResult(time, latency, alertLevel, null, in.readUTF()+MESSAGE_ACCEPTED_SUFFIX);
+          case MESSAGE_ACCEPTED : return new NetBindResult(time, latency, alertLevel, null, in.readUTF() + MESSAGE_ACCEPTED_SUFFIX);
           case RAW : return new NetBindResult(time, latency, alertLevel, null, in.readUTF());
-          default : throw new IOException("Unexpected value for encodingType: "+encodingType);
+          default : throw new IOException("Unexpected value for encodingType: " + encodingType);
         }
       } else if (version == 1) {
         long time = in.readLong();
@@ -161,14 +162,14 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
           return new NetBindResult(time, latency, alertLevel, error, null);
         }
         return new NetBindResult(
-          time,
-          latency,
-          alertLevel,
-          null,
-          in.readNullUTF()
+            time,
+            latency,
+            alertLevel,
+            null,
+            in.readNullUTF()
         );
       } else {
-        throw new IOException("Unsupported object version: "+version);
+        throw new IOException("Unsupported object version: " + version);
       }
     }
   }

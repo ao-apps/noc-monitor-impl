@@ -158,14 +158,14 @@ public abstract class SingleResultNodeWorker implements Runnable {
         lastSuccessful = true;
       } catch (Exception err) {
         error = locale -> ThreadLocale.call(
-          locale,
-          () -> {
-            String msg = err.getLocalizedMessage();
-            if (msg == null || msg.isEmpty()) {
-              msg = err.toString();
+            locale,
+            () -> {
+              String msg = err.getLocalizedMessage();
+              if (msg == null || msg.isEmpty()) {
+                msg = err.toString();
+              }
+              return msg;
             }
-            return msg;
-          }
         );
         report = null;
         lastSuccessful = false;
@@ -179,10 +179,10 @@ public abstract class SingleResultNodeWorker implements Runnable {
       }
 
       SingleResult result = new SingleResult(
-        startMillis,
-        pingNanos,
-        error,
-        report
+          startMillis,
+          pingNanos,
+          error,
+          report
       );
       lastResult = result;
 
@@ -216,9 +216,9 @@ public abstract class SingleResultNodeWorker implements Runnable {
         synchronized (singleResultNodeImpls) {
           for (SingleResultNodeImpl singleResultNodeImpl : singleResultNodeImpls) {
             singleResultNodeImpl.nodeAlertLevelChanged(
-              oldAlertLevel,
-              newAlertLevel,
-              alertMessage
+                oldAlertLevel,
+                newAlertLevel,
+                alertMessage
             );
           }
         }
@@ -233,8 +233,8 @@ public abstract class SingleResultNodeWorker implements Runnable {
       synchronized (timerTaskLock) {
         if (timerTask != null) {
           timerTask = RootNodeImpl.schedule(
-            this,
-            getSleepDelay(lastSuccessful, alertLevel)
+              this,
+              getSleepDelay(lastSuccessful, alertLevel)
           );
         }
       }
@@ -258,7 +258,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
         throw new AssertionError("singleResultNodeImpls is empty");
       }
       boolean found = false;
-      for (int c=singleResultNodeImpls.size()-1;c >= 0;c--) {
+      for (int c = singleResultNodeImpls.size() - 1; c >= 0; c--) {
         if (singleResultNodeImpls.get(c) == singleResultNodeImpl) {
           singleResultNodeImpls.remove(c);
           found = true;

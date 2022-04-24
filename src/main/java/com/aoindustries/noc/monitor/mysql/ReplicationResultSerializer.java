@@ -77,23 +77,23 @@ public class ReplicationResultSerializer extends BufferedSerializer<MySQLReplica
           return new MySQLReplicationResult(time, latency, alertLevel, error);
         }
         return new MySQLReplicationResult(
-          time,
-          latency,
-          alertLevel,
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF(),
-          in.readNullUTF()
+            time,
+            latency,
+            alertLevel,
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF(),
+            in.readNullUTF()
         );
       } else {
-        throw new IOException("Unsupported object version: "+version);
+        throw new IOException("Unsupported object version: " + version);
       }
     }
   }

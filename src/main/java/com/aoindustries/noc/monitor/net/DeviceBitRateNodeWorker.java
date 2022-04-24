@@ -58,6 +58,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
    * One unique worker is made per persistence directory (and should match the net device exactly)
    */
   private static final Map<String, DeviceBitRateNodeWorker> workerCache = new HashMap<>();
+
   static DeviceBitRateNodeWorker getWorker(File persistenceDirectory, Device device) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     synchronized (workerCache) {
@@ -66,7 +67,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
         worker = new DeviceBitRateNodeWorker(persistenceDirectory, device);
         workerCache.put(path, worker);
       } else if (!worker._device.equals(device)) {
-        throw new AssertionError("worker.device != device: "+worker._device+" != "+device);
+        throw new AssertionError("worker.device != device: " + worker._device + " != " + device);
       }
       return worker;
     }
@@ -106,7 +107,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
     String stats = _currentNetDevice.getStatisticsReport();
     List<String> lines = Strings.splitLines(stats);
     if (lines.size() != 5) {
-      throw new ParseException("Should have five lines in the stats, have "+lines.size(), 0);
+      throw new ParseException("Should have five lines in the stats, have " + lines.size(), 0);
     }
     long thisStatsTime = Long.parseLong(lines.get(0));
 
@@ -132,19 +133,19 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
         // Time reset to the past
         throw new Exception("Host time reset to the past");
       } else if (
-        // values of -1 indicate a server-side detected reset
-        thisTxBytes == -1 || thisTxBytes<lastTxBytes
-        || thisRxBytes == -1 || thisRxBytes<lastRxBytes
-        || thisTxPackets == -1 || thisTxPackets<lastTxPackets
-        || thisRxPackets == -1 || thisRxPackets<lastRxPackets
+          // values of -1 indicate a server-side detected reset
+          thisTxBytes == -1 || thisTxBytes < lastTxBytes
+              || thisRxBytes == -1 || thisRxBytes < lastRxBytes
+              || thisTxPackets == -1 || thisTxPackets < lastTxPackets
+              || thisRxPackets == -1 || thisRxPackets < lastRxPackets
       ) { // device counters reset
         throw new Exception("Device counters reset");
       } else {
         long timeDiff = thisStatsTime - lastStatsTime;
         long txNumPackets = thisTxPackets - lastTxPackets;
         long rxNumPackets = thisRxPackets - lastRxPackets;
-        txPacketsPerSecond = txNumPackets*1000 / timeDiff;
-        rxPacketsPerSecond = rxNumPackets*1000 / timeDiff;
+        txPacketsPerSecond = txNumPackets * 1000 / timeDiff;
+        rxPacketsPerSecond = rxNumPackets * 1000 / timeDiff;
         txBitsPerSecond = (thisTxBytes - lastTxBytes + FRAME_ADDITIONAL_BYTES * txNumPackets) * Byte.SIZE * 1000 / timeDiff;
         rxBitsPerSecond = (thisRxBytes - lastRxBytes + FRAME_ADDITIONAL_BYTES * rxNumPackets) * Byte.SIZE * 1000 / timeDiff;
       }
@@ -172,14 +173,14 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
 
   @Override
   protected AlertLevelAndMessage getAlertLevelAndMessage(List<Object> sample, Iterable<? extends NetDeviceBitRateResult> previousResults) throws Exception {
-    long txBitsPerSecond = (Long)sample.get(0);
-    long rxBitsPerSecond = (Long)sample.get(1);
+    long txBitsPerSecond = (Long) sample.get(0);
+    long rxBitsPerSecond = (Long) sample.get(1);
     if (txBitsPerSecond == -1 || rxBitsPerSecond == -1) {
       return new AlertLevelAndMessage(AlertLevel.UNKNOWN, null);
     }
     long bps;
     String direction;
-    if (txBitsPerSecond>rxBitsPerSecond) {
+    if (txBitsPerSecond > rxBitsPerSecond) {
       // Base result on tx
       bps = txBitsPerSecond;
       direction = "tx";
@@ -193,58 +194,58 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
     long bitRateCritical = _currentNetDevice.getMonitoringBitRateCritical();
     if (bitRateCritical != -1 && bps >= bitRateCritical) {
       return new AlertLevelAndMessage(
-        AlertLevel.CRITICAL,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "NetDeviceBitRateNodeWorker.alertMessage."+direction+".critical",
-          bitRateCritical,
-          bps
-        )
+          AlertLevel.CRITICAL,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "NetDeviceBitRateNodeWorker.alertMessage." + direction + ".critical",
+              bitRateCritical,
+              bps
+          )
       );
     }
     long bitRateHigh = _currentNetDevice.getMonitoringBitRateHigh();
     if (bitRateHigh != -1 && bps >= bitRateHigh) {
       return new AlertLevelAndMessage(
-        AlertLevel.HIGH,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "NetDeviceBitRateNodeWorker.alertMessage."+direction+".high",
-          bitRateHigh,
-          bps
-        )
+          AlertLevel.HIGH,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "NetDeviceBitRateNodeWorker.alertMessage." + direction + ".high",
+              bitRateHigh,
+              bps
+          )
       );
     }
     long bitRateMedium = _currentNetDevice.getMonitoringBitRateMedium();
     if (bitRateMedium != -1 && bps >= bitRateMedium) {
       return new AlertLevelAndMessage(
-        AlertLevel.MEDIUM,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "NetDeviceBitRateNodeWorker.alertMessage."+direction+".medium",
-          bitRateMedium,
-          bps
-        )
+          AlertLevel.MEDIUM,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "NetDeviceBitRateNodeWorker.alertMessage." + direction + ".medium",
+              bitRateMedium,
+              bps
+          )
       );
     }
     long bitRateLow = _currentNetDevice.getMonitoringBitRateLow();
     if (bitRateLow != -1 && bps >= bitRateLow) {
       return new AlertLevelAndMessage(
-        AlertLevel.LOW,
-        locale -> PACKAGE_RESOURCES.getMessage(
-          locale,
-          "NetDeviceBitRateNodeWorker.alertMessage."+direction+".low",
-          bitRateLow,
-          bps
-        )
+          AlertLevel.LOW,
+          locale -> PACKAGE_RESOURCES.getMessage(
+              locale,
+              "NetDeviceBitRateNodeWorker.alertMessage." + direction + ".low",
+              bitRateLow,
+              bps
+          )
       );
     }
     return new AlertLevelAndMessage(
-      AlertLevel.NONE,
-      locale -> PACKAGE_RESOURCES.getMessage(
-        locale,
-        "NetDeviceBitRateNodeWorker.alertMessage."+direction+".none",
-        bps
-      )
+        AlertLevel.NONE,
+        locale -> PACKAGE_RESOURCES.getMessage(
+            locale,
+            "NetDeviceBitRateNodeWorker.alertMessage." + direction + ".none",
+            bps
+        )
     );
   }
 
@@ -256,17 +257,17 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
   @Override
   protected NetDeviceBitRateResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<Object> sample) {
     return new NetDeviceBitRateResult(
-      time,
-      latency,
-      alertLevel,
-      (Long)sample.get(0),
-      (Long)sample.get(1),
-      (Long)sample.get(2),
-      (Long)sample.get(3),
-      (Long)sample.get(4),
-      (Long)sample.get(5),
-      (Long)sample.get(6),
-      (Long)sample.get(7)
+        time,
+        latency,
+        alertLevel,
+        (Long) sample.get(0),
+        (Long) sample.get(1),
+        (Long) sample.get(2),
+        (Long) sample.get(3),
+        (Long) sample.get(4),
+        (Long) sample.get(5),
+        (Long) sample.get(6),
+        (Long) sample.get(7)
     );
   }
 }

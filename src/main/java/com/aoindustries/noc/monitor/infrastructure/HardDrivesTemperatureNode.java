@@ -41,15 +41,15 @@ public class HardDrivesTemperatureNode extends TableResultNodeImpl {
 
   HardDrivesTemperatureNode(HardDrivesNode hardDrivesNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      hardDrivesNode.hostNode.hostsNode.rootNode,
-      hardDrivesNode,
-      HardDrivesTemperatureNodeWorker.getWorker(
-        new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
-        hardDrivesNode.getLinuxServer()
-      ),
-      port,
-      csf,
-      ssf
+        hardDrivesNode.hostNode.hostsNode.rootNode,
+        hardDrivesNode,
+        HardDrivesTemperatureNodeWorker.getWorker(
+            new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
+            hardDrivesNode.getLinuxServer()
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 

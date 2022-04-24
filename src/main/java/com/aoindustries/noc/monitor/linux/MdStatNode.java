@@ -41,15 +41,15 @@ public class MdStatNode extends SingleResultNodeImpl {
 
   MdStatNode(RaidNode raidNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-      raidNode.hostNode.hostsNode.rootNode,
-      raidNode,
-      MdStatNodeWorker.getWorker(
-        new File(raidNode.getPersistenceDirectory(), "mdstat"),
-        raidNode.getAOServer()
-      ),
-      port,
-      csf,
-      ssf
+        raidNode.hostNode.hostsNode.rootNode,
+        raidNode,
+        MdStatNodeWorker.getWorker(
+            new File(raidNode.getPersistenceDirectory(), "mdstat"),
+            raidNode.getAOServer()
+        ),
+        port,
+        csf,
+        ssf
     );
   }
 
