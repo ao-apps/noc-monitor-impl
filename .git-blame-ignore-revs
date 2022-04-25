@@ -22,3 +22,6 @@ d55f77b3b5fa9fe88348093f192b8503fbc08a0d
 
 # Converted to tab indentation.
 fbf00ce97ba46dcfdcf2b07c743c5fb9846ff674
+
+# Performed automatic source code clean-up with rewrite-maven-plugin
+6b8914f0650baf986b9031a7c95e07ecaeafde3a
