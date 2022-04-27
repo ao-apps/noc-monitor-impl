@@ -177,41 +177,41 @@ class UpsStatus {
       }
       String name = line.substring(0, colonPos).trim();
       String value = line.substring(colonPos + 1).trim();
-      if ("UPSNAME"  .equals(name)) {
+      if ("UPSNAME".equals(name)) {
         _upsname   = value;
-      } else if ("STATUS"   .equals(name)) {
+      } else if ("STATUS".equals(name)) {
         _status    = value;
-      } else if ("LINEV"    .equals(name)) {
+      } else if ("LINEV".equals(name)) {
         _linev     = parseVolts(value);
-      } else if ("LOTRANS"  .equals(name)) {
+      } else if ("LOTRANS".equals(name)) {
         _lotrans   = parseVolts(value);
-      } else if ("HITRANS"  .equals(name)) {
+      } else if ("HITRANS".equals(name)) {
         _hitrans   = parseVolts(value);
-      } else if ("LINEFREQ" .equals(name)) {
+      } else if ("LINEFREQ".equals(name)) {
         _linefreq  = parseFrequency(value);
-      } else if ("OUTPUTV"  .equals(name)) {
+      } else if ("OUTPUTV".equals(name)) {
         _outputv   = parseVolts(value);
-      } else if ("NOMOUTV"  .equals(name)) {
+      } else if ("NOMOUTV".equals(name)) {
         _nomoutv   = parseVolts(value);
-      } else if ("LOADPCT"  .equals(name)) {
+      } else if ("LOADPCT".equals(name)) {
         _loadpct   = parsePercent(value);
-      } else if ("BCHARGE"  .equals(name)) {
+      } else if ("BCHARGE".equals(name)) {
         _bcharge   = parsePercent(value);
-      } else if ("BATTV"    .equals(name)) {
+      } else if ("BATTV".equals(name)) {
         _battv     = parseVolts(value);
-      } else if ("NOMBATTV" .equals(name)) {
+      } else if ("NOMBATTV".equals(name)) {
         _nombattv  = parseVolts(value);
-      } else if ("EXTBATTS" .equals(name)) {
+      } else if ("EXTBATTS".equals(name)) {
         _extbatts  = parseInt(value);
-      } else if ("BADBATTS" .equals(name)) {
+      } else if ("BADBATTS".equals(name)) {
         _badbatts  = parseInt(value);
-      } else if ("TONBATT"  .equals(name)) {
+      } else if ("TONBATT".equals(name)) {
         _tonbatt   = parseTimeSpan(value);
       } else if ("CUMONBATT".equals(name)) {
         _cumonbatt = parseTimeSpan(value);
-      } else if ("TIMELEFT" .equals(name)) {
+      } else if ("TIMELEFT".equals(name)) {
         _timeleft  = parseTimeSpan(value);
-      } else if ("ITEMP"    .equals(name)) {
+      } else if ("ITEMP".equals(name)) {
         _itemp     = parseTemperature(value);
       }
     }

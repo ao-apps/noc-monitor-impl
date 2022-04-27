@@ -312,8 +312,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     private final TreeListener treeListener;
 
-    private long lastCounterSent = 0;
-    private long currentCounter = 0;
+    private long lastCounterSent;
+    private long currentCounter;
 
     NodeAddedSignaler(TreeListener treeListener) {
       this.treeListener = treeListener;
@@ -369,8 +369,8 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
     private final TreeListener treeListener;
 
-    private long lastCounterSent = 0;
-    private long currentCounter = 0;
+    private long lastCounterSent;
+    private long currentCounter;
 
     NodeRemovedSignaler(TreeListener treeListener) {
       this.treeListener = treeListener;

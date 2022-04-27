@@ -58,7 +58,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 
   private volatile SingleResult lastResult;
   private volatile AlertLevel alertLevel;
-  private volatile Function<Locale, String> alertMessage = null;
+  private volatile Function<Locale, String> alertMessage;
 
   private final List<SingleResultNodeImpl> singleResultNodeImpls = new ArrayList<>();
 

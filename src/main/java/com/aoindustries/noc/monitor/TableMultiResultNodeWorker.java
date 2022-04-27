@@ -85,7 +85,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
   private final PersistentLinkedList<R> results;
 
   private volatile AlertLevel alertLevel = null;
-  private volatile Function<Locale, String> alertMessage = null;
+  private volatile Function<Locale, String> alertMessage;
 
   private final List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
 

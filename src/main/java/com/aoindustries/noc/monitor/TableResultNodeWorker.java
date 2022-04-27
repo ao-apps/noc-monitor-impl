@@ -61,7 +61,7 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
 
   private volatile TableResult lastResult;
   private volatile AlertLevel alertLevel = null;
-  private volatile Function<Locale, String> alertMessage = null;
+  private volatile Function<Locale, String> alertMessage;
 
   private final List<TableResultNodeImpl> tableResultNodeImpls = new ArrayList<>();
 

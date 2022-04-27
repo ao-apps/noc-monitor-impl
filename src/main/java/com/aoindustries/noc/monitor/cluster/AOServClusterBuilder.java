@@ -84,19 +84,19 @@ public final class AOServClusterBuilder {
     return
         // 3Ware, have not yet found way to accurately know which port equates to which /dev/sd[a-z] entry
         // just assuming all are 7200 RPM drives.
-        model.equals("9650SE-12M DISK")      // ?? GB
-            || model.equals("9650SE-16M DISK")      // ?? GB
+        "9650SE-12M DISK".equals(model)      // ?? GB
+            || "9650SE-16M DISK".equals(model)      // ?? GB
             // IBM
-            || model.equals("IC35L120AVV207-0")     // 120 GB
+            || "IC35L120AVV207-0".equals(model)     // 120 GB
             // Maxtor
-            || model.equals("Maxtor 5T040H4")       // 40 GB
-            || model.equals("MAXTOR 6L060J3")       // 60 GB
-            || model.equals("Maxtor 6Y080L0")       // 80 GB
-            || model.equals("Maxtor 6L250R0")       // 250 GB
+            || "Maxtor 5T040H4".equals(model)       // 40 GB
+            || "MAXTOR 6L060J3".equals(model)       // 60 GB
+            || "Maxtor 6Y080L0".equals(model)       // 80 GB
+            || "Maxtor 6L250R0".equals(model)       // 250 GB
             // Seagate
-            || model.equals("ST380811AS")           // 80 GB
-            || model.equals("ST3500320NS")          // 500 GB
-            || model.equals("ST3750330NS")          // 750 GB
+            || "ST380811AS".equals(model)           // 80 GB
+            || "ST3500320NS".equals(model)          // 500 GB
+            || "ST3750330NS".equals(model)          // 750 GB
             // Western Digital
             || model.startsWith("WDC WD800BB-")     // 80 GB
             || model.startsWith("WDC WD800JB-")     // 80 GB
@@ -113,7 +113,7 @@ public final class AOServClusterBuilder {
   private static boolean is10000rpm(String model) {
     return
         // Fujitsu
-        model.equals("MAW3073NP")            // 73 GB
+        "MAW3073NP".equals(model)            // 73 GB
       // Western Digital
       || model.startsWith("WDC WD740GD-")     // 74 GB
     ;
@@ -122,7 +122,7 @@ public final class AOServClusterBuilder {
   private static boolean is15000rpm(String model) {
     return
         // Seagate
-        model.equals("ST3146855LC")             // 146 GB
+        "ST3146855LC".equals(model)             // 146 GB
     ;
   }
 
@@ -689,7 +689,7 @@ public final class AOServClusterBuilder {
             // This should still validate the logical volumes in the off chance a virtual server is named "backup"
             DomU domU = cluster.getDomU(vgName);
             if (domU == null) {
-              if (!vgName.equals("backup")) {
+              if (!"backup".equals(vgName)) {
                 throw new AssertionError("Volume group found but there is no virtual server of the same name: " + dom0Hostname + ":/dev/" + vgName);
               }
             } else {

@@ -84,7 +84,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
     this.mysqlSlave = mysqlSlave;
     String hostname = mysqlDatabase.getMySQLServer().getLinuxServer().getHostname().toString();
     this.isSlowServer =
-        hostname.equals("www.swimconnection.com")
+        "www.swimconnection.com".equals(hostname)
     // || hostname.equals("www1.leagle.com")
     ;
   }

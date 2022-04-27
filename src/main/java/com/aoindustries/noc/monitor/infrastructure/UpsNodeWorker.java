@@ -132,13 +132,13 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus, UpsResult> {
       String status = sample.getStatus();
       if (status == null) {
         highest = highest.escalate(AlertLevel.UNKNOWN, locale -> PACKAGE_RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.null"));
-      } else if (status.equals("ONLINE") || status.startsWith("ONLINE ")) {
+      } else if ("ONLINE".equals(status) || status.startsWith("ONLINE ")) {
         highest = highest.escalate(AlertLevel.NONE, locale -> PACKAGE_RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.online"));
-      } else if (status.equals("CHARGING") || status.startsWith("CHARGING ")) {
+      } else if ("CHARGING".equals(status) || status.startsWith("CHARGING ")) {
         highest = highest.escalate(AlertLevel.LOW, locale -> PACKAGE_RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.charging"));
-      } else if (status.equals("ONBATT") || status.startsWith("ONBATT ")) {
+      } else if ("ONBATT".equals(status) || status.startsWith("ONBATT ")) {
         highest = highest.escalate(AlertLevel.CRITICAL, locale -> PACKAGE_RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.onbatt"));
-      } else if (status.equals("COMMLOST")) {
+      } else if ("COMMLOST".equals(status)) {
         highest = highest.escalate(AlertLevel.CRITICAL, locale -> PACKAGE_RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.commlost"));
       } else {
         highest = highest.escalate(AlertLevel.UNKNOWN, locale -> PACKAGE_RESOURCES.getMessage(locale, "UpsNodeWorker.getAlertLevelAndMessage.status.unknown", status));

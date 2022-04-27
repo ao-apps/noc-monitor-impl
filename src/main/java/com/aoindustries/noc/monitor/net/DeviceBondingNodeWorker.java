@@ -124,7 +124,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
           if (!skippedFirst) {
             skippedFirst = true;
           } else {
-            if (line.equals("MII Status: up")) {
+            if ("MII Status: up".equals(line)) {
               up++;
             } else {
               down++;
@@ -151,7 +151,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
       // Look for any non-duplex
       for (String line : lines) {
         if (line.startsWith("Duplex: ")) {
-          if (!line.equals("Duplex: full")) {
+          if (!"Duplex: full".equals(line)) {
             alertLevel = AlertLevel.LOW;
             alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
                 locale,

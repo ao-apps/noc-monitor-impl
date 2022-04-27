@@ -209,7 +209,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
     for (int index = 0, len = tableData.size(); index < len; index += 5) {
       String msgText = (String) tableData.get(index + 4);
       alertLevels.add(
-          msgText != null && (msgText.equals("OK") || msgText.equals("Table is already up to date"))
+          msgText != null && ("OK".equals(msgText) || "Table is already up to date".equals(msgText))
               ? AlertLevel.NONE
               : AlertLevel.CRITICAL
       );
@@ -231,7 +231,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
       List<?> tableData = result.getTableData(Locale.getDefault());
       for (int index = 0, len = tableData.size(); index < len; index += 5) {
         String msgText = (String) tableData.get(index + 4);
-        if (msgText == null || (!msgText.equals("OK") && !msgText.equals("Table is already up to date"))) {
+        if (msgText == null || (!"OK".equals(msgText) && !"Table is already up to date".equals(msgText))) {
           Object name = tableData.get(index);
           return new AlertLevelAndMessage(
               AlertLevel.CRITICAL,

@@ -82,7 +82,7 @@ final class BackgroundWriter {
 
   // These are both synchronized on queue
   private static final LinkedHashMap<File, QueueEntry> queue = new LinkedHashMap<>();
-  private static boolean running = false;
+  private static boolean running;
 
   /**
    * Queues the object for write.  No defensive copy of the object is made - do not change after giving to this method.
