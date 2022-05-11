@@ -23,8 +23,9 @@
 
 package com.aoindustries.noc.monitor;
 
-import com.aoapps.collections.AoCollections;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
+import com.aoapps.collections.AoCollections;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;

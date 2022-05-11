@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.net.HostsNode;
@@ -66,7 +67,6 @@ public class PhysicalServersNode extends HostsNode {
     return
         physicalServer != null && physicalServer.getRam() != -1
             // Ignore ao-box in fail-over
-            && (linuxServer == null || linuxServer.getFailoverServer() == null)
-    ;
+            && (linuxServer == null || linuxServer.getFailoverServer() == null);
   }
 }

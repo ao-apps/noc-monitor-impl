@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.infrastructure;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.linux.RaidNode;
 import java.io.File;
@@ -47,7 +48,7 @@ public class DrbdNode extends TableResultNodeImpl {
         raidNode,
         DrbdNodeWorker.getWorker(
             new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
-            raidNode.getAOServer()
+            raidNode.getServer()
         ),
         port,
         csf,

@@ -23,11 +23,12 @@
 
 package com.aoindustries.noc.monitor.linux;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.MdMismatchReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -53,7 +54,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
   private static final int RAID1_LOW_THRESHOLD = 1;
 
   /**
-   * One unique worker is made per persistence file (and should match the linuxServer exactly)
+   * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
   private static final Map<String, MdMismatchWorker> workerCache = new HashMap<>();
 
@@ -94,10 +95,9 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
     } else {
       List<?> tableData = result.getTableData(Locale.getDefault());
       List<AlertLevel> alertLevels = result.getAlertLevels();
-      for (
-        int index = 0, len = tableData.size();
-        index < len;
-        index += 3
+      for (int index = 0, len = tableData.size();
+          index < len;
+          index += 3
       ) {
         AlertLevel alertLevel = alertLevels.get(index / 3);
         if (alertLevel.compareTo(highestAlertLevel) > 0) {
@@ -156,8 +156,7 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
               count >= RAID1_HIGH_THRESHOLD ? AlertLevel.HIGH
                   : count >= RAID1_MEDIUM_THRESHOLD ? AlertLevel.MEDIUM
                   : count >= RAID1_LOW_THRESHOLD ? AlertLevel.LOW
-                  : AlertLevel.NONE
-          ;
+                  : AlertLevel.NONE;
         } else {
           // All other types allow no mismatch
           alertLevel = AlertLevel.HIGH;

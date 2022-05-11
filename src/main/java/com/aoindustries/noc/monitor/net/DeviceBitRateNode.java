@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.net;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import java.io.IOException;
@@ -39,13 +40,13 @@ public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRate
 
   private static final long serialVersionUID = 1L;
 
-  DeviceBitRateNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+  DeviceBitRateNode(DeviceNode deviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-        netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
-        netDeviceNode,
+        deviceNode.devicesNode.hostNode.hostsNode.rootNode,
+        deviceNode,
         DeviceBitRateNodeWorker.getWorker(
-            netDeviceNode.getPersistenceDirectory(),
-            netDeviceNode.getNetDevice()
+            deviceNode.getPersistenceDirectory(),
+            deviceNode.getDevice()
         ),
         port,
         csf,

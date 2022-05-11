@@ -23,12 +23,13 @@
 
 package com.aoindustries.noc.monitor.linux;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.Strings;
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -55,7 +56,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> 
   private static final Logger logger = Logger.getLogger(FilesystemsNodeWorker.class.getName());
 
   /**
-   * One unique worker is made per persistence file (and should match the linuxServer exactly)
+   * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
   private static final Map<String, FilesystemsNodeWorker> workerCache = new HashMap<>();
 
@@ -211,114 +212,118 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> 
 
     // Check extstate
     String fstype = tableData.get(index + 7).toString();
-    {
-      if (
-          "ext2".equals(fstype)
-              || "ext3".equals(fstype)
-      ) {
-        String extstate = tableData.get(index + 9).toString();
+      {
         if (
-            (
-                "ext3".equals(fstype)
-                    && !"clean".equals(extstate)
-            ) || (
-                "ext2".equals(fstype)
-                    && !"not clean".equals(extstate)
-                    && !"clean".equals(extstate)
-            )
+            "ext2".equals(fstype)
+                || "ext3".equals(fstype)
         ) {
-          AlertLevel newAlertLevel = AlertLevel.CRITICAL;
-          if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
-            highestAlertLevel = newAlertLevel;
-            highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extstate.unexpectedState", extstate);
+          String extstate = tableData.get(index + 9).toString();
+          if (
+              (
+                  "ext3".equals(fstype)
+                      && !"clean".equals(extstate)
+              ) || (
+                  "ext2".equals(fstype)
+                      && !"not clean".equals(extstate)
+                      && !"clean".equals(extstate)
+              )
+          ) {
+            AlertLevel newAlertLevel = AlertLevel.CRITICAL;
+            if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
+              highestAlertLevel = newAlertLevel;
+              highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extstate.unexpectedState", extstate);
+            }
           }
         }
       }
-    }
 
-    // Check for inode percent
-    {
-      String iuse = tableData.get(index + 6).toString();
-      if (iuse.length() != 0) {
-        if (!iuse.endsWith("%")) {
-          throw new IOException("iuse doesn't end with '%': " + iuse);
+      // Check for inode percent
+      {
+        String iuse = tableData.get(index + 6).toString();
+        if (iuse.length() != 0) {
+          if (!iuse.endsWith("%")) {
+            throw new IOException("iuse doesn't end with '%': " + iuse);
+          }
+          int iuseNum = Integer.parseInt(iuse.substring(0, iuse.length() - 1));
+          final AlertLevel newAlertLevel;
+          if (iuseNum < 0 || iuseNum >= 95) {
+            newAlertLevel = AlertLevel.CRITICAL;
+          } else if (iuseNum >= 90) {
+            newAlertLevel = AlertLevel.HIGH;
+          } else if (iuseNum >= 85) {
+            newAlertLevel = AlertLevel.MEDIUM;
+          } else if (iuseNum >= 80) {
+            newAlertLevel = AlertLevel.LOW;
+          } else {
+            newAlertLevel = AlertLevel.NONE;
+          }
+          if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
+            highestAlertLevel = newAlertLevel;
+            highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.iuse", iuse);
+          }
         }
-        int iuseNum = Integer.parseInt(iuse.substring(0, iuse.length() - 1));
+      }
+
+      // Check for disk space percent
+      {
+        String mountpoint = tableData.get(index).toString();
+        String use = tableData.get(index + 5).toString();
+        if (!use.endsWith("%")) {
+          throw new IOException("use doesn't end with '%': " + use);
+        }
+        int useNum = Integer.parseInt(use.substring(0, use.length() - 1));
         final AlertLevel newAlertLevel;
-        if (iuseNum < 0 || iuseNum >= 95) {
-          newAlertLevel = AlertLevel.CRITICAL;
-        } else if (iuseNum >= 90) {
-          newAlertLevel = AlertLevel.HIGH;
-        } else if (iuseNum >= 85) {
-          newAlertLevel = AlertLevel.MEDIUM;
-        } else if (iuseNum >= 80) {
-          newAlertLevel = AlertLevel.LOW;
+        if (mountpoint.startsWith("/var/backup")) {
+          // Backup partitions allow a higher percentage and never go critical
+          if (useNum >= 98) {
+            newAlertLevel = AlertLevel.HIGH;
+          } else if (useNum >= 97) {
+            newAlertLevel = AlertLevel.MEDIUM;
+          } else if (useNum >= 96) {
+            newAlertLevel = AlertLevel.LOW;
+          } else {
+            newAlertLevel = AlertLevel.NONE;
+          }
         } else {
-          newAlertLevel = AlertLevel.NONE;
+          // Other partitions notify at lower percentages and can go critical
+          if (useNum >= 97) {
+            newAlertLevel = AlertLevel.CRITICAL;
+          } else if (useNum >= 94) {
+            newAlertLevel = AlertLevel.HIGH;
+          } else if (useNum >= 91) {
+            newAlertLevel = AlertLevel.MEDIUM;
+          } else if (useNum >= 88) {
+            newAlertLevel = AlertLevel.LOW;
+          } else {
+            newAlertLevel = AlertLevel.NONE;
+          }
         }
         if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
           highestAlertLevel = newAlertLevel;
-          highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.iuse", iuse);
+          highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.use", use);
         }
       }
-    }
-
-    // Check for disk space percent
-    {
-      String mountpoint = tableData.get(index).toString();
-      String use = tableData.get(index + 5).toString();
-      if (!use.endsWith("%")) {
-        throw new IOException("use doesn't end with '%': " + use);
-      }
-      int useNum = Integer.parseInt(use.substring(0, use.length() - 1));
-      final AlertLevel newAlertLevel;
-      if (mountpoint.startsWith("/var/backup")) {
-        // Backup partitions allow a higher percentage and never go critical
-        if (useNum >= 98) {
-          newAlertLevel = AlertLevel.HIGH;
-        } else if (useNum >= 97) {
-          newAlertLevel = AlertLevel.MEDIUM;
-        } else if (useNum >= 96) {
-          newAlertLevel = AlertLevel.LOW;
-        } else {
-          newAlertLevel = AlertLevel.NONE;
-        }
-      } else {
-        // Other partitions notify at lower percentages and can go critical
-        if (useNum >= 97) {
-          newAlertLevel = AlertLevel.CRITICAL;
-        } else if (useNum >= 94) {
-          newAlertLevel = AlertLevel.HIGH;
-        } else if (useNum >= 91) {
-          newAlertLevel = AlertLevel.MEDIUM;
-        } else if (useNum >= 88) {
-          newAlertLevel = AlertLevel.LOW;
-        } else {
-          newAlertLevel = AlertLevel.NONE;
-        }
-      }
-      if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
-        highestAlertLevel = newAlertLevel;
-        highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.use", use);
-      }
-    }
 
     // Make sure extmaxmount is -1
     if (highestAlertLevel.compareTo(AlertLevel.LOW) < 0) {
       String extmaxmount = tableData.get(index + 10).toString();
       switch (fstype) {
-        case "ext3":
+        case "ext3": {
           if (!"-1".equals(extmaxmount)) {
             highestAlertLevel = AlertLevel.LOW;
             highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extmaxmount.ext3", extmaxmount);
           }
           break;
-        case "ext2":
+        }
+        case "ext2": {
           if ("-1".equals(extmaxmount)) {
             highestAlertLevel = AlertLevel.LOW;
             highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extmaxmount.ext2", extmaxmount);
           }
           break;
+        }
+        default:
+          // No parser implemented
       }
     }
 
@@ -326,18 +331,22 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> 
     if (highestAlertLevel.compareTo(AlertLevel.LOW) < 0) {
       String extchkint = tableData.get(index + 11).toString();
       switch (fstype) {
-        case "ext3":
+        case "ext3": {
           if (!"0 (<none>)".equals(extchkint)) {
             highestAlertLevel = AlertLevel.LOW;
             highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extchkint.ext3", extchkint);
           }
           break;
-        case "ext2":
+        }
+        case "ext2": {
           if ("0 (<none>)".equals(extchkint)) {
             highestAlertLevel = AlertLevel.LOW;
             highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "FilesystemsNodeWorker.alertMessage.extchkint.ext2", extchkint);
           }
           break;
+        }
+        default:
+          // No parser implemented
       }
     }
 

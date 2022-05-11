@@ -23,12 +23,13 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.DrbdReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -56,16 +57,14 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
 
   private static final int NUM_COLS = 7;
 
-  private static final int
-      LOW_DAYS = 15,
-      MEDIUM_DAYS = 21,
-      HIGH_DAYS = 28
-  ;
+  private static final int LOW_DAYS = 15;
+  private static final int MEDIUM_DAYS = 21;
+  private static final int HIGH_DAYS = 28;
 
   private static final int OUT_OF_SYNC_HIGH_THRESHOLD = 512;
 
   /**
-   * One unique worker is made per persistence file (and should match the linuxServer exactly)
+   * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
   private static final Map<String, DrbdNodeWorker> workerCache = new HashMap<>();
 
@@ -110,10 +109,9 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
     } else {
       List<?> tableData = result.getTableData(Locale.getDefault());
       List<AlertLevel> alertLevels = result.getAlertLevels();
-      for (
-        int index = 0, len = tableData.size();
-        index < len;
-        index += NUM_COLS
+      for (int index = 0, len = tableData.size();
+          index < len;
+          index += NUM_COLS
       ) {
         AlertLevel alertLevel = alertLevels.get(index / NUM_COLS);
         if (alertLevel.compareTo(highestAlertLevel) > 0) {

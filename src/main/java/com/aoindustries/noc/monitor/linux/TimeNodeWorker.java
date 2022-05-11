@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.linux;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TimeResult;
@@ -36,26 +37,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The clock skew for a single sample in milliseconds is calculated as follows:
+ * The clock skew for a single sample in milliseconds.  Calculated as follows:
+ * <pre>
  *      st: remote system time (in milliseconds from Epoch)
  *      rt: request time (in milliseconds from Epoch)
  *      l:  request latency (in nanoseconds)
  *
  *      skew = st - (rt + round(l/2000000))
- *
+ * </pre>
  * Alert levels are:
+ * <pre>
  *          &gt;=1 minute  Critical
  *          &gt;=4 seconds High
  *          &gt;=2 seconds Medium
  *          &gt;=1 second  Low
  *          &lt;1  second  None
+ * </pre>
  *
  * @author  AO Industries, Inc.
  */
 class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResult> {
 
   /**
-   * One unique worker is made per persistence directory (and should match linuxServer exactly)
+   * One unique worker is made per persistence directory (and should match linuxServer exactly).
    */
   private static final Map<String, TimeNodeWorker> workerCache = new HashMap<>();
 
@@ -67,20 +71,20 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
         worker = new TimeNodeWorker(persistenceDirectory, linuxServer);
         workerCache.put(path, worker);
       } else {
-        if (!worker._linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: " + worker._linuxServer + " != " + linuxServer);
+        if (!worker.originalLinuxServer.equals(linuxServer)) {
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker.originalLinuxServer + " != " + linuxServer);
         }
       }
       return worker;
     }
   }
 
-  private final Server _linuxServer;
+  private final Server originalLinuxServer;
   private Server currentLinuxServer;
 
   private TimeNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     super(new File(persistenceDirectory, "time"), new TimeResultSerializer());
-    this._linuxServer = currentLinuxServer = linuxServer;
+    this.originalLinuxServer = currentLinuxServer = linuxServer;
   }
 
   @Override
@@ -91,15 +95,15 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
   @Override
   protected MilliInterval getSample() throws Exception {
     // Get the latest limits
-    currentLinuxServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());
+    currentLinuxServer = originalLinuxServer.getTable().getConnector().getLinux().getServer().get(originalLinuxServer.getPkey());
 
     long requestTime = System.currentTimeMillis();
     long startNanos = System.nanoTime();
     long systemTime = currentLinuxServer.getSystemTimeMillis();
     long latency = System.nanoTime() - startNanos;
-    long lRemainder = latency % 2000000;
+    long latencyRemainder = latency % 2000000;
     long skew = systemTime - (requestTime + latency / 2000000);
-    if (lRemainder >= 1000000) {
+    if (latencyRemainder >= 1000000) {
       skew--;
     }
 

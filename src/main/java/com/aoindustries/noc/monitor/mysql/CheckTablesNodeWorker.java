@@ -23,15 +23,16 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.collections.AoCollections;
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.aoserv.client.mysql.Server;
-import com.aoindustries.aoserv.client.mysql.Table_Name;
+import com.aoindustries.aoserv.client.mysql.TableName;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -53,7 +54,7 @@ import java.util.Map;
 class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 
   /**
-   * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
+   * One unique worker is made per persistence file (and should match the database exactly).
    */
   private static final Map<String, CheckTablesNodeWorker> workerCache = new HashMap<>();
 
@@ -65,8 +66,8 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
         worker = new CheckTablesNodeWorker(databaseNode, persistenceFile);
         workerCache.put(path, worker);
       } else {
-        if (!worker.databaseNode.getMySQLDatabase().equals(databaseNode.getMySQLDatabase())) {
-          throw new AssertionError("worker.mysqlDatabase != mysqlDatabase: " + worker.databaseNode.getMySQLDatabase() + " != " + databaseNode.getMySQLDatabase());
+        if (!worker.databaseNode.getDatabase().equals(databaseNode.getDatabase())) {
+          throw new AssertionError("worker.database != database: " + worker.databaseNode.getDatabase() + " != " + databaseNode.getDatabase());
         }
       }
       return worker;
@@ -98,12 +99,12 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
 
   @Override
   protected List<Object> getQueryResult() throws Exception {
-    Database mysqlDatabase = databaseNode.getMySQLDatabase();
-    MysqlReplication mysqlSlave = databaseNode.getMySQLSlave();
+    final Database database = databaseNode.getDatabase();
+    final MysqlReplication slave = databaseNode.getSlave();
 
     // Don't check any table on MySQL 5.1+ information_schema database
-    if (mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)) {
-      String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
+    if (database.getName().equals(Database.INFORMATION_SCHEMA)) {
+      String version = database.getMysqlServer().getVersion().getVersion();
       if (
           version.startsWith(Server.VERSION_5_1_PREFIX)
               || version.startsWith(Server.VERSION_5_6_PREFIX)
@@ -114,8 +115,8 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
     }
 
     // Don't check any table on MySQL 5.6+ performance_schema database
-    if (mysqlDatabase.getName().equals(Database.PERFORMANCE_SCHEMA)) {
-      String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
+    if (database.getName().equals(Database.PERFORMANCE_SCHEMA)) {
+      String version = database.getMysqlServer().getVersion().getVersion();
       if (
           version.startsWith(Server.VERSION_5_6_PREFIX)
               || version.startsWith(Server.VERSION_5_7_PREFIX)
@@ -125,8 +126,8 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
     }
 
     // Don't check any table on MySQL 5.7+ sys database
-    if (mysqlDatabase.getName().equals(Database.SYS)) {
-      String version = mysqlDatabase.getMySQLServer().getVersion().getVersion();
+    if (database.getName().equals(Database.SYS)) {
+      String version = database.getMysqlServer().getVersion().getVersion();
       if (
           version.startsWith(Server.VERSION_5_7_PREFIX)
       ) {
@@ -139,8 +140,8 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
       return Collections.emptyList();
     }
     // Build the set of table names and types
-    List<Table_Name> tableNames = new ArrayList<>(lastTableStatuses.size());
-    Map<Table_Name, Database.Engine> tables = AoCollections.newHashMap(lastTableStatuses.size());
+    List<TableName> tableNames = new ArrayList<>(lastTableStatuses.size());
+    Map<TableName, Database.Engine> tables = AoCollections.newHashMap(lastTableStatuses.size());
     for (Database.TableStatus lastTableStatus : lastTableStatuses) {
       Database.Engine engine = lastTableStatus.getEngine();
       if (
@@ -151,10 +152,10 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
               && engine != Database.Engine.PERFORMANCE_SCHEMA
               && !(engine == null && "VIEW".equals(lastTableStatus.getComment()))
       ) {
-        Table_Name name = lastTableStatus.getName();
+        TableName name = lastTableStatus.getName();
         if (
             // Skip the four expected non-checkable tables in information_schema
-            !mysqlDatabase.getName().equals(Database.INFORMATION_SCHEMA)
+            !database.getName().equals(Database.INFORMATION_SCHEMA)
                 || (
                 !name.toString().equals("COLUMNS")
                     && !name.toString().equals("ROUTINES")
@@ -167,11 +168,11 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
         }
       }
     }
-    List<Database.CheckTableResult> checkTableResults = mysqlDatabase.checkTables(mysqlSlave, tableNames);
+    List<Database.CheckTableResult> checkTableResults = database.checkTables(slave, tableNames);
     List<Object> tableData = new ArrayList<>(checkTableResults.size() * 5);
 
     for (Database.CheckTableResult checkTableResult : checkTableResults) {
-      Table_Name table = checkTableResult.getTable();
+      TableName table = checkTableResult.getTable();
       tableData.add(table);
       tableData.add(tables.get(table));
       tableData.add(new MilliInterval(checkTableResult.getDuration()));

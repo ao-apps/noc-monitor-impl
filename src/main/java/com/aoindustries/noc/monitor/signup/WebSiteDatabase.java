@@ -60,7 +60,7 @@ public class WebSiteDatabase extends Database {
     return getProperty("com.aoindustries.website.database.driver");
   }
 
-  private static String getDatabaseURL() throws IOException {
+  private static String getDatabaseUrl() throws IOException {
     return getProperty("com.aoindustries.website.database.url");
   }
 
@@ -84,7 +84,7 @@ public class WebSiteDatabase extends Database {
   private WebSiteDatabase() throws IOException {
     super(
         getDatabaseDriver(),
-        getDatabaseURL(),
+        getDatabaseUrl(),
         getDatabaseUsername(),
         getDatabasePassword(),
         getDatabasePoolSize(),

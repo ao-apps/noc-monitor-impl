@@ -23,8 +23,9 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
-import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
+import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import com.aoindustries.noc.monitor.net.HostNode;

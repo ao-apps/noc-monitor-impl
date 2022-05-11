@@ -57,7 +57,14 @@ public abstract class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
   private final List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<>();
 
-  protected TableMultiResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableMultiResultNodeWorker<?, R> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+  protected TableMultiResultNodeImpl(
+      RootNodeImpl rootNode,
+      NodeImpl parent,
+      TableMultiResultNodeWorker<?, R> worker,
+      int port,
+      RMIClientSocketFactory csf,
+      RMIServerSocketFactory ssf
+  ) throws RemoteException {
     super(port, csf, ssf);
     this.rootNode = rootNode;
     this.parent = parent;
@@ -146,13 +153,13 @@ public abstract class TableMultiResultNodeImpl<R extends TableMultiResult> exten
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
     synchronized (tableMultiResultListeners) {
-      Iterator<TableMultiResultListener<? super R>> I = tableMultiResultListeners.iterator();
-      while (I.hasNext()) {
-        TableMultiResultListener<? super R> tableMultiResultListener = I.next();
+      Iterator<TableMultiResultListener<? super R>> i = tableMultiResultListeners.iterator();
+      while (i.hasNext()) {
+        TableMultiResultListener<? super R> tableMultiResultListener = i.next();
         try {
           tableMultiResultListener.tableMultiResultAdded(tableMultiResult);
         } catch (RemoteException err) {
-          I.remove();
+          i.remove();
           logger.log(Level.SEVERE, null, err);
         }
       }
@@ -166,13 +173,13 @@ public abstract class TableMultiResultNodeImpl<R extends TableMultiResult> exten
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
     synchronized (tableMultiResultListeners) {
-      Iterator<TableMultiResultListener<? super R>> I = tableMultiResultListeners.iterator();
-      while (I.hasNext()) {
-        TableMultiResultListener<? super R> tableMultiResultListener = I.next();
+      Iterator<TableMultiResultListener<? super R>> i = tableMultiResultListeners.iterator();
+      while (i.hasNext()) {
+        TableMultiResultListener<? super R> tableMultiResultListener = i.next();
         try {
           tableMultiResultListener.tableMultiResultRemoved(tableMultiResult);
         } catch (RemoteException err) {
-          I.remove();
+          i.remove();
           logger.log(Level.SEVERE, null, err);
         }
       }

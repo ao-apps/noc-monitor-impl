@@ -23,7 +23,7 @@
 
 package com.aoindustries.noc.monitor;
 
-import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.aoserv.client.account.User;
 import com.aoindustries.noc.monitor.common.Monitor;
 import com.aoindustries.noc.monitor.common.RootNode;
@@ -37,7 +37,7 @@ import java.util.Locale;
 
 /**
  * The main starting point for the monitor.
- *
+ * <pre>
  * TODO: DNS lookups via dnsjava, cycle through all DNS entries slowly
  *       ns1.aoindustries.com failed today (2019-09-13), so this is bumped up the list
  *       During this failure, TCP connections were stalled 15 seconds, then successful.
@@ -77,7 +77,8 @@ import java.util.Locale;
  *         smartd -q onecheck?
  *         smartctl?
  *     watch for procmail/spamc failures in: /var/log/mail/info
- *         Dec  8 19:25:10 www3 sendmail[1795]: mB88rS9R029955: to=\\jl, delay=16:31:40, xdelay=00:00:04, mailer=local, pri=6962581, dsn=4.0.0, stat=Deferred: local mailer (/usr/bin/procmail) exited with EX_TEMPFAIL
+ *         Dec  8 19:25:10 www3 sendmail[1795]: mB88rS9R029955: to=\\jl, delay=16:31:40, xdelay=00:00:04, mailer=local, pri=6962581,
+ *                                                              dsn=4.0.0, stat=Deferred: local mailer (/usr/bin/procmail) exited with EX_TEMPFAIL
  * Watch the count of files in "/var/spool/aoserv/spamassassin" - a large number of files (not directories) indicates training failing.  Also watch parsed times.
  * mrtg auto-check and graphs
  * /proc/version against template
@@ -172,6 +173,7 @@ import java.util.Locale;
  *
  * Monitor for certificates issued in domains that are not expected.
  *     Jonathon Moldenhaur described how there are lists of certificates issued.
+ * </pre>
  *
  * @author  AO Industries, Inc.
  */
@@ -192,7 +194,7 @@ public class MonitorImpl extends UnicastRemoteObject implements Monitor {
 
   @Override
   public RootNode login(Locale locale, User.Name username, String password) throws IOException, SQLException {
-    AOServConnector connector = AOServConnector.getConnector(username, password);
+    AoservConnector connector = AoservConnector.getConnector(username, password);
     connector.testConnect();
     return RootNodeImpl.getRootNode(locale, connector, port, csf, ssf);
   }

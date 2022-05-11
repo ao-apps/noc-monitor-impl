@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.Strings;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
@@ -39,9 +40,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * network traffic (but no alerts on loopback by default)
- *      configurable limits per alert level per net_device
- *      based on 5-minute averages, sampled every five minutes, will take up to 20 minutes to buzz
+ * network traffic (but no alerts on loopback by default).
+ * configurable limits per alert level per net_device
+ * based on 5-minute averages, sampled every five minutes, will take up to 20 minutes to buzz
  *
  * @author  AO Industries, Inc.
  */
@@ -49,13 +50,14 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
 
   /**
    * The number of bytes overhead for each Ethernet frame, including interframe gap, assuming no VLAN tag.
-   *
+   * <p>
    * Preamble + Start of frame + CRC + Interframe gap
+   * </p>
    */
   private static final int FRAME_ADDITIONAL_BYTES = 7 + 1 + 4 + 12;
 
   /**
-   * One unique worker is made per persistence directory (and should match the net device exactly)
+   * One unique worker is made per persistence directory (and should match the net device exactly).
    */
   private static final Map<String, DeviceBitRateNodeWorker> workerCache = new HashMap<>();
 
@@ -66,20 +68,20 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
       if (worker == null) {
         worker = new DeviceBitRateNodeWorker(persistenceDirectory, device);
         workerCache.put(path, worker);
-      } else if (!worker._device.equals(device)) {
-        throw new AssertionError("worker.device != device: " + worker._device + " != " + device);
+      } else if (!worker.originalDevice.equals(device)) {
+        throw new AssertionError("worker.device != device: " + worker.originalDevice + " != " + device);
       }
       return worker;
     }
   }
 
   // Will use whichever connector first created this worker, even if other accounts connect later.
-  private final Device _device;
-  private Device _currentNetDevice;
+  private final Device originalDevice;
+  private Device currentDevice;
 
   private DeviceBitRateNodeWorker(File persistenceDirectory, Device device) throws IOException {
     super(new File(persistenceDirectory, "bit_rate"), new DeviceBitRateResultSerializer());
-    this._device = _currentNetDevice = device;
+    this.originalDevice = currentDevice = device;
   }
 
   @Override
@@ -101,10 +103,10 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
   @Override
   protected List<Object> getSample() throws Exception {
     // Get the latest object
-    _currentNetDevice = _device.getTable().getConnector().getNet().getDevice().get(_device.getPkey());
+    currentDevice = originalDevice.getTable().getConnector().getNet().getDevice().get(originalDevice.getPkey());
 
     // Get the current state
-    String stats = _currentNetDevice.getStatisticsReport();
+    String stats = currentDevice.getStatisticsReport();
     List<String> lines = Strings.splitLines(stats);
     if (lines.size() != 5) {
       throw new ParseException("Should have five lines in the stats, have " + lines.size(), 0);
@@ -155,10 +157,10 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
       sample.add(rxBitsPerSecond);
       sample.add(txPacketsPerSecond);
       sample.add(rxPacketsPerSecond);
-      sample.add(_currentNetDevice.getMonitoringBitRateLow());
-      sample.add(_currentNetDevice.getMonitoringBitRateMedium());
-      sample.add(_currentNetDevice.getMonitoringBitRateHigh());
-      sample.add(_currentNetDevice.getMonitoringBitRateCritical());
+      sample.add(currentDevice.getMonitoringBitRateLow());
+      sample.add(currentDevice.getMonitoringBitRateMedium());
+      sample.add(currentDevice.getMonitoringBitRateHigh());
+      sample.add(currentDevice.getMonitoringBitRateCritical());
       return sample;
     } finally {
       // Store for the next report
@@ -191,7 +193,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
     }
 
     // Get the alert limits
-    long bitRateCritical = _currentNetDevice.getMonitoringBitRateCritical();
+    long bitRateCritical = currentDevice.getMonitoringBitRateCritical();
     if (bitRateCritical != -1 && bps >= bitRateCritical) {
       return new AlertLevelAndMessage(
           AlertLevel.CRITICAL,
@@ -203,7 +205,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
           )
       );
     }
-    long bitRateHigh = _currentNetDevice.getMonitoringBitRateHigh();
+    long bitRateHigh = currentDevice.getMonitoringBitRateHigh();
     if (bitRateHigh != -1 && bps >= bitRateHigh) {
       return new AlertLevelAndMessage(
           AlertLevel.HIGH,
@@ -215,7 +217,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
           )
       );
     }
-    long bitRateMedium = _currentNetDevice.getMonitoringBitRateMedium();
+    long bitRateMedium = currentDevice.getMonitoringBitRateMedium();
     if (bitRateMedium != -1 && bps >= bitRateMedium) {
       return new AlertLevelAndMessage(
           AlertLevel.MEDIUM,
@@ -227,7 +229,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
           )
       );
     }
-    long bitRateLow = _currentNetDevice.getMonitoringBitRateLow();
+    long bitRateLow = currentDevice.getMonitoringBitRateLow();
     if (bitRateLow != -1 && bps >= bitRateLow) {
       return new AlertLevelAndMessage(
           AlertLevel.LOW,

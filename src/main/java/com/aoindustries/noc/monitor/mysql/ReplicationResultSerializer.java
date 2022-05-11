@@ -27,7 +27,7 @@ import com.aoapps.hodgepodge.io.stream.StreamableInput;
 import com.aoapps.hodgepodge.io.stream.StreamableOutput;
 import com.aoapps.persistence.BufferedSerializer;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
+import com.aoindustries.noc.monitor.common.MysqlReplicationResult;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,12 +35,12 @@ import java.io.InputStream;
 /**
  * @author  AO Industries, Inc.
  */
-public class ReplicationResultSerializer extends BufferedSerializer<MySQLReplicationResult> {
+public class ReplicationResultSerializer extends BufferedSerializer<MysqlReplicationResult> {
 
   private static final int VERSION = 1;
 
   @Override
-  protected void serialize(MySQLReplicationResult value, ByteArrayOutputStream buffer) throws IOException {
+  protected void serialize(MysqlReplicationResult value, ByteArrayOutputStream buffer) throws IOException {
     try (StreamableOutput out = new StreamableOutput(buffer)) {
       out.writeCompressedInt(VERSION);
       out.writeLong(value.getTime());
@@ -52,11 +52,11 @@ public class ReplicationResultSerializer extends BufferedSerializer<MySQLReplica
         out.writeNullUTF(value.getSecondsBehindMaster());
         out.writeNullUTF(value.getFile());
         out.writeNullUTF(value.getPosition());
-        out.writeNullUTF(value.getSlaveIOState());
+        out.writeNullUTF(value.getSlaveIoState());
         out.writeNullUTF(value.getMasterLogFile());
         out.writeNullUTF(value.getReadMasterLogPos());
-        out.writeNullUTF(value.getSlaveIORunning());
-        out.writeNullUTF(value.getSlaveSQLRunning());
+        out.writeNullUTF(value.getSlaveIoRunning());
+        out.writeNullUTF(value.getSlaveSqlRunning());
         out.writeNullUTF(value.getLastErrno());
         out.writeNullUTF(value.getLastError());
         out.writeNullUTF(value.getAlertThresholds());
@@ -65,7 +65,7 @@ public class ReplicationResultSerializer extends BufferedSerializer<MySQLReplica
   }
 
   @Override
-  public MySQLReplicationResult deserialize(InputStream rawIn) throws IOException {
+  public MysqlReplicationResult deserialize(InputStream rawIn) throws IOException {
     try (StreamableInput in = new StreamableInput(rawIn)) {
       int version = in.readCompressedInt();
       if (version == 1) {
@@ -74,9 +74,9 @@ public class ReplicationResultSerializer extends BufferedSerializer<MySQLReplica
         AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
         String error = in.readNullUTF();
         if (error != null) {
-          return new MySQLReplicationResult(time, latency, alertLevel, error);
+          return new MysqlReplicationResult(time, latency, alertLevel, error);
         }
-        return new MySQLReplicationResult(
+        return new MysqlReplicationResult(
             time,
             latency,
             alertLevel,

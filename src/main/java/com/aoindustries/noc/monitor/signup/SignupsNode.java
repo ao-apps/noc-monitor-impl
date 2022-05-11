@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.signup;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;

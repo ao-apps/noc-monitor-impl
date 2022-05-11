@@ -41,8 +41,9 @@ import javax.swing.SwingUtilities;
 
 /**
  * The workers for single results node.
- *
+ * <p>
  * TODO: Add persistence of the last report
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
@@ -51,7 +52,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
   private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
 
   /**
-   * The most recent timer task
+   * The most recent timer task.
    */
   private final Object timerTaskLock = new Object();
   private Future<?> timerTask;
@@ -142,8 +143,8 @@ public abstract class SingleResultNodeWorker implements Runnable {
       }
     }
     try {
-      long startMillis = System.currentTimeMillis();
-      long startNanos = System.nanoTime();
+      final long startMillis = System.currentTimeMillis();
+      final long startNanos = System.nanoTime();
 
       lastSuccessful = false;
 

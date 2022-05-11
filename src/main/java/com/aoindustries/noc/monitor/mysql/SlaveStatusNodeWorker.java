@@ -23,14 +23,15 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.sql.LocalizedSQLException;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
-import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
+import com.aoindustries.noc.monitor.common.MysqlReplicationResult;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,10 +42,10 @@ import java.util.Map;
 /**
  * @author  AO Industries, Inc.
  */
-class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MySQLReplicationResult> {
+class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MysqlReplicationResult> {
 
   /**
-   * One unique worker is made per persistence directory (and should match mysqlReplication exactly)
+   * One unique worker is made per persistence directory (and should match mysqlReplication exactly).
    */
   private static final Map<String, SlaveStatusNodeWorker> workerCache = new HashMap<>();
 
@@ -57,20 +58,20 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
         worker = new SlaveStatusNodeWorker(persistenceFile, mysqlReplication);
         workerCache.put(path, worker);
       } else {
-        if (!worker._mysqlReplication.equals(mysqlReplication)) {
-          throw new AssertionError("worker.mysqlReplication != mysqlReplication: " + worker._mysqlReplication + " != " + mysqlReplication);
+        if (!worker.originalMysqlReplication.equals(mysqlReplication)) {
+          throw new AssertionError("worker.mysqlReplication != mysqlReplication: " + worker.originalMysqlReplication + " != " + mysqlReplication);
         }
       }
       return worker;
     }
   }
 
-  private final MysqlReplication _mysqlReplication;
-  private MysqlReplication currentFailoverMySQLReplication;
+  private final MysqlReplication originalMysqlReplication;
+  private MysqlReplication currentMysqlReplication;
 
   private SlaveStatusNodeWorker(File persistenceFile, MysqlReplication mysqlReplication) throws IOException {
     super(persistenceFile, new ReplicationResultSerializer());
-    this._mysqlReplication = currentFailoverMySQLReplication = mysqlReplication;
+    this.originalMysqlReplication = currentMysqlReplication = mysqlReplication;
   }
 
   @Override
@@ -81,20 +82,20 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
   @Override
   protected List<String> getSample() throws Exception {
     // Get the latest values
-    currentFailoverMySQLReplication = _mysqlReplication.getTable().getConnector().getBackup().getMysqlReplication().get(_mysqlReplication.getPkey());
-    MysqlReplication.SlaveStatus slaveStatus = currentFailoverMySQLReplication.getSlaveStatus();
+    currentMysqlReplication = originalMysqlReplication.getTable().getConnector().getBackup().getMysqlReplication().get(originalMysqlReplication.getPkey());
+    MysqlReplication.SlaveStatus slaveStatus = currentMysqlReplication.getSlaveStatus();
     if (slaveStatus == null) {
       throw new LocalizedSQLException("08006", PACKAGE_RESOURCES, "MySQLSlaveStatusNodeWorker.slaveNotRunning");
     }
-    Server.MasterStatus masterStatus = _mysqlReplication.getMySQLServer().getMasterStatus();
+    Server.MasterStatus masterStatus = originalMysqlReplication.getMysqlServer().getMasterStatus();
     if (masterStatus == null) {
       throw new LocalizedSQLException("08006", PACKAGE_RESOURCES, "MySQLSlaveStatusNodeWorker.masterNotRunning");
     }
     // Display the alert thresholds
-    int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();
-    int secondsBehindMedium = currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium();
-    int secondsBehindHigh = currentFailoverMySQLReplication.getMonitoringSecondsBehindHigh();
-    int secondsBehindCritical = currentFailoverMySQLReplication.getMonitoringSecondsBehindCritical();
+    int secondsBehindLow = currentMysqlReplication.getMonitoringSecondsBehindLow();
+    int secondsBehindMedium = currentMysqlReplication.getMonitoringSecondsBehindMedium();
+    int secondsBehindHigh = currentMysqlReplication.getMonitoringSecondsBehindHigh();
+    int secondsBehindCritical = currentMysqlReplication.getMonitoringSecondsBehindCritical();
     String alertThresholds =
         (secondsBehindLow == -1 ? "-" : Integer.toString(secondsBehindLow))
             + " / "
@@ -102,18 +103,17 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
             + " / "
             + (secondsBehindHigh == -1 ? "-" : Integer.toString(secondsBehindHigh))
             + " / "
-            + (secondsBehindCritical == -1 ? "-" : Integer.toString(secondsBehindCritical))
-    ;
+            + (secondsBehindCritical == -1 ? "-" : Integer.toString(secondsBehindCritical));
 
     return Arrays.asList(
         slaveStatus.getSecondsBehindMaster(),
         masterStatus.getFile(),
         masterStatus.getPosition(),
-        slaveStatus.getSlaveIOState(),
+        slaveStatus.getSlaveIoState(),
         slaveStatus.getMasterLogFile(),
         slaveStatus.getReadMasterLogPos(),
-        slaveStatus.getSlaveIORunning(),
-        slaveStatus.getSlaveSQLRunning(),
+        slaveStatus.getSlaveIoRunning(),
+        slaveStatus.getSlaveSqlRunning(),
         slaveStatus.getLastErrno(),
         slaveStatus.getLastError(),
         alertThresholds
@@ -121,18 +121,18 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
   }
 
   @Override
-  protected AlertLevelAndMessage getAlertLevelAndMessage(List<String> sample, Iterable<? extends MySQLReplicationResult> previousResults) throws Exception {
+  protected AlertLevelAndMessage getAlertLevelAndMessage(List<String> sample, Iterable<? extends MysqlReplicationResult> previousResults) throws Exception {
     String secondsBehindMaster = sample.get(0);
     if (secondsBehindMaster == null) {
       // Use the highest alert level that may be returned for this replication
       AlertLevel alertLevel;
-      if (currentFailoverMySQLReplication.getMonitoringSecondsBehindCritical() != -1) {
+      if (currentMysqlReplication.getMonitoringSecondsBehindCritical() != -1) {
         alertLevel = AlertLevel.CRITICAL;
-      } else if (currentFailoverMySQLReplication.getMonitoringSecondsBehindHigh() != -1) {
+      } else if (currentMysqlReplication.getMonitoringSecondsBehindHigh() != -1) {
         alertLevel = AlertLevel.HIGH;
-      } else if (currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium() != -1) {
+      } else if (currentMysqlReplication.getMonitoringSecondsBehindMedium() != -1) {
         alertLevel = AlertLevel.MEDIUM;
-      } else if (currentFailoverMySQLReplication.getMonitoringSecondsBehindLow() != -1) {
+      } else if (currentMysqlReplication.getMonitoringSecondsBehindLow() != -1) {
         alertLevel = AlertLevel.LOW;
       } else {
         alertLevel = AlertLevel.NONE;
@@ -148,7 +148,7 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
     }
     try {
       int secondsBehind = Integer.parseInt(secondsBehindMaster);
-      int secondsBehindCritical = currentFailoverMySQLReplication.getMonitoringSecondsBehindCritical();
+      int secondsBehindCritical = currentMysqlReplication.getMonitoringSecondsBehindCritical();
       if (secondsBehindCritical != -1 && secondsBehind >= secondsBehindCritical) {
         return new AlertLevelAndMessage(
             AlertLevel.CRITICAL,
@@ -160,7 +160,7 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
             )
         );
       }
-      int secondsBehindHigh = currentFailoverMySQLReplication.getMonitoringSecondsBehindHigh();
+      int secondsBehindHigh = currentMysqlReplication.getMonitoringSecondsBehindHigh();
       if (secondsBehindHigh != -1 && secondsBehind >= secondsBehindHigh) {
         return new AlertLevelAndMessage(
             AlertLevel.HIGH,
@@ -172,7 +172,7 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
             )
         );
       }
-      int secondsBehindMedium = currentFailoverMySQLReplication.getMonitoringSecondsBehindMedium();
+      int secondsBehindMedium = currentMysqlReplication.getMonitoringSecondsBehindMedium();
       if (secondsBehindMedium != -1 && secondsBehind >= secondsBehindMedium) {
         return new AlertLevelAndMessage(
             AlertLevel.MEDIUM,
@@ -184,7 +184,7 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
             )
         );
       }
-      int secondsBehindLow = currentFailoverMySQLReplication.getMonitoringSecondsBehindLow();
+      int secondsBehindLow = currentMysqlReplication.getMonitoringSecondsBehindLow();
       if (secondsBehindLow != -1 && secondsBehind >= secondsBehindLow) {
         return new AlertLevelAndMessage(
             AlertLevel.LOW,
@@ -229,13 +229,13 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MyS
   }
 
   @Override
-  protected MySQLReplicationResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
-    return new MySQLReplicationResult(time, latency, alertLevel, error);
+  protected MysqlReplicationResult newErrorResult(long time, long latency, AlertLevel alertLevel, String error) {
+    return new MysqlReplicationResult(time, latency, alertLevel, error);
   }
 
   @Override
-  protected MySQLReplicationResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<String> sample) {
-    return new MySQLReplicationResult(
+  protected MysqlReplicationResult newSampleResult(long time, long latency, AlertLevel alertLevel, List<String> sample) {
+    return new MysqlReplicationResult(
         time,
         latency,
         alertLevel,

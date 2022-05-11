@@ -116,7 +116,7 @@ final class BackgroundWriter {
             }
             try {
               try (
-                ObjectOutputStream oout = new ObjectOutputStream(
+                  ObjectOutputStream oout = new ObjectOutputStream(
                       queueEntry1.gzip
                           ? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile)))
                           : new BufferedOutputStream(new FileOutputStream(queueEntry1.newPersistenceFile))

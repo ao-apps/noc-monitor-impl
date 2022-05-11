@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.concurrent.Executors;
 import com.aoapps.lang.io.IoUtils;
-import com.aoindustries.aoserv.client.AOServConnector;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertChange;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -58,9 +59,10 @@ import javax.swing.SwingUtilities;
 
 /**
  * The top-level node has one child for each of the servers.
- *
+ * <p>
  * There is no stop here because root nodes keep running forever in the background to be reconnected to.
  * The overhead of this is reduced by using workers and only creating one rootNode per user.
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
@@ -93,12 +95,12 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   private static class RootNodeCacheKey {
 
     private final Locale locale;
-    private final AOServConnector connector;
+    private final AoservConnector connector;
     private final int port;
     private final RMIClientSocketFactory csf;
     private final RMIServerSocketFactory ssf;
 
-    private RootNodeCacheKey(Locale locale, AOServConnector connector, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) {
+    private RootNodeCacheKey(Locale locale, AoservConnector connector, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) {
       this.locale = locale;
       this.connector = connector;
       this.port = port;
@@ -117,8 +119,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
               && connector.equals(other.connector)
               && port == other.port
               && csf.equals(other.csf)
-              && ssf.equals(other.ssf)
-      ;
+              && ssf.equals(other.ssf);
     }
 
     @Override
@@ -128,8 +129,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
               ^ (connector.hashCode() * 7)
               ^ (port * 11)
               ^ (csf.hashCode() * 13)
-              ^ (ssf.hashCode() * 17)
-      ;
+              ^ (ssf.hashCode() * 17);
     }
   }
 
@@ -138,7 +138,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
   static RootNodeImpl getRootNode(
       Locale locale,
-      AOServConnector connector,
+      AoservConnector connector,
       int port,
       RMIClientSocketFactory csf,
       RMIServerSocketFactory ssf
@@ -170,7 +170,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   }
 
   public final Locale locale;
-  public final AOServConnector conn;
+  public final AoservConnector conn;
 
   private volatile OtherDevicesNode otherDevicesNode;
   private volatile PhysicalServersNode physicalServersNode;
@@ -178,7 +178,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   private volatile UnallocatedNode unallocatedNode;
   private volatile SignupsNode signupsNode;
 
-  private RootNodeImpl(Locale locale, AOServConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+  private RootNodeImpl(Locale locale, AoservConnector conn, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
     this.locale = locale;
     this.conn = conn;
@@ -525,7 +525,14 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
    * Notifies all of the listeners.  Batches the calls into a per-listener background task.  Each of the background tasks may
    * send one event representing any number of changes.  Each background task will wait 250 ms between each send.
    */
-  void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage, AlertCategory oldAlertCategory, AlertCategory newAlertCategory) throws RemoteException {
+  void nodeAlertLevelChanged(
+      NodeImpl node,
+      AlertLevel oldAlertLevel,
+      AlertLevel newAlertLevel,
+      String alertMessage,
+      AlertCategory oldAlertCategory,
+      AlertCategory newAlertCategory
+  ) throws RemoteException {
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
     if (oldAlertLevel != newAlertLevel) {

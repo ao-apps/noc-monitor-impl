@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import java.io.IOException;
@@ -68,7 +69,6 @@ public class OtherDevicesNode extends HostsNode {
             // Is not a Xen dom0
             && host.getVirtualServer() == null
             // Is not an ao-box in fail-over
-            && (linuxServer == null || linuxServer.getFailoverServer() == null)
-    ;
+            && (linuxServer == null || linuxServer.getFailoverServer() == null);
   }
 }

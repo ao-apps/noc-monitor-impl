@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+noc-monitor-impl - Implementation of Network Operations Center Monitoring.
+Copyright (C) 2022  AO Industries, Inc.
+    support@aoindustries.com
+    7262 Bull Pen Cir
+    Mobile, AL 36695
+
+This file is part of noc-monitor-impl.
+
+noc-monitor-impl is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+noc-monitor-impl is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!DOCTYPE suppressions PUBLIC
+  "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+  "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+
+  <!-- TODO: Complete Javadocs -->
+  <suppress checks="(MissingJavadocMethod|SummaryJavadoc)" />
+
+  <!-- TODO: Implement tests -->
+  <suppress
+    checks="AbbreviationAsWordInName"
+    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]cluster[/\\]ClusterResourceManagerTODO\.java$"
+    message="'ClusterResourceManagerTODO'"
+  />
+
+  <!-- Will keep "domU" and "DomU" for consistency with Xen's "DomU" -->
+  <suppress
+    checks="AbbreviationAsWordInName"
+    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]cluster[/\\]AoservClusterBuilder\.java$"
+    message="'(domUDevice|domUDisk|domUHostname|domUServer|domUVirtualServer)'"
+  />
+
+  <!-- Will not split declaration to avoid duplicating Javadoc comment -->
+  <suppress
+    checks="MultipleVariableDeclarations"
+    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]infrastructure[/\\]HardDrivesTemperatureNodeWorker\.java$"
+  />
+  <suppress
+    checks="MultipleVariableDeclarations"
+    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]net[/\\]BindResultSerializer\.java$"
+  />
+
+  <!-- Will not reorder overloads -->
+  <suppress
+    checks="OverloadMethodsDeclarationOrder"
+    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]linux[/\\]FilesystemsNodeWorker\.java$"
+  />
+  <suppress
+    checks="OverloadMethodsDeclarationOrder"
+    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]net[/\\]IpAddressNode\.java$"
+  />
+
+</suppressions>

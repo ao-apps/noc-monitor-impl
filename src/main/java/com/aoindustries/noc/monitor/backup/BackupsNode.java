@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.backup;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -35,7 +37,6 @@ import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TableResultListener;
@@ -231,8 +232,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             ? AlertLevel.MEDIUM
             : missingMobBackup
             ? AlertLevel.LOW
-            : AlertLevel.NONE
-    ;
+            : AlertLevel.NONE;
 
     // Control individual backup nodes
     TableResult newResult;
@@ -250,8 +250,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
               ? PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
               : missingMobBackup
               ? PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.missingMobBackup")
-              : PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.backupsConfigured")
-      ;
+              : PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.backupsConfigured");
       alertLevel = newAlertLevel;
       if (oldAlertLevel != newAlertLevel) {
         hostNode.hostsNode.rootNode.nodeAlertLevelChanged(
@@ -266,8 +265,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
       Iterator<BackupNode> backupNodeIter = backupNodes.iterator();
       while (backupNodeIter.hasNext()) {
         BackupNode backupNode = backupNodeIter.next();
-        FileReplication failoverFileReplication = backupNode.getFailoverFileReplication();
-        if (!failoverFileReplications.contains(failoverFileReplication)) {
+        FileReplication fileReplication = backupNode.getFileReplication();
+        if (!failoverFileReplications.contains(fileReplication)) {
           backupNode.removeTableResultListener(this);
           backupNode.stop();
           backupNodeIter.remove();
@@ -276,10 +275,10 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
       }
       // Add new ones
       for (int c = 0; c < failoverFileReplications.size(); c++) {
-        FileReplication failoverFileReplication = failoverFileReplications.get(c);
-        if (c >= backupNodes.size() || !failoverFileReplication.equals(backupNodes.get(c).getFailoverFileReplication())) {
+        FileReplication fileReplication = failoverFileReplications.get(c);
+        if (c >= backupNodes.size() || !fileReplication.equals(backupNodes.get(c).getFileReplication())) {
           // Insert into proper index
-          BackupNode backupNode = new BackupNode(this, failoverFileReplication, port, csf, ssf);
+          BackupNode backupNode = new BackupNode(this, fileReplication, port, csf, ssf);
           backupNodes.add(c, backupNode);
           backupNode.start();
           hostNode.hostsNode.rootNode.nodeAdded();
@@ -315,12 +314,12 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
         List<Object> tableData = new ArrayList<>(failoverFileReplications.size() * 7);
         List<AlertLevel> alertLevels = new ArrayList<>(failoverFileReplications.size());
         for (int c = 0; c < failoverFileReplications.size(); c++) {
-          FileReplication failoverFileReplication = failoverFileReplications.get(c);
-          BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
+          FileReplication fileReplication = failoverFileReplications.get(c);
+          BackupPartition backupPartition = fileReplication.getBackupPartition();
           tableData.add(backupPartition == null ? "null" : backupPartition.getLinuxServer().getHostname());
           tableData.add(backupPartition == null ? "null" : backupPartition.getPath());
           StringBuilder times = new StringBuilder();
-          for (FileReplicationSchedule ffs : failoverFileReplication.getFailoverFileSchedules()) {
+          for (FileReplicationSchedule ffs : fileReplication.getFailoverFileSchedules()) {
             if (ffs.isEnabled()) {
               if (times.length() > 0) {
                 times.append(", ");
@@ -334,18 +333,18 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             }
           }
           tableData.add(times.toString());
-          Long bitRate = failoverFileReplication.getBitRate();
+          Long bitRate = fileReplication.getBitRate();
           if (bitRate == null) {
             tableData.add(PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate.unlimited"));
           } else {
             tableData.add(PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate", bitRate));
           }
-          if (failoverFileReplication.getUseCompression()) {
+          if (fileReplication.getUseCompression()) {
             tableData.add(PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.true"));
           } else {
             tableData.add(PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.false"));
           }
-          tableData.add(failoverFileReplication.getRetention().getDisplay());
+          tableData.add(fileReplication.getRetention().getDisplay());
           BackupNode backupNode = backupNodes.get(c);
           TableResult backupNodeResult = backupNode.getLastResult();
           if (backupNodeResult == null) {

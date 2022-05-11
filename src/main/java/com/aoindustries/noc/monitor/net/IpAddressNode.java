@@ -23,16 +23,17 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
 import com.aoapps.net.InetAddress;
-import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.dns.DnsNode;
@@ -60,8 +61,7 @@ public class IpAddressNode extends NodeImpl {
     InetAddress externalIp = ipAddress.getExternalInetAddress();
     return
         (externalIp == null ? ip.toString() : (ip.toString() + "@" + externalIp.toString()))
-            + "/" + ipAddress.getHostname()
-    ;
+            + "/" + ipAddress.getHostname();
   }
 
   static boolean isPingable(IpAddressesNode ipAddressesNode, IpAddress ipAddress) throws SQLException, IOException {
@@ -72,8 +72,7 @@ public class IpAddressNode extends NodeImpl {
     return
         // Must have ping monitoring enabled
         ((iam = ipAddress.getMonitoring()) != null)
-            && iam.getPingMonitorEnabled()
-    ;
+            && iam.getPingMonitorEnabled();
   }
 
   public final IpAddressesNode ipAddressesNode;
@@ -83,6 +82,7 @@ public class IpAddressNode extends NodeImpl {
   private static class ChildLock {
     // Empty lock class to help heap profile
   }
+
   private final ChildLock childLock = new ChildLock();
   private boolean started;
 
@@ -161,7 +161,7 @@ public class IpAddressNode extends NodeImpl {
   };
 
   void start() throws RemoteException, IOException, SQLException {
-    AOServConnector conn = ipAddressesNode.rootNode.conn;
+    AoservConnector conn = ipAddressesNode.rootNode.conn;
     synchronized (childLock) {
       if (started) {
         throw new IllegalStateException();
@@ -179,7 +179,7 @@ public class IpAddressNode extends NodeImpl {
 
   void stop() {
     RootNodeImpl rootNode = ipAddressesNode.rootNode;
-    AOServConnector conn = rootNode.conn;
+    AoservConnector conn = rootNode.conn;
     synchronized (childLock) {
       started = false;
       conn.getNet().getIpAddress().removeTableListener(tableListener);
@@ -222,17 +222,17 @@ public class IpAddressNode extends NodeImpl {
 
     RootNodeImpl rootNode = ipAddressesNode.rootNode;
 
-    IpAddress _currentIpAddress = ipAddress.getTable().getConnector().getNet().getIpAddress().get(ipAddress.getPkey());
-    boolean isPingable = isPingable(ipAddressesNode, _currentIpAddress);
+    IpAddress currentIpAddress = ipAddress.getTable().getConnector().getNet().getIpAddress().get(ipAddress.getPkey());
+    boolean isPingable = isPingable(ipAddressesNode, currentIpAddress);
     boolean isLoopback =
-        ipAddressesNode.netDeviceNode != null
-            && ipAddressesNode.netDeviceNode.getNetDevice().getDeviceId().isLoopback();
-    InetAddress ip = _currentIpAddress.getExternalInetAddress();
+        ipAddressesNode.deviceNode != null
+            && ipAddressesNode.deviceNode.getDevice().getDeviceId().isLoopback();
+    InetAddress ip = currentIpAddress.getExternalInetAddress();
     if (ip == null) {
-      ip = _currentIpAddress.getInetAddress();
+      ip = currentIpAddress.getInetAddress();
     }
-    boolean hasNetBinds = ipAddressesNode.netDeviceNode != null && !BindsNode.getSettings(_currentIpAddress).isEmpty();
-    IpAddressMonitoring iam = _currentIpAddress.getMonitoring();
+    boolean hasNetBinds = ipAddressesNode.deviceNode != null && !BindsNode.getSettings(currentIpAddress).isEmpty();
+    IpAddressMonitoring iam = currentIpAddress.getMonitoring();
 
     synchronized (childLock) {
       if (started) {

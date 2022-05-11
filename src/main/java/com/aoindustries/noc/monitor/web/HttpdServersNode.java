@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.web;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -30,7 +32,6 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.net.HostNode;
 import java.io.File;
@@ -74,7 +75,7 @@ public class HttpdServersNode extends NodeImpl {
     return hostNode;
   }
 
-  public Server getAOServer() {
+  public Server getLinuxServer() {
     return linuxServer;
   }
 

@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.backup;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.Strings;
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoindustries.aoserv.client.backup.FileReplication;
@@ -30,7 +32,6 @@ import com.aoindustries.aoserv.client.backup.FileReplicationLog;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -58,20 +59,20 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
   private static final int HISTORY_SIZE = 100;
 
   /**
-   * One unique worker is made per persistence file (and should match the failoverFileReplication exactly)
+   * One unique worker is made per persistence file (and should match the fileReplication exactly).
    */
   private static final Map<String, BackupNodeWorker> workerCache = new HashMap<>();
 
-  static BackupNodeWorker getWorker(File persistenceFile, FileReplication failoverFileReplication) throws IOException {
+  static BackupNodeWorker getWorker(File persistenceFile, FileReplication fileReplication) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
       BackupNodeWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new BackupNodeWorker(persistenceFile, failoverFileReplication);
+        worker = new BackupNodeWorker(persistenceFile, fileReplication);
         workerCache.put(path, worker);
       } else {
-        if (!worker.failoverFileReplication.equals(failoverFileReplication)) {
-          throw new AssertionError("worker.failoverFileReplication != failoverFileReplication: " + worker.failoverFileReplication + " != " + failoverFileReplication);
+        if (!worker.fileReplication.equals(fileReplication)) {
+          throw new AssertionError("worker.fileReplication != fileReplication: " + worker.fileReplication + " != " + fileReplication);
         }
       }
       return worker;
@@ -79,17 +80,18 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
   }
 
   // Will use whichever connector first created this worker, even if other accounts connect later.
-  private final FileReplication failoverFileReplication;
+  private final FileReplication fileReplication;
 
-  BackupNodeWorker(File persistenceFile, FileReplication failoverFileReplication) {
+  BackupNodeWorker(File persistenceFile, FileReplication fileReplication) {
     super(persistenceFile);
-    this.failoverFileReplication = failoverFileReplication;
+    this.fileReplication = fileReplication;
   }
 
   /**
    * Determines the alert message for the provided result.
-   *
+   * <p>
    * If there is not any data (no backups logged, make high level)
+   * </p>
    */
   @Override
   public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {
@@ -173,7 +175,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
 
   @Override
   protected List<FileReplicationLog> getQueryResult() throws Exception {
-    return failoverFileReplication.getFailoverFileLogs(HISTORY_SIZE);
+    return fileReplication.getFailoverFileLogs(HISTORY_SIZE);
   }
 
   @Override
@@ -181,7 +183,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
     if (failoverFileLogs.isEmpty()) {
       return locale -> Collections.emptyList();
     } else {
-      Host host = failoverFileReplication.getHost();
+      Host host = fileReplication.getHost();
       Server linuxServer = host.getLinuxServer();
       TimeZone timeZone = linuxServer == null ? null : linuxServer.getTimeZone().getTimeZone();
       List<Object> tableData = new ArrayList<>(failoverFileLogs.size() * 6);

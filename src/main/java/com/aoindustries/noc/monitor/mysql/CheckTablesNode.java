@@ -23,8 +23,9 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
-import com.aoindustries.noc.monitor.AlertLevelUtils;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
+import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -33,7 +34,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 
 /**
- * The node for all MySQLDatabases on one Server.
+ * The node for all MysqlDatabases on one Server.
  *
  * @author  AO Industries, Inc.
  */
@@ -41,21 +42,21 @@ public class CheckTablesNode extends TableResultNodeImpl {
 
   private static final long serialVersionUID = 2L;
 
-  final DatabaseNode mysqlDatabaseNode;
+  final DatabaseNode databaseNode;
 
-  CheckTablesNode(DatabaseNode mysqlDatabaseNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+  CheckTablesNode(DatabaseNode databaseNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-        mysqlDatabaseNode.mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
-        mysqlDatabaseNode,
+        databaseNode.databasesNode.serverNode.serversNode.hostNode.hostsNode.rootNode,
+        databaseNode,
         CheckTablesNodeWorker.getWorker(
-            mysqlDatabaseNode,
-            new File(mysqlDatabaseNode.getPersistenceDirectory(), "check_tables")
+            databaseNode,
+            new File(databaseNode.getPersistenceDirectory(), "check_tables")
         ),
         port,
         csf,
         ssf
     );
-    this.mysqlDatabaseNode = mysqlDatabaseNode;
+    this.databaseNode = databaseNode;
   }
 
   @Override
@@ -69,7 +70,7 @@ public class CheckTablesNode extends TableResultNodeImpl {
   @Override
   protected AlertLevel getMaxAlertLevel() {
     return AlertLevelUtils.getMonitoringAlertLevel(
-        mysqlDatabaseNode.mysqlDatabase.getMaxCheckTableAlertLevel()
+        databaseNode.database.getMaxCheckTableAlertLevel()
     );
   }
 }

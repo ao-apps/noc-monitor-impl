@@ -23,13 +23,14 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.backup.BackupPartition;
 import com.aoindustries.aoserv.client.backup.FileReplication;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -41,7 +42,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * The node for all FailoverMySQLReplications on one Server.
+ * The node for all FailoverMysqlReplications on one Server.
  *
  * @author  AO Industries, Inc.
  */
@@ -49,40 +50,40 @@ public class SlaveNode extends NodeImpl {
 
   private static final long serialVersionUID = 1L;
 
-  final SlavesNode mysqlSlavesNode;
-  private final MysqlReplication _mysqlReplication;
-  private final String _label;
+  final SlavesNode slavesNode;
+  private final MysqlReplication mysqlReplication;
+  private final String label;
 
   private boolean started;
 
-  private volatile SlaveStatusNode _mysqlSlaveStatusNode;
-  private volatile DatabasesNode _mysqlDatabasesNode;
+  private volatile SlaveStatusNode slaveStatusNode;
+  private volatile DatabasesNode databasesNode;
 
-  SlaveNode(SlavesNode mysqlSlavesNode, MysqlReplication mysqlReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
+  SlaveNode(SlavesNode slavesNode, MysqlReplication mysqlReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException, SQLException {
     super(port, csf, ssf);
-    this.mysqlSlavesNode = mysqlSlavesNode;
-    this._mysqlReplication = mysqlReplication;
+    this.slavesNode = slavesNode;
+    this.mysqlReplication = mysqlReplication;
     FileReplication replication = mysqlReplication.getFailoverFileReplication();
     if (replication != null) {
       // replication-based
-      com.aoindustries.aoserv.client.linux.Server linuxServer = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.getAOServer();
-      Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
+      com.aoindustries.aoserv.client.linux.Server linuxServer = slavesNode.serverNode.serversNode.getLinuxServer();
+      Server mysqlServer = slavesNode.serverNode.getServer();
       BackupPartition bp = mysqlReplication.getFailoverFileReplication().getBackupPartition();
-      this._label = bp.getLinuxServer().getHostname() + ":" + bp.getPath() + "/" + linuxServer.getHostname() + "/var/lib/mysql/" + mysqlServer.getName();
+      this.label = bp.getLinuxServer().getHostname() + ":" + bp.getPath() + "/" + linuxServer.getHostname() + "/var/lib/mysql/" + mysqlServer.getName();
     } else {
       // ao_server-based
-      Server mysqlServer = mysqlSlavesNode.mysqlServerNode.getMySQLServer();
-      this._label = mysqlReplication.getLinuxServer().getHostname() + ":/var/lib/mysql/" + mysqlServer.getName();
+      Server mysqlServer = slavesNode.serverNode.getServer();
+      this.label = mysqlReplication.getLinuxServer().getHostname() + ":/var/lib/mysql/" + mysqlServer.getName();
     }
   }
 
-  MysqlReplication getFailoverMySQLReplication() {
-    return _mysqlReplication;
+  MysqlReplication getMysqlReplication() {
+    return mysqlReplication;
   }
 
   @Override
   public SlavesNode getParent() {
-    return mysqlSlavesNode;
+    return slavesNode;
   }
 
   @Override
@@ -93,8 +94,8 @@ public class SlaveNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-        this._mysqlSlaveStatusNode,
-        this._mysqlDatabasesNode
+        this.slaveStatusNode,
+        this.databasesNode
     );
   }
 
@@ -104,7 +105,7 @@ public class SlaveNode extends NodeImpl {
   @Override
   protected AlertLevel getMaxAlertLevel() {
     return AlertLevelUtils.getMonitoringAlertLevel(
-        _mysqlReplication.getMaxAlertLevel()
+        mysqlReplication.getMaxAlertLevel()
     );
   }
 
@@ -115,8 +116,8 @@ public class SlaveNode extends NodeImpl {
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
         AlertLevelUtils.getMaxAlertLevel(
-            this._mysqlSlaveStatusNode,
-            this._mysqlDatabasesNode
+            this.slaveStatusNode,
+            this.databasesNode
         )
     );
   }
@@ -131,54 +132,54 @@ public class SlaveNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return _label;
+    return label;
   }
 
   void start() throws IOException, SQLException {
-    RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode;
+    RootNodeImpl rootNode = slavesNode.serverNode.serversNode.hostNode.hostsNode.rootNode;
     synchronized (this) {
       if (started) {
         throw new IllegalStateException();
       }
       started = true;
-      if (_mysqlSlaveStatusNode == null) {
-        _mysqlSlaveStatusNode = new SlaveStatusNode(this, port, csf, ssf);
-        _mysqlSlaveStatusNode.start();
+      if (slaveStatusNode == null) {
+        slaveStatusNode = new SlaveStatusNode(this, port, csf, ssf);
+        slaveStatusNode.start();
         rootNode.nodeAdded();
       }
-      if (_mysqlDatabasesNode == null) {
-        _mysqlDatabasesNode = new DatabasesNode(this, port, csf, ssf);
-        _mysqlDatabasesNode.start();
+      if (databasesNode == null) {
+        databasesNode = new DatabasesNode(this, port, csf, ssf);
+        databasesNode.start();
         rootNode.nodeAdded();
       }
     }
   }
 
   void stop() {
-    RootNodeImpl rootNode = mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode;
+    RootNodeImpl rootNode = slavesNode.serverNode.serversNode.hostNode.hostsNode.rootNode;
     synchronized (this) {
       started = false;
-      if (_mysqlSlaveStatusNode != null) {
-        _mysqlSlaveStatusNode.stop();
-        _mysqlSlaveStatusNode = null;
+      if (slaveStatusNode != null) {
+        slaveStatusNode.stop();
+        slaveStatusNode = null;
         rootNode.nodeRemoved();
       }
 
-      if (_mysqlDatabasesNode != null) {
-        _mysqlDatabasesNode.stop();
-        _mysqlDatabasesNode = null;
+      if (databasesNode != null) {
+        databasesNode.stop();
+        databasesNode = null;
         rootNode.nodeRemoved();
       }
     }
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(mysqlSlavesNode.getPersistenceDirectory(), Integer.toString(_mysqlReplication.getPkey()));
+    File dir = new File(slavesNode.getPersistenceDirectory(), Integer.toString(mysqlReplication.getPkey()));
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
             PACKAGE_RESOURCES.getMessage(
-                mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+                slavesNode.serverNode.serversNode.hostNode.hostsNode.rootNode.locale,
                 "error.mkdirFailed",
                 dir.getCanonicalPath()
             )

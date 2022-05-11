@@ -26,7 +26,7 @@ package com.aoindustries.noc.monitor.cluster;
 import com.aoapps.collections.AoCollections;
 import com.aoapps.concurrent.ConcurrentUtils;
 import com.aoapps.lang.i18n.Resources;
-import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.aoserv.client.account.Account;
 import com.aoindustries.aoserv.client.distribution.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.infrastructure.PhysicalServer;
@@ -64,21 +64,22 @@ import java.util.concurrent.Future;
 
 /**
  * Builds the cluster configuration from the AOServ Platform.
- *
+ * <p>
  * TODO: Add check to make sure that virtual server to physical server mappings are always within the same cluster?
  *       - or - Could this be an underlying database constraint?
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
-public final class AOServClusterBuilder {
+public final class AoservClusterBuilder {
 
   /** Make no instances. */
-  private AOServClusterBuilder() {
+  private AoservClusterBuilder() {
     throw new AssertionError();
   }
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, AOServClusterBuilder.class);
+      Resources.getResources(ResourceBundle::getBundle, AoservClusterBuilder.class);
 
   private static boolean is7200rpm(String model) {
     return
@@ -106,24 +107,21 @@ public final class AOServClusterBuilder {
             || model.startsWith("WDC WD2000JB-")    // 200 GB
             || model.startsWith("WDC WD2500JB-")    // 250 GB
             || model.startsWith("WDC WD2500YD-")    // 250 GB
-            || model.startsWith("WDC WD3200YS-")    // 320 GB
-    ;
+            || model.startsWith("WDC WD3200YS-");   // 320 GB
   }
 
   private static boolean is10000rpm(String model) {
     return
         // Fujitsu
         "MAW3073NP".equals(model)            // 73 GB
-      // Western Digital
-      || model.startsWith("WDC WD740GD-")     // 74 GB
-    ;
+        // Western Digital
+        || model.startsWith("WDC WD740GD-"); // 74 GB
   }
 
   private static boolean is15000rpm(String model) {
     return
         // Seagate
-        "ST3146855LC".equals(model)             // 146 GB
-    ;
+        "ST3146855LC".equals(model);         // 146 GB
   }
 
   /**
@@ -165,7 +163,7 @@ public final class AOServClusterBuilder {
    * @see Cluster
    */
   public static SortedSet<Cluster> getClusters(
-      final AOServConnector conn,
+      final AoservConnector conn,
       final List<Server> linuxServers,
       final Map<String, Map<String, String>> hddModelReports,
       final Map<String, Server.LvmReport> lvmReports,
@@ -208,7 +206,7 @@ public final class AOServClusterBuilder {
    * @param  useTarget  if true will use the target values, otherwise will use the live values
    */
   public static Cluster getCluster(
-      AOServConnector conn,
+      AoservConnector conn,
       ServerFarm serverFarm,
       List<Server> linuxServers,
       Map<String, Map<String, String>> hddModelReports,
@@ -253,8 +251,8 @@ public final class AOServClusterBuilder {
             throw new AssertionError("LvmReport not found for " + hostname);
           }
           for (Map.Entry<String, Server.LvmReport.PhysicalVolume> entry : lvmReport.getPhysicalVolumes().entrySet()) {
-            String partition = entry.getKey();
-            Server.LvmReport.PhysicalVolume lvmPhysicalVolume = entry.getValue();
+            final String partition = entry.getKey();
+            final Server.LvmReport.PhysicalVolume lvmPhysicalVolume = entry.getValue();
             // Count the number of digits on the right of partition
             int digitCount = 0;
             for (int c = partition.length() - 1; c >= 0; c--) {
@@ -322,7 +320,8 @@ public final class AOServClusterBuilder {
           // Must always be in the package with the same name as the root account
           Account.Name packageName = host.getPackage().getName();
           if (!packageName.equals(rootAccounting)) {
-            throw new SQLException("All virtual servers should have a package name equal to the root account name: servers.package.name != root_account.accounting: " + packageName + " != " + rootAccounting);
+            throw new SQLException("All virtual servers should have a package name equal to the root account name:"
+                + " servers.package.name != root_account.accounting: " + packageName + " != " + rootAccounting);
           }
           String hostname = host.getName();
           cluster = cluster.addDomU(
@@ -366,7 +365,7 @@ public final class AOServClusterBuilder {
    */
   public static SortedSet<ClusterConfiguration> getClusterConfigurations(
       final Locale locale,
-      final AOServConnector conn,
+      final AoservConnector conn,
       final SortedSet<Cluster> clusters,
       final Map<String, List<Server.DrbdReport>> drbdReports,
       final Map<String, Server.LvmReport> lvmReports
@@ -466,7 +465,7 @@ public final class AOServClusterBuilder {
    */
   public static ClusterConfiguration getClusterConfiguration(
       Locale locale,
-      AOServConnector conn,
+      AoservConnector conn,
       Cluster cluster,
       Map<String, List<Server.DrbdReport>> drbdReports,
       Map<String, Server.LvmReport> lvmReports
@@ -675,50 +674,50 @@ public final class AOServClusterBuilder {
       }
     }
 
-    // Look for any extra resources in LVM
-    {
-      // Make sure every volume group found in LVM equals a domUHostname that is either primary or secondary on that machine
-      for (Map.Entry<String, Server.LvmReport> entry : lvmReports.entrySet()) {
-        String dom0Hostname = entry.getKey();
-        // Verify within this cluster only
-        if (cluster.getDom0s().containsKey(dom0Hostname)) {
-          Server.LvmReport lvmReport = entry.getValue();
-          for (Map.Entry<String, Server.LvmReport.VolumeGroup> vgEntry : lvmReport.getVolumeGroups().entrySet()) {
-            String vgName = vgEntry.getKey();
-            Server.LvmReport.VolumeGroup volumeGroup = vgEntry.getValue();
-            // This should still validate the logical volumes in the off chance a virtual server is named "backup"
-            DomU domU = cluster.getDomU(vgName);
-            if (domU == null) {
-              if (!"backup".equals(vgName)) {
-                throw new AssertionError("Volume group found but there is no virtual server of the same name: " + dom0Hostname + ":/dev/" + vgName);
-              }
-            } else {
-              // Make sure primary or secondary on this Dom0
-              String domUHostname = domU.getHostname();
-              String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
-              String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
-              if (
-                  !primaryDom0Hostname.equals(dom0Hostname)
-                      && !secondaryDom0Hostname.equals(dom0Hostname)
-              ) {
-                throw new AssertionError("Volume group found but the virtual server is neither primary nor secondary on this physical server: " + dom0Hostname + ":/dev/" + vgName);
-              }
-
-              // Make sure every logical volume found in LVM equals a domUDisk
-              for (String lvName : volumeGroup.getLogicalVolumes().keySet()) {
-                if (!lvName.endsWith("-drbd")) {
-                  throw new AssertionError("lvName does not end with -drbd: " + lvName);
+      // Look for any extra resources in LVM
+      {
+        // Make sure every volume group found in LVM equals a domUHostname that is either primary or secondary on that machine
+        for (Map.Entry<String, Server.LvmReport> entry : lvmReports.entrySet()) {
+          String dom0Hostname = entry.getKey();
+          // Verify within this cluster only
+          if (cluster.getDom0s().containsKey(dom0Hostname)) {
+            Server.LvmReport lvmReport = entry.getValue();
+            for (Map.Entry<String, Server.LvmReport.VolumeGroup> vgEntry : lvmReport.getVolumeGroups().entrySet()) {
+              String vgName = vgEntry.getKey();
+              Server.LvmReport.VolumeGroup volumeGroup = vgEntry.getValue();
+              // This should still validate the logical volumes in the off chance a virtual server is named "backup"
+              DomU domU = cluster.getDomU(vgName);
+              if (domU == null) {
+                if (!"backup".equals(vgName)) {
+                  throw new AssertionError("Volume group found but there is no virtual server of the same name: " + dom0Hostname + ":/dev/" + vgName);
                 }
-                DomUDisk domUDisk = domU.getDomUDisk(lvName.substring(0, lvName.length() - 5));
-                if (domUDisk == null) {
-                  throw new AssertionError("Logical volume found but the virtual server does not have a corresponding virtual disk: " + dom0Hostname + ":/dev/" + vgName + "/" + lvName);
+              } else {
+                // Make sure primary or secondary on this Dom0
+                String domUHostname = domU.getHostname();
+                String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
+                String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
+                if (
+                    !primaryDom0Hostname.equals(dom0Hostname)
+                        && !secondaryDom0Hostname.equals(dom0Hostname)
+                ) {
+                  throw new AssertionError("Volume group found but the virtual server is neither primary nor secondary on this physical server: " + dom0Hostname + ":/dev/" + vgName);
+                }
+
+                // Make sure every logical volume found in LVM equals a domUDisk
+                for (String lvName : volumeGroup.getLogicalVolumes().keySet()) {
+                  if (!lvName.endsWith("-drbd")) {
+                    throw new AssertionError("lvName does not end with -drbd: " + lvName);
+                  }
+                  DomUDisk domUDisk = domU.getDomUDisk(lvName.substring(0, lvName.length() - 5));
+                  if (domUDisk == null) {
+                    throw new AssertionError("Logical volume found but the virtual server does not have a corresponding virtual disk: " + dom0Hostname + ":/dev/" + vgName + "/" + lvName);
+                  }
                 }
               }
             }
           }
         }
       }
-    }
 
     return clusterConfiguration;
   }

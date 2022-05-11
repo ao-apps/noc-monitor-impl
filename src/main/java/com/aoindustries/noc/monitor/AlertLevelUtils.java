@@ -43,13 +43,20 @@ public final class AlertLevelUtils {
       return null;
     }
     switch (aoservAlertLevel) {
-      case NONE     : return AlertLevel.NONE;
-      case LOW      : return AlertLevel.LOW;
-      case MEDIUM   : return AlertLevel.MEDIUM;
-      case HIGH     : return AlertLevel.HIGH;
-      case CRITICAL : return AlertLevel.CRITICAL;
-      case UNKNOWN  : return AlertLevel.UNKNOWN;
-      default       : throw new AssertionError("Unexpected aoservAlertLevel: " + aoservAlertLevel);
+      case NONE:
+        return AlertLevel.NONE;
+      case LOW:
+        return AlertLevel.LOW;
+      case MEDIUM:
+        return AlertLevel.MEDIUM;
+      case HIGH:
+        return AlertLevel.HIGH;
+      case CRITICAL:
+        return AlertLevel.CRITICAL;
+      case UNKNOWN:
+        return AlertLevel.UNKNOWN;
+      default:
+        throw new AssertionError("Unexpected aoservAlertLevel: " + aoservAlertLevel);
     }
   }
 

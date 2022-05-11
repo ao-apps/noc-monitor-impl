@@ -54,7 +54,7 @@ public class LoadAverageResultSerializer extends BufferedSerializer<LoadAverageR
         out.writeFloat(value.getTenMinute());
         out.writeCompressedInt(value.getRunningProcesses());
         out.writeCompressedInt(value.getTotalProcesses());
-        out.writeCompressedInt(value.getLastPID());
+        out.writeCompressedInt(value.getLastPid());
         out.writeFloat(value.getLoadLow());
         out.writeFloat(value.getLoadMedium());
         out.writeFloat(value.getLoadHigh());

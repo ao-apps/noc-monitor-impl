@@ -23,11 +23,12 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -51,20 +52,20 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
   //private static final Logger logger = Logger.getLogger(MySQLDatabaseNodeWorker.class.getName());
 
   /**
-   * One unique worker is made per persistence file (and should match the mysqlDatabase exactly)
+   * One unique worker is made per persistence file (and should match the database exactly).
    */
   private static final Map<String, DatabaseNodeWorker> workerCache = new HashMap<>();
 
-  static DatabaseNodeWorker getWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
+  static DatabaseNodeWorker getWorker(File persistenceFile, Database database, MysqlReplication slave) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
       DatabaseNodeWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new DatabaseNodeWorker(persistenceFile, mysqlDatabase, mysqlSlave);
+        worker = new DatabaseNodeWorker(persistenceFile, database, slave);
         workerCache.put(path, worker);
       } else {
-        if (!worker.mysqlDatabase.equals(mysqlDatabase)) {
-          throw new AssertionError("worker.mysqlDatabase != mysqlDatabase: " + worker.mysqlDatabase + " != " + mysqlDatabase);
+        if (!worker.database.equals(database)) {
+          throw new AssertionError("worker.database != database: " + worker.database + " != " + database);
         }
       }
       return worker;
@@ -72,21 +73,20 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
   }
 
   // Will use whichever connector first created this worker, even if other accounts connect later.
-  private final Database mysqlDatabase;
-  private final MysqlReplication mysqlSlave;
+  private final Database database;
+  private final MysqlReplication slave;
   final boolean isSlowServer;
   private final Object lastTableStatusesLock = new Object();
   private List<Database.TableStatus> lastTableStatuses;
 
-  DatabaseNodeWorker(File persistenceFile, Database mysqlDatabase, MysqlReplication mysqlSlave) throws IOException, SQLException {
+  DatabaseNodeWorker(File persistenceFile, Database database, MysqlReplication slave) throws IOException, SQLException {
     super(persistenceFile);
-    this.mysqlDatabase = mysqlDatabase;
-    this.mysqlSlave = mysqlSlave;
-    String hostname = mysqlDatabase.getMySQLServer().getLinuxServer().getHostname().toString();
+    this.database = database;
+    this.slave = slave;
+    String hostname = database.getMysqlServer().getLinuxServer().getHostname().toString();
     this.isSlowServer =
-        "www.swimconnection.com".equals(hostname)
+        "www.swimconnection.com".equals(hostname);
     // || hostname.equals("www1.leagle.com")
-    ;
   }
 
   @Override
@@ -119,7 +119,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 
   @Override
   protected List<Database.TableStatus> getQueryResult() throws Exception {
-    List<Database.TableStatus> tableStatuses = mysqlDatabase.getTableStatus(mysqlSlave);
+    List<Database.TableStatus> tableStatuses = database.getTableStatus(slave);
     setLastTableStatuses(tableStatuses);
     return tableStatuses;
   }

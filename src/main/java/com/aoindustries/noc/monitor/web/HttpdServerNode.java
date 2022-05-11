@@ -23,8 +23,9 @@
 
 package com.aoindustries.noc.monitor.web;
 
-import com.aoindustries.aoserv.client.web.HttpdServer;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
+import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
 import java.io.File;
@@ -41,7 +42,7 @@ public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult>
 
   private static final long serialVersionUID = 1L;
 
-  private final HttpdServer _httpdServer;
+  private final HttpdServer httpdServer;
 
   HttpdServerNode(HttpdServersNode httpdServersNode, HttpdServer httpdServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
@@ -55,16 +56,16 @@ public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult>
         csf,
         ssf
     );
-    this._httpdServer = httpdServer;
+    this.httpdServer = httpdServer;
   }
 
   public HttpdServer getHttpdServer() {
-    return _httpdServer;
+    return httpdServer;
   }
 
   @Override
   public String getLabel() {
-    String name = _httpdServer.getName();
+    String name = httpdServer.getName();
     if (name == null) {
       return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.noName");
     } else {

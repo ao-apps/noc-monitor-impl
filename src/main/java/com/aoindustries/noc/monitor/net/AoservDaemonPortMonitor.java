@@ -30,19 +30,19 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.portmon.PortMonitor;
 
 /**
- * Connects to the AOServDaemon through the AOServMaster in order to perform
+ * Connects to the AoservDaemon through the AoservMaster in order to perform
  * the monitoring from the daemon's point of view.  This is required for
  * monitoring of private and loopback IP addresses.
  *
  * @author  AO Industries, Inc.
  */
-public class AOServDaemonPortMonitor extends PortMonitor {
+public class AoservDaemonPortMonitor extends PortMonitor {
 
   private final Server linuxServer;
   private final String appProtocol;
   private final URIParameters monitoringParameters;
 
-  public AOServDaemonPortMonitor(Server linuxServer, InetAddress ipAddress, Port port, String appProtocol, URIParameters monitoringParameters) {
+  public AoservDaemonPortMonitor(Server linuxServer, InetAddress ipAddress, Port port, String appProtocol, URIParameters monitoringParameters) {
     super(ipAddress, port);
     this.linuxServer = linuxServer;
     this.appProtocol = appProtocol;

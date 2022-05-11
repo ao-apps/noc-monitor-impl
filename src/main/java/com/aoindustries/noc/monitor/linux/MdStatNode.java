@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.linux;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.SingleResultNodeImpl;
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class MdStatNode extends SingleResultNodeImpl {
         raidNode,
         MdStatNodeWorker.getWorker(
             new File(raidNode.getPersistenceDirectory(), "mdstat"),
-            raidNode.getAOServer()
+            raidNode.getServer()
         ),
         port,
         csf,

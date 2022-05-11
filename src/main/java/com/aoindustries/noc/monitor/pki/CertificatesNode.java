@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.pki;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -30,7 +32,6 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.pki.Certificate;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.net.HostNode;
 import java.io.File;
@@ -52,14 +53,14 @@ public class CertificatesNode extends NodeImpl {
   private static final long serialVersionUID = 1L;
 
   final HostNode hostNode;
-  private final Server linuxServer;
-  private final List<CertificateNode> sslCertificateNodes = new ArrayList<>();
+  private final Server server;
+  private final List<CertificateNode> certificateNodes = new ArrayList<>();
   private boolean started;
 
-  public CertificatesNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+  public CertificatesNode(HostNode hostNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
     this.hostNode = hostNode;
-    this.linuxServer = linuxServer;
+    this.server = server;
   }
 
   @Override
@@ -67,8 +68,8 @@ public class CertificatesNode extends NodeImpl {
     return hostNode;
   }
 
-  public Server getAOServer() {
-    return linuxServer;
+  public Server getServer() {
+    return server;
   }
 
   @Override
@@ -78,8 +79,8 @@ public class CertificatesNode extends NodeImpl {
 
   @Override
   public List<CertificateNode> getChildren() {
-    synchronized (sslCertificateNodes) {
-      return getSnapshot(sslCertificateNodes);
+    synchronized (certificateNodes) {
+      return getSnapshot(certificateNodes);
     }
   }
 
@@ -89,8 +90,8 @@ public class CertificatesNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     AlertLevel level;
-    synchronized (sslCertificateNodes) {
-      level = AlertLevelUtils.getMaxAlertLevel(sslCertificateNodes);
+    synchronized (certificateNodes) {
+      level = AlertLevelUtils.getMaxAlertLevel(certificateNodes);
     }
     return constrainAlertLevel(level);
   }
@@ -117,7 +118,7 @@ public class CertificatesNode extends NodeImpl {
   };
 
   public void start() throws IOException, SQLException {
-    synchronized (sslCertificateNodes) {
+    synchronized (certificateNodes) {
       if (started) {
         throw new IllegalStateException();
       }
@@ -129,38 +130,38 @@ public class CertificatesNode extends NodeImpl {
   }
 
   public void stop() {
-    synchronized (sslCertificateNodes) {
+    synchronized (certificateNodes) {
       started = false;
       hostNode.hostsNode.rootNode.conn.getPki().getCertificateName().removeTableListener(tableListener);
       hostNode.hostsNode.rootNode.conn.getPki().getCertificate().removeTableListener(tableListener);
-      for (CertificateNode sslCertificateNode : sslCertificateNodes) {
+      for (CertificateNode sslCertificateNode : certificateNodes) {
         sslCertificateNode.stop();
         hostNode.hostsNode.rootNode.nodeRemoved();
       }
-      sslCertificateNodes.clear();
+      certificateNodes.clear();
     }
   }
 
   private void verifySslCertificates() throws IOException, SQLException {
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-    synchronized (sslCertificateNodes) {
+    synchronized (certificateNodes) {
       if (!started) {
         return;
       }
     }
 
-    List<Certificate> sslCertificates = linuxServer.getSslCertificates();
-    synchronized (sslCertificateNodes) {
+    List<Certificate> certificates = server.getSslCertificates();
+    synchronized (certificateNodes) {
       if (started) {
         // Remove old ones
-        Iterator<CertificateNode> sslCertificateNodeIter = sslCertificateNodes.iterator();
+        Iterator<CertificateNode> sslCertificateNodeIter = certificateNodes.iterator();
         while (sslCertificateNodeIter.hasNext()) {
           CertificateNode sslCertificateNode = sslCertificateNodeIter.next();
-          Certificate sslCertificate = sslCertificateNode.getSslCertificate();
+          Certificate sslCertificate = sslCertificateNode.getCertificate();
           // Find matching new state
           Certificate newCert = null;
-          for (Certificate cert : sslCertificates) {
+          for (Certificate cert : certificates) {
             if (cert.equals(sslCertificate)) {
               newCert = cert;
               break;
@@ -178,19 +179,19 @@ public class CertificatesNode extends NodeImpl {
           }
         }
         // Add new ones
-        for (int c = 0; c < sslCertificates.size(); c++) {
-          Certificate sslCertificate = sslCertificates.get(c);
-          if (c >= sslCertificateNodes.size() || !sslCertificate.equals(sslCertificateNodes.get(c).getSslCertificate())) {
+        for (int c = 0; c < certificates.size(); c++) {
+          Certificate sslCertificate = certificates.get(c);
+          if (c >= certificateNodes.size() || !sslCertificate.equals(certificateNodes.get(c).getCertificate())) {
             // Insert into proper index
             CertificateNode sslCertificateNode = new CertificateNode(this, sslCertificate, port, csf, ssf);
-            sslCertificateNodes.add(c, sslCertificateNode);
+            certificateNodes.add(c, sslCertificateNode);
             sslCertificateNode.start();
             hostNode.hostsNode.rootNode.nodeAdded();
           }
         }
         // Prune any extra nodes that can happen when they are reordered
-        while (sslCertificateNodes.size() > sslCertificates.size()) {
-          CertificateNode sslCertificateNode = sslCertificateNodes.remove(sslCertificateNodes.size() - 1);
+        while (certificateNodes.size() > certificates.size()) {
+          CertificateNode sslCertificateNode = certificateNodes.remove(certificateNodes.size() - 1);
           sslCertificateNode.stop();
           hostNode.hostsNode.rootNode.nodeRemoved();
         }

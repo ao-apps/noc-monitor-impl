@@ -23,9 +23,10 @@
 
 package com.aoindustries.noc.monitor.web;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
@@ -46,7 +47,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
   private static final Logger logger = Logger.getLogger(HttpdServerNodeWorker.class.getName());
 
   /**
-   * One unique worker is made per persistence file (and should match httpdServer exactly)
+   * One unique worker is made per persistence file (and should match httpdServer exactly).
    */
   private static final Map<String, HttpdServerNodeWorker> workerCache = new HashMap<>();
 
@@ -64,20 +65,20 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
         if (logger.isLoggable(Level.FINER)) {
           logger.finer("Found existing worker for " + httpdServer.getName());
         }
-        if (!worker._httpdServer.equals(httpdServer)) {
-          throw new AssertionError("worker.httpdServer != httpdServer: " + worker._httpdServer + " != " + httpdServer);
+        if (!worker.originalHttpdServer.equals(httpdServer)) {
+          throw new AssertionError("worker.httpdServer != httpdServer: " + worker.originalHttpdServer + " != " + httpdServer);
         }
       }
       return worker;
     }
   }
 
-  private final HttpdServer _httpdServer;
+  private final HttpdServer originalHttpdServer;
   private HttpdServer currentHttpdServer;
 
   private HttpdServerNodeWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
     super(persistenceFile, new HttpdServerResultSerializer());
-    this._httpdServer = currentHttpdServer = httpdServer;
+    this.originalHttpdServer = currentHttpdServer = httpdServer;
   }
 
   @Override
@@ -88,7 +89,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
   @Override
   protected List<Integer> getSample() throws Exception {
     // Get the latest limits
-    currentHttpdServer = _httpdServer.getTable().getConnector().getWeb().getHttpdServer().get(_httpdServer.getPkey());
+    currentHttpdServer = originalHttpdServer.getTable().getConnector().getWeb().getHttpdServer().get(originalHttpdServer.getPkey());
     int concurrency = currentHttpdServer.getConcurrency();
     return Arrays.asList(
         concurrency,

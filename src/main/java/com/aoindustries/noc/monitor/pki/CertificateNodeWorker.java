@@ -23,11 +23,12 @@
 
 package com.aoindustries.noc.monitor.pki;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoindustries.aoserv.client.pki.Certificate;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -60,7 +61,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
   private static final long NONE_SLEEP_DELAY = 60L * 60 * 1000;
 
   /**
-   * One unique worker is made per persistence file (and should match the sslCertificate exactly)
+   * One unique worker is made per persistence file (and should match the sslCertificate exactly).
    */
   private static final Map<String, CertificateNodeWorker> workerCache = new HashMap<>();
 
@@ -110,10 +111,9 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
     } else {
       List<?> tableData = result.getTableData(Locale.getDefault());
       List<AlertLevel> alertLevels = result.getAlertLevels();
-      for (
-        int index = 0, len = tableData.size();
-        index < len;
-        index += NUM_COLS
+      for (int index = 0, len = tableData.size();
+          index < len;
+          index += NUM_COLS
       ) {
         AlertLevel alertLevel = alertLevels.get(index / NUM_COLS);
         if (alertLevel.compareTo(highestAlertLevel) > 0) {

@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.infrastructure;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.SingleResultNodeImpl;
 import com.aoindustries.noc.monitor.linux.RaidNode;
 import java.io.File;
@@ -46,7 +47,7 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
         raidNode,
         ThreeWareRaidNodeWorker.getWorker(
             new File(raidNode.getPersistenceDirectory(), "3ware"),
-            raidNode.getAOServer()
+            raidNode.getServer()
         ),
         port,
         csf,

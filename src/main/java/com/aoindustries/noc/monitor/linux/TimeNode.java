@@ -23,8 +23,9 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
+import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.TimeResult;
 import com.aoindustries.noc.monitor.net.HostNode;

@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.net;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.SingleResultNodeImpl;
 import java.io.File;
 import java.io.IOException;
@@ -39,13 +40,13 @@ public class DeviceBondingNode extends SingleResultNodeImpl {
 
   private static final long serialVersionUID = 1L;
 
-  DeviceBondingNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+  DeviceBondingNode(DeviceNode deviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-        netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode,
-        netDeviceNode,
+        deviceNode.devicesNode.hostNode.hostsNode.rootNode,
+        deviceNode,
         DeviceBondingNodeWorker.getWorker(
-            new File(netDeviceNode.getPersistenceDirectory(), "bonding"),
-            netDeviceNode.getNetDevice()
+            new File(deviceNode.getPersistenceDirectory(), "bonding"),
+            deviceNode.getDevice()
         ),
         port,
         csf,

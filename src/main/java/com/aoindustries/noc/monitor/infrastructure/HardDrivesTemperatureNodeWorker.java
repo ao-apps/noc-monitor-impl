@@ -23,12 +23,13 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.Strings;
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoapps.lang.text.LocalizedParseException;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -44,8 +45,9 @@ import java.util.function.Function;
 
 /**
  * The workers for hard drive temperature monitoring.
- *
+ * <p>
  * TODO: Keep historical data and warn if temp increases more than 20C/hour
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
@@ -62,11 +64,10 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
       HOT_LOW = 48,
       HOT_MEDIUM = 51,
       HOT_HIGH = 54,
-      HOT_CRITICAL = 60
-  ;
+      HOT_CRITICAL = 60;
 
   /**
-   * One unique worker is made per persistence file (and should match the linuxServer exactly)
+   * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
   private static final Map<String, HardDrivesTemperatureNodeWorker> workerCache = new HashMap<>();
 
@@ -180,25 +181,25 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
         boolean parsed;
         if (value.endsWith(" C")) {
           // A few hard drives read much differently than other drives, offset the thresholds here
-//          String hostname = linuxServer.getHostname().toString();
-//          String device = tableData.get(index);
+          //String hostname = linuxServer.getHostname().toString();
+          //String device = tableData.get(index);
           int offset;
-//                    if (
-//                        hostname.equals("xen1.mob.aoindustries.com")
-//                        && device.equals("/dev/sda")
-//                    ) {
-//                        offset = -7;
-//                    } else if (
-//                        hostname.equals("xen907-4.fc.aoindustries.com")
-//                        && (
-//                            device.equals("/dev/sda")
-//                            || device.equals("/dev/sdb")
-//                        )
-//                    ) {
-//                        offset = 12;
-//                    } else {
+          //if (
+          //    hostname.equals("xen1.mob.aoindustries.com")
+          //    && device.equals("/dev/sda")
+          //) {
+          //    offset = -7;
+          //} else if (
+          //    hostname.equals("xen907-4.fc.aoindustries.com")
+          //    && (
+          //        device.equals("/dev/sda")
+          //        || device.equals("/dev/sdb")
+          //    )
+          //) {
+          //    offset = 12;
+          //} else {
           offset = 0;
-//                    }
+          //}
           String numString = value.substring(0, value.length() - 2);
           try {
             int num = Integer.parseInt(numString);

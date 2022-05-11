@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.infrastructure;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class HardDrivesTemperatureNode extends TableResultNodeImpl {
         hardDrivesNode,
         HardDrivesTemperatureNodeWorker.getWorker(
             new File(hardDrivesNode.getPersistenceDirectory(), "hddtemp"),
-            hardDrivesNode.getLinuxServer()
+            hardDrivesNode.getServer()
         ),
         port,
         csf,

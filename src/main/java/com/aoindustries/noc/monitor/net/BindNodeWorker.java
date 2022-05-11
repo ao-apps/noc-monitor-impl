@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.LocalizedIllegalArgumentException;
 import com.aoapps.lang.Throwables;
 import com.aoapps.net.InetAddress;
@@ -31,7 +33,6 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Bind;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetBindResult;
@@ -54,7 +55,7 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
   private static final Logger logger = Logger.getLogger(BindNodeWorker.class.getName());
 
   /**
-   * One unique worker is made per persistence file (and should match the NetMonitorSetting)
+   * One unique worker is made per persistence file (and should match the NetMonitorSetting).
    */
   private static final Map<String, BindNodeWorker> workerCache = new HashMap<>();
 
@@ -111,7 +112,7 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
       if (linuxServer == null) {
         throw new LocalizedIllegalArgumentException(PACKAGE_RESOURCES, "NetBindNodeWorker.host.notLinuxServer", host.toString());
       }
-      portMonitor = new AOServDaemonPortMonitor(
+      portMonitor = new AoservDaemonPortMonitor(
           linuxServer,
           ipAddress,
           netPort,

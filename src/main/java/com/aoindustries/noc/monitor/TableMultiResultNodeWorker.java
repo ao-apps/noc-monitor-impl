@@ -23,13 +23,14 @@
 
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.EnumUtils;
 import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoapps.persistence.PersistentCollections;
 import com.aoapps.persistence.PersistentLinkedList;
 import com.aoapps.persistence.ProtectionLevel;
 import com.aoapps.persistence.Serializer;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableMultiResult;
 import java.io.File;
@@ -50,10 +51,11 @@ import javax.swing.SwingUtilities;
 
 /**
  * The workers for table multi-results node.
- *
+ * <p>
  * TODO: Instead of a fixed history size, aggregate data into larger time ranges and keep
  * track of mean, min, max, and standard deviation (or perhaps 5th/95th percentile?).  Keep
  * the following time ranges:
+ * </p>
  * <pre>
  * 1 minute for 2 days = 2880 samples
  * 5 minutes for 5 days = 1440 samples
@@ -66,9 +68,11 @@ import javax.swing.SwingUtilities;
  * ==================================
  * total: 7680 samples + one per day beyond 224 days
  * </pre>
+ * <p>
  * Update in a single background thread across all workers, and handle recovery from unexpected
  * shutdown gracefully by inserting aggregate before removing samples, and detect on next aggregation.
  * Also, the linked list should always be sorted by time descending, confirm this on aggregation pass.
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
@@ -77,7 +81,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
   private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
 
   /**
-   * The most recent timer task
+   * The most recent timer task.
    */
   private final Object timerTaskLock = new Object();
   private Future<?> timerTask;
@@ -112,7 +116,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
   final List<R> getResults() {
     //System.out.println("DEBUG: getResults");
     //try {
-      synchronized (results) {
+    synchronized (results) {
       return Collections.unmodifiableList(new ArrayList<>(results));
     }
     //} catch (ThreadDeath td) {

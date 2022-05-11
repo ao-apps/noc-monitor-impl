@@ -23,19 +23,20 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
 import com.aoapps.net.InetAddress;
 import com.aoapps.net.Port;
-import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.aoserv.client.net.Bind;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -52,8 +53,9 @@ import javax.swing.SwingUtilities;
 
 /**
  * The node per Bind.
- *
- * TODO: Add output of netstat -ln / ss -lnt here to detect extra ports.
+ * <p>
+ * TODO: Add output of <code>netstat -ln</code> / <code>ss -lnt</code> here to detect extra ports.
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
@@ -122,7 +124,7 @@ public class BindsNode extends NodeImpl {
   };
 
   void start() throws IOException, SQLException {
-    AOServConnector conn = ipAddressNode.ipAddressesNode.rootNode.conn;
+    AoservConnector conn = ipAddressNode.ipAddressesNode.rootNode.conn;
     synchronized (netBindNodes) {
       if (started) {
         throw new IllegalStateException();
@@ -143,7 +145,7 @@ public class BindsNode extends NodeImpl {
 
   void stop() {
     RootNodeImpl rootNode = ipAddressNode.ipAddressesNode.rootNode;
-    AOServConnector conn = rootNode.conn;
+    AoservConnector conn = rootNode.conn;
     synchronized (netBindNodes) {
       started = false;
       conn.getWeb_jboss().getSite().removeTableListener(tableListener);
@@ -208,8 +210,7 @@ public class BindsNode extends NodeImpl {
           port == other.port
               && host.equals(other.host)
               && netBind.equals(other.netBind)
-              && ipAddress.equals(other.ipAddress)
-      ;
+              && ipAddress.equals(other.ipAddress);
     }
 
     @Override
@@ -249,8 +250,7 @@ public class BindsNode extends NodeImpl {
   }
 
   /**
-   * The list of net binds is:
-   * The binds directly on the IP address plus the wildcard binds
+   * The list of net binds is the binds directly on the IP address plus the wildcard binds.
    */
   static List<NetMonitorSetting> getSettings(IpAddress ipAddress) throws IOException, SQLException {
     Device device = ipAddress.getDevice();
@@ -262,7 +262,7 @@ public class BindsNode extends NodeImpl {
     // Find the wildcard IP address, if available
     Host host = device.getHost();
     IpAddress wildcard = null;
-    for (IpAddress ia : host.getIPAddresses()) {
+    for (IpAddress ia : host.getIpAddresses()) {
       if (ia.getInetAddress().isUnspecified()) {
         wildcard = ia;
         break;

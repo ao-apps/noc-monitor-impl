@@ -23,12 +23,13 @@
 
 package com.aoindustries.noc.monitor.signup;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.function.SerializableFunction;
-import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.aoserv.client.account.Administrator;
 import com.aoindustries.aoserv.client.signup.Request;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -55,7 +56,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
    */
   private static final Map<String, SignupsNodeWorker> workerCache = new HashMap<>();
 
-  static SignupsNodeWorker getWorker(File persistenceFile, AOServConnector conn) throws IOException {
+  static SignupsNodeWorker getWorker(File persistenceFile, AoservConnector conn) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
       SignupsNodeWorker worker = workerCache.get(path);
@@ -67,9 +68,9 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
     }
   }
 
-  private final AOServConnector conn;
+  private final AoservConnector conn;
 
-  SignupsNodeWorker(File persistenceFile, AOServConnector conn) {
+  SignupsNodeWorker(File persistenceFile, AoservConnector conn) {
     super(persistenceFile);
     this.conn = conn;
   }
@@ -96,16 +97,16 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
       List<?> tableData = result.getTableData(Locale.getDefault());
       // Count the number of incompleted signups
       int incompleteCount;
-      {
-        int i = 0;
-        for (int index = 0, len = tableData.size(); index < len; index += 6) {
-          String completedBy = (String) tableData.get(index + 4);
-          if (completedBy == null) {
-            i++;
+        {
+          int i = 0;
+          for (int index = 0, len = tableData.size(); index < len; index += 6) {
+            String completedBy = (String) tableData.get(index + 4);
+            if (completedBy == null) {
+              i++;
+            }
           }
+          incompleteCount = i;
         }
-        incompleteCount = i;
-      }
       if (incompleteCount == 0) {
         return AlertLevelAndMessage.NONE;
       } else {

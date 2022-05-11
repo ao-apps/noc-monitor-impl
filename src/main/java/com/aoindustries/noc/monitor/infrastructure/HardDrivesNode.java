@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.net.HostNode;
 import java.io.File;
@@ -46,16 +47,16 @@ public class HardDrivesNode extends NodeImpl {
   private static final long serialVersionUID = 1L;
 
   final HostNode hostNode;
-  private final Server _linuxServer;
+  private final Server server;
 
   private boolean started;
 
-  private volatile HardDrivesTemperatureNode _hardDriveTemperatureNode;
+  private volatile HardDrivesTemperatureNode hardDriveTemperatureNode;
 
-  public HardDrivesNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+  public HardDrivesNode(HostNode hostNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
     this.hostNode = hostNode;
-    this._linuxServer = linuxServer;
+    this.server = server;
   }
 
   @Override
@@ -63,8 +64,8 @@ public class HardDrivesNode extends NodeImpl {
     return hostNode;
   }
 
-  public Server getLinuxServer() {
-    return _linuxServer;
+  public Server getServer() {
+    return server;
   }
 
   @Override
@@ -74,7 +75,7 @@ public class HardDrivesNode extends NodeImpl {
 
   @Override
   public List<HardDrivesTemperatureNode> getChildren() {
-    return getSnapshot(this._hardDriveTemperatureNode);
+    return getSnapshot(this.hardDriveTemperatureNode);
   }
 
   /**
@@ -84,7 +85,7 @@ public class HardDrivesNode extends NodeImpl {
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
         AlertLevelUtils.getMaxAlertLevel(
-            this._hardDriveTemperatureNode
+            this.hardDriveTemperatureNode
         )
     );
   }
@@ -108,9 +109,9 @@ public class HardDrivesNode extends NodeImpl {
         throw new IllegalStateException();
       }
       started = true;
-      if (_hardDriveTemperatureNode == null) {
-        _hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
-        _hardDriveTemperatureNode.start();
+      if (hardDriveTemperatureNode == null) {
+        hardDriveTemperatureNode = new HardDrivesTemperatureNode(this, port, csf, ssf);
+        hardDriveTemperatureNode.start();
         hostNode.hostsNode.rootNode.nodeAdded();
       }
     }
@@ -119,9 +120,9 @@ public class HardDrivesNode extends NodeImpl {
   public void stop() {
     synchronized (this) {
       started = false;
-      if (_hardDriveTemperatureNode != null) {
-        _hardDriveTemperatureNode.stop();
-        _hardDriveTemperatureNode = null;
+      if (hardDriveTemperatureNode != null) {
+        hardDriveTemperatureNode.stop();
+        hardDriveTemperatureNode = null;
         hostNode.hostsNode.rootNode.nodeRemoved();
       }
     }

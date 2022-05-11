@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.linux;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.Strings;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.ApproximateDisplayExactSize;
@@ -54,7 +55,7 @@ import java.util.Map;
 class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDisplayExactSize>, MemoryResult> {
 
   /**
-   * One unique worker is made per persistence directory (and should match linuxServer exactly)
+   * One unique worker is made per persistence directory (and should match linuxServer exactly).
    */
   private static final Map<String, MemoryNodeWorker> workerCache = new HashMap<>();
 
@@ -66,20 +67,20 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
         worker = new MemoryNodeWorker(persistenceDirectory, linuxServer);
         workerCache.put(path, worker);
       } else {
-        if (!worker._linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: " + worker._linuxServer + " != " + linuxServer);
+        if (!worker.originalLinuxServer.equals(linuxServer)) {
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker.originalLinuxServer + " != " + linuxServer);
         }
       }
       return worker;
     }
   }
 
-  private final Server _linuxServer;
-  private Server currentAOServer;
+  private final Server originalLinuxServer;
+  private Server currentLinuxServer;
 
   private MemoryNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     super(new File(persistenceDirectory, "meminfo"), new MemoryResultSerializer());
-    this._linuxServer = currentAOServer = linuxServer;
+    this.originalLinuxServer = currentLinuxServer = linuxServer;
   }
 
   @Override
@@ -91,8 +92,8 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
   @SuppressWarnings("AssignmentToForLoopParameter")
   protected List<ApproximateDisplayExactSize> getSample() throws Exception {
     // Get the latest limits
-    currentAOServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());
-    String meminfo = currentAOServer.getMemInfoReport();
+    currentLinuxServer = originalLinuxServer.getTable().getConnector().getLinux().getServer().get(originalLinuxServer.getPkey());
+    String meminfo = currentLinuxServer.getMemInfoReport();
     long memTotal = -1;
     long memFree = -1;
     long buffers = -1;

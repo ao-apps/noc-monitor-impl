@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -30,7 +32,6 @@ import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +55,7 @@ public class DevicesNode extends NodeImpl {
 
   final HostNode hostNode;
   private final Host host;
-  private final List<DeviceNode> netDeviceNodes = new ArrayList<>();
+  private final List<DeviceNode> deviceNodes = new ArrayList<>();
   private boolean started;
 
   DevicesNode(HostNode hostNode, Host host, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -79,8 +80,8 @@ public class DevicesNode extends NodeImpl {
 
   @Override
   public List<DeviceNode> getChildren() {
-    synchronized (netDeviceNodes) {
-      return getSnapshot(netDeviceNodes);
+    synchronized (deviceNodes) {
+      return getSnapshot(deviceNodes);
     }
   }
 
@@ -90,8 +91,8 @@ public class DevicesNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     AlertLevel level;
-    synchronized (netDeviceNodes) {
-      level = AlertLevelUtils.getMaxAlertLevel(netDeviceNodes);
+    synchronized (deviceNodes) {
+      level = AlertLevelUtils.getMaxAlertLevel(deviceNodes);
     }
     return constrainAlertLevel(level);
   }
@@ -118,7 +119,7 @@ public class DevicesNode extends NodeImpl {
   };
 
   void start() throws IOException, SQLException {
-    synchronized (netDeviceNodes) {
+    synchronized (deviceNodes) {
       if (started) {
         throw new IllegalStateException();
       }
@@ -129,21 +130,21 @@ public class DevicesNode extends NodeImpl {
   }
 
   void stop() {
-    synchronized (netDeviceNodes) {
+    synchronized (deviceNodes) {
       started = false;
       hostNode.hostsNode.rootNode.conn.getNet().getDevice().removeTableListener(tableListener);
-      for (DeviceNode netDeviceNode : netDeviceNodes) {
-        netDeviceNode.stop();
+      for (DeviceNode deviceNode : deviceNodes) {
+        deviceNode.stop();
         hostNode.hostsNode.rootNode.nodeRemoved();
       }
-      netDeviceNodes.clear();
+      deviceNodes.clear();
     }
   }
 
   private void verifyDevices() throws IOException, SQLException {
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-    synchronized (netDeviceNodes) {
+    synchronized (deviceNodes) {
       if (!started) {
         return;
       }
@@ -151,24 +152,24 @@ public class DevicesNode extends NodeImpl {
 
     // Filter only those that are enabled
     List<Device> netDevices;
-    {
-      List<Device> allDevices = host.getNetDevices();
-      netDevices = new ArrayList<>(allDevices.size());
-      for (Device device : allDevices) {
-        if (device.isMonitoringEnabled()) {
-          netDevices.add(device);
+      {
+        List<Device> allDevices = host.getNetDevices();
+        netDevices = new ArrayList<>(allDevices.size());
+        for (Device device : allDevices) {
+          if (device.isMonitoringEnabled()) {
+            netDevices.add(device);
+          }
         }
       }
-    }
-    synchronized (netDeviceNodes) {
+    synchronized (deviceNodes) {
       if (started) {
         // Remove old ones
-        Iterator<DeviceNode> netDeviceNodeIter = netDeviceNodes.iterator();
+        Iterator<DeviceNode> netDeviceNodeIter = deviceNodes.iterator();
         while (netDeviceNodeIter.hasNext()) {
-          DeviceNode netDeviceNode = netDeviceNodeIter.next();
-          Device device = netDeviceNode.getNetDevice();
+          DeviceNode deviceNode = netDeviceNodeIter.next();
+          Device device = deviceNode.getDevice();
           if (!netDevices.contains(device)) {
-            netDeviceNode.stop();
+            deviceNode.stop();
             netDeviceNodeIter.remove();
             hostNode.hostsNode.rootNode.nodeRemoved();
           }
@@ -176,11 +177,11 @@ public class DevicesNode extends NodeImpl {
         // Add new ones
         for (int c = 0; c < netDevices.size(); c++) {
           Device device = netDevices.get(c);
-          if (c >= netDeviceNodes.size() || !device.equals(netDeviceNodes.get(c).getNetDevice())) {
+          if (c >= deviceNodes.size() || !device.equals(deviceNodes.get(c).getDevice())) {
             // Insert into proper index
-            DeviceNode netDeviceNode = new DeviceNode(this, device, port, csf, ssf);
-            netDeviceNodes.add(c, netDeviceNode);
-            netDeviceNode.start();
+            DeviceNode deviceNode = new DeviceNode(this, device, port, csf, ssf);
+            deviceNodes.add(c, deviceNode);
+            deviceNode.start();
             hostNode.hostsNode.rootNode.nodeAdded();
           }
         }

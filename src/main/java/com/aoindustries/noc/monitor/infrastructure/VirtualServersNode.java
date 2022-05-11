@@ -23,9 +23,10 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.net.HostsNode;
@@ -67,7 +68,6 @@ public class VirtualServersNode extends HostsNode {
             || (
             // Is ao-box in fail-over
             linuxServer != null && linuxServer.getFailoverServer() != null
-        )
-    ;
+        );
   }
 }

@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.EnumUtils;
 import com.aoapps.lang.function.SerializableFunction;
 import com.aoapps.lang.i18n.ThreadLocale;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -44,17 +45,18 @@ import javax.swing.SwingUtilities;
 
 /**
  * The workers for table results node.
- *
+ * <p>
  * TODO: Add persistence of the last report
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
-public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
+public abstract class TableResultNodeWorker<R, D> implements Runnable {
 
   private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
 
   /**
-   * The most recent timer task
+   * The most recent timer task.
    */
   private final Object timerTaskLock = new Object();
   private Future<?> timerTask;
@@ -106,8 +108,8 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
     }
   }
 
-  private QR getQueryResultWithTimeout() throws InterruptedException, TimeoutException, Exception {
-    Future<QR> future = RootNodeImpl.executors.getUnbounded().submit(this::getQueryResult);
+  private R getQueryResultWithTimeout() throws InterruptedException, TimeoutException, Exception {
+    Future<R> future = RootNodeImpl.executors.getUnbounded().submit(this::getQueryResult);
     try {
       return future.get(getTimeout(), getTimeoutUnit());
     } catch (InterruptedException | TimeoutException err) {
@@ -146,8 +148,8 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
     }
     AlertLevel maxAlertLevel = alertLevel;
     try {
-      long startMillis = System.currentTimeMillis();
-      long startNanos = System.nanoTime();
+      final long startMillis = System.currentTimeMillis();
+      final long startNanos = System.nanoTime();
 
       AlertLevel curAlertLevel = alertLevel;
       if (curAlertLevel == null) {
@@ -161,8 +163,8 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
       List<AlertLevel> alertLevels;
       boolean isError;
       try {
-        QR queryResult = getQueryResultWithTimeout();
-        SerializableFunction<Locale, ? extends List<? extends TD>> successfulTableData = getTableData(queryResult);
+        R queryResult = getQueryResultWithTimeout();
+        SerializableFunction<Locale, ? extends List<? extends D>> successfulTableData = getTableData(queryResult);
         columns = getColumns();
         rows = successfulTableData.apply(Locale.getDefault()).size() / columns; // TODO: Is possible to delay getting number of rows until locale known?
         columnHeaders = getColumnHeaders();
@@ -355,24 +357,24 @@ public abstract class TableResultNodeWorker<QR, TD> implements Runnable {
   /**
    * Gets the current table data for this worker.
    */
-  protected abstract QR getQueryResult() throws InterruptedException, Exception;
+  protected abstract R getQueryResult() throws InterruptedException, Exception;
 
   /**
    * Gets the table data for the query result.  This must be processed quickly.
    */
-  protected abstract SerializableFunction<Locale, ? extends List<? extends TD>> getTableData(QR queryResult) throws Exception;
+  protected abstract SerializableFunction<Locale, ? extends List<? extends D>> getTableData(R queryResult) throws Exception;
 
   /**
    * Cancels the current getTableData call on a best-effort basis.
    * Implementations of this method <b>must not block</b>.
    * This default implementation calls <code>future.cancel(true)</code>.
    */
-  protected void cancel(Future<QR> future) {
+  protected void cancel(Future<R> future) {
     future.cancel(true);
   }
 
   /**
    * Gets the alert levels for the provided data.
    */
-  protected abstract List<AlertLevel> getAlertLevels(QR queryResult);
+  protected abstract List<AlertLevel> getAlertLevels(R queryResult);
 }

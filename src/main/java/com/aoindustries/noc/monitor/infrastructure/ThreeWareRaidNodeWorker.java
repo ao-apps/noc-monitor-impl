@@ -23,11 +23,12 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.EnumUtils;
 import com.aoapps.lang.Strings;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.SingleResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
@@ -48,7 +49,7 @@ import java.util.function.Function;
 class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
 
   /**
-   * One unique worker is made per persistence file (and should match the linuxServer exactly)
+   * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
   private static final Map<String, ThreeWareRaidNodeWorker> workerCache = new HashMap<>();
 

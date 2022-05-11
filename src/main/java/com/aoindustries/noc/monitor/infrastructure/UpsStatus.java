@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.Strings;
 import com.aoapps.lang.text.LocalizedParseException;
 import com.aoapps.sql.MilliInterval;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import java.text.ParseException;
@@ -150,24 +151,24 @@ class UpsStatus {
 
   UpsStatus(String upsStatus) throws ParseException {
     // Default values
-    String _upsname = null;
-    String _status = null;
-    float _linev = Float.NaN;
-    float _lotrans = Float.NaN;
-    float _hitrans = Float.NaN;
-    float _linefreq = Float.NaN;
-    float _outputv = Float.NaN;
-    float _nomoutv = Float.NaN;
-    float _loadpct = Float.NaN;
-    float _bcharge = Float.NaN;
-    float _battv = Float.NaN;
-    float _nombattv = Float.NaN;
-    int _extbatts = -1;
-    int _badbatts = -1;
-    MilliInterval _tonbatt = null;
-    MilliInterval _cumonbatt = null;
-    MilliInterval _timeleft = null;
-    float _itemp = Float.NaN;
+    String upsnameTmp = null;
+    String statusTmp = null;
+    float linevTmp = Float.NaN;
+    float lotransTmp = Float.NaN;
+    float hitransTmp = Float.NaN;
+    float linefreqTmp = Float.NaN;
+    float outputvTmp = Float.NaN;
+    float nomoutvTmp = Float.NaN;
+    float loadpctTmp = Float.NaN;
+    float bchargeTmp = Float.NaN;
+    float battvTmp = Float.NaN;
+    float nombattvTmp = Float.NaN;
+    int extbattsTmp = -1;
+    int badbattsTmp = -1;
+    MilliInterval tonbattTmp = null;
+    MilliInterval cumonbattTmp = null;
+    MilliInterval timeleftTmp = null;
+    float itempTmp = Float.NaN;
 
     // Parse the status
     for (String line : Strings.splitLines(upsStatus)) {
@@ -178,62 +179,62 @@ class UpsStatus {
       String name = line.substring(0, colonPos).trim();
       String value = line.substring(colonPos + 1).trim();
       if ("UPSNAME".equals(name)) {
-        _upsname   = value;
+        upsnameTmp   = value;
       } else if ("STATUS".equals(name)) {
-        _status    = value;
+        statusTmp    = value;
       } else if ("LINEV".equals(name)) {
-        _linev     = parseVolts(value);
+        linevTmp     = parseVolts(value);
       } else if ("LOTRANS".equals(name)) {
-        _lotrans   = parseVolts(value);
+        lotransTmp   = parseVolts(value);
       } else if ("HITRANS".equals(name)) {
-        _hitrans   = parseVolts(value);
+        hitransTmp   = parseVolts(value);
       } else if ("LINEFREQ".equals(name)) {
-        _linefreq  = parseFrequency(value);
+        linefreqTmp  = parseFrequency(value);
       } else if ("OUTPUTV".equals(name)) {
-        _outputv   = parseVolts(value);
+        outputvTmp   = parseVolts(value);
       } else if ("NOMOUTV".equals(name)) {
-        _nomoutv   = parseVolts(value);
+        nomoutvTmp   = parseVolts(value);
       } else if ("LOADPCT".equals(name)) {
-        _loadpct   = parsePercent(value);
+        loadpctTmp   = parsePercent(value);
       } else if ("BCHARGE".equals(name)) {
-        _bcharge   = parsePercent(value);
+        bchargeTmp   = parsePercent(value);
       } else if ("BATTV".equals(name)) {
-        _battv     = parseVolts(value);
+        battvTmp     = parseVolts(value);
       } else if ("NOMBATTV".equals(name)) {
-        _nombattv  = parseVolts(value);
+        nombattvTmp  = parseVolts(value);
       } else if ("EXTBATTS".equals(name)) {
-        _extbatts  = parseInt(value);
+        extbattsTmp  = parseInt(value);
       } else if ("BADBATTS".equals(name)) {
-        _badbatts  = parseInt(value);
+        badbattsTmp  = parseInt(value);
       } else if ("TONBATT".equals(name)) {
-        _tonbatt   = parseTimeSpan(value);
+        tonbattTmp   = parseTimeSpan(value);
       } else if ("CUMONBATT".equals(name)) {
-        _cumonbatt = parseTimeSpan(value);
+        cumonbattTmp = parseTimeSpan(value);
       } else if ("TIMELEFT".equals(name)) {
-        _timeleft  = parseTimeSpan(value);
+        timeleftTmp  = parseTimeSpan(value);
       } else if ("ITEMP".equals(name)) {
-        _itemp     = parseTemperature(value);
+        itempTmp     = parseTemperature(value);
       }
     }
 
-    this.upsname   = _upsname;
-    this.status    = _status;
-    this.linev     = _linev;
-    this.lotrans   = _lotrans;
-    this.hitrans   = _hitrans;
-    this.linefreq  = _linefreq;
-    this.outputv   = _outputv;
-    this.nomoutv   = _nomoutv;
-    this.loadpct   = _loadpct;
-    this.bcharge   = _bcharge;
-    this.battv     = _battv;
-    this.nombattv  = _nombattv;
-    this.extbatts  = _extbatts;
-    this.badbatts  = _badbatts;
-    this.tonbatt   = _tonbatt;
-    this.cumonbatt = _cumonbatt;
-    this.timeleft  = _timeleft;
-    this.itemp     = _itemp;
+    this.upsname   = upsnameTmp;
+    this.status    = statusTmp;
+    this.linev     = linevTmp;
+    this.lotrans   = lotransTmp;
+    this.hitrans   = hitransTmp;
+    this.linefreq  = linefreqTmp;
+    this.outputv   = outputvTmp;
+    this.nomoutv   = nomoutvTmp;
+    this.loadpct   = loadpctTmp;
+    this.bcharge   = bchargeTmp;
+    this.battv     = battvTmp;
+    this.nombattv  = nombattvTmp;
+    this.extbatts  = extbattsTmp;
+    this.badbatts  = badbattsTmp;
+    this.tonbatt   = tonbattTmp;
+    this.cumonbatt = cumonbattTmp;
+    this.timeleft  = timeleftTmp;
+    this.itemp     = itempTmp;
   }
 
   /**

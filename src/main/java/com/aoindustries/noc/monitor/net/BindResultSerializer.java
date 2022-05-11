@@ -69,7 +69,8 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
       "SSH-2.0-dropbear_2013.60",
       "SSH-2.0-OpenSSH_7.4",
       "Connected successfully (SSL disabled)",
-      "Connected successfully over SSL"
+      "Connected successfully over SSL",
+      "SSH-2.0-dropbear_2016.74"
   };
   private static final Map<String, Integer> commonResultsMap = AoCollections.newHashMap(commonResults.length);
 
@@ -89,8 +90,7 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
       NULL_RESULT = 1,
       COMMON_RESULTS = 2,
       MESSAGE_ACCEPTED = 3,
-      RAW = 4
-  ;
+      RAW = 4;
 
   private static final ConcurrentMap<String, Boolean> commonResultsSuggested = new ConcurrentHashMap<>();
 
@@ -146,12 +146,18 @@ public class BindResultSerializer extends BufferedSerializer<NetBindResult> {
         AlertLevel alertLevel = AlertLevel.fromOrdinal(in.readByte());
         byte encodingType = in.readByte();
         switch (encodingType) {
-          case ERROR : return new NetBindResult(time, latency, alertLevel, in.readUTF(), null);
-          case NULL_RESULT : return new NetBindResult(time, latency, alertLevel, null, null);
-          case COMMON_RESULTS : return new NetBindResult(time, latency, alertLevel, null, commonResults[in.readCompressedInt()]);
-          case MESSAGE_ACCEPTED : return new NetBindResult(time, latency, alertLevel, null, in.readUTF() + MESSAGE_ACCEPTED_SUFFIX);
-          case RAW : return new NetBindResult(time, latency, alertLevel, null, in.readUTF());
-          default : throw new IOException("Unexpected value for encodingType: " + encodingType);
+          case ERROR:
+            return new NetBindResult(time, latency, alertLevel, in.readUTF(), null);
+          case NULL_RESULT:
+            return new NetBindResult(time, latency, alertLevel, null, null);
+          case COMMON_RESULTS:
+            return new NetBindResult(time, latency, alertLevel, null, commonResults[in.readCompressedInt()]);
+          case MESSAGE_ACCEPTED:
+            return new NetBindResult(time, latency, alertLevel, null, in.readUTF() + MESSAGE_ACCEPTED_SUFFIX);
+          case RAW:
+            return new NetBindResult(time, latency, alertLevel, null, in.readUTF());
+          default:
+            throw new IOException("Unexpected value for encodingType: " + encodingType);
         }
       } else if (version == 1) {
         long time = in.readLong();

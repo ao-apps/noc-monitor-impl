@@ -23,9 +23,10 @@
 
 package com.aoindustries.noc.monitor.linux;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.LoadAverageResult;
@@ -43,7 +44,7 @@ import java.util.Map;
 class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, LoadAverageResult> {
 
   /**
-   * One unique worker is made per persistence directory (and should match linuxServer exactly)
+   * One unique worker is made per persistence directory (and should match linuxServer exactly).
    */
   private static final Map<String, LoadAverageNodeWorker> workerCache = new HashMap<>();
 
@@ -55,20 +56,20 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
         worker = new LoadAverageNodeWorker(persistenceDirectory, linuxServer);
         workerCache.put(path, worker);
       } else {
-        if (!worker._linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: " + worker._linuxServer + " != " + linuxServer);
+        if (!worker.originalLinuxServer.equals(linuxServer)) {
+          throw new AssertionError("worker.linuxServer != linuxServer: " + worker.originalLinuxServer + " != " + linuxServer);
         }
       }
       return worker;
     }
   }
 
-  private final Server _linuxServer;
-  private Server currentAOServer;
+  private final Server originalLinuxServer;
+  private Server currentLinuxServer;
 
   private LoadAverageNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     super(new File(persistenceDirectory, "loadavg"), new LoadAverageResultSerializer());
-    this._linuxServer = currentAOServer = linuxServer;
+    this.originalLinuxServer = currentLinuxServer = linuxServer;
   }
 
   @Override
@@ -79,8 +80,8 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
   @Override
   protected List<Number> getSample() throws Exception {
     // Get the latest limits
-    currentAOServer = _linuxServer.getTable().getConnector().getLinux().getServer().get(_linuxServer.getPkey());
-    String loadavg = currentAOServer.getLoadAvgReport();
+    currentLinuxServer = originalLinuxServer.getTable().getConnector().getLinux().getServer().get(originalLinuxServer.getPkey());
+    String loadavg = currentLinuxServer.getLoadAvgReport();
     int pos1 = loadavg.indexOf(' ');
     if (pos1 == -1) {
       throw new ParseException("Unable to find first space in loadavg", 0);
@@ -108,17 +109,17 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
         Integer.parseInt(loadavg.substring(pos3 + 1, pos4)),
         Integer.parseInt(loadavg.substring(pos4 + 1, pos5)),
         Integer.parseInt(loadavg.substring(pos5 + 1).trim()),
-        currentAOServer.getMonitoringLoadLow(),
-        currentAOServer.getMonitoringLoadMedium(),
-        currentAOServer.getMonitoringLoadHigh(),
-        currentAOServer.getMonitoringLoadCritical()
+        currentLinuxServer.getMonitoringLoadLow(),
+        currentLinuxServer.getMonitoringLoadMedium(),
+        currentLinuxServer.getMonitoringLoadHigh(),
+        currentLinuxServer.getMonitoringLoadCritical()
     );
   }
 
   @Override
   protected AlertLevelAndMessage getAlertLevelAndMessage(List<Number> sample, Iterable<? extends LoadAverageResult> previousResults) throws Exception {
     float fiveMinuteAverage = (Float) sample.get(1);
-    float loadCritical = currentAOServer.getMonitoringLoadCritical();
+    float loadCritical = currentLinuxServer.getMonitoringLoadCritical();
     if (!Float.isNaN(loadCritical) && fiveMinuteAverage >= loadCritical) {
       return new AlertLevelAndMessage(
           AlertLevel.CRITICAL,
@@ -130,7 +131,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
           )
       );
     }
-    float loadHigh = currentAOServer.getMonitoringLoadHigh();
+    float loadHigh = currentLinuxServer.getMonitoringLoadHigh();
     if (!Float.isNaN(loadHigh) && fiveMinuteAverage >= loadHigh) {
       return new AlertLevelAndMessage(
           AlertLevel.HIGH,
@@ -142,7 +143,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
           )
       );
     }
-    float loadMedium = currentAOServer.getMonitoringLoadMedium();
+    float loadMedium = currentLinuxServer.getMonitoringLoadMedium();
     if (!Float.isNaN(loadMedium) && fiveMinuteAverage >= loadMedium) {
       return new AlertLevelAndMessage(
           AlertLevel.MEDIUM,
@@ -154,7 +155,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
           )
       );
     }
-    float loadLow = currentAOServer.getMonitoringLoadLow();
+    float loadLow = currentLinuxServer.getMonitoringLoadLow();
     if (!Float.isNaN(loadLow) && fiveMinuteAverage >= loadLow) {
       return new AlertLevelAndMessage(
           AlertLevel.LOW,

@@ -23,7 +23,7 @@
 
 package com.aoindustries.noc.monitor.cluster;
 
-import com.aoindustries.aoserv.client.AOServConnector;
+import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.cluster.Cluster;
 import com.aoindustries.aoserv.cluster.ClusterConfiguration;
@@ -58,8 +58,10 @@ import junit.framework.TestSuite;
 
 /**
  * Tests ClusterResourceManager.
- *
+ * <p>
  * Helpful SQL queries for tuning system:
+ * </p>
+<pre>
 select
   vs.server,
   se.name,
@@ -94,7 +96,8 @@ where
   coalesce(vd.minimum_disk_speed::text, 'NULL') != coalesce(vd.minimum_disk_speed_target::text, 'NULL')
   or coalesce(vd.weight::text, 'NULL') != coalesce(vd.weight_target::text, 'NULL')
 order by net."Host.reverseFqdn"(se.name), vd.device;
-
+</pre>
+ *
  * @author  AO Industries, Inc.
  */
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
@@ -110,7 +113,7 @@ public class ClusterResourceManagerTODO extends TestCase {
 
   private static final boolean RANDOMIZE_CHILDREN = false;
 
-  private AOServConnector conn;
+  private AoservConnector conn;
   private SortedSet<ClusterConfiguration> clusterConfigurations;
 
   public ClusterResourceManagerTODO(String testName) {
@@ -235,9 +238,9 @@ public class ClusterResourceManagerTODO extends TestCase {
    * Adds a 500 GB SATA drive to the provided server.
    */
   private static SortedSet<Cluster> addSata500(SortedSet<Cluster> clusters, String clusterName, String hostname, String sataDevice) {
-    short[] sataPartitions60 = {1, 2, 3};
-    short[] sataPartitions30 = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-    short[] sataLastPartitions = {15};
+    final short[] sataPartitions60 = {1, 2, 3};
+    final short[] sataPartitions30 = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    final short[] sataLastPartitions = {15};
     clusters = addDom0Disk(clusters, clusterName, hostname, sataDevice, 7200);
     for (short partition : sataPartitions60) {
       clusters = addPhysicalVolume(clusters, clusterName, hostname, sataDevice, partition, 1792);
@@ -394,14 +397,14 @@ public class ClusterResourceManagerTODO extends TestCase {
   @Override
   @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
   protected void setUp() throws Exception {
-    conn = AOServConnector.getConnector();
+    conn = AoservConnector.getConnector();
     try {
       List<Server> linuxServers = conn.getLinux().getServer().getRows();
       Locale locale = Locale.getDefault();
-      Map<String, Map<String, String>> hddModelReports = AOServClusterBuilder.getHddModelReports(linuxServers, locale);
-      Map<String, Server.LvmReport> lvmReports = AOServClusterBuilder.getLvmReports(linuxServers, locale);
-      Map<String, List<Server.DrbdReport>> drbdReports = AOServClusterBuilder.getDrbdReports(linuxServers, locale);
-      SortedSet<Cluster> clusters = AOServClusterBuilder.getClusters(conn, linuxServers, hddModelReports, lvmReports, USE_TARGET);
+      Map<String, Map<String, String>> hddModelReports = AoservClusterBuilder.getHddModelReports(linuxServers, locale);
+      Map<String, Server.LvmReport> lvmReports = AoservClusterBuilder.getLvmReports(linuxServers, locale);
+      Map<String, List<Server.DrbdReport>> drbdReports = AoservClusterBuilder.getDrbdReports(linuxServers, locale);
+      SortedSet<Cluster> clusters = AoservClusterBuilder.getClusters(conn, linuxServers, hddModelReports, lvmReports, USE_TARGET);
       if (USE_TARGET) {
         // See what happens if we add an additional server
         clusters = addDrivesXen9071(clusters, true, true);
@@ -416,7 +419,7 @@ public class ClusterResourceManagerTODO extends TestCase {
       }
       // TODO: Because can't enforce disk weights, can only control through allocation
       // TODO: Allocate and check disks matched by weight.
-      clusterConfigurations = AOServClusterBuilder.getClusterConfigurations(Locale.getDefault(), conn, clusters, drbdReports, lvmReports);
+      clusterConfigurations = AoservClusterBuilder.getClusterConfigurations(Locale.getDefault(), conn, clusters, drbdReports, lvmReports);
     } catch (Exception err) {
       logger.log(Level.SEVERE, null, err);
       throw err;
@@ -503,7 +506,9 @@ public class ClusterResourceManagerTODO extends TestCase {
         ClusterOptimizer optimized = new ClusterOptimizer(clusterConfiguration, heuristicFunction, ALLOW_PATH_THROUGH_CRITICAL, RANDOMIZE_CHILDREN);
         ListElement shortestPath = optimized.getOptimizedClusterConfiguration((ListElement path, long loopCount) -> {
           // TODO: Emphasize anything with a critical alert level when showing transitions
-          System.out.println("        Goal found using " + path.getPathLen() + (path.getPathLen() == 1 ? " transition" : " transitions") + " in " + loopCount + (loopCount == 1 ? " iteration" : " iterations"));
+          System.out.println("        Goal found using " + path.getPathLen()
+              + (path.getPathLen() == 1 ? " transition" : " transitions")
+              + " in " + loopCount + (loopCount == 1 ? " iteration" : " iterations"));
           printTransitions(path);
           // Stop at the first one found
           return FIND_SHORTEST_PATH;

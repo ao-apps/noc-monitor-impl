@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.email;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.net.IpAddressNode;
 import java.io.File;

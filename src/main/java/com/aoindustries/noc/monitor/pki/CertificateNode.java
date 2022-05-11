@@ -40,8 +40,8 @@ public class CertificateNode extends TableResultNodeImpl {
 
   private static final long serialVersionUID = 1L;
 
-  private final Certificate _sslCertificate;
-  private final String _label;
+  private final Certificate certificate;
+  private final String label;
 
   static String getLabel(Certificate cert) throws IOException, SQLException {
     return cert.getCommonName().getName();
@@ -59,16 +59,16 @@ public class CertificateNode extends TableResultNodeImpl {
         csf,
         ssf
     );
-    this._sslCertificate = sslCertificate;
-    this._label = getLabel(sslCertificate);
+    this.certificate = sslCertificate;
+    this.label = getLabel(sslCertificate);
   }
 
   @Override
   public String getLabel() {
-    return _label;
+    return label;
   }
 
-  public Certificate getSslCertificate() {
-    return _sslCertificate;
+  public Certificate getCertificate() {
+    return certificate;
   }
 }

@@ -23,13 +23,14 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.net.HostNode;
 import java.io.File;
@@ -44,7 +45,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * The node for all MySQLServers on one Server.
+ * The node for all MysqlServers on one Server.
  *
  * @author  AO Industries, Inc.
  */
@@ -54,7 +55,7 @@ public class ServersNode extends NodeImpl {
 
   final HostNode hostNode;
   private final Server linuxServer;
-  private final List<ServerNode> mysqlServerNodes = new ArrayList<>();
+  private final List<ServerNode> serverNodes = new ArrayList<>();
   private boolean started;
 
   public ServersNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
@@ -68,7 +69,7 @@ public class ServersNode extends NodeImpl {
     return hostNode;
   }
 
-  public Server getAOServer() {
+  public Server getLinuxServer() {
     return linuxServer;
   }
 
@@ -79,8 +80,8 @@ public class ServersNode extends NodeImpl {
 
   @Override
   public List<ServerNode> getChildren() {
-    synchronized (mysqlServerNodes) {
-      return getSnapshot(mysqlServerNodes);
+    synchronized (serverNodes) {
+      return getSnapshot(serverNodes);
     }
   }
 
@@ -90,8 +91,8 @@ public class ServersNode extends NodeImpl {
   @Override
   public AlertLevel getAlertLevel() {
     AlertLevel level;
-    synchronized (mysqlServerNodes) {
-      level = AlertLevelUtils.getMaxAlertLevel(mysqlServerNodes);
+    synchronized (serverNodes) {
+      level = AlertLevelUtils.getMaxAlertLevel(serverNodes);
     }
     return constrainAlertLevel(level);
   }
@@ -106,71 +107,71 @@ public class ServersNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "MySQLServersNode.label");
+    return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "MysqlServersNode.label");
   }
 
   private final TableListener tableListener = (Table<?> table) -> {
     try {
-      verifyMySQLServers();
+      verifyServers();
     } catch (IOException | SQLException err) {
       throw new WrappedException(err);
     }
   };
 
   public void start() throws IOException, SQLException {
-    synchronized (mysqlServerNodes) {
+    synchronized (serverNodes) {
       if (started) {
         throw new IllegalStateException();
       }
       started = true;
       hostNode.hostsNode.rootNode.conn.getMysql().getServer().addTableListener(tableListener, 100);
     }
-    verifyMySQLServers();
+    verifyServers();
   }
 
   public void stop() {
-    synchronized (mysqlServerNodes) {
+    synchronized (serverNodes) {
       started = false;
       hostNode.hostsNode.rootNode.conn.getMysql().getServer().removeTableListener(tableListener);
-      for (ServerNode mysqlServerNode : mysqlServerNodes) {
-        mysqlServerNode.stop();
+      for (ServerNode serverNode : serverNodes) {
+        serverNode.stop();
         hostNode.hostsNode.rootNode.nodeRemoved();
       }
-      mysqlServerNodes.clear();
+      serverNodes.clear();
     }
   }
 
-  private void verifyMySQLServers() throws IOException, SQLException {
+  private void verifyServers() throws IOException, SQLException {
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-    synchronized (mysqlServerNodes) {
+    synchronized (serverNodes) {
       if (!started) {
         return;
       }
     }
 
-    List<com.aoindustries.aoserv.client.mysql.Server> mysqlServers = linuxServer.getMySQLServers();
-    synchronized (mysqlServerNodes) {
+    List<com.aoindustries.aoserv.client.mysql.Server> servers = linuxServer.getMysqlServers();
+    synchronized (serverNodes) {
       if (started) {
         // Remove old ones
-        Iterator<ServerNode> mysqlServerNodeIter = mysqlServerNodes.iterator();
-        while (mysqlServerNodeIter.hasNext()) {
-          ServerNode mysqlServerNode = mysqlServerNodeIter.next();
-          com.aoindustries.aoserv.client.mysql.Server mysqlServer = mysqlServerNode.getMySQLServer();
-          if (!mysqlServers.contains(mysqlServer)) {
-            mysqlServerNode.stop();
-            mysqlServerNodeIter.remove();
+        Iterator<ServerNode> serverNodeIter = serverNodes.iterator();
+        while (serverNodeIter.hasNext()) {
+          ServerNode serverNode = serverNodeIter.next();
+          com.aoindustries.aoserv.client.mysql.Server server = serverNode.getServer();
+          if (!servers.contains(server)) {
+            serverNode.stop();
+            serverNodeIter.remove();
             hostNode.hostsNode.rootNode.nodeRemoved();
           }
         }
         // Add new ones
-        for (int c = 0; c < mysqlServers.size(); c++) {
-          com.aoindustries.aoserv.client.mysql.Server mysqlServer = mysqlServers.get(c);
-          if (c >= mysqlServerNodes.size() || !mysqlServer.equals(mysqlServerNodes.get(c).getMySQLServer())) {
+        for (int c = 0; c < servers.size(); c++) {
+          com.aoindustries.aoserv.client.mysql.Server server = servers.get(c);
+          if (c >= serverNodes.size() || !server.equals(serverNodes.get(c).getServer())) {
             // Insert into proper index
-            ServerNode mysqlServerNode = new ServerNode(this, mysqlServer, port, csf, ssf);
-            mysqlServerNodes.add(c, mysqlServerNode);
-            mysqlServerNode.start();
+            ServerNode serverNode = new ServerNode(this, server, port, csf, ssf);
+            serverNodes.add(c, serverNode);
+            serverNode.start();
             hostNode.hostsNode.rootNode.nodeAdded();
           }
         }

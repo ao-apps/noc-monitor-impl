@@ -23,9 +23,10 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -50,7 +51,7 @@ public class UnallocatedNode extends NodeImpl {
 
   private boolean started;
 
-  private volatile IpAddressesNode _ipAddressesNode;
+  private volatile IpAddressesNode ipAddressesNode;
 
   public UnallocatedNode(RootNodeImpl rootNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
@@ -70,7 +71,7 @@ public class UnallocatedNode extends NodeImpl {
   @Override
   public List<IpAddressesNode> getChildren() {
     return getSnapshot(
-        this._ipAddressesNode
+        this.ipAddressesNode
     );
   }
 
@@ -81,7 +82,7 @@ public class UnallocatedNode extends NodeImpl {
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
         AlertLevelUtils.getMaxAlertLevel(
-            this._ipAddressesNode
+            this.ipAddressesNode
         )
     );
   }
@@ -110,9 +111,9 @@ public class UnallocatedNode extends NodeImpl {
         throw new IllegalStateException();
       }
       started = true;
-      if (_ipAddressesNode == null) {
-        _ipAddressesNode = new IpAddressesNode(this, port, csf, ssf);
-        _ipAddressesNode.start();
+      if (ipAddressesNode == null) {
+        ipAddressesNode = new IpAddressesNode(this, port, csf, ssf);
+        ipAddressesNode.start();
         rootNode.nodeAdded();
       }
     }
@@ -121,9 +122,9 @@ public class UnallocatedNode extends NodeImpl {
   public void stop() {
     synchronized (this) {
       started = false;
-      if (_ipAddressesNode != null) {
-        _ipAddressesNode.stop();
-        _ipAddressesNode = null;
+      if (ipAddressesNode != null) {
+        ipAddressesNode.stop();
+        ipAddressesNode = null;
         rootNode.nodeRemoved();
       }
     }

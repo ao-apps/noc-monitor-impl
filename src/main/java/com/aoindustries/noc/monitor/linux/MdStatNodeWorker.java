@@ -23,11 +23,12 @@
 
 package com.aoindustries.noc.monitor.linux;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.EnumUtils;
 import com.aoapps.lang.Strings;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.SingleResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
@@ -55,20 +56,20 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
   }
 
   /**
-   * One unique worker is made per persistence file (and should match the linuxServer exactly)
+   * One unique worker is made per persistence file (and should match the server exactly).
    */
   private static final Map<String, MdStatNodeWorker> workerCache = new HashMap<>();
 
-  static MdStatNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
+  static MdStatNodeWorker getWorker(File persistenceFile, Server server) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
       MdStatNodeWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new MdStatNodeWorker(persistenceFile, linuxServer);
+        worker = new MdStatNodeWorker(persistenceFile, server);
         workerCache.put(path, worker);
       } else {
-        if (!worker.linuxServer.equals(linuxServer)) {
-          throw new AssertionError("worker.linuxServer != linuxServer: " + worker.linuxServer + " != " + linuxServer);
+        if (!worker.server.equals(server)) {
+          throw new AssertionError("worker.server != server: " + worker.server + " != " + server);
         }
       }
       return worker;
@@ -76,21 +77,21 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
   }
 
   // Will use whichever connector first created this worker, even if other accounts connect later.
-  private final Server linuxServer;
+  private final Server server;
 
-  MdStatNodeWorker(File persistenceFile, Server linuxServer) {
+  MdStatNodeWorker(File persistenceFile, Server server) {
     super(persistenceFile);
-    this.linuxServer = linuxServer;
+    this.server = server;
   }
 
   @Override
   protected String getReport() throws IOException, SQLException {
-    return linuxServer.getMdStatReport();
+    return server.getMdStatReport();
   }
 
   /**
    * Determines the alert level and message for the provided result.
-   *
+   * <pre>
    * raid1:
    *      one up + zero down: medium
    *      zero down: none
@@ -105,6 +106,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
    *      one down.: medium
    *      two down.: high
    *      two+ down: critical
+   * </pre>
    */
   @Override
   protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result) {
@@ -189,29 +191,29 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
                     // Count the down and up between the brackets
                     final int upCount;
                     final int downCount;
-                    {
-                      int up = 0;
-                      int down = 0;
-                      for (int pos = pos1 + 1; pos < pos2; pos++) {
-                        char ch = line.charAt(pos);
-                        if (ch == 'U') {
-                          up++;
-                        } else if (ch == '_') {
-                          down++;
-                        } else {
-                          return new AlertLevelAndMessage(
-                              AlertLevel.CRITICAL,
-                              locale -> PACKAGE_RESOURCES.getMessage(
-                                  locale,
-                                  "MdStatNode.alertMessage.invalidCharacter",
-                                  ch
-                              )
-                          );
+                      {
+                        int up = 0;
+                        int down = 0;
+                        for (int pos = pos1 + 1; pos < pos2; pos++) {
+                          char ch = line.charAt(pos);
+                          if (ch == 'U') {
+                            up++;
+                          } else if (ch == '_') {
+                            down++;
+                          } else {
+                            return new AlertLevelAndMessage(
+                                AlertLevel.CRITICAL,
+                                locale -> PACKAGE_RESOURCES.getMessage(
+                                    locale,
+                                    "MdStatNode.alertMessage.invalidCharacter",
+                                    ch
+                                )
+                            );
+                          }
                         }
+                        upCount = up;
+                        downCount = down;
                       }
-                      upCount = up;
-                      downCount = down;
-                    }
                     // Get the current alert level
                     final AlertLevel alertLevel;
                     final Function<Locale, String> alertMessage;

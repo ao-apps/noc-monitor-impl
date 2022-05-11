@@ -24,6 +24,7 @@
 package com.aoindustries.noc.monitor.net;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.NetBindResult;
 import java.io.File;

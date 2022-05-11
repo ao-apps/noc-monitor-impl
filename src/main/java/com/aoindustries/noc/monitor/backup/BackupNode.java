@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.backup;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.backup.BackupPartition;
 import com.aoindustries.aoserv.client.backup.FileReplication;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -45,23 +46,23 @@ public class BackupNode extends TableResultNodeImpl {
 
   private static final long serialVersionUID = 1L;
 
-  private final FileReplication failoverFileReplication;
+  private final FileReplication fileReplication;
   private final String label;
 
-  BackupNode(BackupsNode backupsNode, FileReplication failoverFileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+  BackupNode(BackupsNode backupsNode, FileReplication fileReplication, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
         backupsNode.hostNode.hostsNode.rootNode,
         backupsNode,
         BackupNodeWorker.getWorker(
-            new File(backupsNode.getPersistenceDirectory(), Integer.toString(failoverFileReplication.getPkey())),
-            failoverFileReplication
+            new File(backupsNode.getPersistenceDirectory(), Integer.toString(fileReplication.getPkey())),
+            fileReplication
         ),
         port,
         csf,
         ssf
     );
-    this.failoverFileReplication = failoverFileReplication;
-    BackupPartition backupPartition = failoverFileReplication.getBackupPartition();
+    this.fileReplication = fileReplication;
+    BackupPartition backupPartition = fileReplication.getBackupPartition();
     this.label = PACKAGE_RESOURCES.getMessage(
         rootNode.locale,
         "BackupNode.label",
@@ -70,8 +71,8 @@ public class BackupNode extends TableResultNodeImpl {
     );
   }
 
-  FileReplication getFailoverFileReplication() {
-    return failoverFileReplication;
+  FileReplication getFileReplication() {
+    return fileReplication;
   }
 
   @Override

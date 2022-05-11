@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -33,7 +35,6 @@ import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.backup.BackupsNode;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.infrastructure.HardDrivesNode;
@@ -65,32 +66,32 @@ public class HostNode extends NodeImpl {
   private static final long serialVersionUID = 1L;
 
   public final HostsNode hostsNode;
-  private final Host _host;
-  private final int _pack;
-  private final String _name;
-  private final String _label;
+  private final Host host;
+  private final int packageId;
+  private final String name;
+  private final String label;
 
   private boolean started;
-  private volatile BackupsNode _backupsNode;
-  private volatile DevicesNode _netDevicesNode;
-  private volatile HttpdServersNode _httpdServersNode;
-  private volatile ServersNode _mysqlServersNode;
-  private volatile HardDrivesNode _hardDrivesNode;
-  private volatile RaidNode _raidNode;
-  private volatile CertificatesNode _sslCertificatesNode;
-  private volatile UpsNode _upsNode;
-  private volatile FilesystemsNode _filesystemsNode;
-  private volatile LoadAverageNode _loadAverageNode;
-  private volatile MemoryNode _memoryNode;
-  private volatile TimeNode _timeNode;
+  private volatile BackupsNode backupsNode;
+  private volatile DevicesNode devicesNode;
+  private volatile HttpdServersNode httpdServersNode;
+  private volatile ServersNode mysqlServersNode;
+  private volatile HardDrivesNode hardDrivesNode;
+  private volatile RaidNode raidNode;
+  private volatile CertificatesNode sslCertificatesNode;
+  private volatile UpsNode upsNode;
+  private volatile FilesystemsNode filesystemsNode;
+  private volatile LoadAverageNode loadAverageNode;
+  private volatile MemoryNode memoryNode;
+  private volatile TimeNode timeNode;
 
   HostNode(HostsNode hostsNode, Host host, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException {
     super(port, csf, ssf);
     this.hostsNode = hostsNode;
-    this._host = host;
-    this._pack = host.getPackageId();
-    this._name = host.getName();
-    this._label = host.toString();
+    this.host = host;
+    this.packageId = host.getPackageId();
+    this.name = host.getName();
+    this.label = host.toString();
   }
 
   @Override
@@ -99,7 +100,7 @@ public class HostNode extends NodeImpl {
   }
 
   public Host getHost() {
-    return _host;
+    return host;
   }
 
   @Override
@@ -110,18 +111,18 @@ public class HostNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-        this._backupsNode,
-        this._netDevicesNode,
-        this._httpdServersNode,
-        this._mysqlServersNode,
-        this._hardDrivesNode,
-        this._raidNode,
-        this._sslCertificatesNode,
-        this._upsNode,
-        this._filesystemsNode,
-        this._loadAverageNode,
-        this._memoryNode,
-        this._timeNode
+        this.backupsNode,
+        this.devicesNode,
+        this.httpdServersNode,
+        this.mysqlServersNode,
+        this.hardDrivesNode,
+        this.raidNode,
+        this.sslCertificatesNode,
+        this.upsNode,
+        this.filesystemsNode,
+        this.loadAverageNode,
+        this.memoryNode,
+        this.timeNode
     );
   }
 
@@ -132,18 +133,18 @@ public class HostNode extends NodeImpl {
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
         AlertLevelUtils.getMaxAlertLevel(
-            this._backupsNode,
-            this._netDevicesNode,
-            this._httpdServersNode,
-            this._mysqlServersNode,
-            this._hardDrivesNode,
-            this._raidNode,
-            this._sslCertificatesNode,
-            this._upsNode,
-            this._filesystemsNode,
-            this._loadAverageNode,
-            this._memoryNode,
-            this._timeNode
+            this.backupsNode,
+            this.devicesNode,
+            this.httpdServersNode,
+            this.mysqlServersNode,
+            this.hardDrivesNode,
+            this.raidNode,
+            this.sslCertificatesNode,
+            this.upsNode,
+            this.filesystemsNode,
+            this.loadAverageNode,
+            this.memoryNode,
+            this.timeNode
         )
     );
   }
@@ -158,14 +159,14 @@ public class HostNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return _label;
+    return label;
   }
 
   private final TableListener tableListener = (Table<?> table) -> {
     try {
       verifyNetDevices();
       verifyHttpdServers();
-      verifyMySQLServers();
+      verifyMysqlServers();
       verifyHardDrives();
       verifyRaid();
       verifySslCertificates();
@@ -195,15 +196,15 @@ public class HostNode extends NodeImpl {
       hostsNode.rootNode.conn.getInfrastructure().getPhysicalServer().addTableListener(tableListener, 100);
       hostsNode.rootNode.conn.getNet().getHost().addTableListener(tableListener, 100);
       hostsNode.rootNode.conn.getPki().getCertificate().addTableListener(tableListener, 100);
-      if (_backupsNode == null) {
-        _backupsNode = new BackupsNode(this, port, csf, ssf);
-        _backupsNode.start();
+      if (backupsNode == null) {
+        backupsNode = new BackupsNode(this, port, csf, ssf);
+        backupsNode.start();
         hostsNode.rootNode.nodeAdded();
       }
     }
     verifyNetDevices();
     verifyHttpdServers();
-    verifyMySQLServers();
+    verifyMysqlServers();
     verifyHardDrives();
     verifyRaid();
     verifySslCertificates();
@@ -227,64 +228,64 @@ public class HostNode extends NodeImpl {
       hostsNode.rootNode.conn.getInfrastructure().getPhysicalServer().removeTableListener(tableListener);
       hostsNode.rootNode.conn.getNet().getHost().removeTableListener(tableListener);
       hostsNode.rootNode.conn.getPki().getCertificate().removeTableListener(tableListener);
-      if (_timeNode != null) {
-        _timeNode.stop();
-        _timeNode = null;
+      if (timeNode != null) {
+        timeNode.stop();
+        timeNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_memoryNode != null) {
-        _memoryNode.stop();
-        _memoryNode = null;
+      if (memoryNode != null) {
+        memoryNode.stop();
+        memoryNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_loadAverageNode != null) {
-        _loadAverageNode.stop();
-        _loadAverageNode = null;
+      if (loadAverageNode != null) {
+        loadAverageNode.stop();
+        loadAverageNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_filesystemsNode != null) {
-        _filesystemsNode.stop();
-        _filesystemsNode = null;
+      if (filesystemsNode != null) {
+        filesystemsNode.stop();
+        filesystemsNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_upsNode != null) {
-        _upsNode.stop();
-        _upsNode = null;
+      if (upsNode != null) {
+        upsNode.stop();
+        upsNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_sslCertificatesNode != null) {
-        _sslCertificatesNode.stop();
-        _sslCertificatesNode = null;
+      if (sslCertificatesNode != null) {
+        sslCertificatesNode.stop();
+        sslCertificatesNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_raidNode != null) {
-        _raidNode.stop();
-        _raidNode = null;
+      if (raidNode != null) {
+        raidNode.stop();
+        raidNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_hardDrivesNode != null) {
-        _hardDrivesNode.stop();
-        _hardDrivesNode = null;
+      if (hardDrivesNode != null) {
+        hardDrivesNode.stop();
+        hardDrivesNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_mysqlServersNode != null) {
-        _mysqlServersNode.stop();
-        _mysqlServersNode = null;
+      if (mysqlServersNode != null) {
+        mysqlServersNode.stop();
+        mysqlServersNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_httpdServersNode != null) {
-        _httpdServersNode.stop();
-        _httpdServersNode = null;
+      if (httpdServersNode != null) {
+        httpdServersNode.stop();
+        httpdServersNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_netDevicesNode != null) {
-        _netDevicesNode.stop();
-        _netDevicesNode = null;
+      if (devicesNode != null) {
+        devicesNode.stop();
+        devicesNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
-      if (_backupsNode != null) {
-        _backupsNode.stop();
-        _backupsNode = null;
+      if (backupsNode != null) {
+        backupsNode.stop();
+        backupsNode = null;
         hostsNode.rootNode.nodeRemoved();
       }
     }
@@ -294,9 +295,9 @@ public class HostNode extends NodeImpl {
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
     synchronized (this) {
       if (started) {
-        if (_netDevicesNode == null) {
-          _netDevicesNode = new DevicesNode(this, _host, port, csf, ssf);
-          _netDevicesNode.start();
+        if (devicesNode == null) {
+          devicesNode = new DevicesNode(this, host, port, csf, ssf);
+          devicesNode.start();
           hostsNode.rootNode.nodeAdded();
         }
       }
@@ -312,22 +313,22 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
+    Server linuxServer = host.getLinuxServer();
     List<HttpdServer> httpdServers = linuxServer == null ? null : linuxServer.getHttpdServers();
     synchronized (this) {
       if (started) {
         if (httpdServers != null && !httpdServers.isEmpty()) {
           // Has HTTPD server
-          if (_httpdServersNode == null) {
-            _httpdServersNode = new HttpdServersNode(this, linuxServer, port, csf, ssf);
-            _httpdServersNode.start();
+          if (httpdServersNode == null) {
+            httpdServersNode = new HttpdServersNode(this, linuxServer, port, csf, ssf);
+            httpdServersNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         } else {
           // No HTTPD server
-          if (_httpdServersNode != null) {
-            _httpdServersNode.stop();
-            _httpdServersNode = null;
+          if (httpdServersNode != null) {
+            httpdServersNode.stop();
+            httpdServersNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         }
@@ -335,7 +336,7 @@ public class HostNode extends NodeImpl {
     }
   }
 
-  private void verifyMySQLServers() throws IOException, SQLException {
+  private void verifyMysqlServers() throws IOException, SQLException {
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
     synchronized (this) {
@@ -344,22 +345,22 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
-    List<com.aoindustries.aoserv.client.mysql.Server> mysqlServers = linuxServer == null ? null : linuxServer.getMySQLServers();
+    Server linuxServer = host.getLinuxServer();
+    List<com.aoindustries.aoserv.client.mysql.Server> mysqlServers = linuxServer == null ? null : linuxServer.getMysqlServers();
     synchronized (this) {
       if (started) {
         if (mysqlServers != null && !mysqlServers.isEmpty()) {
           // Has MySQL server
-          if (_mysqlServersNode == null) {
-            _mysqlServersNode = new ServersNode(this, linuxServer, port, csf, ssf);
-            _mysqlServersNode.start();
+          if (mysqlServersNode == null) {
+            mysqlServersNode = new ServersNode(this, linuxServer, port, csf, ssf);
+            mysqlServersNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         } else {
           // No MySQL server
-          if (_mysqlServersNode != null) {
-            _mysqlServersNode.stop();
-            _mysqlServersNode = null;
+          if (mysqlServersNode != null) {
+            mysqlServersNode.stop();
+            mysqlServersNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         }
@@ -376,8 +377,8 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
-    OperatingSystemVersion osvObj = _host.getOperatingSystemVersion();
+    Server linuxServer = host.getLinuxServer();
+    OperatingSystemVersion osvObj = host.getOperatingSystemVersion();
     int osv = osvObj == null ? -1 : osvObj.getPkey();
     synchronized (this) {
       if (started) {
@@ -390,16 +391,16 @@ public class HostNode extends NodeImpl {
             )
         ) {
           // Has hddtemp monitoring
-          if (_hardDrivesNode == null) {
-            _hardDrivesNode = new HardDrivesNode(this, linuxServer, port, csf, ssf);
-            _hardDrivesNode.start();
+          if (hardDrivesNode == null) {
+            hardDrivesNode = new HardDrivesNode(this, linuxServer, port, csf, ssf);
+            hardDrivesNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         } else {
           // No hddtemp monitoring
-          if (_hardDrivesNode != null) {
-            _hardDrivesNode.stop();
-            _hardDrivesNode = null;
+          if (hardDrivesNode != null) {
+            hardDrivesNode.stop();
+            hardDrivesNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         }
@@ -416,21 +417,21 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
+    Server linuxServer = host.getLinuxServer();
     synchronized (this) {
       if (started) {
         if (linuxServer == null) {
           // No raid monitoring
-          if (_raidNode != null) {
-            _raidNode.stop();
-            _raidNode = null;
+          if (raidNode != null) {
+            raidNode.stop();
+            raidNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         } else {
           // Has raid monitoring
-          if (_raidNode == null) {
-            _raidNode = new RaidNode(this, linuxServer, port, csf, ssf);
-            _raidNode.start();
+          if (raidNode == null) {
+            raidNode = new RaidNode(this, linuxServer, port, csf, ssf);
+            raidNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         }
@@ -447,22 +448,22 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
+    Server linuxServer = host.getLinuxServer();
     int numCerts = linuxServer == null ? 0 : linuxServer.getSslCertificates().size();
     synchronized (this) {
       if (started) {
         if (numCerts == 0) {
           // No SSL certificate monitoring or no certificates to monitor
-          if (_sslCertificatesNode != null) {
-            _sslCertificatesNode.stop();
-            _sslCertificatesNode = null;
+          if (sslCertificatesNode != null) {
+            sslCertificatesNode.stop();
+            sslCertificatesNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         } else {
           // Has monitored SSL certificates
-          if (_sslCertificatesNode == null) {
-            _sslCertificatesNode = new CertificatesNode(this, linuxServer, port, csf, ssf);
-            _sslCertificatesNode.start();
+          if (sslCertificatesNode == null) {
+            sslCertificatesNode = new CertificatesNode(this, linuxServer, port, csf, ssf);
+            sslCertificatesNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         }
@@ -479,8 +480,8 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
-    PhysicalServer physicalServer = _host.getPhysicalServer();
+    Server linuxServer = host.getLinuxServer();
+    PhysicalServer physicalServer = host.getPhysicalServer();
     synchronized (this) {
       if (started) {
         if (
@@ -489,16 +490,16 @@ public class HostNode extends NodeImpl {
                 || physicalServer.getUpsType() != PhysicalServer.UpsType.apc
         ) {
           // No UPS monitoring
-          if (_upsNode != null) {
-            _upsNode.stop();
-            _upsNode = null;
+          if (upsNode != null) {
+            upsNode.stop();
+            upsNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         } else {
           // Has UPS monitoring
-          if (_upsNode == null) {
-            _upsNode = new UpsNode(this, linuxServer, port, csf, ssf);
-            _upsNode.start();
+          if (upsNode == null) {
+            upsNode = new UpsNode(this, linuxServer, port, csf, ssf);
+            upsNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         }
@@ -515,21 +516,21 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
+    Server linuxServer = host.getLinuxServer();
     synchronized (this) {
       if (started) {
         if (linuxServer == null) {
           // No filesystem monitoring
-          if (_filesystemsNode != null) {
-            _filesystemsNode.stop();
-            _filesystemsNode = null;
+          if (filesystemsNode != null) {
+            filesystemsNode.stop();
+            filesystemsNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         } else {
           // Has filesystem monitoring
-          if (_filesystemsNode == null) {
-            _filesystemsNode = new FilesystemsNode(this, linuxServer, port, csf, ssf);
-            _filesystemsNode.start();
+          if (filesystemsNode == null) {
+            filesystemsNode = new FilesystemsNode(this, linuxServer, port, csf, ssf);
+            filesystemsNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         }
@@ -546,21 +547,21 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
+    Server linuxServer = host.getLinuxServer();
     synchronized (this) {
       if (started) {
         if (linuxServer == null) {
           // No load monitoring
-          if (_loadAverageNode != null) {
-            _loadAverageNode.stop();
-            _loadAverageNode = null;
+          if (loadAverageNode != null) {
+            loadAverageNode.stop();
+            loadAverageNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         } else {
           // Has load monitoring
-          if (_loadAverageNode == null) {
-            _loadAverageNode = new LoadAverageNode(this, linuxServer, port, csf, ssf);
-            _loadAverageNode.start();
+          if (loadAverageNode == null) {
+            loadAverageNode = new LoadAverageNode(this, linuxServer, port, csf, ssf);
+            loadAverageNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         }
@@ -577,21 +578,21 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
+    Server linuxServer = host.getLinuxServer();
     synchronized (this) {
       if (started) {
         if (linuxServer == null) {
           // No memory monitoring
-          if (_memoryNode != null) {
-            _memoryNode.stop();
-            _memoryNode = null;
+          if (memoryNode != null) {
+            memoryNode.stop();
+            memoryNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         } else {
           // Has memory monitoring
-          if (_memoryNode == null) {
-            _memoryNode = new MemoryNode(this, linuxServer, port, csf, ssf);
-            _memoryNode.start();
+          if (memoryNode == null) {
+            memoryNode = new MemoryNode(this, linuxServer, port, csf, ssf);
+            memoryNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         }
@@ -608,21 +609,21 @@ public class HostNode extends NodeImpl {
       }
     }
 
-    Server linuxServer = _host.getLinuxServer();
+    Server linuxServer = host.getLinuxServer();
     synchronized (this) {
       if (started) {
         if (linuxServer == null) {
           // No time monitoring
-          if (_timeNode != null) {
-            _timeNode.stop();
-            _timeNode = null;
+          if (timeNode != null) {
+            timeNode.stop();
+            timeNode = null;
             hostsNode.rootNode.nodeRemoved();
           }
         } else {
           // Has time monitoring
-          if (_timeNode == null) {
-            _timeNode = new TimeNode(this, linuxServer, port, csf, ssf);
-            _timeNode.start();
+          if (timeNode == null) {
+            timeNode = new TimeNode(this, linuxServer, port, csf, ssf);
+            timeNode.start();
             hostsNode.rootNode.nodeAdded();
           }
         }
@@ -631,7 +632,7 @@ public class HostNode extends NodeImpl {
   }
 
   public File getPersistenceDirectory() throws IOException {
-    File packDir = new File(hostsNode.getPersistenceDirectory(), Integer.toString(_pack));
+    File packDir = new File(hostsNode.getPersistenceDirectory(), Integer.toString(packageId));
     if (!packDir.exists()) {
       if (!packDir.mkdir()) {
         throw new IOException(
@@ -642,7 +643,7 @@ public class HostNode extends NodeImpl {
         );
       }
     }
-    File serverDir = new File(packDir, _name);
+    File serverDir = new File(packDir, name);
     if (!serverDir.exists()) {
       if (!serverDir.mkdir()) {
         throw new IOException(

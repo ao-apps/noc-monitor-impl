@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.email;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.collections.AoCollections;
 import com.aoapps.lang.Throwables;
 import com.aoapps.lang.function.SerializableFunction;
@@ -33,7 +35,6 @@ import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.TableResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -72,14 +73,16 @@ import org.xbill.DNS.Type;
 
 /**
  * The workers for blacklist monitoring.
- *
+ * <p>
  * TODO: There are several whitelists tested at multirbl.valli.org
  * TODO: There are also informational lists at multirbl.valli.org
  * TODO: Also at multirbl.valli.org there are hostname-based blacklists...
  * TODO: yahoo, hotmail, gmail, aol?
  * TODO: How to check when rejected by domain name on sender address like done for NMW on att domains?
- *
+ * </p>
+ * <p>
  * TODO: Possibly more at http://stopspam.org/rblcheck/index.php
+ * </p>
  *
  * @author  AO Industries, Inc.
  */
@@ -146,7 +149,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
     }
   }
 
-  /**
+  /*
    * This cache is used for all DNS lookups.
    */
   static {
@@ -199,7 +202,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
       if (addressFamily != com.aoapps.net.AddressFamily.INET) {
         throw new UnsupportedOperationException("Address family not yet implemented: " + addressFamily);
       }
-      int bits = IpAddress.getIntForIPAddress(ip.toString());
+      int bits = IpAddress.getIntForIpAddress(ip.toString());
       this.query =
           new StringBuilder(16 + basename.length())
               .append(bits & 255)
@@ -212,63 +215,62 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
               .append('.')
               .append(basename)
               .append('.')
-              .toString()
-      ;
+              .toString();
     }
 
     @Override
     public BlacklistQueryResult call() throws Exception {
-      long startTime = System.currentTimeMillis();
-      long startNanos = System.nanoTime();
+      final long startTime = System.currentTimeMillis();
+      final long startNanos = System.nanoTime();
       boolean doTxt;
-      StringBuilder resultSB = new StringBuilder();
+      StringBuilder resultSb = new StringBuilder();
       AlertLevel alertLevel;
       // Lookup the IP addresses
-      Lookup aLookup = new Lookup(query, Type.A);
-      aLookup.run();
-      if (aLookup.getResult() == Lookup.HOST_NOT_FOUND) {
+      Lookup addressLookup = new Lookup(query, Type.A);
+      addressLookup.run();
+      if (addressLookup.getResult() == Lookup.HOST_NOT_FOUND) {
         // Not blacklisted
         doTxt = false;
-        resultSB.append("Host not found");
+        resultSb.append("Host not found");
         alertLevel = AlertLevel.NONE;
-      } else if (aLookup.getResult() == Lookup.TYPE_NOT_FOUND) {
+      } else if (addressLookup.getResult() == Lookup.TYPE_NOT_FOUND) {
         // Not blacklisted
         doTxt = true;
-        resultSB.append("Type not found");
+        resultSb.append("Type not found");
         alertLevel = AlertLevel.NONE;
-      } else if (aLookup.getResult() != Lookup.SUCCESSFUL) {
+      } else if (addressLookup.getResult() != Lookup.SUCCESSFUL) {
         doTxt = false;
-        String errorString = aLookup.getErrorString();
+        String errorString = addressLookup.getErrorString();
         switch (errorString) {
           case "SERVFAIL":
             // Not blacklisted
-            resultSB.append("SERVFAIL");
+            resultSb.append("SERVFAIL");
             alertLevel = AlertLevel.NONE;
             break;
           case "timed out":
-            resultSB.append("Timeout");
+            resultSb.append("Timeout");
             alertLevel = AlertLevel.NONE; // Was UNKNOWN
             break;
           default:
-            resultSB.append("A lookup failed: ").append(errorString);
+            resultSb.append("A lookup failed: ").append(errorString);
             alertLevel = maxAlertLevel;
             break;
         }
       } else {
         doTxt = true;
-        Record[] aRecords = aLookup.getAnswers();
-        if (aRecords == null || aRecords.length == 0) {
-          resultSB.append("No A records found");
+        Record[] addressRecords = addressLookup.getAnswers();
+        if (addressRecords == null || addressRecords.length == 0) {
+          resultSb.append("No A records found");
           alertLevel = maxAlertLevel;
         } else {
           alertLevel = AlertLevel.NONE;
-          for (Record aRecord : aRecords) {
-            ARecord a = (ARecord) aRecord;
+          for (Record addressRecord : addressRecords) {
+            ARecord a = (ARecord) addressRecord;
             String ip = a.getAddress().getHostAddress();
-            if (resultSB.length() > 0) {
-              resultSB.append(", ");
+            if (resultSb.length() > 0) {
+              resultSb.append(", ");
             }
-            resultSB.append(ip);
+            resultSb.append(ip);
             AlertLevel recordAlertLevel =
                 // list.quorum.to returns 127.0.0.0 for no listing
                 ("list.quorum.to".equals(basename) && "127.0.0.0".equals(ip)) ? AlertLevel.NONE
@@ -303,8 +305,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
                             || "127.0.2.3".equals(ip)// domains that are older than 10 days
                     )
                 ) ? AlertLevel.NONE
-                    : maxAlertLevel
-            ;
+                    : maxAlertLevel;
             if (recordAlertLevel.compareTo(alertLevel) > 0) {
               alertLevel = recordAlertLevel;
             }
@@ -319,15 +320,15 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
           Record[] txtRecords = txtLookup.getAnswers();
           if (txtRecords != null) {
             for (Record txtRecord : txtRecords) {
-              if (resultSB.length() > 0) {
-                resultSB.append(" - ");
+              if (resultSb.length() > 0) {
+                resultSb.append(" - ");
               }
-              resultSB.append(txtRecord.rdataToString());
+              resultSb.append(txtRecord.rdataToString());
             }
           }
         }
       }
-      return new BlacklistQueryResult(basename, startTime, System.nanoTime() - startNanos, query, resultSB.toString(), alertLevel);
+      return new BlacklistQueryResult(basename, startTime, System.nanoTime() - startNanos, query, resultSb.toString(), alertLevel);
     }
 
     @Override
@@ -374,8 +375,8 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
     @Override
     public BlacklistQueryResult call() throws Exception {
-      long startTime = System.currentTimeMillis();
-      long startNanos = System.nanoTime();
+      final long startTime = System.currentTimeMillis();
+      final long startNanos = System.nanoTime();
       // Lookup the MX for the domain
       Lookup mxLookup = new Lookup(domain + '.', Type.MX);
       mxLookup.run();
@@ -395,21 +396,21 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
       }
       // Lookup the IP addresses
       Name target = mx.getTarget();
-      Lookup aLookup = new Lookup(target, Type.A);
-      aLookup.run();
-      if (aLookup.getResult() != Lookup.SUCCESSFUL) {
-        throw new IOException(domain + ": A lookup failed: " + aLookup.getErrorString());
+      Lookup addressLookup = new Lookup(target, Type.A);
+      addressLookup.run();
+      if (addressLookup.getResult() != Lookup.SUCCESSFUL) {
+        throw new IOException(domain + ": A lookup failed: " + addressLookup.getErrorString());
       }
-      Record[] aRecords = aLookup.getAnswers();
+      Record[] addressRecords = addressLookup.getAnswers();
       // Pick a random A
-      if (aRecords.length == 0) {
+      if (addressRecords.length == 0) {
         throw new IOException(domain + ": No A records found");
       }
       ARecord a;
-      if (aRecords.length == 1) {
-        a = (ARecord) aRecords[0];
+      if (addressRecords.length == 1) {
+        a = (ARecord) addressRecords[0];
       } else {
-        a = (ARecord) aRecords[RootNodeImpl.fastRandom.nextInt(aRecords.length)];
+        a = (ARecord) addressRecords[RootNodeImpl.fastRandom.nextInt(addressRecords.length)];
       }
       InetAddress address = a.getAddress();
       // Make call from the daemon from privileged port
@@ -441,7 +442,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
   }
 
   /**
-   * One unique worker is made per persistence file (and should match the ipAddress exactly)
+   * One unique worker is made per persistence file (and should match the ipAddress exactly).
    */
   private static final Map<String, BlacklistsNodeWorker> workerCache = new HashMap<>();
 
@@ -1590,8 +1591,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
         ((iam = ipAddress.getMonitoring()) != null)
             && iam.getCheckBlacklistsOverSmtp()
             && (device = ipAddress.getDevice()) != null
-            && device.getHost().getLinuxServer() != null
-    ;
+            && device.getHost().getLinuxServer() != null;
     lookups = new ArrayList<>(checkSmtpBlacklist ? (rblBlacklists.length + 6) : rblBlacklists.length);
     lookups.addAll(Arrays.asList(rblBlacklists));
     if (checkSmtpBlacklist) {
@@ -1715,7 +1715,14 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
           cacheResult = true;
         } catch (TimeoutException to) {
           future.cancel(false);
-          result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), "Timeout in queue, timeoutRemaining = " + new NanoInterval(timeoutRemainingNanos), AlertLevel.UNKNOWN);
+          result = new BlacklistQueryResult(
+              baseName,
+              startTime,
+              System.nanoTime() - startNano,
+              lookup.getQuery(),
+              "Timeout in queue, timeoutRemaining = " + new NanoInterval(timeoutRemainingNanos),
+              AlertLevel.UNKNOWN
+          );
           // Queue timeouts are not cached
           cacheResult = false;
         } catch (ThreadDeath | InterruptedException td) {

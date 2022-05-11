@@ -23,11 +23,12 @@
 
 package com.aoindustries.noc.monitor.linux;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.distribution.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.infrastructure.DrbdNode;
 import com.aoindustries.noc.monitor.infrastructure.ThreeWareRaidNode;
@@ -50,19 +51,19 @@ public class RaidNode extends NodeImpl {
   private static final long serialVersionUID = 1L;
 
   public final HostNode hostNode;
-  private final Server linuxServer;
+  private final Server server;
 
   private boolean started;
 
-  private volatile ThreeWareRaidNode _threeWareRaidNode;
-  private volatile MdStatNode _mdStatNode;
-  private volatile MdMismatchNode _mdMismatchNode;
-  private volatile DrbdNode _drbdNode;
+  private volatile ThreeWareRaidNode threeWareRaidNode;
+  private volatile MdStatNode mdStatNode;
+  private volatile MdMismatchNode mdMismatchNode;
+  private volatile DrbdNode drbdNode;
 
-  public RaidNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+  public RaidNode(HostNode hostNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
     this.hostNode = hostNode;
-    this.linuxServer = linuxServer;
+    this.server = server;
   }
 
   @Override
@@ -70,8 +71,8 @@ public class RaidNode extends NodeImpl {
     return hostNode;
   }
 
-  public Server getAOServer() {
-    return linuxServer;
+  public Server getServer() {
+    return server;
   }
 
   @Override
@@ -82,10 +83,10 @@ public class RaidNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-        this._threeWareRaidNode,
-        this._mdStatNode,
-        this._mdMismatchNode,
-        this._drbdNode
+        this.threeWareRaidNode,
+        this.mdStatNode,
+        this.mdMismatchNode,
+        this.drbdNode
     );
   }
 
@@ -96,10 +97,10 @@ public class RaidNode extends NodeImpl {
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
         AlertLevelUtils.getMaxAlertLevel(
-            this._threeWareRaidNode,
-            this._mdStatNode,
-            this._mdMismatchNode,
-            this._drbdNode
+            this.threeWareRaidNode,
+            this.mdStatNode,
+            this.mdMismatchNode,
+            this.drbdNode
         )
     );
   }
@@ -120,7 +121,7 @@ public class RaidNode extends NodeImpl {
   public void start() throws IOException, SQLException {
     // TODO: Operating system versions can change on-the-fly:
     // We only have 3ware cards in xen outers
-    int osv = linuxServer.getHost().getOperatingSystemVersion().getPkey();
+    int osv = server.getHost().getOperatingSystemVersion().getPkey();
     synchronized (this) {
       if (started) {
         throw new IllegalStateException();
@@ -130,21 +131,21 @@ public class RaidNode extends NodeImpl {
           osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
               || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
       ) {
-        if (_threeWareRaidNode == null) {
-          _threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
-          _threeWareRaidNode.start();
+        if (threeWareRaidNode == null) {
+          threeWareRaidNode = new ThreeWareRaidNode(this, port, csf, ssf);
+          threeWareRaidNode.start();
           hostNode.hostsNode.rootNode.nodeAdded();
         }
       }
       // Any machine may have MD RAID (at least until all services run in Xen outers)
-      if (_mdStatNode == null) {
-        _mdStatNode = new MdStatNode(this, port, csf, ssf);
-        _mdStatNode.start();
+      if (mdStatNode == null) {
+        mdStatNode = new MdStatNode(this, port, csf, ssf);
+        mdStatNode.start();
         hostNode.hostsNode.rootNode.nodeAdded();
       }
-      if (_mdMismatchNode == null) {
-        _mdMismatchNode = new MdMismatchNode(this, port, csf, ssf);
-        _mdMismatchNode.start();
+      if (mdMismatchNode == null) {
+        mdMismatchNode = new MdMismatchNode(this, port, csf, ssf);
+        mdMismatchNode.start();
         hostNode.hostsNode.rootNode.nodeAdded();
       }
       // We only run DRBD in xen outers
@@ -153,9 +154,9 @@ public class RaidNode extends NodeImpl {
               || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
               || osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
       ) {
-        if (_drbdNode == null) {
-          _drbdNode = new DrbdNode(this, port, csf, ssf);
-          _drbdNode.start();
+        if (drbdNode == null) {
+          drbdNode = new DrbdNode(this, port, csf, ssf);
+          drbdNode.start();
           hostNode.hostsNode.rootNode.nodeAdded();
         }
       }
@@ -165,24 +166,24 @@ public class RaidNode extends NodeImpl {
   public void stop() {
     synchronized (this) {
       started = false;
-      if (_threeWareRaidNode != null) {
-        _threeWareRaidNode.stop();
-        _threeWareRaidNode = null;
+      if (threeWareRaidNode != null) {
+        threeWareRaidNode.stop();
+        threeWareRaidNode = null;
         hostNode.hostsNode.rootNode.nodeRemoved();
       }
-      if (_mdStatNode != null) {
-        _mdStatNode.stop();
-        _mdStatNode = null;
+      if (mdStatNode != null) {
+        mdStatNode.stop();
+        mdStatNode = null;
         hostNode.hostsNode.rootNode.nodeRemoved();
       }
-      if (_mdMismatchNode != null) {
-        _mdMismatchNode.stop();
-        _mdMismatchNode = null;
+      if (mdMismatchNode != null) {
+        mdMismatchNode.stop();
+        mdMismatchNode = null;
         hostNode.hostsNode.rootNode.nodeRemoved();
       }
-      if (_drbdNode != null) {
-        _drbdNode.stop();
-        _drbdNode = null;
+      if (drbdNode != null) {
+        drbdNode.stop();
+        drbdNode = null;
         hostNode.hostsNode.rootNode.nodeRemoved();
       }
     }

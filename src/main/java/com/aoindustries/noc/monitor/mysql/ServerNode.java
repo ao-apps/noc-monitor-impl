@@ -23,13 +23,14 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -50,30 +51,30 @@ public class ServerNode extends NodeImpl {
 
   private static final long serialVersionUID = 1L;
 
-  final ServersNode _mysqlServersNode;
-  private final Server _mysqlServer;
-  private final Server.Name _label;
+  final ServersNode serversNode;
+  private final Server server;
+  private final Server.Name label;
 
   private boolean started;
-  private volatile SlavesNode _mysqlSlavesNode;
-  private volatile DatabasesNode _mysqlDatabasesNode;
+  private volatile SlavesNode slavesNode;
+  private volatile DatabasesNode databasesNode;
 
-  ServerNode(ServersNode mysqlServersNode, Server mysqlServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException {
+  ServerNode(ServersNode serversNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException, IOException {
     super(port, csf, ssf);
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
-    this._mysqlServersNode = mysqlServersNode;
-    this._mysqlServer = mysqlServer;
-    this._label = mysqlServer.getName();
+    this.serversNode = serversNode;
+    this.server = server;
+    this.label = server.getName();
   }
 
   @Override
   public ServersNode getParent() {
-    return _mysqlServersNode;
+    return serversNode;
   }
 
-  public Server getMySQLServer() {
-    return _mysqlServer;
+  public Server getServer() {
+    return server;
   }
 
   @Override
@@ -84,8 +85,8 @@ public class ServerNode extends NodeImpl {
   @Override
   public List<NodeImpl> getChildren() {
     return getSnapshot(
-        this._mysqlSlavesNode,
-        this._mysqlDatabasesNode
+        this.slavesNode,
+        this.databasesNode
     );
   }
 
@@ -96,8 +97,8 @@ public class ServerNode extends NodeImpl {
   public AlertLevel getAlertLevel() {
     return constrainAlertLevel(
         AlertLevelUtils.getMaxAlertLevel(
-            this._mysqlSlavesNode,
-            this._mysqlDatabasesNode
+            this.slavesNode,
+            this.databasesNode
         )
     );
   }
@@ -112,19 +113,19 @@ public class ServerNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return _label.toString();
+    return label.toString();
   }
 
   private final TableListener tableListener = (Table<?> table) -> {
     try {
-      verifyFailoverMySQLReplications();
+      verifyFailoverMysqlReplications();
     } catch (IOException | SQLException err) {
       throw new WrappedException(err);
     }
   };
 
   void start() throws IOException, SQLException {
-    RootNodeImpl rootNode = _mysqlServersNode.hostNode.hostsNode.rootNode;
+    RootNodeImpl rootNode = serversNode.hostNode.hostsNode.rootNode;
     synchronized (this) {
       if (started) {
         throw new IllegalStateException();
@@ -133,12 +134,12 @@ public class ServerNode extends NodeImpl {
       rootNode.conn.getBackup().getMysqlReplication().addTableListener(tableListener, 100);
       rootNode.conn.getNet().getHost().addTableListener(tableListener, 100);
     }
-    verifyFailoverMySQLReplications();
+    verifyFailoverMysqlReplications();
     synchronized (this) {
       if (started) {
-        if (_mysqlDatabasesNode == null) {
-          _mysqlDatabasesNode = new DatabasesNode(this, port, csf, ssf);
-          _mysqlDatabasesNode.start();
+        if (databasesNode == null) {
+          databasesNode = new DatabasesNode(this, port, csf, ssf);
+          databasesNode.start();
           rootNode.nodeAdded();
         }
       }
@@ -146,27 +147,27 @@ public class ServerNode extends NodeImpl {
   }
 
   void stop() {
-    RootNodeImpl rootNode = _mysqlServersNode.hostNode.hostsNode.rootNode;
+    RootNodeImpl rootNode = serversNode.hostNode.hostsNode.rootNode;
     synchronized (this) {
       started = false;
       // TODO: Review for other missing removeTableListener
       rootNode.conn.getBackup().getMysqlReplication().removeTableListener(tableListener);
       rootNode.conn.getNet().getHost().removeTableListener(tableListener);
-      if (_mysqlSlavesNode != null) {
-        _mysqlSlavesNode.stop();
-        _mysqlSlavesNode = null;
+      if (slavesNode != null) {
+        slavesNode.stop();
+        slavesNode = null;
         rootNode.nodeRemoved();
       }
 
-      if (_mysqlDatabasesNode != null) {
-        _mysqlDatabasesNode.stop();
-        _mysqlDatabasesNode = null;
+      if (databasesNode != null) {
+        databasesNode.stop();
+        databasesNode = null;
         rootNode.nodeRemoved();
       }
     }
   }
 
-  private void verifyFailoverMySQLReplications() throws IOException, SQLException {
+  private void verifyFailoverMysqlReplications() throws IOException, SQLException {
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
 
     synchronized (this) {
@@ -175,21 +176,21 @@ public class ServerNode extends NodeImpl {
       }
     }
 
-    boolean hasMysqlReplication = _mysqlServer.getFailoverMySQLReplications().stream()
+    boolean hasMysqlReplication = server.getFailoverMysqlReplications().stream()
         .anyMatch(mysqlReplication -> WrappedException.call(mysqlReplication::isMonitoringEnabled));
     synchronized (this) {
       if (started) {
         if (hasMysqlReplication) {
-          if (_mysqlSlavesNode == null) {
-            _mysqlSlavesNode = new SlavesNode(this, port, csf, ssf);
-            _mysqlSlavesNode.start();
-            _mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
+          if (slavesNode == null) {
+            slavesNode = new SlavesNode(this, port, csf, ssf);
+            slavesNode.start();
+            serversNode.hostNode.hostsNode.rootNode.nodeAdded();
           }
         } else {
-          if (_mysqlSlavesNode != null) {
-            _mysqlSlavesNode.stop();
-            _mysqlSlavesNode = null;
-            _mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
+          if (slavesNode != null) {
+            slavesNode.stop();
+            slavesNode = null;
+            serversNode.hostNode.hostsNode.rootNode.nodeRemoved();
           }
         }
       }
@@ -197,12 +198,12 @@ public class ServerNode extends NodeImpl {
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(_mysqlServersNode.getPersistenceDirectory(), _label.toString());
+    File dir = new File(serversNode.getPersistenceDirectory(), label.toString());
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
             PACKAGE_RESOURCES.getMessage(
-                _mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+                serversNode.hostNode.hostsNode.rootNode.locale,
                 "error.mkdirFailed",
                 dir.getCanonicalPath()
             )

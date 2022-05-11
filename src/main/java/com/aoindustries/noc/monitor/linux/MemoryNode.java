@@ -23,8 +23,9 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import com.aoindustries.aoserv.client.linux.Server;
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
+import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.MemoryResult;
 import com.aoindustries.noc.monitor.net.HostNode;
@@ -41,21 +42,21 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
   private static final long serialVersionUID = 1L;
 
-  //private final Server _linuxServer;
+  //private final Server server;
 
-  public MemoryNode(HostNode hostNode, Server linuxServer, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+  public MemoryNode(HostNode hostNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
         hostNode.hostsNode.rootNode,
         hostNode,
         MemoryNodeWorker.getWorker(
             hostNode.getPersistenceDirectory(),
-            linuxServer
+            server
         ),
         port,
         csf,
         ssf
     );
-    //this._linuxServer = linuxServer;
+    //this.server = server;
   }
 
   @Override

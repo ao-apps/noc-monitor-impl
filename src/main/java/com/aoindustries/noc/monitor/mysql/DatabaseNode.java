@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -46,41 +47,48 @@ public class DatabaseNode extends TableResultNodeImpl {
   private static final long serialVersionUID = 1L;
 
   final DatabaseNodeWorker databaseWorker;
-  final DatabasesNode mysqlDatabasesNode;
-  final Database mysqlDatabase;
-  private final MysqlReplication mysqlSlave;
-  private final Database.Name _label;
+  final DatabasesNode databasesNode;
+  final Database database;
+  private final MysqlReplication slave;
+  private final Database.Name label;
 
   private boolean started;
 
-  private volatile CheckTablesNode mysqlCheckTablesNode;
+  private volatile CheckTablesNode checkTablesNode;
 
-  DatabaseNode(DatabasesNode mysqlDatabasesNode, Database mysqlDatabase, MysqlReplication mysqlSlave, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
+  DatabaseNode(
+      DatabasesNode databasesNode,
+      Database database,
+      MysqlReplication slave,
+      int port,
+      RMIClientSocketFactory csf,
+      RMIServerSocketFactory ssf
+  ) throws IOException, SQLException {
     super(
-        mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
-        mysqlDatabasesNode,
+        databasesNode.serverNode.serversNode.hostNode.hostsNode.rootNode,
+        databasesNode,
         DatabaseNodeWorker.getWorker(
-            new File(mysqlDatabasesNode.getPersistenceDirectory(), mysqlDatabase.getName() + ".show_full_tables"),
-            mysqlDatabase,
-            mysqlSlave
+            new File(databasesNode.getPersistenceDirectory(), database.getName() + ".show_full_tables"),
+            database,
+            slave
         ),
         port,
         csf,
         ssf
     );
     this.databaseWorker = (DatabaseNodeWorker) worker;
-    this.mysqlDatabasesNode = mysqlDatabasesNode;
-    this.mysqlDatabase = mysqlDatabase;
-    this.mysqlSlave = mysqlSlave;
-    this._label = mysqlDatabase.getName();
+    this.databasesNode = databasesNode;
+    this.database = database;
+    this.slave = slave;
+    this.label = database.getName();
   }
 
-  Database getMySQLDatabase() {
-    return mysqlDatabase;
+  Database getDatabase() {
+    return database;
   }
 
-  MysqlReplication getMySQLSlave() {
-    return mysqlSlave;
+  MysqlReplication getSlave() {
+    return slave;
   }
 
   @Override
@@ -90,7 +98,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 
   @Override
   public List<CheckTablesNode> getChildren() {
-    return getSnapshot(this.mysqlCheckTablesNode);
+    return getSnapshot(this.checkTablesNode);
   }
 
   /**
@@ -101,23 +109,23 @@ public class DatabaseNode extends TableResultNodeImpl {
     return constrainAlertLevel(
         AlertLevelUtils.getMaxAlertLevel(
             super.getAlertLevel(),
-            this.mysqlCheckTablesNode
+            this.checkTablesNode
         )
     );
   }
 
   @Override
   public String getLabel() {
-    return _label.toString();
+    return label.toString();
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(mysqlDatabasesNode.getPersistenceDirectory(), _label.toString());
+    File dir = new File(databasesNode.getPersistenceDirectory(), label.toString());
     if (!dir.exists()) {
       if (!dir.mkdir()) {
         throw new IOException(
             PACKAGE_RESOURCES.getMessage(
-                mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.locale,
+                databasesNode.serverNode.serversNode.hostNode.hostsNode.rootNode.locale,
                 "error.mkdirFailed",
                 dir.getCanonicalPath()
             )
@@ -134,10 +142,10 @@ public class DatabaseNode extends TableResultNodeImpl {
         throw new IllegalStateException();
       }
       started = true;
-      if (mysqlCheckTablesNode == null) {
-        mysqlCheckTablesNode = new CheckTablesNode(this, port, csf, ssf);
-        mysqlCheckTablesNode.start();
-        mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeAdded();
+      if (checkTablesNode == null) {
+        checkTablesNode = new CheckTablesNode(this, port, csf, ssf);
+        checkTablesNode.start();
+        databasesNode.serverNode.serversNode.hostNode.hostsNode.rootNode.nodeAdded();
       }
       super.start();
     }
@@ -148,10 +156,10 @@ public class DatabaseNode extends TableResultNodeImpl {
     synchronized (this) {
       started = false;
       super.stop();
-      if (mysqlCheckTablesNode != null) {
-        mysqlCheckTablesNode.stop();
-        mysqlCheckTablesNode = null;
-        mysqlDatabasesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode.nodeRemoved();
+      if (checkTablesNode != null) {
+        checkTablesNode.stop();
+        checkTablesNode = null;
+        databasesNode.serverNode.serversNode.hostNode.hostsNode.rootNode.nodeRemoved();
       }
     }
   }

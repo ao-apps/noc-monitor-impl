@@ -24,8 +24,9 @@
 package com.aoindustries.noc.monitor.mysql;
 
 import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
-import com.aoindustries.noc.monitor.common.MySQLReplicationResult;
+import com.aoindustries.noc.monitor.common.MysqlReplicationResult;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -37,17 +38,17 @@ import java.util.List;
  *
  * @author  AO Industries, Inc.
  */
-public class SlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicationResult> {
+public class SlaveStatusNode extends TableMultiResultNodeImpl<MysqlReplicationResult> {
 
   private static final long serialVersionUID = 1L;
 
-  SlaveStatusNode(SlaveNode mysqlSlaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
+  SlaveStatusNode(SlaveNode slaveNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
-        mysqlSlaveNode.mysqlSlavesNode.mysqlServerNode._mysqlServersNode.hostNode.hostsNode.rootNode,
-        mysqlSlaveNode,
+        slaveNode.slavesNode.serverNode.serversNode.hostNode.hostsNode.rootNode,
+        slaveNode,
         SlaveStatusNodeWorker.getWorker(
-            mysqlSlaveNode.getPersistenceDirectory(),
-            mysqlSlaveNode.getFailoverMySQLReplication()
+            slaveNode.getPersistenceDirectory(),
+            slaveNode.getMysqlReplication()
         ),
         port,
         csf,
@@ -65,11 +66,11 @@ public class SlaveStatusNode extends TableMultiResultNodeImpl<MySQLReplicationRe
     return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.secondsBehindMaster"),
         PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogFile"),
         PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogPosition"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIOState"),
+        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIoState"),
         PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogFile"),
         PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogPosition"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIORunning"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveSQLRunning"),
+        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIoRunning"),
+        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveSqlRunning"),
         PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorNumber"),
         PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorDetails"),
         PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.alertThresholds")

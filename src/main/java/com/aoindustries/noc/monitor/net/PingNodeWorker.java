@@ -23,10 +23,11 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.lang.concurrent.LocalizedTimeoutException;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.PingResult;
@@ -52,7 +53,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
   private static final int TIMEOUT = 10000;
 
   /**
-   * One unique worker is made per persistence directory (and should match the IP address exactly)
+   * One unique worker is made per persistence directory (and should match the IP address exactly).
    */
   private static final Map<String, PingNodeWorker> workerCache = new HashMap<>();
 
@@ -76,7 +77,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
   }
 
   /**
-   * The most recent timer task
+   * The most recent timer task.
    */
   private final com.aoapps.net.InetAddress ipAddress;
 
@@ -107,12 +108,13 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
 
   /**
    * Figures out the alert level.  It considers only the last 10 pings.  The number of timeouts follow:
-   *
-   * >= 4  CRITICAL
-   * >= 3  HIGH
-   * >= 2  MEDIUM
-   * >= 1  LOW
-   * =0   NONE
+   * <pre>
+   * &gt;= 4  CRITICAL
+   * &gt;= 3  HIGH
+   * &gt;= 2  MEDIUM
+   * &gt;= 1  LOW
+   * == 0   NONE
+   * </pre>
    */
   private static AlertLevel getAlertLevel(int packetLossPercent) {
     if (packetLossPercent < 0) {

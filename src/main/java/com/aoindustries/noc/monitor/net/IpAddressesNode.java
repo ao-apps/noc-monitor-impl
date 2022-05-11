@@ -23,6 +23,8 @@
 
 package com.aoindustries.noc.monitor.net;
 
+import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
+
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -31,7 +33,6 @@ import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
 import com.aoindustries.noc.monitor.RootNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import java.io.File;
@@ -54,26 +55,26 @@ public class IpAddressesNode extends NodeImpl {
 
   private static final long serialVersionUID = 1L;
 
-  final DeviceNode netDeviceNode;
+  final DeviceNode deviceNode;
   final UnallocatedNode unallocatedNode;
   public final RootNodeImpl rootNode;
 
   private final List<IpAddressNode> ipAddressNodes = new ArrayList<>();
   private boolean started;
 
-  IpAddressesNode(DeviceNode netDeviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+  IpAddressesNode(DeviceNode deviceNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
 
-    this.netDeviceNode = netDeviceNode;
+    this.deviceNode = deviceNode;
     this.unallocatedNode = null;
 
-    this.rootNode = netDeviceNode._networkDevicesNode.hostNode.hostsNode.rootNode;
+    this.rootNode = deviceNode.devicesNode.hostNode.hostsNode.rootNode;
   }
 
   IpAddressesNode(UnallocatedNode unallocatedNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
 
-    this.netDeviceNode = null;
+    this.deviceNode = null;
     this.unallocatedNode = unallocatedNode;
 
     this.rootNode = unallocatedNode.rootNode;
@@ -81,7 +82,7 @@ public class IpAddressesNode extends NodeImpl {
 
   @Override
   public NodeImpl getParent() {
-    return netDeviceNode != null ? netDeviceNode : unallocatedNode;
+    return deviceNode != null ? deviceNode : unallocatedNode;
   }
 
   @Override
@@ -164,11 +165,11 @@ public class IpAddressesNode extends NodeImpl {
     }
 
     List<IpAddress> ipAddresses;
-    if (netDeviceNode != null) {
-      Device device = netDeviceNode.getNetDevice();
-      List<IpAddress> ndIPs = device.getIPAddresses();
-      ipAddresses = new ArrayList<>(ndIPs.size());
-      for (IpAddress ipAddress : ndIPs) {
+    if (deviceNode != null) {
+      Device device = deviceNode.getDevice();
+      List<IpAddress> deviceIps = device.getIpAddresses();
+      ipAddresses = new ArrayList<>(deviceIps.size());
+      for (IpAddress ipAddress : deviceIps) {
         if (ipAddress.getInetAddress().isUnspecified()) {
           throw new AssertionError("Unspecified IP address on Device: " + device);
         }
@@ -179,9 +180,9 @@ public class IpAddressesNode extends NodeImpl {
       }
     } else {
       // Find all unallocated IP addresses, except the unspecified
-      List<IpAddress> allIPs = rootNode.conn.getNet().getIpAddress().getRows();
-      ipAddresses = new ArrayList<>(allIPs.size());
-      for (IpAddress ip : allIPs) {
+      List<IpAddress> allIps = rootNode.conn.getNet().getIpAddress().getRows();
+      ipAddresses = new ArrayList<>(allIps.size());
+      for (IpAddress ip : allIps) {
         if (
             !ip.getInetAddress().isUnspecified()
                 && ip.getDevice() == null
@@ -239,8 +240,8 @@ public class IpAddressesNode extends NodeImpl {
 
   File getPersistenceDirectory() throws IOException {
     File dir = new File(
-        netDeviceNode != null
-            ? netDeviceNode.getPersistenceDirectory()
+        deviceNode != null
+            ? deviceNode.getPersistenceDirectory()
             : unallocatedNode.getPersistenceDirectory(),
         "ip_addresses"
     );
