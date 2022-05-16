@@ -51,7 +51,7 @@ public class CertificateNode extends TableResultNodeImpl {
     super(
         sslCertificatesNode.hostNode.hostsNode.rootNode,
         sslCertificatesNode,
-        CertificateNodeWorker.getWorker(
+        CertificateWorker.getWorker(
             new File(sslCertificatesNode.getPersistenceDirectory(), Integer.toString(sslCertificate.getPkey())),
             sslCertificate
         ),

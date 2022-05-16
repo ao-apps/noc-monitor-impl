@@ -32,7 +32,7 @@ import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.RootNodeImpl;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -60,10 +60,10 @@ import org.xbill.DNS.Type;
  *
  * @author  AO Industries, Inc.
  */
-class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryResult>, Object> {
+class DnsWorker extends TableResultWorker<List<DnsWorker.DnsQueryResult>, Object> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, DnsNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, DnsWorker.class);
 
   static class DnsQueryResult {
     final String query;
@@ -84,14 +84,14 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
   /**
    * One unique worker is made per persistence file (and should match the ipAddress exactly).
    */
-  private static final Map<String, DnsNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, DnsWorker> workerCache = new HashMap<>();
 
-  static DnsNodeWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
+  static DnsWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      DnsNodeWorker worker = workerCache.get(path);
+      DnsWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new DnsNodeWorker(persistenceFile, ipAddress);
+        worker = new DnsWorker(persistenceFile, ipAddress);
         workerCache.put(path, worker);
       } else {
         if (!worker.ipAddress.equals(ipAddress)) {
@@ -104,7 +104,7 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 
   private final IpAddress ipAddress;
 
-  DnsNodeWorker(File persistenceFile, IpAddress ipAddress) {
+  DnsWorker(File persistenceFile, IpAddress ipAddress) {
     super(persistenceFile);
     this.ipAddress = ipAddress;
   }

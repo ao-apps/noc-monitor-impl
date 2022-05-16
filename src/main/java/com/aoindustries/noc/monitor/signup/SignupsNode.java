@@ -49,7 +49,7 @@ public class SignupsNode extends TableResultNodeImpl {
     super(
         rootNode,
         rootNode,
-        SignupsNodeWorker.getWorker(
+        SignupsWorker.getWorker(
             new File(rootNode.getPersistenceDirectory(), "signups"),
             rootNode.conn
         ),

@@ -26,7 +26,7 @@ package com.aoindustries.noc.monitor.linux;
 import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.LoadAverageResult;
 import java.io.File;
@@ -41,22 +41,22 @@ import java.util.ResourceBundle;
 /**
  * @author  AO Industries, Inc.
  */
-class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, LoadAverageResult> {
+class LoadAverageWorker extends TableMultiResultWorker<List<Number>, LoadAverageResult> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, LoadAverageNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, LoadAverageWorker.class);
 
   /**
    * One unique worker is made per persistence directory (and should match linuxServer exactly).
    */
-  private static final Map<String, LoadAverageNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, LoadAverageWorker> workerCache = new HashMap<>();
 
-  static LoadAverageNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
+  static LoadAverageWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     synchronized (workerCache) {
-      LoadAverageNodeWorker worker = workerCache.get(path);
+      LoadAverageWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new LoadAverageNodeWorker(persistenceDirectory, linuxServer);
+        worker = new LoadAverageWorker(persistenceDirectory, linuxServer);
         workerCache.put(path, worker);
       } else {
         if (!worker.originalLinuxServer.equals(linuxServer)) {
@@ -70,7 +70,7 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
   private final Server originalLinuxServer;
   private Server currentLinuxServer;
 
-  private LoadAverageNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
+  private LoadAverageWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     super(new File(persistenceDirectory, "loadavg"), new LoadAverageResultSerializer());
     this.originalLinuxServer = currentLinuxServer = linuxServer;
   }

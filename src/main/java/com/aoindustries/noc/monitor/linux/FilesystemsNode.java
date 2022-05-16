@@ -49,7 +49,7 @@ public class FilesystemsNode extends TableResultNodeImpl {
     super(
         hostNode.hostsNode.rootNode,
         hostNode,
-        FilesystemsNodeWorker.getWorker(
+        FilesystemsWorker.getWorker(
             new File(hostNode.getPersistenceDirectory(), "filesystems"),
             linuxServer
         ),

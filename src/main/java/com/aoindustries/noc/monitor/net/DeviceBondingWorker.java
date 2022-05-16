@@ -28,7 +28,7 @@ import com.aoapps.lang.Strings;
 import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.SingleResultNodeWorker;
+import com.aoindustries.noc.monitor.SingleResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
 import java.io.File;
@@ -46,22 +46,22 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class DeviceBondingNodeWorker extends SingleResultNodeWorker {
+class DeviceBondingWorker extends SingleResultWorker {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, DeviceBondingNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, DeviceBondingWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the net device exactly).
    */
-  private static final Map<String, DeviceBondingNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, DeviceBondingWorker> workerCache = new HashMap<>();
 
-  static DeviceBondingNodeWorker getWorker(File persistenceFile, Device device) throws IOException {
+  static DeviceBondingWorker getWorker(File persistenceFile, Device device) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      DeviceBondingNodeWorker worker = workerCache.get(path);
+      DeviceBondingWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new DeviceBondingNodeWorker(persistenceFile, device);
+        worker = new DeviceBondingWorker(persistenceFile, device);
         workerCache.put(path, worker);
       } else {
         if (!worker.device.equals(device)) {
@@ -75,7 +75,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
   // Will use whichever connector first created this worker, even if other accounts connect later.
   private volatile Device device;
 
-  private DeviceBondingNodeWorker(File persistenceFile, Device device) {
+  private DeviceBondingWorker(File persistenceFile, Device device) {
     super(persistenceFile);
     this.device = device;
   }

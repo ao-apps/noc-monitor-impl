@@ -29,7 +29,7 @@ import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.aoserv.client.account.Administrator;
 import com.aoindustries.aoserv.client.signup.Request;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
@@ -49,22 +49,22 @@ import java.util.ResourceBundle;
  *
  * @author  AO Industries, Inc.
  */
-class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
+class SignupsWorker extends TableResultWorker<List<Object>, Object> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, SignupsNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, SignupsWorker.class);
 
   /**
    * One unique worker is made per persistence file.
    */
-  private static final Map<String, SignupsNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, SignupsWorker> workerCache = new HashMap<>();
 
-  static SignupsNodeWorker getWorker(File persistenceFile, AoservConnector conn) throws IOException {
+  static SignupsWorker getWorker(File persistenceFile, AoservConnector conn) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      SignupsNodeWorker worker = workerCache.get(path);
+      SignupsWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new SignupsNodeWorker(persistenceFile, conn);
+        worker = new SignupsWorker(persistenceFile, conn);
         workerCache.put(path, worker);
       }
       return worker;
@@ -73,7 +73,7 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 
   private final AoservConnector conn;
 
-  SignupsNodeWorker(File persistenceFile, AoservConnector conn) {
+  SignupsWorker(File persistenceFile, AoservConnector conn) {
     super(persistenceFile);
     this.conn = conn;
   }

@@ -51,7 +51,7 @@ public class BlacklistsNode extends TableResultNodeImpl {
     super(
         ipAddressNode.ipAddressesNode.rootNode,
         ipAddressNode,
-        BlacklistsNodeWorker.getWorker(
+        BlacklistsWorker.getWorker(
             new File(ipAddressNode.getPersistenceDirectory(), "blacklists"),
             ipAddressNode.getIpAddress()
         ),

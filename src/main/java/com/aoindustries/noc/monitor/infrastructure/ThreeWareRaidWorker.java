@@ -28,7 +28,7 @@ import com.aoapps.lang.Strings;
 import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.SingleResultNodeWorker;
+import com.aoindustries.noc.monitor.SingleResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
 import java.io.File;
@@ -46,22 +46,22 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
+class ThreeWareRaidWorker extends SingleResultWorker {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, ThreeWareRaidNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, ThreeWareRaidWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
-  private static final Map<String, ThreeWareRaidNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, ThreeWareRaidWorker> workerCache = new HashMap<>();
 
-  static ThreeWareRaidNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
+  static ThreeWareRaidWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      ThreeWareRaidNodeWorker worker = workerCache.get(path);
+      ThreeWareRaidWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new ThreeWareRaidNodeWorker(persistenceFile, linuxServer);
+        worker = new ThreeWareRaidWorker(persistenceFile, linuxServer);
         workerCache.put(path, worker);
       } else {
         if (!worker.linuxServer.equals(linuxServer)) {
@@ -75,7 +75,7 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
   // Will use whichever connector first created this worker, even if other accounts connect later.
   private final Server linuxServer;
 
-  ThreeWareRaidNodeWorker(File persistenceFile, Server linuxServer) {
+  ThreeWareRaidWorker(File persistenceFile, Server linuxServer) {
     super(persistenceFile);
     this.linuxServer = linuxServer;
   }

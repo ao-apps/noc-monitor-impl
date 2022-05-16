@@ -28,7 +28,7 @@ import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.MdMismatchReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -47,7 +47,7 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, String> {
+class MdMismatchWorker extends TableResultWorker<List<MdMismatchReport>, String> {
 
   private static final Resources RESOURCES =
       Resources.getResources(ResourceBundle::getBundle, MdMismatchWorker.class);

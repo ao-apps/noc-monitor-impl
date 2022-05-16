@@ -47,9 +47,9 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-public abstract class SingleResultNodeWorker implements Runnable {
+public abstract class SingleResultWorker implements Runnable {
 
-  private static final Logger logger = Logger.getLogger(SingleResultNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(SingleResultWorker.class.getName());
 
   /**
    * The most recent timer task.
@@ -65,7 +65,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
 
   protected final File persistenceFile;
 
-  protected SingleResultNodeWorker(File persistenceFile) {
+  protected SingleResultWorker(File persistenceFile) {
     this.persistenceFile = persistenceFile;
   }
 
@@ -124,8 +124,8 @@ public abstract class SingleResultNodeWorker implements Runnable {
    * Enabled by default
    * </p>
    *
-   * @see  TableMultiResultNodeWorker#isIncrementalRampUp(boolean)
-   * @see  TableResultNodeWorker#isIncrementalRampUp(boolean)
+   * @see  TableMultiResultWorker#isIncrementalRampUp(boolean)
+   * @see  TableResultWorker#isIncrementalRampUp(boolean)
    */
   protected boolean isIncrementalRampUp(boolean isError) {
     return true;
@@ -194,7 +194,7 @@ public abstract class SingleResultNodeWorker implements Runnable {
       AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(curAlertLevel, result);
       AlertLevel maxAlertLevel = alertLevelAndMessage.getAlertLevel();
       AlertLevel newAlertLevel;
-      // TODO: Immediate jump to UNKNOWN like TableMultiResultNodeWorker?
+      // TODO: Immediate jump to UNKNOWN like TableMultiResultWorker?
       if (maxAlertLevel.compareTo(curAlertLevel) < 0) {
         // If maxAlertLevel < current, drop current to be the max
         newAlertLevel = maxAlertLevel;

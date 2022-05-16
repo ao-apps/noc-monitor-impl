@@ -27,7 +27,7 @@ import com.aoapps.lang.concurrent.LocalizedTimeoutException;
 import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.PingResult;
 import java.io.File;
@@ -45,10 +45,10 @@ import java.util.ResourceBundle;
  *
  * @author  AO Industries, Inc.
  */
-class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
+class PingWorker extends TableMultiResultWorker<Object, PingResult> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, PingNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, PingWorker.class);
 
   /**
    * The ping timeout.
@@ -58,17 +58,17 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
   /**
    * One unique worker is made per persistence directory (and should match the IP address exactly).
    */
-  private static final Map<String, PingNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, PingWorker> workerCache = new HashMap<>();
 
-  static PingNodeWorker getWorker(File persistenceDirectory, IpAddress ipAddress) throws IOException {
+  static PingWorker getWorker(File persistenceDirectory, IpAddress ipAddress) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     com.aoapps.net.InetAddress ip = ipAddress.getInetAddress();
     com.aoapps.net.InetAddress externalIp = ipAddress.getExternalInetAddress();
     com.aoapps.net.InetAddress pingAddress = externalIp == null ? ip : externalIp;
     synchronized (workerCache) {
-      PingNodeWorker worker = workerCache.get(path);
+      PingWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new PingNodeWorker(persistenceDirectory, pingAddress);
+        worker = new PingWorker(persistenceDirectory, pingAddress);
         workerCache.put(path, worker);
       } else {
         if (!worker.ipAddress.equals(pingAddress)) {
@@ -84,7 +84,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
    */
   private final com.aoapps.net.InetAddress ipAddress;
 
-  private PingNodeWorker(File persistenceDirectory, com.aoapps.net.InetAddress ipAddress) throws IOException {
+  private PingWorker(File persistenceDirectory, com.aoapps.net.InetAddress ipAddress) throws IOException {
     super(new File(persistenceDirectory, "pings"), new PingResultSerializer());
     this.ipAddress = ipAddress;
   }

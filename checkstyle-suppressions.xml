@@ -47,7 +47,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
   <!-- Will not split declaration to avoid duplicating Javadoc comment -->
   <suppress
     checks="MultipleVariableDeclarations"
-    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]infrastructure[/\\]HardDrivesTemperatureNodeWorker\.java$"
+    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]infrastructure[/\\]HardDrivesTemperatureWorker\.java$"
   />
   <suppress
     checks="MultipleVariableDeclarations"
@@ -57,7 +57,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
   <!-- Will not reorder overloads -->
   <suppress
     checks="OverloadMethodsDeclarationOrder"
-    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]linux[/\\]FilesystemsNodeWorker\.java$"
+    files="[/\\]com[/\\]aoindustries[/\\]noc[/\\]monitor[/\\]linux[/\\]FilesystemsWorker\.java$"
   />
   <suppress
     checks="OverloadMethodsDeclarationOrder"

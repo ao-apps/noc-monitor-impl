@@ -30,23 +30,23 @@ import junit.framework.TestSuite;
 /**
  * @author  AO Industries, Inc.
  */
-public class BlacklistsNodeWorkerTest extends TestCase {
+public class BlacklistsWorkerTest extends TestCase {
 
-  public BlacklistsNodeWorkerTest(String testName) {
+  public BlacklistsWorkerTest(String testName) {
     super(testName);
   }
 
   public static Test suite() {
-    TestSuite suite = new TestSuite(BlacklistsNodeWorkerTest.class);
+    TestSuite suite = new TestSuite(BlacklistsWorkerTest.class);
     return suite;
   }
 
   public void testCheckForDuplicateBlacklists() throws Exception {
     /*
     // Make sure there are no duplicates
-    System.out.println("Total of " + BlacklistsNodeWorker.rblBlacklists.length + " RBL blacklists");
-    Set<String> basenames = AoCollections.newHashSet(BlacklistsNodeWorker.rblBlacklists.length);
-    for (BlacklistsNodeWorker.RblBlacklist rblBlacklist : BlacklistsNodeWorker.rblBlacklists) {
+    System.out.println("Total of " + BlacklistsWorker.rblBlacklists.length + " RBL blacklists");
+    Set<String> basenames = AoCollections.newHashSet(BlacklistsWorker.rblBlacklists.length);
+    for (BlacklistsWorker.RblBlacklist rblBlacklist : BlacklistsWorker.rblBlacklists) {
       if (!basenames.add(rblBlacklist.basename)) {
         System.err.println(rblBlacklist.basename);
         throw new RuntimeException("Duplicate basename: " + rblBlacklist.basename);

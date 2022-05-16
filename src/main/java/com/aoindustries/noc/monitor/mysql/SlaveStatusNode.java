@@ -49,7 +49,7 @@ public class SlaveStatusNode extends TableMultiResultNodeImpl<MysqlReplicationRe
     super(
         slaveNode.slavesNode.serverNode.serversNode.hostNode.hostsNode.rootNode,
         slaveNode,
-        SlaveStatusNodeWorker.getWorker(
+        SlaveStatusWorker.getWorker(
             slaveNode.getPersistenceDirectory(),
             slaveNode.getMysqlReplication()
         ),

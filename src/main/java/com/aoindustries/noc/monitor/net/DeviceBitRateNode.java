@@ -47,7 +47,7 @@ public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRate
     super(
         deviceNode.devicesNode.hostNode.hostsNode.rootNode,
         deviceNode,
-        DeviceBitRateNodeWorker.getWorker(
+        DeviceBitRateWorker.getWorker(
             deviceNode.getPersistenceDirectory(),
             deviceNode.getDevice()
         ),

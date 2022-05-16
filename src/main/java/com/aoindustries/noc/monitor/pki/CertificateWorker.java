@@ -28,7 +28,7 @@ import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.pki.Certificate;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -48,10 +48,10 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check>, Object> {
+class CertificateWorker extends TableResultWorker<List<Certificate.Check>, Object> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, CertificateNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, CertificateWorker.class);
 
   private static final int NUM_COLS = 3;
 
@@ -66,14 +66,14 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
   /**
    * One unique worker is made per persistence file (and should match the sslCertificate exactly).
    */
-  private static final Map<String, CertificateNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, CertificateWorker> workerCache = new HashMap<>();
 
-  static CertificateNodeWorker getWorker(File persistenceFile, Certificate sslCertificate) throws IOException, SQLException {
+  static CertificateWorker getWorker(File persistenceFile, Certificate sslCertificate) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      CertificateNodeWorker worker = workerCache.get(path);
+      CertificateWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new CertificateNodeWorker(persistenceFile, sslCertificate);
+        worker = new CertificateWorker(persistenceFile, sslCertificate);
         workerCache.put(path, worker);
       } else {
         if (!worker.sslCertificate.equals(sslCertificate)) {
@@ -87,7 +87,7 @@ class CertificateNodeWorker extends TableResultNodeWorker<List<Certificate.Check
   // Will use whichever connector first created this worker, even if other accounts connect later.
   private final Certificate sslCertificate;
 
-  CertificateNodeWorker(File persistenceFile, Certificate sslCertificate) {
+  CertificateWorker(File persistenceFile, Certificate sslCertificate) {
     super(persistenceFile);
     this.sslCertificate = sslCertificate;
   }

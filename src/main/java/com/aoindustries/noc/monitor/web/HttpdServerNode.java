@@ -51,7 +51,7 @@ public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult>
     super(
         httpdServersNode.hostNode.hostsNode.rootNode,
         httpdServersNode,
-        HttpdServerNodeWorker.getWorker(
+        HttpdServerWorker.getWorker(
             new File(httpdServersNode.getPersistenceDirectory(), Integer.toString(httpdServer.getPkey())),
             httpdServer
         ),

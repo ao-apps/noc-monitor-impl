@@ -27,7 +27,7 @@ import com.aoapps.lang.Strings;
 import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import java.io.File;
@@ -46,10 +46,10 @@ import java.util.ResourceBundle;
  *
  * @author  AO Industries, Inc.
  */
-class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, NetDeviceBitRateResult> {
+class DeviceBitRateWorker extends TableMultiResultWorker<List<Object>, NetDeviceBitRateResult> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, DeviceBitRateNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, DeviceBitRateWorker.class);
 
   /**
    * The number of bytes overhead for each Ethernet frame, including interframe gap, assuming no VLAN tag.
@@ -62,14 +62,14 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
   /**
    * One unique worker is made per persistence directory (and should match the net device exactly).
    */
-  private static final Map<String, DeviceBitRateNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, DeviceBitRateWorker> workerCache = new HashMap<>();
 
-  static DeviceBitRateNodeWorker getWorker(File persistenceDirectory, Device device) throws IOException {
+  static DeviceBitRateWorker getWorker(File persistenceDirectory, Device device) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     synchronized (workerCache) {
-      DeviceBitRateNodeWorker worker = workerCache.get(path);
+      DeviceBitRateWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new DeviceBitRateNodeWorker(persistenceDirectory, device);
+        worker = new DeviceBitRateWorker(persistenceDirectory, device);
         workerCache.put(path, worker);
       } else if (!worker.originalDevice.equals(device)) {
         throw new AssertionError("worker.device != device: " + worker.originalDevice + " != " + device);
@@ -82,7 +82,7 @@ class DeviceBitRateNodeWorker extends TableMultiResultNodeWorker<List<Object>, N
   private final Device originalDevice;
   private Device currentDevice;
 
-  private DeviceBitRateNodeWorker(File persistenceDirectory, Device device) throws IOException {
+  private DeviceBitRateWorker(File persistenceDirectory, Device device) throws IOException {
     super(new File(persistenceDirectory, "bit_rate"), new DeviceBitRateResultSerializer());
     this.originalDevice = currentDevice = device;
   }

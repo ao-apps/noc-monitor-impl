@@ -54,11 +54,11 @@ public abstract class TableResultNodeImpl extends NodeImpl implements TableResul
 
   public final RootNodeImpl rootNode;
   final NodeImpl parent;
-  protected final TableResultNodeWorker<?, ?> worker;
+  protected final TableResultWorker<?, ?> worker;
 
   private final List<TableResultListener> tableResultListeners = new ArrayList<>();
 
-  protected TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultNodeWorker<?, ?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+  protected TableResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, TableResultWorker<?, ?> worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
     this.rootNode = rootNode;
     this.parent = parent;

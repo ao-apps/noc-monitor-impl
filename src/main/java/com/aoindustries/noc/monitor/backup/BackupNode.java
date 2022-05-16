@@ -56,7 +56,7 @@ public class BackupNode extends TableResultNodeImpl {
     super(
         backupsNode.hostNode.hostsNode.rootNode,
         backupsNode,
-        BackupNodeWorker.getWorker(
+        BackupWorker.getWorker(
             new File(backupsNode.getPersistenceDirectory(), Integer.toString(fileReplication.getPkey())),
             fileReplication
         ),

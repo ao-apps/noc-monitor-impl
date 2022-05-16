@@ -49,7 +49,7 @@ public class DrbdNode extends TableResultNodeImpl {
     super(
         raidNode.hostNode.hostsNode.rootNode,
         raidNode,
-        DrbdNodeWorker.getWorker(
+        DrbdWorker.getWorker(
             new File(raidNode.getPersistenceDirectory(), "drbdstatus"),
             raidNode.getServer()
         ),

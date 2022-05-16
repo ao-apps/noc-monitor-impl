@@ -53,11 +53,11 @@ public abstract class SingleResultNodeImpl extends NodeImpl implements SingleRes
 
   public final RootNodeImpl rootNode;
   protected final NodeImpl parent;
-  private final SingleResultNodeWorker worker;
+  private final SingleResultWorker worker;
 
   private final List<SingleResultListener> singleResultListeners = new ArrayList<>();
 
-  protected SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultNodeWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
+  protected SingleResultNodeImpl(RootNodeImpl rootNode, NodeImpl parent, SingleResultWorker worker, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
     super(port, csf, ssf);
     this.rootNode = rootNode;
     this.parent = parent;

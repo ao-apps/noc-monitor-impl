@@ -29,7 +29,7 @@ import com.aoapps.lang.i18n.Resources;
 import com.aoapps.lang.text.LocalizedParseException;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -51,10 +51,10 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>, String> {
+class HardDrivesTemperatureWorker extends TableResultWorker<List<String>, String> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, HardDrivesTemperatureNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, HardDrivesTemperatureWorker.class);
 
   /**
    * The normal alert thresholds.
@@ -72,14 +72,14 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
   /**
    * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
-  private static final Map<String, HardDrivesTemperatureNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, HardDrivesTemperatureWorker> workerCache = new HashMap<>();
 
-  static HardDrivesTemperatureNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
+  static HardDrivesTemperatureWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      HardDrivesTemperatureNodeWorker worker = workerCache.get(path);
+      HardDrivesTemperatureWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new HardDrivesTemperatureNodeWorker(persistenceFile, linuxServer);
+        worker = new HardDrivesTemperatureWorker(persistenceFile, linuxServer);
         workerCache.put(path, worker);
       } else {
         if (!worker.linuxServer.equals(linuxServer)) {
@@ -93,7 +93,7 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
   // Will use whichever connector first created this worker, even if other accounts connect later.
   private final Server linuxServer;
 
-  HardDrivesTemperatureNodeWorker(File persistenceFile, Server linuxServer) {
+  HardDrivesTemperatureWorker(File persistenceFile, Server linuxServer) {
     super(persistenceFile);
     this.linuxServer = linuxServer;
   }

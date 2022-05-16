@@ -28,7 +28,7 @@ import com.aoapps.lang.Strings;
 import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.SingleResultNodeWorker;
+import com.aoindustries.noc.monitor.SingleResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.SingleResult;
 import java.io.File;
@@ -46,10 +46,10 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class MdStatNodeWorker extends SingleResultNodeWorker {
+class MdStatWorker extends SingleResultWorker {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, MdStatNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, MdStatWorker.class);
 
   private enum RaidLevel {
     LINEAR,
@@ -61,14 +61,14 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
   /**
    * One unique worker is made per persistence file (and should match the server exactly).
    */
-  private static final Map<String, MdStatNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, MdStatWorker> workerCache = new HashMap<>();
 
-  static MdStatNodeWorker getWorker(File persistenceFile, Server server) throws IOException {
+  static MdStatWorker getWorker(File persistenceFile, Server server) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      MdStatNodeWorker worker = workerCache.get(path);
+      MdStatWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new MdStatNodeWorker(persistenceFile, server);
+        worker = new MdStatWorker(persistenceFile, server);
         workerCache.put(path, worker);
       } else {
         if (!worker.server.equals(server)) {
@@ -82,7 +82,7 @@ class MdStatNodeWorker extends SingleResultNodeWorker {
   // Will use whichever connector first created this worker, even if other accounts connect later.
   private final Server server;
 
-  MdStatNodeWorker(File persistenceFile, Server server) {
+  MdStatWorker(File persistenceFile, Server server) {
     super(persistenceFile);
     this.server = server;
   }

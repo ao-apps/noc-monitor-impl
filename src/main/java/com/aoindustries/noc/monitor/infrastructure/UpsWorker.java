@@ -27,7 +27,7 @@ import com.aoapps.lang.i18n.Resources;
 import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import java.io.File;
@@ -39,10 +39,10 @@ import java.util.ResourceBundle;
 /**
  * @author  AO Industries, Inc.
  */
-class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus, UpsResult> {
+class UpsWorker extends TableMultiResultWorker<UpsStatus, UpsResult> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, UpsNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, UpsWorker.class);
 
   private static final float LINEV_LOW_TOLERANCE = 0.25f;
   private static final float LINEV_HIGH_TOLERANCE = 0.75f;
@@ -82,14 +82,14 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus, UpsResult> {
   /**
    * One unique worker is made per persistence directory (and should match server exactly).
    */
-  private static final Map<String, UpsNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, UpsWorker> workerCache = new HashMap<>();
 
-  static UpsNodeWorker getWorker(File persistenceDirectory, Server server) throws IOException {
+  static UpsWorker getWorker(File persistenceDirectory, Server server) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     synchronized (workerCache) {
-      UpsNodeWorker worker = workerCache.get(path);
+      UpsWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new UpsNodeWorker(persistenceDirectory, server);
+        worker = new UpsWorker(persistenceDirectory, server);
         workerCache.put(path, worker);
       } else {
         if (!worker.server.equals(server)) {
@@ -102,7 +102,7 @@ class UpsNodeWorker extends TableMultiResultNodeWorker<UpsStatus, UpsResult> {
 
   private final Server server;
 
-  private UpsNodeWorker(File persistenceDirectory, Server server) throws IOException {
+  private UpsWorker(File persistenceDirectory, Server server) throws IOException {
     super(new File(persistenceDirectory, "ups"), new UpsResultSerializer());
     this.server = server;
   }

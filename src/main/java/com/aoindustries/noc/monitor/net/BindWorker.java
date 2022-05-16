@@ -32,7 +32,7 @@ import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Bind;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.NetBindResult;
 import com.aoindustries.noc.monitor.portmon.PortMonitor;
@@ -50,26 +50,26 @@ import java.util.logging.Logger;
  *
  * @author  AO Industries, Inc.
  */
-class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
+class BindWorker extends TableMultiResultWorker<String, NetBindResult> {
 
-  private static final Logger logger = Logger.getLogger(BindNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(BindWorker.class.getName());
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, BindNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, BindWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the NetMonitorSetting).
    */
-  private static final Map<String, BindNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, BindWorker> workerCache = new HashMap<>();
 
   @SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
-  static BindNodeWorker getWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+  static BindWorker getWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
     try {
       String path = persistenceFile.getCanonicalPath();
       synchronized (workerCache) {
-        BindNodeWorker worker = workerCache.get(path);
+        BindWorker worker = workerCache.get(path);
         if (worker == null) {
-          worker = new BindNodeWorker(persistenceFile, netMonitorSetting);
+          worker = new BindWorker(persistenceFile, netMonitorSetting);
           workerCache.put(path, worker);
         } else if (!worker.netMonitorSetting.equals(netMonitorSetting)) {
           throw new AssertionError("worker.netMonitorSetting != netMonitorSetting: " + worker.netMonitorSetting + " != " + netMonitorSetting);
@@ -87,7 +87,7 @@ class BindNodeWorker extends TableMultiResultNodeWorker<String, NetBindResult> {
   private final BindsNode.NetMonitorSetting netMonitorSetting;
   private volatile PortMonitor portMonitor;
 
-  private BindNodeWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
+  private BindWorker(File persistenceFile, BindsNode.NetMonitorSetting netMonitorSetting) throws IOException {
     super(persistenceFile, new BindResultSerializer());
     this.netMonitorSetting = netMonitorSetting;
   }

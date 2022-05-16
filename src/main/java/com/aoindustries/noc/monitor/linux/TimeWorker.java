@@ -27,7 +27,7 @@ import com.aoapps.lang.i18n.Resources;
 import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TimeResult;
 import java.io.File;
@@ -56,22 +56,22 @@ import java.util.ResourceBundle;
  *
  * @author  AO Industries, Inc.
  */
-class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResult> {
+class TimeWorker extends TableMultiResultWorker<MilliInterval, TimeResult> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, TimeNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, TimeWorker.class);
 
   /**
    * One unique worker is made per persistence directory (and should match linuxServer exactly).
    */
-  private static final Map<String, TimeNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, TimeWorker> workerCache = new HashMap<>();
 
-  static TimeNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
+  static TimeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     synchronized (workerCache) {
-      TimeNodeWorker worker = workerCache.get(path);
+      TimeWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new TimeNodeWorker(persistenceDirectory, linuxServer);
+        worker = new TimeWorker(persistenceDirectory, linuxServer);
         workerCache.put(path, worker);
       } else {
         if (!worker.originalLinuxServer.equals(linuxServer)) {
@@ -85,7 +85,7 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
   private final Server originalLinuxServer;
   private Server currentLinuxServer;
 
-  private TimeNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
+  private TimeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     super(new File(persistenceDirectory, "time"), new TimeResultSerializer());
     this.originalLinuxServer = currentLinuxServer = linuxServer;
   }

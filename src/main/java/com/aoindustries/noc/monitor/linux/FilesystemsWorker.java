@@ -29,7 +29,7 @@ import com.aoapps.lang.i18n.Resources;
 import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -51,24 +51,24 @@ import java.util.logging.Logger;
  *
  * @author  AO Industries, Inc.
  */
-class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> {
+class FilesystemsWorker extends TableResultWorker<List<String>, String> {
 
-  private static final Logger logger = Logger.getLogger(FilesystemsNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(FilesystemsWorker.class.getName());
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, FilesystemsNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, FilesystemsWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
-  private static final Map<String, FilesystemsNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, FilesystemsWorker> workerCache = new HashMap<>();
 
-  static FilesystemsNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
+  static FilesystemsWorker getWorker(File persistenceFile, Server linuxServer) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      FilesystemsNodeWorker worker = workerCache.get(path);
+      FilesystemsWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new FilesystemsNodeWorker(persistenceFile, linuxServer);
+        worker = new FilesystemsWorker(persistenceFile, linuxServer);
         workerCache.put(path, worker);
       } else {
         if (!worker.linuxServer.equals(linuxServer)) {
@@ -82,7 +82,7 @@ class FilesystemsNodeWorker extends TableResultNodeWorker<List<String>, String> 
   // Will use whichever connector first created this worker, even if other accounts connect later.
   private final Server linuxServer;
 
-  FilesystemsNodeWorker(File persistenceFile, Server linuxServer) {
+  FilesystemsWorker(File persistenceFile, Server linuxServer) {
     super(persistenceFile);
     this.linuxServer = linuxServer;
   }

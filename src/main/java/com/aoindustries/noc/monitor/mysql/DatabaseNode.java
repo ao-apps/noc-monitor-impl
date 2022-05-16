@@ -44,7 +44,7 @@ public class DatabaseNode extends TableResultNodeImpl {
 
   private static final long serialVersionUID = 1L;
 
-  final DatabaseNodeWorker databaseWorker;
+  final DatabaseWorker databaseWorker;
   final DatabasesNode databasesNode;
   final Database database;
   private final MysqlReplication slave;
@@ -65,7 +65,7 @@ public class DatabaseNode extends TableResultNodeImpl {
     super(
         databasesNode.serverNode.serversNode.hostNode.hostsNode.rootNode,
         databasesNode,
-        DatabaseNodeWorker.getWorker(
+        DatabaseWorker.getWorker(
             new File(databasesNode.getPersistenceDirectory(), database.getName() + ".show_full_tables"),
             database,
             slave
@@ -74,7 +74,7 @@ public class DatabaseNode extends TableResultNodeImpl {
         csf,
         ssf
     );
-    this.databaseWorker = (DatabaseNodeWorker) worker;
+    this.databaseWorker = (DatabaseWorker) worker;
     this.databasesNode = databasesNode;
     this.database = database;
     this.slave = slave;

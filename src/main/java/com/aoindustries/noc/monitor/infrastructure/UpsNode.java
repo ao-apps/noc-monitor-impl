@@ -51,7 +51,7 @@ public class UpsNode extends TableMultiResultNodeImpl<UpsResult> {
     super(
         hostNode.hostsNode.rootNode,
         hostNode,
-        UpsNodeWorker.getWorker(
+        UpsWorker.getWorker(
             hostNode.getPersistenceDirectory(),
             linuxServer
         ),

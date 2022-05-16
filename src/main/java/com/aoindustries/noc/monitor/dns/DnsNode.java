@@ -51,7 +51,7 @@ public class DnsNode extends TableResultNodeImpl {
     super(
         ipAddressNode.ipAddressesNode.rootNode,
         ipAddressNode,
-        DnsNodeWorker.getWorker(
+        DnsWorker.getWorker(
             new File(ipAddressNode.getPersistenceDirectory(), "rdns"),
             ipAddressNode.getIpAddress()
         ),

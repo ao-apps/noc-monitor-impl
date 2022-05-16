@@ -37,7 +37,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
     shortTitle="Changelog"
     tocLevels="1"
     datePublished="2020-04-11T01:35:38-05:00"
-    dateModified="2022-05-16T04:24:20-05:00"
+    dateModified="2022-05-16T04:29:04-05:00"
   >
     <c:if test="${fn:endsWith('@{project.version}', '-SNAPSHOT') and !fn:endsWith('@{project.version}', '-POST-SNAPSHOT')}">
       <changelog:release
@@ -56,6 +56,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
             </ol>
           </li>
           <li>Switched to per-package resource bundles with per-class accessors.</li>
+          <li>Renamed <code>*NodeWorker</code> to just <code>*Worker</code> for consistency.</li>
         </ul>
       </changelog:release>
     </c:if>

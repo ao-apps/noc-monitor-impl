@@ -49,7 +49,7 @@ public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
     super(
         hostNode.hostsNode.rootNode,
         hostNode,
-        TimeNodeWorker.getWorker(
+        TimeWorker.getWorker(
             hostNode.getPersistenceDirectory(),
             linuxServer
         ),

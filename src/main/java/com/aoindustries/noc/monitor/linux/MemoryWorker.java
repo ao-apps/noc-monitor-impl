@@ -27,7 +27,7 @@ import com.aoapps.lang.Strings;
 import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.ApproximateDisplayExactSize;
 import com.aoindustries.noc.monitor.common.MemoryResult;
@@ -52,22 +52,22 @@ import java.util.ResourceBundle;
  *
  * @author  AO Industries, Inc.
  */
-class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDisplayExactSize>, MemoryResult> {
+class MemoryWorker extends TableMultiResultWorker<List<ApproximateDisplayExactSize>, MemoryResult> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, MemoryNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, MemoryWorker.class);
 
   /**
    * One unique worker is made per persistence directory (and should match linuxServer exactly).
    */
-  private static final Map<String, MemoryNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, MemoryWorker> workerCache = new HashMap<>();
 
-  static MemoryNodeWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
+  static MemoryWorker getWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     String path = persistenceDirectory.getCanonicalPath();
     synchronized (workerCache) {
-      MemoryNodeWorker worker = workerCache.get(path);
+      MemoryWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new MemoryNodeWorker(persistenceDirectory, linuxServer);
+        worker = new MemoryWorker(persistenceDirectory, linuxServer);
         workerCache.put(path, worker);
       } else {
         if (!worker.originalLinuxServer.equals(linuxServer)) {
@@ -81,7 +81,7 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
   private final Server originalLinuxServer;
   private Server currentLinuxServer;
 
-  private MemoryNodeWorker(File persistenceDirectory, Server linuxServer) throws IOException {
+  private MemoryWorker(File persistenceDirectory, Server linuxServer) throws IOException {
     super(new File(persistenceDirectory, "meminfo"), new MemoryResultSerializer());
     this.originalLinuxServer = currentLinuxServer = linuxServer;
   }

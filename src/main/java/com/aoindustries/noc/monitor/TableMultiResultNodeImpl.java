@@ -53,14 +53,14 @@ public abstract class TableMultiResultNodeImpl<R extends TableMultiResult> exten
 
   public final RootNodeImpl rootNode;
   final NodeImpl parent;
-  final TableMultiResultNodeWorker<?, R> worker;
+  final TableMultiResultWorker<?, R> worker;
 
   private final List<TableMultiResultListener<? super R>> tableMultiResultListeners = new ArrayList<>();
 
   protected TableMultiResultNodeImpl(
       RootNodeImpl rootNode,
       NodeImpl parent,
-      TableMultiResultNodeWorker<?, R> worker,
+      TableMultiResultWorker<?, R> worker,
       int port,
       RMIClientSocketFactory csf,
       RMIServerSocketFactory ssf

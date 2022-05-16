@@ -51,12 +51,12 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-public abstract class TableResultNodeWorker<R, D> implements Runnable {
+public abstract class TableResultWorker<R, D> implements Runnable {
 
-  private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(TableResultWorker.class.getName());
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, TableResultNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, TableResultWorker.class);
 
   /**
    * The most recent timer task.
@@ -72,7 +72,7 @@ public abstract class TableResultNodeWorker<R, D> implements Runnable {
 
   protected final File persistenceFile;
 
-  protected TableResultNodeWorker(File persistenceFile) {
+  protected TableResultWorker(File persistenceFile) {
     this.persistenceFile = persistenceFile;
   }
 
@@ -131,8 +131,8 @@ public abstract class TableResultNodeWorker<R, D> implements Runnable {
    * Enabled by default
    * </p>
    *
-   * @see  SingleResultNodeWorker#isIncrementalRampUp(boolean)
-   * @see  TableMultiResultNodeWorker#isIncrementalRampUp(boolean)
+   * @see  SingleResultWorker#isIncrementalRampUp(boolean)
+   * @see  TableMultiResultWorker#isIncrementalRampUp(boolean)
    */
   protected boolean isIncrementalRampUp(boolean isError) {
     return true;
@@ -222,7 +222,7 @@ public abstract class TableResultNodeWorker<R, D> implements Runnable {
       AlertLevelAndMessage alertLevelAndMessage = getAlertLevelAndMessage(curAlertLevel, result);
       maxAlertLevel = alertLevelAndMessage.getAlertLevel();
       AlertLevel newAlertLevel;
-      // TODO: Immediate jump to UNKNOWN like TableMultiResultNodeWorker?
+      // TODO: Immediate jump to UNKNOWN like TableMultiResultWorker?
       if (maxAlertLevel.compareTo(curAlertLevel) < 0) {
         // If maxAlertLevel < current, drop current to be the max
         newAlertLevel = maxAlertLevel;

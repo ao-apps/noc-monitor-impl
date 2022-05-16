@@ -28,7 +28,7 @@ import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -47,22 +47,22 @@ import java.util.ResourceBundle;
  *
  * @author  AO Industries, Inc.
  */
-class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus>, Object> {
+class DatabaseWorker extends TableResultWorker<List<Database.TableStatus>, Object> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, DatabaseNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, DatabaseWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the database exactly).
    */
-  private static final Map<String, DatabaseNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, DatabaseWorker> workerCache = new HashMap<>();
 
-  static DatabaseNodeWorker getWorker(File persistenceFile, Database database, MysqlReplication slave) throws IOException, SQLException {
+  static DatabaseWorker getWorker(File persistenceFile, Database database, MysqlReplication slave) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      DatabaseNodeWorker worker = workerCache.get(path);
+      DatabaseWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new DatabaseNodeWorker(persistenceFile, database, slave);
+        worker = new DatabaseWorker(persistenceFile, database, slave);
         workerCache.put(path, worker);
       } else {
         if (!worker.database.equals(database)) {
@@ -80,7 +80,7 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
   private final Object lastTableStatusesLock = new Object();
   private List<Database.TableStatus> lastTableStatuses;
 
-  DatabaseNodeWorker(File persistenceFile, Database database, MysqlReplication slave) throws IOException, SQLException {
+  DatabaseWorker(File persistenceFile, Database database, MysqlReplication slave) throws IOException, SQLException {
     super(persistenceFile);
     this.database = database;
     this.slave = slave;

@@ -31,7 +31,7 @@ import com.aoindustries.aoserv.client.backup.FileReplicationLog;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
@@ -54,24 +54,24 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, Object> {
+class BackupWorker extends TableResultWorker<List<FileReplicationLog>, Object> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, BackupNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, BackupWorker.class);
 
   private static final int HISTORY_SIZE = 100;
 
   /**
    * One unique worker is made per persistence file (and should match the fileReplication exactly).
    */
-  private static final Map<String, BackupNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, BackupWorker> workerCache = new HashMap<>();
 
-  static BackupNodeWorker getWorker(File persistenceFile, FileReplication fileReplication) throws IOException {
+  static BackupWorker getWorker(File persistenceFile, FileReplication fileReplication) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      BackupNodeWorker worker = workerCache.get(path);
+      BackupWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new BackupNodeWorker(persistenceFile, fileReplication);
+        worker = new BackupWorker(persistenceFile, fileReplication);
         workerCache.put(path, worker);
       } else {
         if (!worker.fileReplication.equals(fileReplication)) {
@@ -85,7 +85,7 @@ class BackupNodeWorker extends TableResultNodeWorker<List<FileReplicationLog>, O
   // Will use whichever connector first created this worker, even if other accounts connect later.
   private final FileReplication fileReplication;
 
-  BackupNodeWorker(File persistenceFile, FileReplication fileReplication) {
+  BackupWorker(File persistenceFile, FileReplication fileReplication) {
     super(persistenceFile);
     this.fileReplication = fileReplication;
   }

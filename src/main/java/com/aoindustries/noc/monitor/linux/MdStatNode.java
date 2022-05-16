@@ -47,7 +47,7 @@ public class MdStatNode extends SingleResultNodeImpl {
     super(
         raidNode.hostNode.hostsNode.rootNode,
         raidNode,
-        MdStatNodeWorker.getWorker(
+        MdStatWorker.getWorker(
             new File(raidNode.getPersistenceDirectory(), "mdstat"),
             raidNode.getServer()
         ),

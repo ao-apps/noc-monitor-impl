@@ -32,7 +32,7 @@ import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.aoserv.client.mysql.TableName;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import java.io.File;
@@ -51,22 +51,22 @@ import java.util.ResourceBundle;
  *
  * @author  AO Industries, Inc.
  */
-class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
+class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, CheckTablesNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, CheckTablesWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the database exactly).
    */
-  private static final Map<String, CheckTablesNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, CheckTablesWorker> workerCache = new HashMap<>();
 
-  static CheckTablesNodeWorker getWorker(DatabaseNode databaseNode, File persistenceFile) throws IOException {
+  static CheckTablesWorker getWorker(DatabaseNode databaseNode, File persistenceFile) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      CheckTablesNodeWorker worker = workerCache.get(path);
+      CheckTablesWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new CheckTablesNodeWorker(databaseNode, persistenceFile);
+        worker = new CheckTablesWorker(databaseNode, persistenceFile);
         workerCache.put(path, worker);
       } else {
         if (!worker.databaseNode.getDatabase().equals(databaseNode.getDatabase())) {
@@ -80,7 +80,7 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
   // Will use whichever connector first created this worker, even if other accounts connect later.
   private final DatabaseNode databaseNode;
 
-  CheckTablesNodeWorker(DatabaseNode databaseNode, File persistenceFile) {
+  CheckTablesWorker(DatabaseNode databaseNode, File persistenceFile) {
     super(persistenceFile);
     this.databaseNode = databaseNode;
   }

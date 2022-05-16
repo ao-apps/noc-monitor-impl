@@ -51,7 +51,7 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
     super(
         hostNode.hostsNode.rootNode,
         hostNode,
-        MemoryNodeWorker.getWorker(
+        MemoryWorker.getWorker(
             hostNode.getPersistenceDirectory(),
             server
         ),

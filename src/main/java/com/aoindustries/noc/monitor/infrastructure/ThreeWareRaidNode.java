@@ -48,7 +48,7 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
     super(
         raidNode.hostNode.hostsNode.rootNode,
         raidNode,
-        ThreeWareRaidNodeWorker.getWorker(
+        ThreeWareRaidWorker.getWorker(
             new File(raidNode.getPersistenceDirectory(), "3ware"),
             raidNode.getServer()
         ),

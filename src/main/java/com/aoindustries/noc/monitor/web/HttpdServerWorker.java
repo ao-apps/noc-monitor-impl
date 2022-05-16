@@ -26,7 +26,7 @@ package com.aoindustries.noc.monitor.web;
 import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
 import java.io.File;
@@ -42,27 +42,27 @@ import java.util.logging.Logger;
 /**
  * @author  AO Industries, Inc.
  */
-class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, HttpdServerResult> {
+class HttpdServerWorker extends TableMultiResultWorker<List<Integer>, HttpdServerResult> {
 
-  private static final Logger logger = Logger.getLogger(HttpdServerNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(HttpdServerWorker.class.getName());
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, HttpdServerNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, HttpdServerWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match httpdServer exactly).
    */
-  private static final Map<String, HttpdServerNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, HttpdServerWorker> workerCache = new HashMap<>();
 
-  static HttpdServerNodeWorker getWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
+  static HttpdServerWorker getWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      HttpdServerNodeWorker worker = workerCache.get(path);
+      HttpdServerWorker worker = workerCache.get(path);
       if (worker == null) {
         if (logger.isLoggable(Level.FINE)) {
           logger.fine("Creating new worker for " + httpdServer.getName());
         }
-        worker = new HttpdServerNodeWorker(persistenceFile, httpdServer);
+        worker = new HttpdServerWorker(persistenceFile, httpdServer);
         workerCache.put(path, worker);
       } else {
         if (logger.isLoggable(Level.FINER)) {
@@ -79,7 +79,7 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
   private final HttpdServer originalHttpdServer;
   private HttpdServer currentHttpdServer;
 
-  private HttpdServerNodeWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
+  private HttpdServerWorker(File persistenceFile, HttpdServer httpdServer) throws IOException {
     super(persistenceFile, new HttpdServerResultSerializer());
     this.originalHttpdServer = currentHttpdServer = httpdServer;
   }

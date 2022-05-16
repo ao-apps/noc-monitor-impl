@@ -29,7 +29,7 @@ import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.DrbdReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
@@ -53,10 +53,10 @@ import java.util.function.Function;
  *
  * @author  AO Industries, Inc.
  */
-class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
+class DrbdWorker extends TableResultWorker<List<DrbdReport>, Object> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, DrbdNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, DrbdWorker.class);
 
   private static final int NUM_COLS = 7;
 
@@ -69,14 +69,14 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
   /**
    * One unique worker is made per persistence file (and should match the linuxServer exactly).
    */
-  private static final Map<String, DrbdNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, DrbdWorker> workerCache = new HashMap<>();
 
-  static DrbdNodeWorker getWorker(File persistenceFile, Server linuxServer) throws IOException, SQLException {
+  static DrbdWorker getWorker(File persistenceFile, Server linuxServer) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      DrbdNodeWorker worker = workerCache.get(path);
+      DrbdWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new DrbdNodeWorker(persistenceFile, linuxServer);
+        worker = new DrbdWorker(persistenceFile, linuxServer);
         workerCache.put(path, worker);
       } else {
         if (!worker.linuxServer.equals(linuxServer)) {
@@ -91,7 +91,7 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
   private final Server linuxServer;
   private final TimeZone timeZone;
 
-  DrbdNodeWorker(File persistenceFile, Server linuxServer) throws IOException, SQLException {
+  DrbdWorker(File persistenceFile, Server linuxServer) throws IOException, SQLException {
     super(persistenceFile);
     this.linuxServer = linuxServer;
     this.timeZone = linuxServer.getTimeZone().getTimeZone();

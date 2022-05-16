@@ -51,7 +51,7 @@ public class CheckTablesNode extends TableResultNodeImpl {
     super(
         databaseNode.databasesNode.serverNode.serversNode.hostNode.hostsNode.rootNode,
         databaseNode,
-        CheckTablesNodeWorker.getWorker(
+        CheckTablesWorker.getWorker(
             databaseNode,
             new File(databaseNode.getPersistenceDirectory(), "check_tables")
         ),

@@ -35,7 +35,7 @@ import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.aoserv.client.net.monitoring.IpAddressMonitoring;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.RootNodeImpl;
-import com.aoindustries.noc.monitor.TableResultNodeWorker;
+import com.aoindustries.noc.monitor.TableResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
 import com.aoindustries.noc.monitor.common.TimeWithTimeZone;
@@ -86,12 +86,12 @@ import org.xbill.DNS.Type;
  *
  * @author  AO Industries, Inc.
  */
-class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWorker.BlacklistQueryResult>, Object> {
+class BlacklistsWorker extends TableResultWorker<List<BlacklistsWorker.BlacklistQueryResult>, Object> {
 
-  private static final Logger logger = Logger.getLogger(BlacklistsNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(BlacklistsWorker.class.getName());
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, BlacklistsNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, BlacklistsWorker.class);
 
   /**
    * The results timeout in milliseconds, allows for time in the queue waiting for resolver.
@@ -447,14 +447,14 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
   /**
    * One unique worker is made per persistence file (and should match the ipAddress exactly).
    */
-  private static final Map<String, BlacklistsNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, BlacklistsWorker> workerCache = new HashMap<>();
 
-  static BlacklistsNodeWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
+  static BlacklistsWorker getWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      BlacklistsNodeWorker worker = workerCache.get(path);
+      BlacklistsWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new BlacklistsNodeWorker(persistenceFile, ipAddress);
+        worker = new BlacklistsWorker(persistenceFile, ipAddress);
         workerCache.put(path, worker);
       } else {
         if (!worker.ipAddress.equals(ipAddress)) {
@@ -486,7 +486,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
     return unique.values().toArray(new DnsBlacklist[unique.size()]);
   }
 
-  BlacklistsNodeWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
+  BlacklistsWorker(File persistenceFile, IpAddress ipAddress) throws IOException, SQLException {
     super(persistenceFile);
     this.ipAddress = ipAddress;
     // Build the list of lookups
@@ -1627,7 +1627,7 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
   private static final ExecutorService executorService = Executors.newFixedThreadPool(
       NUM_THREADS,
-      r -> new Thread(r, BlacklistsNodeWorker.class.getName() + ".executorService")
+      r -> new Thread(r, BlacklistsWorker.class.getName() + ".executorService")
   );
 
   private final Map<String, BlacklistQueryResult> queryResultCache = new HashMap<>();

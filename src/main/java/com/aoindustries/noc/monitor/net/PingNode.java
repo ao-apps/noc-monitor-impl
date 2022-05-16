@@ -51,7 +51,7 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
     super(
         ipAddressNode.ipAddressesNode.rootNode,
         ipAddressNode,
-        PingNodeWorker.getWorker(
+        PingWorker.getWorker(
             ipAddressNode.getPersistenceDirectory(),
             ipAddressNode.getIpAddress()
         ),

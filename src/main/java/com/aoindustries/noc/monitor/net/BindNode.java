@@ -54,7 +54,7 @@ public class BindNode extends TableMultiResultNodeImpl<NetBindResult> {
     super(
         netBindsNode.ipAddressNode.ipAddressesNode.rootNode,
         netBindsNode,
-        BindNodeWorker.getWorker(
+        BindWorker.getWorker(
             new File(
                 netBindsNode.getPersistenceDirectory(),
                 netMonitorSetting.getPort().getPort() + "_" + netMonitorSetting.getPort().getProtocol().name()

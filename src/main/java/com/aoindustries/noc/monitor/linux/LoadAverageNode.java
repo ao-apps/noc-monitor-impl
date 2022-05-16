@@ -53,7 +53,7 @@ public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult>
     super(
         hostNode.hostsNode.rootNode,
         hostNode,
-        LoadAverageNodeWorker.getWorker(
+        LoadAverageWorker.getWorker(
             hostNode.getPersistenceDirectory(),
             linuxServer
         ),

@@ -76,12 +76,12 @@ import javax.swing.SwingUtilities;
  *
  * @author  AO Industries, Inc.
  */
-public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> implements Runnable {
+public abstract class TableMultiResultWorker<S, R extends TableMultiResult> implements Runnable {
 
-  private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
+  private static final Logger logger = Logger.getLogger(TableMultiResultWorker.class.getName());
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, TableMultiResultNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, TableMultiResultWorker.class);
 
   /**
    * The most recent timer task.
@@ -96,7 +96,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
 
   private final List<TableMultiResultNodeImpl<R>> tableMultiResultNodeImpls = new ArrayList<>();
 
-  protected TableMultiResultNodeWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
+  protected TableMultiResultWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
     this.results = new PersistentLinkedList<>(
         PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
         //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
@@ -186,8 +186,8 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
    * Enabled by default
    * </p>
    *
-   * @see  SingleResultNodeWorker#isIncrementalRampUp(boolean)
-   * @see  TableResultNodeWorker#isIncrementalRampUp(boolean)
+   * @see  SingleResultWorker#isIncrementalRampUp(boolean)
+   * @see  TableResultWorker#isIncrementalRampUp(boolean)
    */
   protected boolean isIncrementalRampUp(boolean isError) {
     return true;

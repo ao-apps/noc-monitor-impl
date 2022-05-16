@@ -47,7 +47,7 @@ public class DeviceBondingNode extends SingleResultNodeImpl {
     super(
         deviceNode.devicesNode.hostNode.hostsNode.rootNode,
         deviceNode,
-        DeviceBondingNodeWorker.getWorker(
+        DeviceBondingWorker.getWorker(
             new File(deviceNode.getPersistenceDirectory(), "bonding"),
             deviceNode.getDevice()
         ),

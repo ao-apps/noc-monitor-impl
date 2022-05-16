@@ -28,7 +28,7 @@ import com.aoapps.lang.sql.LocalizedSQLException;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
-import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
+import com.aoindustries.noc.monitor.TableMultiResultWorker;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.MysqlReplicationResult;
 import java.io.File;
@@ -42,23 +42,23 @@ import java.util.ResourceBundle;
 /**
  * @author  AO Industries, Inc.
  */
-class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, MysqlReplicationResult> {
+class SlaveStatusWorker extends TableMultiResultWorker<List<String>, MysqlReplicationResult> {
 
   private static final Resources RESOURCES =
-      Resources.getResources(ResourceBundle::getBundle, SlaveStatusNodeWorker.class);
+      Resources.getResources(ResourceBundle::getBundle, SlaveStatusWorker.class);
 
   /**
    * One unique worker is made per persistence directory (and should match mysqlReplication exactly).
    */
-  private static final Map<String, SlaveStatusNodeWorker> workerCache = new HashMap<>();
+  private static final Map<String, SlaveStatusWorker> workerCache = new HashMap<>();
 
-  static SlaveStatusNodeWorker getWorker(File persistenceDirectory, MysqlReplication mysqlReplication) throws IOException {
+  static SlaveStatusWorker getWorker(File persistenceDirectory, MysqlReplication mysqlReplication) throws IOException {
     File persistenceFile = new File(persistenceDirectory, "slave_status");
     String path = persistenceFile.getCanonicalPath();
     synchronized (workerCache) {
-      SlaveStatusNodeWorker worker = workerCache.get(path);
+      SlaveStatusWorker worker = workerCache.get(path);
       if (worker == null) {
-        worker = new SlaveStatusNodeWorker(persistenceFile, mysqlReplication);
+        worker = new SlaveStatusWorker(persistenceFile, mysqlReplication);
         workerCache.put(path, worker);
       } else {
         if (!worker.originalMysqlReplication.equals(mysqlReplication)) {
@@ -72,7 +72,7 @@ class SlaveStatusNodeWorker extends TableMultiResultNodeWorker<List<String>, Mys
   private final MysqlReplication originalMysqlReplication;
   private MysqlReplication currentMysqlReplication;
 
-  private SlaveStatusNodeWorker(File persistenceFile, MysqlReplication mysqlReplication) throws IOException {
+  private SlaveStatusWorker(File persistenceFile, MysqlReplication mysqlReplication) throws IOException {
     super(persistenceFile, new ReplicationResultSerializer());
     this.originalMysqlReplication = currentMysqlReplication = mysqlReplication;
   }
