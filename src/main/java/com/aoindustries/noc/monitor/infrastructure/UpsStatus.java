@@ -23,19 +23,22 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.Strings;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.lang.text.LocalizedParseException;
 import com.aoapps.sql.MilliInterval;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.UpsResult;
 import java.text.ParseException;
+import java.util.ResourceBundle;
 
 /**
  * @author  AO Industries, Inc.
  */
 class UpsStatus {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, UpsStatus.class);
 
   private static float parseVolts(String value) {
     if (value == null) {
@@ -174,7 +177,7 @@ class UpsStatus {
     for (String line : Strings.splitLines(upsStatus)) {
       int colonPos = line.indexOf(':');
       if (colonPos == -1) {
-        throw new LocalizedParseException(0, PACKAGE_RESOURCES, "UpsStatus.parse.noColon", line);
+        throw new LocalizedParseException(0, RESOURCES, "parse.noColon", line);
       }
       String name = line.substring(0, colonPos).trim();
       String value = line.substring(colonPos + 1).trim();

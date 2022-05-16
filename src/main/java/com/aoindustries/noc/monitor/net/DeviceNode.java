@@ -23,8 +23,6 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -252,18 +250,11 @@ public class DeviceNode extends NodeImpl {
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(devicesNode.getPersistenceDirectory(), label);
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                devicesNode.hostNode.hostsNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return devicesNode.hostNode.hostsNode.rootNode.mkdir(
+        new File(
+            devicesNode.getPersistenceDirectory(),
+            label
+        )
+    );
   }
 }

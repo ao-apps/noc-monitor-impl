@@ -23,8 +23,6 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -180,19 +178,12 @@ public abstract class HostsNode extends NodeImpl {
    * Gets the top-level persistence directory.
    */
   final File getPersistenceDirectory() throws IOException {
-    File dir = new File(rootNode.getPersistenceDirectory(), "servers");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return rootNode.mkdir(
+        new File(
+            rootNode.getPersistenceDirectory(),
+            "servers"
+        )
+    );
   }
 
   protected abstract boolean includeHost(Host host) throws SQLException, IOException;

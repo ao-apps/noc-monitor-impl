@@ -23,10 +23,9 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.EnumUtils;
 import com.aoapps.lang.Strings;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.net.Device;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.SingleResultNodeWorker;
@@ -39,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 
 /**
@@ -47,6 +47,9 @@ import java.util.function.Function;
  * @author  AO Industries, Inc.
  */
 class DeviceBondingNodeWorker extends SingleResultNodeWorker {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, DeviceBondingNodeWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the net device exactly).
@@ -105,9 +108,9 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
       return new AlertLevelAndMessage(
           // Don't downgrade UNKNOWN to CRITICAL on error
           EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "NetDeviceBondingNode.alertMessage.error",
+              "alertMessage.error",
               error.apply(locale)
           )
       );
@@ -137,9 +140,9 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
         downCount = down;
       }
     AlertLevel alertLevel;
-    Function<Locale, String> alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+    Function<Locale, String> alertMessage = locale -> RESOURCES.getMessage(
         locale,
-        "NetDeviceBondingNode.alertMessage.counts",
+        "alertMessage.counts",
         upCount,
         downCount
     );
@@ -154,9 +157,9 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
         if (line.startsWith("Duplex: ")) {
           if (!"Duplex: full".equals(line)) {
             alertLevel = AlertLevel.LOW;
-            alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+            alertMessage = locale -> RESOURCES.getMessage(
                 locale,
-                "NetDeviceBondingNode.alertMessage.notFullDuplex",
+                "alertMessage.notFullDuplex",
                 line
             );
             break;
@@ -180,9 +183,9 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
             default:
               bondindMode = BondingMode.UNKNOWN;
               alertLevel = AlertLevel.HIGH;
-              alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+              alertMessage = locale -> RESOURCES.getMessage(
                   locale,
-                  "NetDeviceBondingNode.alertMessage.unexpectedBondingMode",
+                  "alertMessage.unexpectedBondingMode",
                   line
               );
               break;
@@ -192,7 +195,7 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
       }
       if (bondindMode == null) {
         alertLevel = AlertLevel.HIGH;
-        alertMessage = locale -> PACKAGE_RESOURCES.getMessage(locale, "NetDeviceBondingNode.alertMessage.noBondingMode");
+        alertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.noBondingMode");
       } else if (bondindMode == BondingMode.ACTIVE_BACKUP) {
         // Look for any mismatched speed
         for (String line : lines) {
@@ -214,9 +217,9 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
             }
             if (bps == -1L) {
               alertLevel = AlertLevel.HIGH;
-              alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+              alertMessage = locale -> RESOURCES.getMessage(
                   locale,
-                  "NetDeviceBondingNode.alertMessage.unknownSpeed",
+                  "alertMessage.unknownSpeed",
                   line
               );
               break;
@@ -224,9 +227,9 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
             long maxBitRate = device.getMaxBitRate();
             if (maxBitRate != -1 && bps != maxBitRate) {
               alertLevel = AlertLevel.HIGH;
-              alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+              alertMessage = locale -> RESOURCES.getMessage(
                   locale,
-                  "NetDeviceBondingNode.alertMessage.speedMismatch",
+                  "alertMessage.speedMismatch",
                   maxBitRate,
                   bps
               );
@@ -261,9 +264,9 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
                 }
                 if (bps == -1L) {
                   alertLevel = AlertLevel.HIGH;
-                  alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+                  alertMessage = locale -> RESOURCES.getMessage(
                       locale,
-                      "NetDeviceBondingNode.alertMessage.unknownSpeed",
+                      "alertMessage.unknownSpeed",
                       line
                   );
                   break;
@@ -278,9 +281,9 @@ class DeviceBondingNodeWorker extends SingleResultNodeWorker {
           long maxBitRate = device.getMaxBitRate();
           if (maxBitRate != -1 && totalBps != maxBitRate) {
             alertLevel = AlertLevel.HIGH;
-            alertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+            alertMessage = locale -> RESOURCES.getMessage(
                 locale,
-                "NetDeviceBondingNode.alertMessage.speedMismatch",
+                "alertMessage.speedMismatch",
                 maxBitRate,
                 totalBps
             );

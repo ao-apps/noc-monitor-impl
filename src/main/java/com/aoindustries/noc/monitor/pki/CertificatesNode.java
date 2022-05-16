@@ -23,11 +23,10 @@
 
 package com.aoindustries.noc.monitor.pki;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.pki.Certificate;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
@@ -43,12 +42,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
 
 /**
  * @author  AO Industries, Inc.
  */
 public class CertificatesNode extends NodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, CertificatesNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -106,7 +109,7 @@ public class CertificatesNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "SslCertificatesNode.label");
+    return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "label");
   }
 
   private final TableListener tableListener = (Table<?> table) -> {
@@ -200,17 +203,11 @@ public class CertificatesNode extends NodeImpl {
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(hostNode.getPersistenceDirectory(), "ssl_certificates");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return hostNode.hostsNode.rootNode.mkdir(
+        new File(
+            hostNode.getPersistenceDirectory(),
+            "ssl_certificates"
+        )
+    );
   }
 }

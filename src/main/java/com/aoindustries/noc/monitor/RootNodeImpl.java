@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.concurrent.Executors;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.lang.io.IoUtils;
 import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.noc.monitor.common.AlertCategory;
@@ -52,6 +51,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +69,9 @@ import javax.swing.SwingUtilities;
 public class RootNodeImpl extends NodeImpl implements RootNode {
 
   private static final Logger logger = Logger.getLogger(RootNodeImpl.class.getName());
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, RootNodeImpl.class);
 
   /**
    * A fast pseudo-random number generator for non-cryptographic purposes.
@@ -236,7 +239,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(locale, "RootNode.label");
+    return RESOURCES.getMessage(locale, "label");
   }
 
   /**
@@ -578,22 +581,37 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   }
 
   /**
-   * Gets the top-level persistence directory.
+   * Creates a directory if not exists, throwing an exception when is not a directory or unable to create.
    */
-  public File getPersistenceDirectory() throws IOException {
-    File dir = new File("persistence");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
+  public File mkdir(File dir) throws IOException {
+    if (dir.exists()) {
+      if (!dir.isDirectory()) {
+        // TODO: LocalizedIOException here and similar?
         throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
+            RESOURCES.getMessage(
                 locale,
-                "error.mkdirFailed",
+                "mkdir.notDirectory",
                 dir.getCanonicalPath()
             )
         );
       }
+    } else if (!dir.mkdir()) {
+      throw new IOException(
+          RESOURCES.getMessage(
+              locale,
+              "mkdir.failed",
+              dir.getCanonicalPath()
+          )
+      );
     }
     return dir;
+  }
+
+  /**
+   * Gets the top-level persistence directory.
+   */
+  public File getPersistenceDirectory() throws IOException {
+    return mkdir(new File("persistence"));
   }
 
   private static int lastStartupDelay5;

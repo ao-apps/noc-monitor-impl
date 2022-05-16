@@ -23,11 +23,10 @@
 
 package com.aoindustries.noc.monitor.email;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.collections.AoCollections;
 import com.aoapps.lang.Throwables;
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.net.DomainName;
 import com.aoapps.sql.NanoInterval;
 import com.aoindustries.aoserv.client.linux.Server;
@@ -52,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -89,6 +89,9 @@ import org.xbill.DNS.Type;
 class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWorker.BlacklistQueryResult>, Object> {
 
   private static final Logger logger = Logger.getLogger(BlacklistsNodeWorker.class.getName());
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, BlacklistsNodeWorker.class);
 
   /**
    * The results timeout in milliseconds, allows for time in the queue waiting for resolver.
@@ -1614,11 +1617,11 @@ class BlacklistsNodeWorker extends TableResultNodeWorker<List<BlacklistsNodeWork
 
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.basename"),
-        PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.queryTime"),
-        PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.latency"),
-        PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.query"),
-        PACKAGE_RESOURCES.getMessage(locale, "BlacklistsNodeWorker.columnHeader.result")
+    return locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeader.basename"),
+        RESOURCES.getMessage(locale, "columnHeader.queryTime"),
+        RESOURCES.getMessage(locale, "columnHeader.latency"),
+        RESOURCES.getMessage(locale, "columnHeader.query"),
+        RESOURCES.getMessage(locale, "columnHeader.result")
     );
   }
 

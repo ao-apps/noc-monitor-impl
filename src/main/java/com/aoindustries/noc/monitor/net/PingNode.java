@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.PingResult;
 import java.io.IOException;
@@ -32,6 +31,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * The ping node per server.
@@ -39,6 +39,9 @@ import java.util.List;
  * @author  AO Industries, Inc.
  */
 public class PingNode extends TableMultiResultNodeImpl<PingResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, PingNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -61,7 +64,7 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "PingNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   @Override

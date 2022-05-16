@@ -22,7 +22,17 @@
  */
 module com.aoindustries.noc.monitor.devel {
   exports com.aoindustries.noc.monitor.i18n;
+  exports com.aoindustries.noc.monitor.backup.i18n;
   exports com.aoindustries.noc.monitor.cluster.i18n;
+  exports com.aoindustries.noc.monitor.dns.i18n;
+  exports com.aoindustries.noc.monitor.email.i18n;
+  exports com.aoindustries.noc.monitor.infrastructure.i18n;
+  exports com.aoindustries.noc.monitor.linux.i18n;
+  exports com.aoindustries.noc.monitor.mysql.i18n;
+  exports com.aoindustries.noc.monitor.net.i18n;
+  exports com.aoindustries.noc.monitor.pki.i18n;
+  exports com.aoindustries.noc.monitor.signup.i18n;
+  exports com.aoindustries.noc.monitor.web.i18n;
   // Direct
   requires com.aoapps.hodgepodge; // <groupId>com.aoapps</groupId><artifactId>ao-hodgepodge</artifactId>
   requires static jsr305; // <groupId>com.google.code.findbugs</groupId><artifactId>jsr305</artifactId>

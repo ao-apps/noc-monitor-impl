@@ -23,10 +23,9 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.Strings;
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.lang.text.LocalizedParseException;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -41,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 
 /**
@@ -52,6 +52,9 @@ import java.util.function.Function;
  * @author  AO Industries, Inc.
  */
 class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>, String> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, HardDrivesTemperatureNodeWorker.class);
 
   /**
    * The normal alert thresholds.
@@ -129,9 +132,9 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
 
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.device"),
-        PACKAGE_RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.model"),
-        PACKAGE_RESOURCES.getMessage(locale, "HardDrivesTemperatureNodeWorker.columnHeader.temperature")
+    return locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeader.device"),
+        RESOURCES.getMessage(locale, "columnHeader.model"),
+        RESOURCES.getMessage(locale, "columnHeader.temperature")
     );
   }
 
@@ -147,8 +150,8 @@ class HardDrivesTemperatureNodeWorker extends TableResultNodeWorker<List<String>
       if (values.size() != 3) {
         throw new LocalizedParseException(
             lineNum,
-            PACKAGE_RESOURCES,
-            "HardDrivesTemperatureNodeWorker.alertMessage.badColumnCount",
+            RESOURCES,
+            "alertMessage.badColumnCount",
             line
         );
       }

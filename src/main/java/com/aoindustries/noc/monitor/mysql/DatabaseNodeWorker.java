@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -41,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * The workers for MySQLDatabaseNode.
@@ -49,7 +49,8 @@ import java.util.Map;
  */
 class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus>, Object> {
 
-  //private static final Logger logger = Logger.getLogger(MySQLDatabaseNodeWorker.class.getName());
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, DatabaseNodeWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the database exactly).
@@ -96,24 +97,24 @@ class DatabaseNodeWorker extends TableResultNodeWorker<List<Database.TableStatus
 
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.name"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.engine"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.version"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rowFormat"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.rows"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.avgRowLength"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataLength"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.maxDataLength"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.indexLength"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.dataFree"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.autoIncrement"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createTime"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.updateTime"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checkTime"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.collation"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.checksum"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.createOptions"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLDatabaseNodeWorker.columnHeader.comment")
+    return locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeader.name"),
+        RESOURCES.getMessage(locale, "columnHeader.engine"),
+        RESOURCES.getMessage(locale, "columnHeader.version"),
+        RESOURCES.getMessage(locale, "columnHeader.rowFormat"),
+        RESOURCES.getMessage(locale, "columnHeader.rows"),
+        RESOURCES.getMessage(locale, "columnHeader.avgRowLength"),
+        RESOURCES.getMessage(locale, "columnHeader.dataLength"),
+        RESOURCES.getMessage(locale, "columnHeader.maxDataLength"),
+        RESOURCES.getMessage(locale, "columnHeader.indexLength"),
+        RESOURCES.getMessage(locale, "columnHeader.dataFree"),
+        RESOURCES.getMessage(locale, "columnHeader.autoIncrement"),
+        RESOURCES.getMessage(locale, "columnHeader.createTime"),
+        RESOURCES.getMessage(locale, "columnHeader.updateTime"),
+        RESOURCES.getMessage(locale, "columnHeader.checkTime"),
+        RESOURCES.getMessage(locale, "columnHeader.collation"),
+        RESOURCES.getMessage(locale, "columnHeader.checksum"),
+        RESOURCES.getMessage(locale, "columnHeader.createOptions"),
+        RESOURCES.getMessage(locale, "columnHeader.comment")
     );
   }
 

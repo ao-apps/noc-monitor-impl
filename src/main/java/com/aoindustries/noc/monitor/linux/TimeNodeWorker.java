@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -35,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * The clock skew for a single sample in milliseconds.  Calculated as follows:
@@ -57,6 +57,9 @@ import java.util.Map;
  * @author  AO Industries, Inc.
  */
 class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, TimeNodeWorker.class);
 
   /**
    * One unique worker is made per persistence directory (and should match linuxServer exactly).
@@ -132,9 +135,9 @@ class TimeNodeWorker extends TableMultiResultNodeWorker<MilliInterval, TimeResul
 
     return new AlertLevelAndMessage(
         getAlertLevel(currentSkew),
-        locale -> PACKAGE_RESOURCES.getMessage(
+        locale -> RESOURCES.getMessage(
             locale,
-            "TimeNodeWorker.alertMessage",
+            "alertMessage",
             currentSkew
         )
     );

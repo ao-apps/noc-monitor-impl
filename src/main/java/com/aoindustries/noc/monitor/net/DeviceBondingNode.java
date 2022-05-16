@@ -23,13 +23,13 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.SingleResultNodeImpl;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.util.ResourceBundle;
 
 /**
  * The node for the bonding monitoring.
@@ -37,6 +37,9 @@ import java.rmi.server.RMIServerSocketFactory;
  * @author  AO Industries, Inc.
  */
 public class DeviceBondingNode extends SingleResultNodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, DeviceBondingNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -56,6 +59,6 @@ public class DeviceBondingNode extends SingleResultNodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBondingNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 }

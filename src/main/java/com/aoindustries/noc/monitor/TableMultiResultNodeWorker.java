@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.EnumUtils;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoapps.persistence.PersistentCollections;
 import com.aoapps.persistence.PersistentLinkedList;
@@ -40,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -79,6 +79,9 @@ import javax.swing.SwingUtilities;
 public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> implements Runnable {
 
   private static final Logger logger = Logger.getLogger(TableMultiResultNodeWorker.class.getName());
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, TableMultiResultNodeWorker.class);
 
   /**
    * The most recent timer task.
@@ -240,7 +243,7 @@ public abstract class TableMultiResultNodeWorker<S, R extends TableMultiResult> 
                   if (msg == null || msg.isEmpty()) {
                     msg = err.toString();
                   }
-                  return PACKAGE_RESOURCES.getMessage(locale, "TableMultiResultNodeWorker.tableData.error", msg);
+                  return RESOURCES.getMessage(locale, "tableData.error", msg);
                 }
             )
         );

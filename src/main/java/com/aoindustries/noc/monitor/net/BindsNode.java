@@ -23,11 +23,10 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.net.InetAddress;
 import com.aoapps.net.Port;
 import com.aoindustries.aoserv.client.AoservConnector;
@@ -49,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
 
 /**
@@ -60,6 +60,9 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 public class BindsNode extends NodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, BindsNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -112,7 +115,7 @@ public class BindsNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(ipAddressNode.ipAddressesNode.rootNode.locale, "NetBindsNode.label");
+    return RESOURCES.getMessage(ipAddressNode.ipAddressesNode.rootNode.locale, "label");
   }
 
   private final TableListener tableListener = (Table<?> table) -> {
@@ -349,18 +352,11 @@ public class BindsNode extends NodeImpl {
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(ipAddressNode.getPersistenceDirectory(), "net_binds");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                ipAddressNode.ipAddressesNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return ipAddressNode.ipAddressesNode.rootNode.mkdir(
+        new File(
+            ipAddressNode.getPersistenceDirectory(),
+            "net_binds"
+        )
+    );
   }
 }

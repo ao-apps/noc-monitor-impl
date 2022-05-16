@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.NetDeviceBitRateResult;
 import java.io.IOException;
@@ -32,11 +31,15 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author  AO Industries, Inc.
  */
 public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRateResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, DeviceBitRateNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -56,16 +59,16 @@ public class DeviceBitRateNode extends TableMultiResultNodeImpl<NetDeviceBitRate
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   @Override
   public List<String> getColumnHeaders() {
-    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txBitRate"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxBitRate"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.txPacketRate"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.rxPacketRate"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetDeviceBitRateNode.columnHeader.alertThresholds")
+    return Arrays.asList(RESOURCES.getMessage(rootNode.locale, "columnHeader.txBitRate"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.rxBitRate"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.txPacketRate"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.rxPacketRate"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.alertThresholds")
     );
   }
 }

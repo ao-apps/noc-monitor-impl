@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.concurrent.LocalizedTimeoutException;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.net.IpAddress;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
@@ -36,6 +35,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Each worker may be shared by any number of <code>PingNodeImpl</code>s.
@@ -46,6 +46,9 @@ import java.util.Map;
  * @author  AO Industries, Inc.
  */
 class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, PingNodeWorker.class);
 
   /**
    * The ping timeout.
@@ -101,7 +104,7 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
     final InetAddress inetAddress = InetAddress.getByName(ipAddress.toString());
     boolean timeout = !inetAddress.isReachable(TIMEOUT);
     if (timeout) {
-      throw new LocalizedTimeoutException(PACKAGE_RESOURCES, "PingNodeWorker.error.timeout");
+      throw new LocalizedTimeoutException(RESOURCES, "error.timeout");
     }
     return SAMPLE;
   }
@@ -160,9 +163,9 @@ class PingNodeWorker extends TableMultiResultNodeWorker<Object, PingResult> {
     int packetLossPercent = getPacketLossPercent(previousResults);
     return new AlertLevelAndMessage(
         getAlertLevel(packetLossPercent),
-        locale -> PACKAGE_RESOURCES.getMessage(
+        locale -> RESOURCES.getMessage(
             locale,
-            "PingNodeWorker.alertMessage",
+            "alertMessage",
             packetLossPercent
         )
     );

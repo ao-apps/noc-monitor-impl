@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.common.AlertLevel;
@@ -32,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.util.ResourceBundle;
 
 /**
  * The node for all MysqlDatabases on one Server.
@@ -39,6 +39,9 @@ import java.rmi.server.RMIServerSocketFactory;
  * @author  AO Industries, Inc.
  */
 public class CheckTablesNode extends TableResultNodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, CheckTablesNode.class);
 
   private static final long serialVersionUID = 2L;
 
@@ -61,7 +64,7 @@ public class CheckTablesNode extends TableResultNodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLCheckTablesNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   /**

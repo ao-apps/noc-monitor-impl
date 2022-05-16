@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.MdMismatchReport;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
@@ -40,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 
 /**
@@ -48,6 +48,9 @@ import java.util.function.Function;
  * @author  AO Industries, Inc.
  */
 class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, String> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, MdMismatchWorker.class);
 
   private static final int RAID1_HIGH_THRESHOLD = 2048;
   private static final int RAID1_MEDIUM_THRESHOLD = 1024;
@@ -119,9 +122,9 @@ class MdMismatchWorker extends TableResultNodeWorker<List<MdMismatchReport>, Str
 
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.device"),
-        PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.level"),
-        PACKAGE_RESOURCES.getMessage(locale, "MdMismatchWorker.columnHeader.count")
+    return locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeader.device"),
+        RESOURCES.getMessage(locale, "columnHeader.level"),
+        RESOURCES.getMessage(locale, "columnHeader.count")
     );
   }
 

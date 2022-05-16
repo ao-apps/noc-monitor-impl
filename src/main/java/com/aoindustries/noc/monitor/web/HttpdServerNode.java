@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.web;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.HttpdServerResult;
@@ -34,11 +33,15 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author  AO Industries, Inc.
  */
 public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, HttpdServerNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -67,17 +70,17 @@ public class HttpdServerNode extends TableMultiResultNodeImpl<HttpdServerResult>
   public String getLabel() {
     String name = httpdServer.getName();
     if (name == null) {
-      return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.noName");
+      return RESOURCES.getMessage(rootNode.locale, "label.noName");
     } else {
-      return PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.label.named", name);
+      return RESOURCES.getMessage(rootNode.locale, "label.named", name);
     }
   }
 
   @Override
   public List<String> getColumnHeaders() {
-    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.concurrency"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.maxConcurrency"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "HttpdServerNode.columnHeader.alertThresholds")
+    return Arrays.asList(RESOURCES.getMessage(rootNode.locale, "columnHeader.concurrency"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.maxConcurrency"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.alertThresholds")
     );
   }
 }

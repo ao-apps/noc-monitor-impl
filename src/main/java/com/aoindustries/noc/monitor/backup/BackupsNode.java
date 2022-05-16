@@ -23,11 +23,10 @@
 
 package com.aoindustries.noc.monitor.backup;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.backup.BackupPartition;
 import com.aoindustries.aoserv.client.backup.FileReplication;
 import com.aoindustries.aoserv.client.backup.FileReplicationSchedule;
@@ -54,6 +53,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,6 +67,9 @@ import javax.swing.SwingUtilities;
 public class BackupsNode extends NodeImpl implements TableResultNode, TableResultListener {
 
   private static final Logger logger = Logger.getLogger(BackupsNode.class.getName());
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, BackupsNode.class);
 
   /**
    * All AO-boxes should be backed-up to this server farm (AO admin HQ).
@@ -131,7 +134,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.label");
+    return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "label");
   }
 
   private final TableListener tableListener = (Table<?> table) -> {
@@ -247,10 +250,10 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
       }
       String newAlertLevelMessage =
           failoverFileReplications.isEmpty()
-              ? PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.noBackupsConfigured")
+              ? RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "noBackupsConfigured")
               : missingMobBackup
-              ? PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.missingMobBackup")
-              : PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.backupsConfigured");
+              ? RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "missingMobBackup")
+              : RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "backupsConfigured");
       alertLevel = newAlertLevel;
       if (oldAlertLevel != newAlertLevel) {
         hostNode.hostsNode.rootNode.nodeAlertLevelChanged(
@@ -295,8 +298,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             true,
             1,
             1,
-            locale -> Collections.singletonList(PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
-            locale -> Collections.singletonList(PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.noBackupsConfigured")),
+            locale -> Collections.singletonList(RESOURCES.getMessage(locale, "columnHeaders.configurationError")),
+            locale -> Collections.singletonList(RESOURCES.getMessage(locale, "noBackupsConfigured")),
             Collections.singletonList(linuxServer == null ? AlertLevel.NONE : AlertLevel.MEDIUM)
         );
       } else if (missingMobBackup) {
@@ -306,8 +309,8 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             true,
             1,
             1,
-            locale -> Collections.singletonList(PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.configurationError")),
-            locale -> Collections.singletonList(PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.missingMobBackup")),
+            locale -> Collections.singletonList(RESOURCES.getMessage(locale, "columnHeaders.configurationError")),
+            locale -> Collections.singletonList(RESOURCES.getMessage(locale, "missingMobBackup")),
             Collections.singletonList(AlertLevel.LOW)
         );
       } else {
@@ -335,14 +338,14 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
           tableData.add(times.toString());
           Long bitRate = fileReplication.getBitRate();
           if (bitRate == null) {
-            tableData.add(PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate.unlimited"));
+            tableData.add(RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "bitRate.unlimited"));
           } else {
-            tableData.add(PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.bitRate", bitRate));
+            tableData.add(RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "bitRate", bitRate));
           }
           if (fileReplication.getUseCompression()) {
-            tableData.add(PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.true"));
+            tableData.add(RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "useCompression.true"));
           } else {
-            tableData.add(PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "BackupsNode.useCompression.false"));
+            tableData.add(RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "useCompression.false"));
           }
           tableData.add(fileReplication.getRetention().getDisplay());
           BackupNode backupNode = backupNodes.get(c);
@@ -363,13 +366,13 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
             false,
             7,
             failoverFileReplications.size(),
-            locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.to"),
-                PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.path"),
-                PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.scheduledTimes"),
-                PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.maxBitRate"),
-                PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.useCompression"),
-                PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.retention"),
-                PACKAGE_RESOURCES.getMessage(locale, "BackupsNode.columnHeaders.status")
+            locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeaders.to"),
+                RESOURCES.getMessage(locale, "columnHeaders.path"),
+                RESOURCES.getMessage(locale, "columnHeaders.scheduledTimes"),
+                RESOURCES.getMessage(locale, "columnHeaders.maxBitRate"),
+                RESOURCES.getMessage(locale, "columnHeaders.useCompression"),
+                RESOURCES.getMessage(locale, "columnHeaders.retention"),
+                RESOURCES.getMessage(locale, "columnHeaders.status")
             ),
             locale -> tableData,
             Collections.unmodifiableList(alertLevels)
@@ -381,19 +384,12 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(hostNode.getPersistenceDirectory(), "failover_file_replications");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                hostNode.hostsNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return hostNode.hostsNode.rootNode.mkdir(
+        new File(
+            hostNode.getPersistenceDirectory(),
+            "failover_file_replications"
+        )
+    );
   }
 
   @Override

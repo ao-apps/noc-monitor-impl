@@ -23,11 +23,10 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
@@ -41,6 +40,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javax.swing.SwingUtilities;
 
@@ -50,6 +50,9 @@ import javax.swing.SwingUtilities;
  * @author  AO Industries, Inc.
  */
 public class SlavesNode extends NodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, SlavesNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -101,7 +104,7 @@ public class SlavesNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(serverNode.serversNode.hostNode.hostsNode.rootNode.locale, "MySQLSlavesNode.label");
+    return RESOURCES.getMessage(serverNode.serversNode.hostNode.hostsNode.rootNode.locale, "label");
   }
 
   private final TableListener tableListener = (Table<?> table) -> {
@@ -180,18 +183,11 @@ public class SlavesNode extends NodeImpl {
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(serverNode.getPersistenceDirectory(), "mysql_slaves");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                serverNode.serversNode.hostNode.hostsNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return serverNode.serversNode.hostNode.hostsNode.rootNode.mkdir(
+        new File(
+            serverNode.getPersistenceDirectory(),
+            "mysql_slaves"
+        )
+    );
   }
 }

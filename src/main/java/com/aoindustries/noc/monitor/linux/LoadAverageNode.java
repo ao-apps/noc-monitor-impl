@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.LoadAverageResult;
@@ -34,6 +33,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * The load average per ao_server is watched on a minutely basis.  The five-minute
@@ -43,6 +43,9 @@ import java.util.List;
  * @author  AO Industries, Inc.
  */
 public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, LoadAverageNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -62,18 +65,18 @@ public class LoadAverageNode extends TableMultiResultNodeImpl<LoadAverageResult>
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   @Override
   public List<String> getColumnHeaders() {
-    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.oneMinute"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.fiveMinute"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.tenMinute"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.runningProcesses"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.totalProcesses"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.lastPID"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "LoadAverageNode.columnHeader.alertThresholds")
+    return Arrays.asList(RESOURCES.getMessage(rootNode.locale, "columnHeader.oneMinute"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.fiveMinute"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.tenMinute"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.runningProcesses"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.totalProcesses"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.lastPID"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.alertThresholds")
     );
   }
 }

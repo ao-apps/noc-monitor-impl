@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.net.Host;
 import com.aoindustries.noc.monitor.RootNodeImpl;
@@ -35,6 +34,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
+import java.util.ResourceBundle;
 
 /**
  * The top-level node has one child for each of the servers.
@@ -42,6 +42,9 @@ import java.sql.SQLException;
  * @author  AO Industries, Inc.
  */
 public class VirtualServersNode extends HostsNode {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, VirtualServersNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -56,7 +59,7 @@ public class VirtualServersNode extends HostsNode {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "VirtualServersNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   @Override

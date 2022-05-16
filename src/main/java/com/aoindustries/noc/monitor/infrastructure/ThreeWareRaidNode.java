@@ -23,14 +23,14 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.SingleResultNodeImpl;
 import com.aoindustries.noc.monitor.linux.RaidNode;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
+import java.util.ResourceBundle;
 
 /**
  * The node for the 3ware monitoring.
@@ -38,6 +38,9 @@ import java.rmi.server.RMIServerSocketFactory;
  * @author  AO Industries, Inc.
  */
 public class ThreeWareRaidNode extends SingleResultNodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, ThreeWareRaidNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -57,6 +60,6 @@ public class ThreeWareRaidNode extends SingleResultNodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "ThreeWareRaidNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 }

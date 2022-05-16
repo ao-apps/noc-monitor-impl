@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.linux.Server.DrbdReport;
@@ -44,6 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -54,6 +54,9 @@ import java.util.function.Function;
  * @author  AO Industries, Inc.
  */
 class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, DrbdNodeWorker.class);
 
   private static final int NUM_COLS = 7;
 
@@ -140,13 +143,13 @@ class DrbdNodeWorker extends TableResultNodeWorker<List<DrbdReport>, Object> {
 
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.device"),
-        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.resource"),
-        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.cs"),
-        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.ds"),
-        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.roles"),
-        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.lastVerified"),
-        PACKAGE_RESOURCES.getMessage(locale, "DrbdNodeWorker.columnHeader.outOfSync")
+    return locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeader.device"),
+        RESOURCES.getMessage(locale, "columnHeader.resource"),
+        RESOURCES.getMessage(locale, "columnHeader.cs"),
+        RESOURCES.getMessage(locale, "columnHeader.ds"),
+        RESOURCES.getMessage(locale, "columnHeader.roles"),
+        RESOURCES.getMessage(locale, "columnHeader.lastVerified"),
+        RESOURCES.getMessage(locale, "columnHeader.outOfSync")
     );
   }
 

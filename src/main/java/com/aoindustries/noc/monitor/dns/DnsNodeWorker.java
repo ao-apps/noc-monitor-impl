@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor.dns;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.net.InetAddress;
 import com.aoapps.sql.NanoInterval;
 import com.aoindustries.aoserv.client.dns.RecordType;
@@ -46,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.Lookup;
@@ -61,6 +61,9 @@ import org.xbill.DNS.Type;
  * @author  AO Industries, Inc.
  */
 class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryResult>, Object> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, DnsNodeWorker.class);
 
   static class DnsQueryResult {
     final String query;
@@ -113,10 +116,10 @@ class DnsNodeWorker extends TableResultNodeWorker<List<DnsNodeWorker.DnsQueryRes
 
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.query"),
-        PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.latency"),
-        PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.result"),
-        PACKAGE_RESOURCES.getMessage(locale, "DnsNodeWorker.columnHeader.message")
+    return locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeader.query"),
+        RESOURCES.getMessage(locale, "columnHeader.latency"),
+        RESOURCES.getMessage(locale, "columnHeader.result"),
+        RESOURCES.getMessage(locale, "columnHeader.message")
     );
   }
 

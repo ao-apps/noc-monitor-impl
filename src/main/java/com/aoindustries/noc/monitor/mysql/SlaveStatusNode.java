@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.MysqlReplicationResult;
 import java.io.IOException;
@@ -32,6 +31,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * The replication status per MysqlReplication.
@@ -39,6 +39,9 @@ import java.util.List;
  * @author  AO Industries, Inc.
  */
 public class SlaveStatusNode extends TableMultiResultNodeImpl<MysqlReplicationResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, SlaveStatusNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -58,22 +61,22 @@ public class SlaveStatusNode extends TableMultiResultNodeImpl<MysqlReplicationRe
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   @Override
   public List<String> getColumnHeaders() {
-    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.secondsBehindMaster"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogFile"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.masterLogPosition"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIoState"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogFile"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveLogPosition"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveIoRunning"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.slaveSqlRunning"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorNumber"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.lastErrorDetails"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MySQLSlaveStatusNode.columnHeader.alertThresholds")
+    return Arrays.asList(RESOURCES.getMessage(rootNode.locale, "columnHeader.secondsBehindMaster"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.masterLogFile"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.masterLogPosition"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.slaveIoState"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.slaveLogFile"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.slaveLogPosition"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.slaveIoRunning"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.slaveSqlRunning"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.lastErrorNumber"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.lastErrorDetails"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.alertThresholds")
     );
   }
 }

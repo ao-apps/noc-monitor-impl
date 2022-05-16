@@ -23,10 +23,9 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.collections.AoCollections;
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
@@ -45,13 +44,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
- * The workers for MySQLCheckTablesNode.
+ * The workers for {@link CheckTablesNode}.
  *
  * @author  AO Industries, Inc.
  */
 class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, CheckTablesNodeWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the database exactly).
@@ -89,11 +92,11 @@ class CheckTablesNodeWorker extends TableResultNodeWorker<List<Object>, Object> 
 
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.name"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.engine"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.duration"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgType"),
-        PACKAGE_RESOURCES.getMessage(locale, "MySQLCheckTablesNodeWorker.columnHeader.msgText")
+    return locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeader.name"),
+        RESOURCES.getMessage(locale, "columnHeader.engine"),
+        RESOURCES.getMessage(locale, "columnHeader.duration"),
+        RESOURCES.getMessage(locale, "columnHeader.msgType"),
+        RESOURCES.getMessage(locale, "columnHeader.msgText")
     );
   }
 

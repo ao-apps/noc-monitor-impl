@@ -23,8 +23,6 @@
 
 package com.aoindustries.noc.monitor.mysql;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoindustries.aoserv.client.backup.BackupPartition;
 import com.aoindustries.aoserv.client.backup.FileReplication;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
@@ -174,18 +172,11 @@ public class SlaveNode extends NodeImpl {
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(slavesNode.getPersistenceDirectory(), Integer.toString(mysqlReplication.getPkey()));
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                slavesNode.serverNode.serversNode.hostNode.hostsNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return slavesNode.serverNode.serversNode.hostNode.hostsNode.rootNode.mkdir(
+        new File(
+            slavesNode.getPersistenceDirectory(),
+            Integer.toString(mysqlReplication.getPkey())
+        )
+    );
   }
 }

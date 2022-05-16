@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor.signup;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.AoservConnector;
 import com.aoindustries.aoserv.client.account.Administrator;
 import com.aoindustries.aoserv.client.signup.Request;
@@ -43,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * The workers for 3ware RAID.
@@ -50,6 +50,9 @@ import java.util.Map;
  * @author  AO Industries, Inc.
  */
 class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, SignupsNodeWorker.class);
 
   /**
    * One unique worker is made per persistence file.
@@ -113,8 +116,8 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
         return new AlertLevelAndMessage(
             AlertLevel.CRITICAL,
             locale -> incompleteCount == 1
-                ? PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.incompleteCount.singular", incompleteCount)
-                : PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.incompleteCount.plural", incompleteCount)
+                ? RESOURCES.getMessage(locale, "incompleteCount.singular", incompleteCount)
+                : RESOURCES.getMessage(locale, "incompleteCount.plural", incompleteCount)
         );
       }
     }
@@ -127,12 +130,12 @@ class SignupsNodeWorker extends TableResultNodeWorker<List<Object>, Object> {
 
   @Override
   protected SerializableFunction<Locale, List<String>> getColumnHeaders() {
-    return locale -> Arrays.asList(PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.source"),
-        PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.pkey"),
-        PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.time"),
-        PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.ip_address"),
-        PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_by"),
-        PACKAGE_RESOURCES.getMessage(locale, "SignpusNodeWorker.columnHeader.completed_time")
+    return locale -> Arrays.asList(RESOURCES.getMessage(locale, "columnHeader.source"),
+        RESOURCES.getMessage(locale, "columnHeader.pkey"),
+        RESOURCES.getMessage(locale, "columnHeader.time"),
+        RESOURCES.getMessage(locale, "columnHeader.ip_address"),
+        RESOURCES.getMessage(locale, "columnHeader.completed_by"),
+        RESOURCES.getMessage(locale, "columnHeader.completed_time")
     );
   }
 

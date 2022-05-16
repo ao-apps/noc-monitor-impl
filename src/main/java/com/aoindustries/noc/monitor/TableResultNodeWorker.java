@@ -23,10 +23,9 @@
 
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.EnumUtils;
 import com.aoapps.lang.function.SerializableFunction;
+import com.aoapps.lang.i18n.Resources;
 import com.aoapps.lang.i18n.ThreadLocale;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.TableResult;
@@ -35,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -54,6 +54,9 @@ import javax.swing.SwingUtilities;
 public abstract class TableResultNodeWorker<R, D> implements Runnable {
 
   private static final Logger logger = Logger.getLogger(TableResultNodeWorker.class.getName());
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, TableResultNodeWorker.class);
 
   /**
    * The most recent timer task.
@@ -176,7 +179,7 @@ public abstract class TableResultNodeWorker<R, D> implements Runnable {
         columns = 1;
         rows = 1;
         columnHeaders = locale -> Collections.singletonList(
-            PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.columnHeaders.error")
+            RESOURCES.getMessage(locale, "columnHeaders.error")
         );
         tableData = locale -> ThreadLocale.call(locale,
             () -> {
@@ -185,7 +188,7 @@ public abstract class TableResultNodeWorker<R, D> implements Runnable {
                 msg = err.toString();
               }
               return Collections.singletonList(
-                  PACKAGE_RESOURCES.getMessage(locale, "TableResultNodeWorker.tableData.error", msg)
+                  RESOURCES.getMessage(locale, "tableData.error", msg)
               );
             }
         );

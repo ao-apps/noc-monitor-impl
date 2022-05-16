@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.NetBindResult;
 import java.io.File;
@@ -34,6 +33,7 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * The net bind monitor.
@@ -41,6 +41,9 @@ import java.util.List;
  * @author  AO Industries, Inc.
  */
 public class BindNode extends TableMultiResultNodeImpl<NetBindResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, BindNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -77,7 +80,7 @@ public class BindNode extends TableMultiResultNodeImpl<NetBindResult> {
 
   @Override
   public List<?> getColumnHeaders() {
-    return Collections.singletonList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "NetBindNode.columnHeader.result")
+    return Collections.singletonList(RESOURCES.getMessage(rootNode.locale, "columnHeader.result")
     );
   }
 }

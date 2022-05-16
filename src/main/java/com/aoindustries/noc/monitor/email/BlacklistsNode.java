@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.email;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.TableResultNodeImpl;
 import com.aoindustries.noc.monitor.net.IpAddressNode;
 import java.io.File;
@@ -32,6 +31,7 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
+import java.util.ResourceBundle;
 
 /**
  * The node for the blacklist monitoring.
@@ -39,6 +39,9 @@ import java.sql.SQLException;
  * @author  AO Industries, Inc.
  */
 public class BlacklistsNode extends TableResultNodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, BlacklistsNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -61,6 +64,6 @@ public class BlacklistsNode extends TableResultNodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "BlacklistsNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 }

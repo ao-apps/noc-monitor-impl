@@ -44,12 +44,12 @@ public class BlacklistsNodeWorkerTest extends TestCase {
   public void testCheckForDuplicateBlacklists() throws Exception {
     /*
     // Make sure there are no duplicates
-    System.out.println("Total of "+BlacklistsNodeWorker.rblBlacklists.length+" RBL blacklists");
+    System.out.println("Total of " + BlacklistsNodeWorker.rblBlacklists.length + " RBL blacklists");
     Set<String> basenames = AoCollections.newHashSet(BlacklistsNodeWorker.rblBlacklists.length);
     for (BlacklistsNodeWorker.RblBlacklist rblBlacklist : BlacklistsNodeWorker.rblBlacklists) {
       if (!basenames.add(rblBlacklist.basename)) {
         System.err.println(rblBlacklist.basename);
-        throw new RuntimeException("Duplicate basename: "+rblBlacklist.basename);
+        throw new RuntimeException("Duplicate basename: " + rblBlacklist.basename);
       } else {
         System.out.println(rblBlacklist.basename);
       }

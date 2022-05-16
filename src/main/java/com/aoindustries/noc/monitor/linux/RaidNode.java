@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.distribution.OperatingSystemVersion;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
@@ -40,6 +39,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * The node for RAID devices.
@@ -47,6 +47,9 @@ import java.util.List;
  * @author  AO Industries, Inc.
  */
 public class RaidNode extends NodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, RaidNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -115,7 +118,7 @@ public class RaidNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "RaidNode.label");
+    return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "label");
   }
 
   public void start() throws IOException, SQLException {
@@ -190,18 +193,11 @@ public class RaidNode extends NodeImpl {
   }
 
   public File getPersistenceDirectory() throws IOException {
-    File dir = new File(hostNode.getPersistenceDirectory(), "raid");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                hostNode.hostsNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return hostNode.hostsNode.rootNode.mkdir(
+        new File(
+            hostNode.getPersistenceDirectory(),
+            "raid"
+        )
+    );
   }
 }

@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.TimeResult;
@@ -34,11 +33,15 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author  AO Industries, Inc.
  */
 public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, TimeNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -58,12 +61,12 @@ public class TimeNode extends TableMultiResultNodeImpl<TimeResult> {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "TimeNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   @Override
   public List<?> getColumnHeaders() {
-    return Collections.singletonList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "TimeNode.columnHeader.clockSkew")
+    return Collections.singletonList(RESOURCES.getMessage(rootNode.locale, "columnHeader.clockSkew")
     );
   }
 }

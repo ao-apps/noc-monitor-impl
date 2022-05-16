@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.TableMultiResultNodeImpl;
 import com.aoindustries.noc.monitor.common.MemoryResult;
@@ -34,11 +33,15 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author  AO Industries, Inc.
  */
 public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, MemoryNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -61,17 +64,17 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   @Override
   public List<String> getColumnHeaders() {
-    return Arrays.asList(PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memTotal"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.memFree"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.buffers"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.cached"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapTotal"),
-        PACKAGE_RESOURCES.getMessage(rootNode.locale, "MemoryNode.columnHeader.swapFree")
+    return Arrays.asList(RESOURCES.getMessage(rootNode.locale, "columnHeader.memTotal"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.memFree"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.buffers"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.cached"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.swapTotal"),
+        RESOURCES.getMessage(rootNode.locale, "columnHeader.swapFree")
     );
   }
 }

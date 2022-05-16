@@ -23,11 +23,10 @@
 
 package com.aoindustries.noc.monitor.web;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
@@ -44,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -56,6 +56,9 @@ import javax.swing.SwingUtilities;
 public class HttpdServersNode extends NodeImpl {
 
   private static final Logger logger = Logger.getLogger(HttpdServersNode.class.getName());
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, HttpdServersNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -113,7 +116,7 @@ public class HttpdServersNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "HttpdServersNode.label");
+    return RESOURCES.getMessage(hostNode.hostsNode.rootNode.locale, "label");
   }
 
   private final TableListener tableListener = (Table<?> table) -> {
@@ -231,18 +234,11 @@ public class HttpdServersNode extends NodeImpl {
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(hostNode.getPersistenceDirectory(), "httpd_servers");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                hostNode.hostsNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return hostNode.hostsNode.rootNode.mkdir(
+        new File(
+            hostNode.getPersistenceDirectory(),
+            "httpd_servers"
+        )
+    );
   }
 }

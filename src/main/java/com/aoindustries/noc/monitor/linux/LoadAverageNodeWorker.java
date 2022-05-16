@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
@@ -37,11 +36,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author  AO Industries, Inc.
  */
 class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, LoadAverageResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, LoadAverageNodeWorker.class);
 
   /**
    * One unique worker is made per persistence directory (and should match linuxServer exactly).
@@ -123,9 +126,9 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
     if (!Float.isNaN(loadCritical) && fiveMinuteAverage >= loadCritical) {
       return new AlertLevelAndMessage(
           AlertLevel.CRITICAL,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "LoadAverageNodeWorker.alertMessage.critical",
+              "alertMessage.critical",
               loadCritical,
               fiveMinuteAverage
           )
@@ -135,9 +138,9 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
     if (!Float.isNaN(loadHigh) && fiveMinuteAverage >= loadHigh) {
       return new AlertLevelAndMessage(
           AlertLevel.HIGH,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "LoadAverageNodeWorker.alertMessage.high",
+              "alertMessage.high",
               loadHigh,
               fiveMinuteAverage
           )
@@ -147,9 +150,9 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
     if (!Float.isNaN(loadMedium) && fiveMinuteAverage >= loadMedium) {
       return new AlertLevelAndMessage(
           AlertLevel.MEDIUM,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "LoadAverageNodeWorker.alertMessage.medium",
+              "alertMessage.medium",
               loadMedium,
               fiveMinuteAverage
           )
@@ -159,9 +162,9 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
     if (!Float.isNaN(loadLow) && fiveMinuteAverage >= loadLow) {
       return new AlertLevelAndMessage(
           AlertLevel.LOW,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "LoadAverageNodeWorker.alertMessage.low",
+              "alertMessage.low",
               loadLow,
               fiveMinuteAverage
           )
@@ -170,18 +173,18 @@ class LoadAverageNodeWorker extends TableMultiResultNodeWorker<List<Number>, Loa
     if (Float.isNaN(loadLow)) {
       return new AlertLevelAndMessage(
           AlertLevel.NONE,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "LoadAverageNodeWorker.alertMessage.notAny",
+              "alertMessage.notAny",
               fiveMinuteAverage
           )
       );
     } else {
       return new AlertLevelAndMessage(
           AlertLevel.NONE,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "LoadAverageNodeWorker.alertMessage.none",
+              "alertMessage.none",
               loadLow,
               fiveMinuteAverage
           )

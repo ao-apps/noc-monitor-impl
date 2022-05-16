@@ -23,10 +23,9 @@
 
 package com.aoindustries.noc.monitor.infrastructure;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.EnumUtils;
 import com.aoapps.lang.Strings;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.SingleResultNodeWorker;
@@ -39,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.function.Function;
 
 /**
@@ -47,6 +47,9 @@ import java.util.function.Function;
  * @author  AO Industries, Inc.
  */
 class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, ThreeWareRaidNodeWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match the linuxServer exactly).
@@ -92,9 +95,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
       return new AlertLevelAndMessage(
           // Don't downgrade UNKNOWN to CRITICAL on error
           EnumUtils.max(AlertLevel.CRITICAL, curAlertLevel),
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "ThreeWareRaidNode.alertMessage.error",
+              "alertMessage.error",
               error.apply(locale)
           )
       );
@@ -108,9 +111,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
       if (lines.size() < 4) {
         return new AlertLevelAndMessage(
             AlertLevel.CRITICAL,
-            locale -> PACKAGE_RESOURCES.getMessage(
+            locale -> RESOURCES.getMessage(
                 locale,
-                "ThreeWareRaidNode.alertMessage.fourLinesOrMore",
+                "alertMessage.fourLinesOrMore",
                 lines.size()
             )
         );
@@ -118,9 +121,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
       if (lines.get(0).length() > 0) {
         return new AlertLevelAndMessage(
             AlertLevel.CRITICAL,
-            locale -> PACKAGE_RESOURCES.getMessage(
+            locale -> RESOURCES.getMessage(
                 locale,
-                "ThreeWareRaidNode.alertMessage.firstLineShouldBeBlank",
+                "alertMessage.firstLineShouldBeBlank",
                 lines.get(0)
             )
         );
@@ -131,9 +134,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
       ) {
         return new AlertLevelAndMessage(
             AlertLevel.CRITICAL,
-            locale -> PACKAGE_RESOURCES.getMessage(
+            locale -> RESOURCES.getMessage(
                 locale,
-                "ThreeWareRaidNode.alertMessage.secondLineNotColumns",
+                "alertMessage.secondLineNotColumns",
                 lines.get(1)
             )
         );
@@ -141,9 +144,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
       if (!"------------------------------------------------------------------------".equals(lines.get(2))) {
         return new AlertLevelAndMessage(
             AlertLevel.CRITICAL,
-            locale -> PACKAGE_RESOURCES.getMessage(
+            locale -> RESOURCES.getMessage(
                 locale,
-                "ThreeWareRaidNode.alertMessage.thirdLineSeparator",
+                "alertMessage.thirdLineSeparator",
                 lines.get(2)
             )
         );
@@ -155,9 +158,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
           if (values.size() != 9) {
             return new AlertLevelAndMessage(
                 AlertLevel.CRITICAL,
-                locale -> PACKAGE_RESOURCES.getMessage(
+                locale -> RESOURCES.getMessage(
                     locale,
-                    "ThreeWareRaidNode.alertMessage.notNineValues",
+                    "alertMessage.notNineValues",
                     values.size(),
                     line
                 )
@@ -169,9 +172,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
             if (notOpt > 0) {
               if (AlertLevel.HIGH.compareTo(highestAlertLevel) > 0) {
                 highestAlertLevel = AlertLevel.HIGH;
-                highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+                highestAlertMessage = locale -> RESOURCES.getMessage(
                     locale,
-                    notOpt == 1 ? "ThreeWareRaidNode.alertMessage.notOpt.singular" : "ThreeWareRaidNode.alertMessage.notOpt.plural",
+                    notOpt == 1 ? "alertMessage.notOpt.singular" : "alertMessage.notOpt.plural",
                     values.get(0),
                     notOpt
                 );
@@ -180,9 +183,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
           } catch (NumberFormatException err) {
             return new AlertLevelAndMessage(
                 AlertLevel.CRITICAL,
-                locale -> PACKAGE_RESOURCES.getMessage(
+                locale -> RESOURCES.getMessage(
                     locale,
-                    "ThreeWareRaidNode.alertMessage.badNotOpt",
+                    "alertMessage.badNotOpt",
                     notOptString
                 )
             );
@@ -194,9 +197,9 @@ class ThreeWareRaidNodeWorker extends SingleResultNodeWorker {
           ) {
             if (AlertLevel.MEDIUM.compareTo(highestAlertLevel) > 0) {
               highestAlertLevel = AlertLevel.MEDIUM;
-              highestAlertMessage = locale -> PACKAGE_RESOURCES.getMessage(
+              highestAlertMessage = locale -> RESOURCES.getMessage(
                   locale,
-                  "ThreeWareRaidNode.alertMessage.bbuNotOk",
+                  "alertMessage.bbuNotOk",
                   values.get(0),
                   bbu
               );

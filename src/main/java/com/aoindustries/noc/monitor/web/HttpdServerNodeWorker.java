@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.web;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.web.HttpdServer;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
@@ -36,6 +35,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,6 +45,9 @@ import java.util.logging.Logger;
 class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, HttpdServerResult> {
 
   private static final Logger logger = Logger.getLogger(HttpdServerNodeWorker.class.getName());
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, HttpdServerNodeWorker.class);
 
   /**
    * One unique worker is made per persistence file (and should match httpdServer exactly).
@@ -108,9 +111,9 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
     if (concurrencyCritical != -1 && concurrency >= concurrencyCritical) {
       return new AlertLevelAndMessage(
           AlertLevel.CRITICAL,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "HttpdServerNodeWorker.alertMessage.critical",
+              "alertMessage.critical",
               concurrencyCritical,
               concurrency
           )
@@ -120,9 +123,9 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
     if (concurrencyHigh != -1 && concurrency >= concurrencyHigh) {
       return new AlertLevelAndMessage(
           AlertLevel.HIGH,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "HttpdServerNodeWorker.alertMessage.high",
+              "alertMessage.high",
               concurrencyHigh,
               concurrency
           )
@@ -132,9 +135,9 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
     if (concurrencyMedium != -1 && concurrency >= concurrencyMedium) {
       return new AlertLevelAndMessage(
           AlertLevel.MEDIUM,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "HttpdServerNodeWorker.alertMessage.medium",
+              "alertMessage.medium",
               concurrencyMedium,
               concurrency
           )
@@ -144,9 +147,9 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
     if (concurrencyLow != -1 && concurrency >= concurrencyLow) {
       return new AlertLevelAndMessage(
           AlertLevel.LOW,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "HttpdServerNodeWorker.alertMessage.low",
+              "alertMessage.low",
               concurrencyLow,
               concurrency
           )
@@ -155,18 +158,18 @@ class HttpdServerNodeWorker extends TableMultiResultNodeWorker<List<Integer>, Ht
     if (concurrencyLow == -1) {
       return new AlertLevelAndMessage(
           AlertLevel.NONE,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "HttpdServerNodeWorker.alertMessage.notAny",
+              "alertMessage.notAny",
               concurrency
           )
       );
     } else {
       return new AlertLevelAndMessage(
           AlertLevel.NONE,
-          locale -> PACKAGE_RESOURCES.getMessage(
+          locale -> RESOURCES.getMessage(
               locale,
-              "HttpdServerNodeWorker.alertMessage.none",
+              "alertMessage.none",
               concurrencyLow,
               concurrency
           )

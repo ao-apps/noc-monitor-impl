@@ -23,8 +23,7 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.AlertLevelUtils;
 import com.aoindustries.noc.monitor.NodeImpl;
 import com.aoindustries.noc.monitor.RootNodeImpl;
@@ -37,6 +36,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * The node for unallocated resources that can still be monitored.
@@ -44,6 +44,9 @@ import java.util.List;
  * @author  AO Industries, Inc.
  */
 public class UnallocatedNode extends NodeImpl {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, UnallocatedNode.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -102,7 +105,7 @@ public class UnallocatedNode extends NodeImpl {
 
   @Override
   public String getLabel() {
-    return PACKAGE_RESOURCES.getMessage(rootNode.locale, "UnallocatedNode.label");
+    return RESOURCES.getMessage(rootNode.locale, "label");
   }
 
   public void start() throws IOException, SQLException {
@@ -131,18 +134,11 @@ public class UnallocatedNode extends NodeImpl {
   }
 
   File getPersistenceDirectory() throws IOException {
-    File dir = new File(rootNode.getPersistenceDirectory(), "unallocated");
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return rootNode.mkdir(
+        new File(
+            rootNode.getPersistenceDirectory(),
+            "unallocated"
+        )
+    );
   }
 }

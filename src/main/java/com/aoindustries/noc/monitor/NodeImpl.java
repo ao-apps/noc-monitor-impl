@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.collections.AoCollections;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.noc.monitor.common.AlertCategory;
 import com.aoindustries.noc.monitor.common.AlertLevel;
 import com.aoindustries.noc.monitor.common.Node;
@@ -37,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Stack;
 
 /**
@@ -45,6 +45,9 @@ import java.util.Stack;
  * @author  AO Industries, Inc.
  */
 public abstract class NodeImpl extends UnicastRemoteObject implements Node {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, NodeImpl.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -248,7 +251,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
    * Gets the full path to the node.
    */
   String getFullPath(Locale locale) throws RemoteException {
-    String pathSeparator = PACKAGE_RESOURCES.getMessage(locale, "Node.nodeAlertLevelChanged.alertMessage.pathSeparator");
+    String pathSeparator = RESOURCES.getMessage(locale, "nodeAlertLevelChanged.alertMessage.pathSeparator");
     final StringBuilder fullPath = new StringBuilder();
     Stack<Node> path = new Stack<>();
     Node parent = this;

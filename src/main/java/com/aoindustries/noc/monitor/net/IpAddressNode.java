@@ -23,8 +23,6 @@
 
 package com.aoindustries.noc.monitor.net;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.hodgepodge.table.Table;
 import com.aoapps.hodgepodge.table.TableListener;
 import com.aoapps.lang.exception.WrappedException;
@@ -305,18 +303,11 @@ public class IpAddressNode extends NodeImpl {
   }
 
   public File getPersistenceDirectory() throws IOException {
-    File dir = new File(ipAddressesNode.getPersistenceDirectory(), ipAddress.getInetAddress().toString());
-    if (!dir.exists()) {
-      if (!dir.mkdir()) {
-        throw new IOException(
-            PACKAGE_RESOURCES.getMessage(
-                ipAddressesNode.rootNode.locale,
-                "error.mkdirFailed",
-                dir.getCanonicalPath()
-            )
-        );
-      }
-    }
-    return dir;
+    return ipAddressesNode.rootNode.mkdir(
+        new File(
+            ipAddressesNode.getPersistenceDirectory(),
+            ipAddress.getInetAddress().toString()
+        )
+    );
   }
 }

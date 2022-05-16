@@ -23,9 +23,8 @@
 
 package com.aoindustries.noc.monitor.linux;
 
-import static com.aoindustries.noc.monitor.Resources.PACKAGE_RESOURCES;
-
 import com.aoapps.lang.Strings;
+import com.aoapps.lang.i18n.Resources;
 import com.aoindustries.aoserv.client.linux.Server;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.TableMultiResultNodeWorker;
@@ -39,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Memory + Swap space - checked every minute.
@@ -53,6 +53,9 @@ import java.util.Map;
  * @author  AO Industries, Inc.
  */
 class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDisplayExactSize>, MemoryResult> {
+
+  private static final Resources RESOURCES =
+      Resources.getResources(ResourceBundle::getBundle, MemoryNodeWorker.class);
 
   /**
    * One unique worker is made per persistence directory (and should match linuxServer exactly).
@@ -182,9 +185,9 @@ class MemoryNodeWorker extends TableMultiResultNodeWorker<List<ApproximateDispla
     long memoryPercent = ((memTotal - (memFree + buffers + cached)) + (swapTotal - swapFree)) * 100 / (memTotal + swapTotal);
     return new AlertLevelAndMessage(
         getAlertLevel(memoryPercent),
-        locale -> PACKAGE_RESOURCES.getMessage(
+        locale -> RESOURCES.getMessage(
             locale,
-            "MemoryNodeWorker.alertMessage",
+            "alertMessage",
             memoryPercent
         )
     );
