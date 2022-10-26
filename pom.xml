@@ -29,7 +29,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
     <relativePath>../../../oss/parent/pom.xml</relativePath>
   </parent>
 
-  <groupId>com.aoindustries</groupId><artifactId>noc-monitor-impl</artifactId><version>1.4.2</version>
+  <groupId>com.aoindustries</groupId><artifactId>noc-monitor-impl</artifactId><version>1.4.2-POST-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <properties>
@@ -84,7 +84,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
     <connection>scm:git:git://github.com/ao-apps/noc-monitor-impl.git</connection>
     <developerConnection>scm:git:git@github.com:ao-apps/noc-monitor-impl.git</developerConnection>
     <url>https://github.com/ao-apps/noc-monitor-impl</url>
-    <tag>noc-monitor-impl-1.4.2</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
