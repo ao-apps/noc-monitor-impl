@@ -41,8 +41,6 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
     <description.html><![CDATA[Implementation of <a target="${javadoc.target}" href="https://aoindustries.com/noc/monitor/">Network Operations Center Monitoring</a>.]]></description.html>
     <!-- SonarQube -->
     <sonar.projectKey>com.aoapp.platform:noc-monitor-impl<!-- TODO: ${project.groupId}:${project.artifactId} --></sonar.projectKey>
-    <sonar.organization>ao-apps</sonar.organization>
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <!-- TODO: Code Coverage broken in Java 11 -->
     <sonar.coverage.exclusions>**.*</sonar.coverage.exclusions>
     <!-- Dependencies -->
