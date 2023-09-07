@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022, 2023  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -287,7 +287,7 @@ class DnsWorker extends TableResultWorker<List<DnsWorker.DnsQueryResult>, Object
           Object resultQuery = tableData.get(index);
           Object resultResult = tableData.get(index + 2);
           Object resultMessage = tableData.get(index + 3);
-          highestAlertMessage = locale -> resultQuery + "->" + resultResult + ": " + resultMessage;
+          highestAlertMessage = locale -> resultQuery + "→" + resultResult + ": " + resultMessage;
         }
       }
     }
