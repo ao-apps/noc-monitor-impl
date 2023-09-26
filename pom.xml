@@ -45,8 +45,6 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
     <sonar.projectKey>com.aoapp.platform:noc-monitor-impl<!-- TODO: ${project.groupId}:${project.artifactId} --></sonar.projectKey>
     <!-- TODO: Code Coverage broken in Java 11 -->
     <sonar.coverage.exclusions>**.*</sonar.coverage.exclusions>
-    <!-- Dependencies -->
-    <dnsjava.version>3.5.2</dnsjava.version>
     <!-- com.aoindustries is on original Sonatype Nexus Repository Manager -->
     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
   </properties>
@@ -277,7 +275,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
                   <location>${project.build.directory}/offlineLinks/com.aoindustries/aoserv-cluster</location>
                 </offlineLink>
                 <offlineLink>
-                  <url>https://javadoc.io/doc/dnsjava/dnsjava/${dnsjava.dnsjava.version}/</url>
+                  <url>https://javadoc.io/doc/dnsjava/dnsjava/${dnsjava:dnsjava:jar.version}/</url>
                   <location>${project.build.directory}/offlineLinks/dnsjava/dnsjava</location>
                 </offlineLink>
                 <offlineLink>
@@ -335,7 +333,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
         <groupId>com.aoindustries</groupId><artifactId>aoserv-cluster</artifactId><version>1.85.0${POST-SNAPSHOT}</version>
       </dependency>
       <dependency>
-        <groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><version>${dnsjava.version}</version>
+        <groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><version>3.5.2</version>
       </dependency>
       <dependency>
         <groupId>com.aoindustries</groupId><artifactId>noc-monitor-api</artifactId><version>1.4.0${POST-SNAPSHOT}</version>
