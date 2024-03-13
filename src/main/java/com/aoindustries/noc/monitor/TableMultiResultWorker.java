@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2014, 2016, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2014, 2016, 2018, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -205,7 +205,7 @@ public abstract class TableMultiResultWorker<S, R extends TableMultiResult> impl
       }
     }
     try {
-      long startMillis = System.currentTimeMillis();
+      final long startMillis = System.currentTimeMillis();
       long startNanos = System.nanoTime();
 
       AlertLevel curAlertLevel = alertLevel;
@@ -249,7 +249,7 @@ public abstract class TableMultiResultWorker<S, R extends TableMultiResult> impl
         );
         lastSuccessful = false;
       }
-      long pingNanos = System.nanoTime() - startNanos;
+      final long pingNanos = System.nanoTime() - startNanos;
 
       synchronized (timerTaskLock) {
         if (timerTask == null) {
