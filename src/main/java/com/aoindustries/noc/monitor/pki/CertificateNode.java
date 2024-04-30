@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2018, 2019, 2020, 2022  AO Industries, Inc.
+ * Copyright (C) 2018, 2019, 2020, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -43,10 +43,6 @@ public class CertificateNode extends TableResultNodeImpl {
   private final Certificate certificate;
   private final String label;
 
-  static String getLabel(Certificate cert) throws IOException, SQLException {
-    return cert.getCommonName().getName();
-  }
-
   CertificateNode(CertificatesNode sslCertificatesNode, Certificate sslCertificate, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
         sslCertificatesNode.hostNode.hostsNode.rootNode,
@@ -61,6 +57,10 @@ public class CertificateNode extends TableResultNodeImpl {
     );
     this.certificate = sslCertificate;
     this.label = getLabel(sslCertificate);
+  }
+
+  static String getLabel(Certificate cert) throws IOException, SQLException {
+    return cert.getCommonName().getName();
   }
 
   @Override
