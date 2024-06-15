@@ -46,6 +46,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
     <!-- TODO: Code Coverage broken in Java 11 -->
     <sonar.coverage.exclusions>**.*</sonar.coverage.exclusions>
     <!-- com.aoindustries is on original Sonatype Nexus Repository Manager -->
+    <nexusServerId>ossrh-aoindustries</nexusServerId>
     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
   </properties>
 
