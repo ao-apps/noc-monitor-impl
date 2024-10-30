@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2016, 2017, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -64,10 +64,9 @@ import java.util.concurrent.Future;
 
 /**
  * Builds the cluster configuration from the AOServ Platform.
- * <p>
- * TODO: Add check to make sure that virtual server to physical server mappings are always within the same cluster?
- *       - or - Could this be an underlying database constraint?
- * </p>
+ *
+ * <p>TODO: Add check to make sure that virtual server to physical server mappings are always within the same cluster?
+ *       - or - Could this be an underlying database constraint?</p>
  *
  * @author  AO Industries, Inc.
  */

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -92,9 +92,8 @@ class BackupWorker extends TableResultWorker<List<FileReplicationLog>, Object> {
 
   /**
    * Determines the alert message for the provided result.
-   * <p>
-   * If there is not any data (no backups logged, make high level)
-   * </p>
+   *
+   * <p>If there is not any data (no backups logged, make high level)</p>
    */
   @Override
   public AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, TableResult result) {

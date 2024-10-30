@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2017, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -311,20 +311,22 @@ class FilesystemsWorker extends TableResultWorker<List<String>, String> {
     if (highestAlertLevel.compareTo(AlertLevel.LOW) < 0) {
       String extmaxmount = tableData.get(index + 10).toString();
       switch (fstype) {
-        case "ext3": {
-          if (!"-1".equals(extmaxmount)) {
-            highestAlertLevel = AlertLevel.LOW;
-            highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extmaxmount.ext3", extmaxmount);
+        case "ext3":
+          {
+            if (!"-1".equals(extmaxmount)) {
+              highestAlertLevel = AlertLevel.LOW;
+              highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extmaxmount.ext3", extmaxmount);
+            }
+            break;
           }
-          break;
-        }
-        case "ext2": {
-          if ("-1".equals(extmaxmount)) {
-            highestAlertLevel = AlertLevel.LOW;
-            highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extmaxmount.ext2", extmaxmount);
+        case "ext2":
+          {
+            if ("-1".equals(extmaxmount)) {
+              highestAlertLevel = AlertLevel.LOW;
+              highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extmaxmount.ext2", extmaxmount);
+            }
+            break;
           }
-          break;
-        }
         default:
           // No parser implemented
       }
@@ -334,20 +336,22 @@ class FilesystemsWorker extends TableResultWorker<List<String>, String> {
     if (highestAlertLevel.compareTo(AlertLevel.LOW) < 0) {
       String extchkint = tableData.get(index + 11).toString();
       switch (fstype) {
-        case "ext3": {
-          if (!"0 (<none>)".equals(extchkint)) {
-            highestAlertLevel = AlertLevel.LOW;
-            highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extchkint.ext3", extchkint);
+        case "ext3":
+          {
+            if (!"0 (<none>)".equals(extchkint)) {
+              highestAlertLevel = AlertLevel.LOW;
+              highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extchkint.ext3", extchkint);
+            }
+            break;
           }
-          break;
-        }
-        case "ext2": {
-          if ("0 (<none>)".equals(extchkint)) {
-            highestAlertLevel = AlertLevel.LOW;
-            highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extchkint.ext2", extchkint);
+        case "ext2":
+          {
+            if ("0 (<none>)".equals(extchkint)) {
+              highestAlertLevel = AlertLevel.LOW;
+              highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extchkint.ext2", extchkint);
+            }
+            break;
           }
-          break;
-        }
         default:
           // No parser implemented
       }

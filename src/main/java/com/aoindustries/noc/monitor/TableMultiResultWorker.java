@@ -51,13 +51,12 @@ import javax.swing.SwingUtilities;
 
 /**
  * The workers for table multi-results node.
- * <p>
- * TODO: Instead of a fixed history size, aggregate data into larger time ranges and keep
+ *
+ * <p>TODO: Instead of a fixed history size, aggregate data into larger time ranges and keep
  * track of mean, min, max, and standard deviation (or perhaps 5th/95th percentile?).  Keep
- * the following time ranges:
- * </p>
- * <pre>
- * 1 minute for 2 days = 2880 samples
+ * the following time ranges:</p>
+ *
+ * <pre>1 minute for 2 days = 2880 samples
  * 5 minutes for 5 days = 1440 samples
  * 15 minutes for 7 days = 672 samples
  * 30 minutes for 14 days = 672 samples
@@ -66,13 +65,11 @@ import javax.swing.SwingUtilities;
  * 4 hours for 112 days = 672 samples
  * 1 day forever beyond this
  * ==================================
- * total: 7680 samples + one per day beyond 224 days
- * </pre>
- * <p>
- * Update in a single background thread across all workers, and handle recovery from unexpected
+ * total: 7680 samples + one per day beyond 224 days</pre>
+ *
+ * <p>Update in a single background thread across all workers, and handle recovery from unexpected
  * shutdown gracefully by inserting aggregate before removing samples, and detect on next aggregation.
- * Also, the linked list should always be sorted by time descending, confirm this on aggregation pass.
- * </p>
+ * Also, the linked list should always be sorted by time descending, confirm this on aggregation pass.</p>
  *
  * @author  AO Industries, Inc.
  */
@@ -181,10 +178,9 @@ public abstract class TableMultiResultWorker<S, R extends TableMultiResult> impl
    * is only incremented one step at a time per monitoring pass.  This makes
    * the resource more tolerant of intermittent problems, at the cost of
    * slower reaction time.
-   * <p>
-   * <b>Implementation Note:</b><br>
-   * Enabled by default
-   * </p>
+   *
+   * <p><b>Implementation Note:</b><br>
+   * Enabled by default</p>
    *
    * @see  SingleResultWorker#isIncrementalRampUp(boolean)
    * @see  TableResultWorker#isIncrementalRampUp(boolean)

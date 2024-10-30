@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2017, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -37,8 +37,8 @@ import java.util.Locale;
 
 /**
  * The main starting point for the monitor.
- * <pre>
- * TODO: DNS lookups via dnsjava, cycle through all DNS entries slowly
+ *
+ * <pre>TODO: DNS lookups via dnsjava, cycle through all DNS entries slowly
  *       ns1.aoindustries.com failed today (2019-09-13), so this is bumped up the list
  *       During this failure, TCP connections were stalled 15 seconds, then successful.
  *           So monitoring for connections taking over 10 seconds might also catch this failure mode.
@@ -172,8 +172,7 @@ import java.util.Locale;
  * Integrate NOC with Amazon Cloud Watch
  *
  * Monitor for certificates issued in domains that are not expected.
- *     Jonathon Moldenhaur described how there are lists of certificates issued.
- * </pre>
+ *     Jonathon Moldenhaur described how there are lists of certificates issued.</pre>
  *
  * @author  AO Industries, Inc.
  */

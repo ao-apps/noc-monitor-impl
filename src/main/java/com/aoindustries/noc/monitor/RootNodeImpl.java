@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -59,10 +59,9 @@ import javax.swing.SwingUtilities;
 
 /**
  * The top-level node has one child for each of the servers.
- * <p>
- * There is no stop here because root nodes keep running forever in the background to be reconnected to.
- * The overhead of this is reduced by using workers and only creating one rootNode per user.
- * </p>
+ *
+ * <p>There is no stop here because root nodes keep running forever in the background to be reconnected to.
+ * The overhead of this is reduced by using workers and only creating one rootNode per user.</p>
  *
  * @author  AO Industries, Inc.
  */

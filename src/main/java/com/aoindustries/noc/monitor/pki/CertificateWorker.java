@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -56,10 +56,8 @@ class CertificateWorker extends TableResultWorker<List<Certificate.Check>, Objec
   private static final int NUM_COLS = 3;
 
   /**
-   * <p>
    * <b>Implementation Note:</b><br>
    * This is 5 minutes more than "CERTBOT_CACHE_DURATION" in aoserv-daemon/SslCertificateManager.java
-   * </p>
    */
   private static final long NONE_SLEEP_DELAY = 60L * 60 * 1000;
 

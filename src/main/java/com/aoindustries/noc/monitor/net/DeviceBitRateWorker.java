@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2016, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2016, 2018, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -53,9 +53,8 @@ class DeviceBitRateWorker extends TableMultiResultWorker<List<Object>, NetDevice
 
   /**
    * The number of bytes overhead for each Ethernet frame, including interframe gap, assuming no VLAN tag.
-   * <p>
-   * Preamble + Start of frame + CRC + Interframe gap
-   * </p>
+   *
+   * <p>Preamble + Start of frame + CRC + Interframe gap</p>
    */
   private static final int FRAME_ADDITIONAL_BYTES = 7 + 1 + 4 + 12;
 

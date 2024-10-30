@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -58,45 +58,43 @@ import junit.framework.TestSuite;
 
 /**
  * Tests ClusterResourceManager.
- * <p>
- * Helpful SQL queries for tuning system:
- * </p>
-<pre>
-select
-  vs.server,
-  se.name,
-  (vs.primary_ram || '/' || vs.primary_ram_target) as primary_ram,
-  (coalesce(vs.secondary_ram::text, 'NULL') || '/' || coalesce(vs.secondary_ram_target::text, 'NULL')) as secondary_ram,
-  (coalesce(vs.minimum_processor_speed::text, 'NULL') || '/' || coalesce(vs.minimum_processor_speed_target::text, 'NULL')) as minimum_processor_speed,
-  (vs.processor_cores || '/' || vs.processor_cores_target) as processor_cores,
-  (vs.processor_weight || '/' || vs.processor_weight_target) as processor_weight
-from
-  servers se
-  inner join virtual_servers vs on se.pkey=vs.server
-where
-  vs.primary_ram != vs.primary_ram_target
-  or coalesce(vs.secondary_ram::text, 'NULL') != coalesce(vs.secondary_ram_target::text, 'NULL')
-  or coalesce(vs.minimum_processor_speed::text, 'NULL') != coalesce(vs.minimum_processor_speed_target::text, 'NULL')
-  or vs.processor_cores != vs.processor_cores_target
-  or vs.processor_weight != vs.processor_weight_target
-order by net."Host.reverseFqdn"(se.name);
-
-
-select
-  vd.pkey,
-  se.name,
-  vd.device,
-  (coalesce(vd.minimum_disk_speed::text, 'NULL') || '/' || coalesce(vd.minimum_disk_speed_target::text, 'NULL')) as minimum_disk_speed,
-  vd.extents,
-  (coalesce(vd.weight::text, 'NULL') || '/' || coalesce(vd.weight_target::text, 'NULL')) as weight
-from
-  virtual_disks vd
-  inner join servers se on vd.virtual_server=se.pkey
-where
-  coalesce(vd.minimum_disk_speed::text, 'NULL') != coalesce(vd.minimum_disk_speed_target::text, 'NULL')
-  or coalesce(vd.weight::text, 'NULL') != coalesce(vd.weight_target::text, 'NULL')
-order by net."Host.reverseFqdn"(se.name), vd.device;
-</pre>
+ *
+ * <p>Helpful SQL queries for tuning system:</p>
+ *
+ * <pre>select
+ *   vs.server,
+ *   se.name,
+ *   (vs.primary_ram || '/' || vs.primary_ram_target) as primary_ram,
+ *   (coalesce(vs.secondary_ram::text, 'NULL') || '/' || coalesce(vs.secondary_ram_target::text, 'NULL')) as secondary_ram,
+ *   (coalesce(vs.minimum_processor_speed::text, 'NULL') || '/' || coalesce(vs.minimum_processor_speed_target::text, 'NULL')) as minimum_processor_speed,
+ *   (vs.processor_cores || '/' || vs.processor_cores_target) as processor_cores,
+ *   (vs.processor_weight || '/' || vs.processor_weight_target) as processor_weight
+ * from
+ *   servers se
+ *   inner join virtual_servers vs on se.pkey=vs.server
+ * where
+ *   vs.primary_ram != vs.primary_ram_target
+ *   or coalesce(vs.secondary_ram::text, 'NULL') != coalesce(vs.secondary_ram_target::text, 'NULL')
+ *   or coalesce(vs.minimum_processor_speed::text, 'NULL') != coalesce(vs.minimum_processor_speed_target::text, 'NULL')
+ *   or vs.processor_cores != vs.processor_cores_target
+ *   or vs.processor_weight != vs.processor_weight_target
+ * order by net."Host.reverseFqdn"(se.name);
+ *
+ *
+ * select
+ *   vd.pkey,
+ *   se.name,
+ *   vd.device,
+ *   (coalesce(vd.minimum_disk_speed::text, 'NULL') || '/' || coalesce(vd.minimum_disk_speed_target::text, 'NULL')) as minimum_disk_speed,
+ *   vd.extents,
+ *   (coalesce(vd.weight::text, 'NULL') || '/' || coalesce(vd.weight_target::text, 'NULL')) as weight
+ * from
+ *   virtual_disks vd
+ *   inner join servers se on vd.virtual_server=se.pkey
+ * where
+ *   coalesce(vd.minimum_disk_speed::text, 'NULL') != coalesce(vd.minimum_disk_speed_target::text, 'NULL')
+ *   or coalesce(vd.weight::text, 'NULL') != coalesce(vd.weight_target::text, 'NULL')
+ * order by net."Host.reverseFqdn"(se.name), vd.device;</pre>
  *
  * @author  AO Industries, Inc.
  */

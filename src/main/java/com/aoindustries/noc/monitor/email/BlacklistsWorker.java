@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -73,16 +73,14 @@ import org.xbill.DNS.Type;
 
 /**
  * The workers for blacklist monitoring.
- * <p>
- * TODO: There are several whitelists tested at multirbl.valli.org
+ *
+ * <p>TODO: There are several whitelists tested at multirbl.valli.org
  * TODO: There are also informational lists at multirbl.valli.org
  * TODO: Also at multirbl.valli.org there are hostname-based blacklists...
  * TODO: yahoo, hotmail, gmail, aol?
- * TODO: How to check when rejected by domain name on sender address like done for NMW on att domains?
- * </p>
- * <p>
- * TODO: Possibly more at http://stopspam.org/rblcheck/index.php
- * </p>
+ * TODO: How to check when rejected by domain name on sender address like done for NMW on att domains?</p>
+ *
+ * <p>TODO: Possibly more at http://stopspam.org/rblcheck/index.php</p>
  *
  * @author  AO Industries, Inc.
  */

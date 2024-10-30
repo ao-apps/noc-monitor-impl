@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -45,9 +45,8 @@ import java.util.function.Function;
 
 /**
  * The workers for hard drive temperature monitoring.
- * <p>
- * TODO: Keep historical data and warn if temp increases more than 20C/hour
- * </p>
+ *
+ * <p>TODO: Keep historical data and warn if temp increases more than 20C/hour</p>
  *
  * @author  AO Industries, Inc.
  */

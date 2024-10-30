@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2016, 2017, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2016, 2017, 2018, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -111,13 +111,12 @@ class PingWorker extends TableMultiResultWorker<Object, PingResult> {
 
   /**
    * Figures out the alert level.  It considers only the last 10 pings.  The number of timeouts follow:
-   * <pre>
-   * &gt;= 4  CRITICAL
+   *
+   * <pre>&gt;= 4  CRITICAL
    * &gt;= 3  HIGH
    * &gt;= 2  MEDIUM
    * &gt;= 1  LOW
-   * == 0   NONE
-   * </pre>
+   * == 0   NONE</pre>
    */
   private static AlertLevel getAlertLevel(int packetLossPercent) {
     if (packetLossPercent < 0) {

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -37,24 +37,20 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * <p>
  * Writes files in the background.  The files are written in the order received.
  * If a new version of the file is provided while the old version has not yet been
  * written, the new version will take its place in the queue, keeping the position of the older item in the queue.
  * The expected result is that different files will get written in a round-robin style
  * while keeping the most up-to-date copies during times of heavy disk I/O.
- * </p>
- * <p>
- * This is being used to get around an issue where the monitoring would cause extremely
+ *
+ * <p>This is being used to get around an issue where the monitoring would cause extremely
  * high load when running on a very busy disk subsystem.  The resulting load would
- * causing things to get progressively worse.
- * </p>
- * <p>
- * TODO: Should we perform any sort of batching?  Write all built-up in a minute at once?  Save HDD disk I/O?
+ * causing things to get progressively worse.</p>
+ *
+ * <p>TODO: Should we perform any sort of batching?  Write all built-up in a minute at once?  Save HDD disk I/O?
  *       Or more extreme?  Only once per very long time period on the laptop?  Or, when it finds the disk already spun-up
  *       for some other reason?  Been using /dev/shm to avoid night-time disk I/O to keep it quiet while sleeping, but
- *       this loses all info on a reboot.  Is a pen drive a better solution?
- * </p>
+ *       this loses all info on a reboot.  Is a pen drive a better solution?</p>
  *
  * @author  AO Industries, Inc.
  */

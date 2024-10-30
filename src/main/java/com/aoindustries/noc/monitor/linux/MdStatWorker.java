@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -94,8 +94,8 @@ class MdStatWorker extends SingleResultWorker {
 
   /**
    * Determines the alert level and message for the provided result.
-   * <pre>
-   * raid1:
+   *
+   * <pre>raid1:
    *      one up + zero down: medium
    *      zero down: none
    *      three+ up: low
@@ -108,8 +108,7 @@ class MdStatWorker extends SingleResultWorker {
    * raid6:
    *      one down.: medium
    *      two down.: high
-   *      two+ down: critical
-   * </pre>
+   *      two+ down: critical</pre>
    */
   @Override
   protected AlertLevelAndMessage getAlertLevelAndMessage(AlertLevel curAlertLevel, SingleResult result) {

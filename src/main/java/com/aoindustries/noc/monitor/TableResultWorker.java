@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2018, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -45,9 +45,8 @@ import javax.swing.SwingUtilities;
 
 /**
  * The workers for table results node.
- * <p>
- * TODO: Add persistence of the last report
- * </p>
+ *
+ * <p>TODO: Add persistence of the last report</p>
  *
  * @author  AO Industries, Inc.
  */
@@ -126,10 +125,9 @@ public abstract class TableResultWorker<R, D> implements Runnable {
    * is only incremented one step at a time per monitoring pass.  This makes
    * the resource more tolerant of intermittent problems, at the cost of
    * slower reaction time.
-   * <p>
-   * <b>Implementation Note:</b><br>
-   * Enabled by default
-   * </p>
+   *
+   * <p><b>Implementation Note:</b><br>
+   * Enabled by default</p>
    *
    * @see  SingleResultWorker#isIncrementalRampUp(boolean)
    * @see  TableMultiResultWorker#isIncrementalRampUp(boolean)

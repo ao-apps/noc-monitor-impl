@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2016, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -38,21 +38,20 @@ import java.util.ResourceBundle;
 
 /**
  * The clock skew for a single sample in milliseconds.  Calculated as follows:
- * <pre>
- *      st: remote system time (in milliseconds from Epoch)
+ *
+ * <pre>     st: remote system time (in milliseconds from Epoch)
  *      rt: request time (in milliseconds from Epoch)
  *      l:  request latency (in nanoseconds)
  *
- *      skew = st - (rt + round(l/2000000))
- * </pre>
- * Alert levels are:
- * <pre>
- *          &gt;=1 minute  Critical
+ *      skew = st - (rt + round(l/2000000))</pre>
+ *
+ * <p>Alert levels are:</p>
+ *
+ * <pre>         &gt;=1 minute  Critical
  *          &gt;=4 seconds High
  *          &gt;=2 seconds Medium
  *          &gt;=1 second  Low
- *          &lt;1  second  None
- * </pre>
+ *          &lt;1  second  None</pre>
  *
  * @author  AO Industries, Inc.
  */
