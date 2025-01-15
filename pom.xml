@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 noc-monitor-impl - Implementation of Network Operations Center Monitoring.
-Copyright (C) 2020, 2021, 2022, 2023, 2024  AO Industries, Inc.
+Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025  AO Industries, Inc.
     support@aoindustries.com
     7262 Bull Pen Cir
     Mobile, AL 36695
@@ -387,7 +387,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
         <groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>42.7.4</version>
       </dependency>
       <dependency>
-        <groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId><version>4.28.3</version>
+        <groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId><version>4.29.3</version>
       </dependency>
       <!-- Test Direct -->
       <dependency>
