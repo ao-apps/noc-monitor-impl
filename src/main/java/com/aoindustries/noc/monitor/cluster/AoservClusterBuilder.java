@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -673,50 +673,50 @@ public final class AoservClusterBuilder {
       }
     }
 
-      // Look for any extra resources in LVM
-      {
-        // Make sure every volume group found in LVM equals a domUHostname that is either primary or secondary on that machine
-        for (Map.Entry<String, Server.LvmReport> entry : lvmReports.entrySet()) {
-          String dom0Hostname = entry.getKey();
-          // Verify within this cluster only
-          if (cluster.getDom0s().containsKey(dom0Hostname)) {
-            Server.LvmReport lvmReport = entry.getValue();
-            for (Map.Entry<String, Server.LvmReport.VolumeGroup> vgEntry : lvmReport.getVolumeGroups().entrySet()) {
-              String vgName = vgEntry.getKey();
-              Server.LvmReport.VolumeGroup volumeGroup = vgEntry.getValue();
-              // This should still validate the logical volumes in the off chance a virtual server is named "backup"
-              DomU domU = cluster.getDomU(vgName);
-              if (domU == null) {
-                if (!"backup".equals(vgName)) {
-                  throw new AssertionError("Volume group found but there is no virtual server of the same name: " + dom0Hostname + ":/dev/" + vgName);
-                }
-              } else {
-                // Make sure primary or secondary on this Dom0
-                String domUHostname = domU.getHostname();
-                String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
-                String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
-                if (
-                    !primaryDom0Hostname.equals(dom0Hostname)
-                        && !secondaryDom0Hostname.equals(dom0Hostname)
-                ) {
-                  throw new AssertionError("Volume group found but the virtual server is neither primary nor secondary on this physical server: " + dom0Hostname + ":/dev/" + vgName);
-                }
+    // Look for any extra resources in LVM
+    {
+      // Make sure every volume group found in LVM equals a domUHostname that is either primary or secondary on that machine
+      for (Map.Entry<String, Server.LvmReport> entry : lvmReports.entrySet()) {
+        String dom0Hostname = entry.getKey();
+        // Verify within this cluster only
+        if (cluster.getDom0s().containsKey(dom0Hostname)) {
+          Server.LvmReport lvmReport = entry.getValue();
+          for (Map.Entry<String, Server.LvmReport.VolumeGroup> vgEntry : lvmReport.getVolumeGroups().entrySet()) {
+            String vgName = vgEntry.getKey();
+            Server.LvmReport.VolumeGroup volumeGroup = vgEntry.getValue();
+            // This should still validate the logical volumes in the off chance a virtual server is named "backup"
+            DomU domU = cluster.getDomU(vgName);
+            if (domU == null) {
+              if (!"backup".equals(vgName)) {
+                throw new AssertionError("Volume group found but there is no virtual server of the same name: " + dom0Hostname + ":/dev/" + vgName);
+              }
+            } else {
+              // Make sure primary or secondary on this Dom0
+              String domUHostname = domU.getHostname();
+              String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
+              String secondaryDom0Hostname = drbdSecondaryDom0s.get(domUHostname);
+              if (
+                  !primaryDom0Hostname.equals(dom0Hostname)
+                      && !secondaryDom0Hostname.equals(dom0Hostname)
+              ) {
+                throw new AssertionError("Volume group found but the virtual server is neither primary nor secondary on this physical server: " + dom0Hostname + ":/dev/" + vgName);
+              }
 
-                // Make sure every logical volume found in LVM equals a domUDisk
-                for (String lvName : volumeGroup.getLogicalVolumes().keySet()) {
-                  if (!lvName.endsWith("-drbd")) {
-                    throw new AssertionError("lvName does not end with -drbd: " + lvName);
-                  }
-                  DomUDisk domUDisk = domU.getDomUDisk(lvName.substring(0, lvName.length() - 5));
-                  if (domUDisk == null) {
-                    throw new AssertionError("Logical volume found but the virtual server does not have a corresponding virtual disk: " + dom0Hostname + ":/dev/" + vgName + "/" + lvName);
-                  }
+              // Make sure every logical volume found in LVM equals a domUDisk
+              for (String lvName : volumeGroup.getLogicalVolumes().keySet()) {
+                if (!lvName.endsWith("-drbd")) {
+                  throw new AssertionError("lvName does not end with -drbd: " + lvName);
+                }
+                DomUDisk domUDisk = domU.getDomUDisk(lvName.substring(0, lvName.length() - 5));
+                if (domUDisk == null) {
+                  throw new AssertionError("Logical volume found but the virtual server does not have a corresponding virtual disk: " + dom0Hostname + ":/dev/" + vgName + "/" + lvName);
                 }
               }
             }
           }
         }
       }
+    }
 
     return clusterConfiguration;
   }

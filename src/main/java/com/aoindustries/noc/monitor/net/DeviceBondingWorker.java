@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2018, 2020, 2021, 2022, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -119,26 +119,26 @@ class DeviceBondingWorker extends SingleResultWorker {
     List<String> lines = Strings.splitLines(report);
     final int upCount;
     final int downCount;
-      {
-        int up = 0;
-        int down = 0;
-        boolean skippedFirst = false;
-        for (String line : lines) {
-          if (line.startsWith("MII Status: ")) {
-            if (!skippedFirst) {
-              skippedFirst = true;
+    {
+      int up = 0;
+      int down = 0;
+      boolean skippedFirst = false;
+      for (String line : lines) {
+        if (line.startsWith("MII Status: ")) {
+          if (!skippedFirst) {
+            skippedFirst = true;
+          } else {
+            if ("MII Status: up".equals(line)) {
+              up++;
             } else {
-              if ("MII Status: up".equals(line)) {
-                up++;
-              } else {
-                down++;
-              }
+              down++;
             }
           }
         }
-        upCount = up;
-        downCount = down;
       }
+      upCount = up;
+      downCount = down;
+    }
     AlertLevel alertLevel;
     Function<Locale, String> alertMessage = locale -> RESOURCES.getMessage(
         locale,
@@ -243,40 +243,40 @@ class DeviceBondingWorker extends SingleResultWorker {
       ) {
         // Get the sum of all speeds found
         final long totalBps;
-          {
-            long sum = 0;
-            for (String line : lines) {
-              if (line.startsWith("Speed: ")) {
-                long bps;
-                switch (line) {
-                  case "Speed: 10000 Mbps":
-                    bps = 10000000000L;
-                    break;
-                  case "Speed: 1000 Mbps":
-                    bps = 1000000000L;
-                    break;
-                  case "Speed: 100 Mbps":
-                    bps = 100000000L;
-                    break;
-                  default:
-                    bps = -1L;
-                    break;
-                }
-                if (bps == -1L) {
-                  alertLevel = AlertLevel.HIGH;
-                  alertMessage = locale -> RESOURCES.getMessage(
-                      locale,
-                      "alertMessage.unknownSpeed",
-                      line
-                  );
+        {
+          long sum = 0;
+          for (String line : lines) {
+            if (line.startsWith("Speed: ")) {
+              long bps;
+              switch (line) {
+                case "Speed: 10000 Mbps":
+                  bps = 10000000000L;
                   break;
-                } else {
-                  sum += bps;
-                }
+                case "Speed: 1000 Mbps":
+                  bps = 1000000000L;
+                  break;
+                case "Speed: 100 Mbps":
+                  bps = 100000000L;
+                  break;
+                default:
+                  bps = -1L;
+                  break;
+              }
+              if (bps == -1L) {
+                alertLevel = AlertLevel.HIGH;
+                alertMessage = locale -> RESOURCES.getMessage(
+                    locale,
+                    "alertMessage.unknownSpeed",
+                    line
+                );
+                break;
+              } else {
+                sum += bps;
               }
             }
-            totalBps = sum;
           }
+          totalBps = sum;
+        }
         if (alertLevel.compareTo(AlertLevel.HIGH) < 0) {
           long maxBitRate = device.getMaxBitRate();
           if (maxBitRate != -1 && totalBps != maxBitRate) {

@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022, 2023  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -160,21 +160,21 @@ class DnsWorker extends TableResultWorker<List<DnsWorker.DnsQueryResult>, Object
         } else {
           String ptrList;
           boolean expectedHostnameFound = false;
-            {
-              sb.setLength(0);
-              for (Record rec : ptrRecords) {
-                if (sb.length() > 0) {
-                  sb.append(", ");
-                }
-                PTRRecord ptrRecord = (PTRRecord) rec;
-                String hostname = ptrRecord.getTarget().toString();
-                sb.append(hostname);
-                if (expectedHostname.equals(hostname)) {
-                  expectedHostnameFound = true;
-                }
+          {
+            sb.setLength(0);
+            for (Record rec : ptrRecords) {
+              if (sb.length() > 0) {
+                sb.append(", ");
               }
-              ptrList = sb.toString();
+              PTRRecord ptrRecord = (PTRRecord) rec;
+              String hostname = ptrRecord.getTarget().toString();
+              sb.append(hostname);
+              if (expectedHostname.equals(hostname)) {
+                expectedHostnameFound = true;
+              }
             }
+            ptrList = sb.toString();
+          }
           boolean hasPtrResult = false;
           if (ptrRecords.length > 1) {
             results.add(new DnsQueryResult(ptrQuery.toString(), ptrLatency, ptrList, "More than one " + RecordType.PTR + " record found", problemAlertLevel));
@@ -221,21 +221,21 @@ class DnsWorker extends TableResultWorker<List<DnsWorker.DnsQueryResult>, Object
       } else {
         String ipList;
         boolean ipFound = false;
-          {
-            sb.setLength(0);
-            for (Record rec : addressRecords) {
-              if (sb.length() > 0) {
-                sb.append(", ");
-              }
-              ARecord addressRecord = (ARecord) rec;
-              String addressIp = addressRecord.getAddress().getHostAddress();
-              sb.append(addressIp);
-              if (ip.toString().equals(addressIp)) {
-                ipFound = true;
-              }
+        {
+          sb.setLength(0);
+          for (Record rec : addressRecords) {
+            if (sb.length() > 0) {
+              sb.append(", ");
             }
-            ipList = sb.toString();
+            ARecord addressRecord = (ARecord) rec;
+            String addressIp = addressRecord.getAddress().getHostAddress();
+            sb.append(addressIp);
+            if (ip.toString().equals(addressIp)) {
+              ipFound = true;
+            }
           }
+          ipList = sb.toString();
+        }
         String addressMessage;
         AlertLevel addressAlertLevel;
         if (!ipFound) {

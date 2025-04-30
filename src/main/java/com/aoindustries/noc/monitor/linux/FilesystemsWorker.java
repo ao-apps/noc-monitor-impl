@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -215,97 +215,97 @@ class FilesystemsWorker extends TableResultWorker<List<String>, String> {
 
     // Check extstate
     String fstype = tableData.get(index + 7).toString();
-      {
+    {
+      if (
+          "ext2".equals(fstype)
+              || "ext3".equals(fstype)
+      ) {
+        String extstate = tableData.get(index + 9).toString();
         if (
-            "ext2".equals(fstype)
-                || "ext3".equals(fstype)
+            (
+                "ext3".equals(fstype)
+                    && !"clean".equals(extstate)
+            ) || (
+                "ext2".equals(fstype)
+                    && !"not clean".equals(extstate)
+                    && !"clean".equals(extstate)
+            )
         ) {
-          String extstate = tableData.get(index + 9).toString();
-          if (
-              (
-                  "ext3".equals(fstype)
-                      && !"clean".equals(extstate)
-              ) || (
-                  "ext2".equals(fstype)
-                      && !"not clean".equals(extstate)
-                      && !"clean".equals(extstate)
-              )
-          ) {
-            AlertLevel newAlertLevel = AlertLevel.CRITICAL;
-            if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
-              highestAlertLevel = newAlertLevel;
-              highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extstate.unexpectedState", extstate);
-            }
-          }
-        }
-      }
-
-      // Check for inode percent
-      {
-        String iuse = tableData.get(index + 6).toString();
-        if (iuse.length() != 0) {
-          if (!iuse.endsWith("%")) {
-            throw new IOException("iuse doesn't end with '%': " + iuse);
-          }
-          int iuseNum = Integer.parseInt(iuse.substring(0, iuse.length() - 1));
-          final AlertLevel newAlertLevel;
-          if (iuseNum < 0 || iuseNum >= 95) {
-            newAlertLevel = AlertLevel.CRITICAL;
-          } else if (iuseNum >= 90) {
-            newAlertLevel = AlertLevel.HIGH;
-          } else if (iuseNum >= 85) {
-            newAlertLevel = AlertLevel.MEDIUM;
-          } else if (iuseNum >= 80) {
-            newAlertLevel = AlertLevel.LOW;
-          } else {
-            newAlertLevel = AlertLevel.NONE;
-          }
+          AlertLevel newAlertLevel = AlertLevel.CRITICAL;
           if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
             highestAlertLevel = newAlertLevel;
-            highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.iuse", iuse);
+            highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.extstate.unexpectedState", extstate);
           }
         }
       }
+    }
 
-      // Check for disk space percent
-      {
-        String mountpoint = tableData.get(index).toString();
-        String use = tableData.get(index + 5).toString();
-        if (!use.endsWith("%")) {
-          throw new IOException("use doesn't end with '%': " + use);
+    // Check for inode percent
+    {
+      String iuse = tableData.get(index + 6).toString();
+      if (iuse.length() != 0) {
+        if (!iuse.endsWith("%")) {
+          throw new IOException("iuse doesn't end with '%': " + iuse);
         }
-        int useNum = Integer.parseInt(use.substring(0, use.length() - 1));
+        int iuseNum = Integer.parseInt(iuse.substring(0, iuse.length() - 1));
         final AlertLevel newAlertLevel;
-        if (mountpoint.startsWith("/var/backup")) {
-          // Backup partitions allow a higher percentage and never go critical
-          if (useNum >= 98) {
-            newAlertLevel = AlertLevel.HIGH;
-          } else if (useNum >= 97) {
-            newAlertLevel = AlertLevel.MEDIUM;
-          } else if (useNum >= 96) {
-            newAlertLevel = AlertLevel.LOW;
-          } else {
-            newAlertLevel = AlertLevel.NONE;
-          }
+        if (iuseNum < 0 || iuseNum >= 95) {
+          newAlertLevel = AlertLevel.CRITICAL;
+        } else if (iuseNum >= 90) {
+          newAlertLevel = AlertLevel.HIGH;
+        } else if (iuseNum >= 85) {
+          newAlertLevel = AlertLevel.MEDIUM;
+        } else if (iuseNum >= 80) {
+          newAlertLevel = AlertLevel.LOW;
         } else {
-          // Other partitions notify at lower percentages and can go critical
-          if (useNum >= 97) {
-            newAlertLevel = AlertLevel.CRITICAL;
-          } else if (useNum >= 94) {
-            newAlertLevel = AlertLevel.HIGH;
-          } else if (useNum >= 91) {
-            newAlertLevel = AlertLevel.MEDIUM;
-          } else if (useNum >= 88) {
-            newAlertLevel = AlertLevel.LOW;
-          } else {
-            newAlertLevel = AlertLevel.NONE;
-          }
+          newAlertLevel = AlertLevel.NONE;
         }
         if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
           highestAlertLevel = newAlertLevel;
-          highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.use", use);
+          highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.iuse", iuse);
         }
       }
+    }
+
+    // Check for disk space percent
+    {
+      String mountpoint = tableData.get(index).toString();
+      String use = tableData.get(index + 5).toString();
+      if (!use.endsWith("%")) {
+        throw new IOException("use doesn't end with '%': " + use);
+      }
+      int useNum = Integer.parseInt(use.substring(0, use.length() - 1));
+      final AlertLevel newAlertLevel;
+      if (mountpoint.startsWith("/var/backup")) {
+        // Backup partitions allow a higher percentage and never go critical
+        if (useNum >= 98) {
+          newAlertLevel = AlertLevel.HIGH;
+        } else if (useNum >= 97) {
+          newAlertLevel = AlertLevel.MEDIUM;
+        } else if (useNum >= 96) {
+          newAlertLevel = AlertLevel.LOW;
+        } else {
+          newAlertLevel = AlertLevel.NONE;
+        }
+      } else {
+        // Other partitions notify at lower percentages and can go critical
+        if (useNum >= 97) {
+          newAlertLevel = AlertLevel.CRITICAL;
+        } else if (useNum >= 94) {
+          newAlertLevel = AlertLevel.HIGH;
+        } else if (useNum >= 91) {
+          newAlertLevel = AlertLevel.MEDIUM;
+        } else if (useNum >= 88) {
+          newAlertLevel = AlertLevel.LOW;
+        } else {
+          newAlertLevel = AlertLevel.NONE;
+        }
+      }
+      if (newAlertLevel.compareTo(highestAlertLevel) > 0) {
+        highestAlertLevel = newAlertLevel;
+        highestAlertMessage = locale -> RESOURCES.getMessage(locale, "alertMessage.use", use);
+      }
+    }
 
     // Make sure extmaxmount is -1
     if (highestAlertLevel.compareTo(AlertLevel.LOW) < 0) {

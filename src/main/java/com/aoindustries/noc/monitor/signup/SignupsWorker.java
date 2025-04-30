@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2015, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2015, 2016, 2018, 2019, 2020, 2021, 2022, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -100,16 +100,16 @@ class SignupsWorker extends TableResultWorker<List<Object>, Object> {
       List<?> tableData = result.getTableData(Locale.getDefault());
       // Count the number of incompleted signups
       int incompleteCount;
-        {
-          int i = 0;
-          for (int index = 0, len = tableData.size(); index < len; index += 6) {
-            String completedBy = (String) tableData.get(index + 4);
-            if (completedBy == null) {
-              i++;
-            }
+      {
+        int i = 0;
+        for (int index = 0, len = tableData.size(); index < len; index += 6) {
+          String completedBy = (String) tableData.get(index + 4);
+          if (completedBy == null) {
+            i++;
           }
-          incompleteCount = i;
         }
+        incompleteCount = i;
+      }
       if (incompleteCount == 0) {
         return AlertLevelAndMessage.NONE;
       } else {

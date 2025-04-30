@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2024, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -193,29 +193,29 @@ class MdStatWorker extends SingleResultWorker {
                     // Count the down and up between the brackets
                     final int upCount;
                     final int downCount;
-                      {
-                        int up = 0;
-                        int down = 0;
-                        for (int pos = pos1 + 1; pos < pos2; pos++) {
-                          char ch = line.charAt(pos);
-                          if (ch == 'U') {
-                            up++;
-                          } else if (ch == '_') {
-                            down++;
-                          } else {
-                            return new AlertLevelAndMessage(
-                                AlertLevel.CRITICAL,
-                                locale -> RESOURCES.getMessage(
-                                    locale,
-                                    "alertMessage.invalidCharacter",
-                                    ch
-                                )
-                            );
-                          }
+                    {
+                      int up = 0;
+                      int down = 0;
+                      for (int pos = pos1 + 1; pos < pos2; pos++) {
+                        char ch = line.charAt(pos);
+                        if (ch == 'U') {
+                          up++;
+                        } else if (ch == '_') {
+                          down++;
+                        } else {
+                          return new AlertLevelAndMessage(
+                              AlertLevel.CRITICAL,
+                              locale -> RESOURCES.getMessage(
+                                  locale,
+                                  "alertMessage.invalidCharacter",
+                                  ch
+                              )
+                          );
                         }
-                        upCount = up;
-                        downCount = down;
                       }
+                      upCount = up;
+                      downCount = down;
+                    }
                     // Get the current alert level
                     final AlertLevel alertLevel;
                     final Function<Locale, String> alertMessage;
