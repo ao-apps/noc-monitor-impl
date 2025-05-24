@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2015, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2015, 2016, 2018, 2019, 2020, 2021, 2022, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -199,14 +199,14 @@ class DrbdWorker extends TableResultWorker<List<DrbdReport>, Object> {
                 connectionState != DrbdReport.ConnectionState.Connected
                     && connectionState != DrbdReport.ConnectionState.VerifyS
                     && connectionState != DrbdReport.ConnectionState.VerifyT
-            ) || report.getLocalDiskState() != DrbdReport.DiskState.UpToDate
+              ) || report.getLocalDiskState() != DrbdReport.DiskState.UpToDate
                 || report.getRemoteDiskState() != DrbdReport.DiskState.UpToDate
                 || !(
                 (report.getLocalRole() == DrbdReport.Role.Primary && report.getRemoteRole() == DrbdReport.Role.Secondary)
                     || (report.getLocalRole() == DrbdReport.Role.Secondary && report.getRemoteRole() == DrbdReport.Role.Primary)
                     // Secondary/Secondary occurs when a virtual server is shutdown
                     || (report.getLocalRole() == DrbdReport.Role.Secondary && report.getRemoteRole() == DrbdReport.Role.Secondary)
-            )
+              )
         ) {
           alertLevel = AlertLevel.HIGH;
         } else {

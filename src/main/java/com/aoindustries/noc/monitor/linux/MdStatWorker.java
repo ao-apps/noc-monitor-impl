@@ -136,12 +136,12 @@ class MdStatWorker extends SingleResultWorker {
               && !(
               line.startsWith("      bitmap: ")
                   && line.endsWith(" chunk")
-          )
+            )
               // Skip routine RAID check progress line:
               && !(
               line.startsWith("      [")
                   && line.contains("]  check = ")
-          )
+            )
       ) {
         if (line.indexOf(':') != -1) {
           // Must contain raid type
@@ -169,7 +169,7 @@ class MdStatWorker extends SingleResultWorker {
               (
                   line.contains("resync")
                       || line.contains("recovery")
-              )
+                )
                   && line.contains("finish")
                   && line.contains("speed")
           ) {

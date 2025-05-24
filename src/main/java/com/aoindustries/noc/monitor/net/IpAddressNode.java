@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2016, 2017, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2016, 2017, 2018, 2020, 2021, 2022, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -266,7 +266,7 @@ public class IpAddressNode extends NodeImpl {
                 && (
                 iam.getVerifyDnsPtr()
                     || iam.getVerifyDnsA()
-            )
+              )
         ) {
           if (dnsNode == null) {
             dnsNode = new DnsNode(this, port, csf, ssf);

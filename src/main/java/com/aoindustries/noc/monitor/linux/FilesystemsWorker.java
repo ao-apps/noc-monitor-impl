@@ -225,11 +225,11 @@ class FilesystemsWorker extends TableResultWorker<List<String>, String> {
             (
                 "ext3".equals(fstype)
                     && !"clean".equals(extstate)
-            ) || (
+              ) || (
                 "ext2".equals(fstype)
                     && !"not clean".equals(extstate)
                     && !"clean".equals(extstate)
-            )
+              )
         ) {
           AlertLevel newAlertLevel = AlertLevel.CRITICAL;
           if (newAlertLevel.compareTo(highestAlertLevel) > 0) {

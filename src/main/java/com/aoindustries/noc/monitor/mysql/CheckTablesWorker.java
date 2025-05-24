@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -164,7 +164,7 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
                     && !name.toString().equals("ROUTINES")
                     && !name.toString().equals("TRIGGERS")
                     && !name.toString().equals("VIEWS")
-            )
+              )
         ) {
           tableNames.add(name);
           tables.put(name, engine);

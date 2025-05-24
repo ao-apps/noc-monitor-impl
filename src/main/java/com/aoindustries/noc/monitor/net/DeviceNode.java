@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2014, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -217,7 +217,7 @@ public class DeviceNode extends NodeImpl {
                 label.equals(DeviceId.BOND0) // TODO: Flag for "net_devices.isBonded"
                     || label.equals(DeviceId.BOND1)
                     || label.equals(DeviceId.BOND2)
-            )
+              )
         ) {
           if (deviceBondingNode == null) {
             deviceBondingNode = new DeviceBondingNode(this, port, csf, ssf);

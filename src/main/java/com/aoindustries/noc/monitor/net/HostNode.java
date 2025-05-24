@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -386,7 +386,7 @@ public class HostNode extends NodeImpl {
                 osv == OperatingSystemVersion.CENTOS_5_DOM0_I686
                     || osv == OperatingSystemVersion.CENTOS_5_DOM0_X86_64
                     || osv == OperatingSystemVersion.CENTOS_7_DOM0_X86_64
-            )
+              )
         ) {
           // Has hddtemp monitoring
           if (hardDrivesNode == null) {
