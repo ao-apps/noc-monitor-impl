@@ -22,7 +22,7 @@ Implementation of [Network Operations Center Monitoring](https://github.com/ao-a
 * [Project Home](https://aoindustries.com/noc/monitor/impl/)
 * [Changelog](https://aoindustries.com/noc/monitor/impl/changelog)
 * [API Docs](https://aoindustries.com/noc/monitor/impl/apidocs/)
-* [Maven Central Repository](https://central.sonatype.com/artifact/com.aoindustries/noc-monitor-impl)
+* [Central Repository](https://central.sonatype.com/artifact/com.aoindustries/noc-monitor-impl)
 * [GitHub](https://github.com/ao-apps/noc-monitor-impl)
 
 ## Contact Us
