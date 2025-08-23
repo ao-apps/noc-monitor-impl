@@ -183,25 +183,25 @@ class HardDrivesTemperatureWorker extends TableResultWorker<List<String>, String
         boolean parsed;
         if (value.endsWith(" C")) {
           // A few hard drives read much differently than other drives, offset the thresholds here
-          //String hostname = linuxServer.getHostname().toString();
-          //String device = tableData.get(index);
+          // String hostname = linuxServer.getHostname().toString();
+          // String device = tableData.get(index);
           int offset;
-          //if (
-          //    hostname.equals("xen1.mob.aoindustries.com")
-          //    && device.equals("/dev/sda")
-          //) {
-          //    offset = -7;
-          //} else if (
-          //    hostname.equals("xen907-4.fc.aoindustries.com")
-          //    && (
-          //        device.equals("/dev/sda")
-          //        || device.equals("/dev/sdb")
-          //    )
-          //) {
-          //    offset = 12;
-          //} else {
+          // if (
+          //     hostname.equals("xen1.mob.aoindustries.com")
+          //     && device.equals("/dev/sda")
+          // ) {
+          //     offset = -7;
+          // } else if (
+          //     hostname.equals("xen907-4.fc.aoindustries.com")
+          //     && (
+          //         device.equals("/dev/sda")
+          //         || device.equals("/dev/sdb")
+          //     )
+          // ) {
+          //     offset = 12;
+          // } else {
           offset = 0;
-          //}
+          // }
           String numString = value.substring(0, value.length() - 2);
           try {
             int num = Integer.parseInt(numString);

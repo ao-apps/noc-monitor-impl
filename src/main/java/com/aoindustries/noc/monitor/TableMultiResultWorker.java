@@ -96,7 +96,7 @@ public abstract class TableMultiResultWorker<S, R extends TableMultiResult> impl
   protected TableMultiResultWorker(File persistenceFile, Serializer<R> serializer) throws IOException {
     this.results = new PersistentLinkedList<>(
         PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
-        //new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
+        // new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
         /*
         new TwoCopyBarrierBuffer(
           persistenceFile,
@@ -114,17 +114,17 @@ public abstract class TableMultiResultWorker<S, R extends TableMultiResult> impl
    * Gets an unmodifiable copy of the results.
    */
   final List<R> getResults() {
-    //System.out.println("DEBUG: getResults");
-    //try {
+    // System.out.println("DEBUG: getResults");
+    // try {
     synchronized (results) {
       return Collections.unmodifiableList(new ArrayList<>(results));
     }
-    //} catch (ThreadDeath td) {
-    //    throw td;
-    //} catch (Throwable t) {
-    //    ErrorPrinter.printStackTraces(t);
-    //    throw t;
-    //}
+    // } catch (ThreadDeath td) {
+    //     throw td;
+    // } catch (Throwable t) {
+    //     ErrorPrinter.printStackTraces(t);
+    //     throw t;
+    // }
   }
 
   final AlertLevel getAlertLevel() {

@@ -137,7 +137,7 @@ public final class AlertLevelUtils {
    * Gets the greatest alert level of any node.
    * If all nodes are null, alert level is NONE.
    */
-  public static AlertLevel getMaxAlertLevel(NodeImpl ... nodes) {
+  public static AlertLevel getMaxAlertLevel(NodeImpl... nodes) {
     AlertLevel level = AlertLevel.NONE;
     for (NodeImpl node : nodes) {
       level = getMaxAlertLevel(level, node);

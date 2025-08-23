@@ -168,7 +168,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
    * Any null child is skipped.
    */
   @SafeVarargs
-  protected static <E extends NodeImpl> List<E> getSnapshot(E ... children) {
+  protected static <E extends NodeImpl> List<E> getSnapshot(E... children) {
     List<E> list = new ArrayList<>(children.length);
     for (E child : children) {
       if (child != null) {

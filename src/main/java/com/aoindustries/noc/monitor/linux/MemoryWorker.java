@@ -123,7 +123,7 @@ class MemoryWorker extends TableMultiResultWorker<List<ApproximateDisplayExactSi
           swapFree = Long.parseLong(line.substring("SwapFree:".length()).trim()) << 10;
         }
       } else {
-        //throw new ParseException("Line doesn't end with \" kB\": "+line, 0);
+        // throw new ParseException("Line doesn't end with \" kB\": "+line, 0);
       }
     }
     if (memTotal == -1) {

@@ -369,13 +369,13 @@ public final class AoservClusterBuilder {
       final Map<String, List<Server.DrbdReport>> drbdReports,
       final Map<String, Server.LvmReport> lvmReports
   ) throws InterruptedException, ExecutionException {
-    //final List<Server> linuxServers = conn.linuxServers.getRows();
-    //final Map<String, Map<String, String>> hddModelReports = getHddModelReports(linuxServers, locale);
-    //final Map<String, List<Server.DrbdReport>> drbdReports = getDrbdReports(linuxServers, locale);
-    //final Map<String, Server.LvmReport> lvmReports = getLvmReports(linuxServers, locale);
+    // final List<Server> linuxServers = conn.linuxServers.getRows();
+    // final Map<String, Map<String, String>> hddModelReports = getHddModelReports(linuxServers, locale);
+    // final Map<String, List<Server.DrbdReport>> drbdReports = getDrbdReports(linuxServers, locale);
+    // final Map<String, Server.LvmReport> lvmReports = getLvmReports(linuxServers, locale);
 
     // Start concurrently
-    //SortedSet<Cluster> clusters = getClusters(conn, linuxServers, hddModelReports, lvmReports);
+    // SortedSet<Cluster> clusters = getClusters(conn, linuxServers, hddModelReports, lvmReports);
     List<Future<ClusterConfiguration>> futures = new ArrayList<>(clusters.size());
     for (final Cluster cluster : clusters) {
       futures.add(
@@ -570,8 +570,8 @@ public final class AoservClusterBuilder {
         // Find the corresponding VirtualDisk
         VirtualDisk virtualDisk = domUVirtualServer.getVirtualDisk(domUDevice);
         if (virtualDisk == null) {
-          //System.err.println("-- "+domUHostname);
-          //System.err.println("INSERT INTO virtual_disks VALUES(DEFAULT, "+domUVirtualServer.getPkey()+", '"+device+"', NULL, extents, 1, false, false);");
+          // System.err.println("-- "+domUHostname);
+          // System.err.println("INSERT INTO virtual_disks VALUES(DEFAULT, "+domUVirtualServer.getPkey()+", '"+device+"', NULL, extents, 1, false, false);");
           throw new ParseException(
               RESOURCES.getMessage(
                   locale,
@@ -590,7 +590,7 @@ public final class AoservClusterBuilder {
       String domUHostname = entry.getKey();
       DomU domU = entry.getValue();
       Host domUServer = conn.getNet().getHost().get(rootAccounting + "/" + domUHostname);
-      //VirtualServer domUVirtualServer = domUServer.getVirtualServer();
+      // VirtualServer domUVirtualServer = domUServer.getVirtualServer();
 
       String primaryDom0Hostname = drbdPrimaryDom0s.get(domUHostname);
       if (primaryDom0Hostname == null) {
@@ -620,8 +620,8 @@ public final class AoservClusterBuilder {
           cluster.getDom0(primaryDom0Hostname),
           cluster.getDom0(secondaryDom0Hostname)
       );
-      //DomUConfiguration domUConfiguration = clusterConfiguration.getDomUConfiguration(domU);
-      //assert domUConfiguration != null : "domUConfiguration is null";
+      // DomUConfiguration domUConfiguration = clusterConfiguration.getDomUConfiguration(domU);
+      // assert domUConfiguration != null : "domUConfiguration is null";
 
       // Add each DomUDisk
       for (DomUDisk domUDisk : domU.getDomUDisks().values()) {

@@ -144,9 +144,9 @@ class FilesystemsWorker extends TableResultWorker<List<String>, String> {
         RESOURCES.getMessage(locale, "columnHeader.used"),
         RESOURCES.getMessage(locale, "columnHeader.free"),
         RESOURCES.getMessage(locale, "columnHeader.use"),
-        //RESOURCES.getMessage(locale, "columnHeader.inodes"),
-        //RESOURCES.getMessage(locale, "columnHeader.iused"),
-        //RESOURCES.getMessage(locale, "columnHeader.ifree"),
+        // RESOURCES.getMessage(locale, "columnHeader.inodes"),
+        // RESOURCES.getMessage(locale, "columnHeader.iused"),
+        // RESOURCES.getMessage(locale, "columnHeader.ifree"),
         RESOURCES.getMessage(locale, "columnHeader.iuse"),
         RESOURCES.getMessage(locale, "columnHeader.fstype"),
         RESOURCES.getMessage(locale, "columnHeader.mountoptions"),
@@ -173,9 +173,9 @@ class FilesystemsWorker extends TableResultWorker<List<String>, String> {
       tableData.add(Strings.getApproximateSize(fs.getUsed())); // used
       tableData.add(Strings.getApproximateSize(fs.getFree())); // free
       tableData.add(toPercentString(fs.getUse())); // use
-      //tableData.add(line[6]); // inodes
-      //tableData.add(line[7]); // iused
-      //tableData.add(line[8]); // ifree
+      // tableData.add(line[6]); // inodes
+      // tableData.add(line[7]); // iused
+      // tableData.add(line[8]); // ifree
       tableData.add(toPercentString(fs.getInodeUse())); // iuse
       tableData.add(fs.getFsType()); // fstype
       tableData.add(fs.getMountOptions()); // mountoptions

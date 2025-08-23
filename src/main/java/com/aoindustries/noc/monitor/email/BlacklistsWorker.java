@@ -467,7 +467,7 @@ class BlacklistsWorker extends TableResultWorker<List<BlacklistsWorker.Blacklist
   private final IpAddress ipAddress;
   private final List<BlacklistLookup> lookups;
 
-  private static DnsBlacklist[] addUnique(DnsBlacklist ... blacklists) {
+  private static DnsBlacklist[] addUnique(DnsBlacklist... blacklists) {
     Map<String, DnsBlacklist> unique = AoCollections.newHashMap(blacklists.length);
     for (DnsBlacklist blacklist : blacklists) {
       String basename = blacklist.getBaseName();
@@ -1578,11 +1578,11 @@ class BlacklistsWorker extends TableResultWorker<List<BlacklistsWorker.Blacklist
     // Forward lookup: abuse.spfbl.net
     // </editor-fold>
     );
-    //InetAddress ip = ipAddress.getInetAddress();
+    // InetAddress ip = ipAddress.getInetAddress();
     Device device;
     IpAddressMonitoring iam;
     boolean checkSmtpBlacklist =
-        //!"64.62.174.125".equals(ip)
+        // !"64.62.174.125".equals(ip)
         // && !"64.62.174.189".equals(ip)
         // && !"64.62.174.253".equals(ip)
         // && !"64.71.144.125".equals(ip)

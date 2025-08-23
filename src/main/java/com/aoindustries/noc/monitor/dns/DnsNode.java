@@ -45,7 +45,7 @@ public class DnsNode extends TableResultNodeImpl {
 
   private static final long serialVersionUID = 1L;
 
-  //private final IpAddress ipAddress;
+  // private final IpAddress ipAddress;
 
   public DnsNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException, SQLException {
     super(
@@ -59,7 +59,7 @@ public class DnsNode extends TableResultNodeImpl {
         csf,
         ssf
     );
-    //this.ipAddress = ipAddressNode.getIpAddress();
+    // this.ipAddress = ipAddressNode.getIpAddress();
   }
 
   @Override

@@ -45,7 +45,7 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
 
   private static final long serialVersionUID = 1L;
 
-  //private final IpAddressNode ipAddressNode;
+  // private final IpAddressNode ipAddressNode;
 
   PingNode(IpAddressNode ipAddressNode, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
@@ -59,7 +59,7 @@ public class PingNode extends TableMultiResultNodeImpl<PingResult> {
         csf,
         ssf
     );
-    //this.ipAddressNode = ipAddressNode;
+    // this.ipAddressNode = ipAddressNode;
   }
 
   @Override

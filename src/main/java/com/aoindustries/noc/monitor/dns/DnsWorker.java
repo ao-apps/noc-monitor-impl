@@ -145,7 +145,7 @@ class DnsWorker extends TableResultWorker<List<DnsWorker.DnsQueryResult>, Object
     boolean didHostnameAddressVerification = false;
     // Reverse DNS
     if (iam.getVerifyDnsPtr()) {
-      //String ptrQuery = IpAddress.getReverseDnsQuery(ip);
+      // String ptrQuery = IpAddress.getReverseDnsQuery(ip);
       Name ptrQuery = ReverseMap.fromAddress(ip.toString());
       long ptrStartNanos = System.nanoTime();
       Lookup ptrLookup = new Lookup(ptrQuery, Type.PTR);

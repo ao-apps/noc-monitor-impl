@@ -122,7 +122,7 @@ public class ClusterResourceManagerTODO extends TestCase {
       SortedSet<Cluster> oldClusters,
       String clusterName,
       String hostname,
-      //Rack rack,
+      // Rack rack,
       int ram,
       ProcessorType processorType,
       ProcessorArchitecture processorArchitecture,
@@ -412,8 +412,8 @@ public class ClusterResourceManagerTODO extends TestCase {
         clusters = addXen9147(clusters);
       } else {
         // Exploring what we can do with only additional SATA hard drives
-        //clusters = addDrivesXen9071(clusters, true, false);
-        //clusters = addDrivesXen9175(clusters, true, false);
+        // clusters = addDrivesXen9071(clusters, true, false);
+        // clusters = addDrivesXen9175(clusters, true, false);
       }
       // TODO: Because can't enforce disk weights, can only control through allocation
       // TODO: Allocate and check disks matched by weight.
@@ -489,18 +489,18 @@ public class ClusterResourceManagerTODO extends TestCase {
 
   public void testOptimizedCluster() throws Exception {
     List<HeuristicFunction> heuristicFunctions = new ArrayList<>();
-    //heuristicFunctions.add(new LeastInformedHeuristicFunction());
-    //heuristicFunctions.add(new SimpleHeuristicFunction());
-    //heuristicFunctions.add(new LinearHeuristicFunction());
-    //heuristicFunctions.add(new ExponentialHeuristicFunction());
+    // heuristicFunctions.add(new LeastInformedHeuristicFunction());
+    // heuristicFunctions.add(new SimpleHeuristicFunction());
+    // heuristicFunctions.add(new LinearHeuristicFunction());
+    // heuristicFunctions.add(new ExponentialHeuristicFunction());
     heuristicFunctions.add(new ExponentialDeviationHeuristicFunction());
-    //heuristicFunctions.add(new ExponentialDeviationWithNoneHeuristicFunction());
-    //heuristicFunctions.add(new RandomHeuristicFunction());
+    // heuristicFunctions.add(new ExponentialDeviationWithNoneHeuristicFunction());
+    // heuristicFunctions.add(new RandomHeuristicFunction());
     for (final ClusterConfiguration clusterConfiguration : clusterConfigurations) {
       System.out.println(clusterConfiguration);
       for (final HeuristicFunction heuristicFunction : heuristicFunctions) {
         System.out.println("    " + heuristicFunction.getClass().getName());
-        //System.out.println("        Initial State ("+heuristicFunction.getHeuristic(clusterConfiguration, 0)+")");
+        // System.out.println("        Initial State ("+heuristicFunction.getHeuristic(clusterConfiguration, 0)+")");
         ClusterOptimizer optimized = new ClusterOptimizer(clusterConfiguration, heuristicFunction, ALLOW_PATH_THROUGH_CRITICAL, RANDOMIZE_CHILDREN);
         ListElement shortestPath = optimized.getOptimizedClusterConfiguration((ListElement path, long loopCount) -> {
           // TODO: Emphasize anything with a critical alert level when showing transitions

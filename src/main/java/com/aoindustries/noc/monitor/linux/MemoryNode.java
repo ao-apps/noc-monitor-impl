@@ -45,7 +45,7 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
 
   private static final long serialVersionUID = 1L;
 
-  //private final Server server;
+  // private final Server server;
 
   public MemoryNode(HostNode hostNode, Server server, int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws IOException {
     super(
@@ -59,7 +59,7 @@ public class MemoryNode extends TableMultiResultNodeImpl<MemoryResult> {
         csf,
         ssf
     );
-    //this.server = server;
+    // this.server = server;
   }
 
   @Override

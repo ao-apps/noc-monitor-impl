@@ -189,9 +189,9 @@ class BackupWorker extends TableResultWorker<List<FileReplicationLog>, Object> {
       Server linuxServer = host.getLinuxServer();
       TimeZone timeZone = linuxServer == null ? null : linuxServer.getTimeZone().getTimeZone();
       List<Object> tableData = new ArrayList<>(failoverFileLogs.size() * 6);
-      //int lineNum = 0;
+      // int lineNum = 0;
       for (FileReplicationLog failoverFileLog : failoverFileLogs) {
-        //lineNum++;
+        // lineNum++;
         Timestamp startTime = failoverFileLog.getStartTime();
         tableData.add(new TimeWithTimeZone(startTime.getTime(), timeZone));
         tableData.add(Strings.getTimeLengthString(failoverFileLog.getEndTime().getTime() - startTime.getTime()));
