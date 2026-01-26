@@ -155,15 +155,7 @@ def upstreamProjects = [
 @Library('ao@master') _
 
 // Set default variables
-ao.defJdkVersions(binding)
-ao.defUpstreamProjects(binding)
-ao.defProjectDir(binding, currentBuild)
-ao.defDisableSubmodules(binding)
-ao.defSparseCheckoutPaths(binding)
-ao.defScmUrl(binding, scm)
-ao.defScmBranch(binding, scm)
-ao.defScmBrowser(binding)
-ao.defBuildPriorityAndPrunedUpstreamProjects(binding)
+ao.defaultVariables(binding, currentBuild, scm);
 
 if (!binding.hasVariable('quietPeriod')) {
   binding.setVariable('quietPeriod', 10 + buildPriority * 2)
