@@ -64,6 +64,7 @@ def upstreamProjects = [
 // TODO: Replace master with a specific tag version number once working
 @Library('ao@master') _
 ao.setVariables(binding, currentBuild, scm, params);
+
 pipeline {
   agent any
   options {
@@ -71,20 +72,7 @@ pipeline {
     disableConcurrentBuilds(abortPrevious: true)
     quietPeriod(quietPeriod)
     skipDefaultCheckout()
-    //
-    // It is difficult to differentiate the cause of status ABORTED.  It can be a normal status when caused by a
-    // dependency build still in-progress.  Or it can be an unexpected status when caused by a timeout.  In the former
-    // cause, the build will be started again automatically by the upstream project.  In the latter case, the build
-    // must be manually restarted.  Without being able to distinguish, it is less clear when the build system is not
-    // making progress (all jobs can be in ABORTED state), and it is tedious to find which builds to start manually.
-    //
-    // This pipeline-level timeout does not convert status from ABORTED to FAILURE and should be a higher than the sum
-    // of all individual per-steps timeouts below, and thus is never expected to be reached, but remains as a fallback.
-    //
-    // Individual "steps" blocks below perform timeouts within catch blocks to convert status ABORTED to FAILURE.
-    // See https://devops.stackexchange.com/a/9692
-    //
-    timeout(time: 6, unit: 'HOURS')
+    timeout(time: pipelineTimeout, unit: pipelineTimeoutUnit)
     // Only allowed to copy build artifacts from self
     // See https://plugins.jenkins.io/copyartifact/
     copyArtifactPermission("/${JOB_NAME}")
