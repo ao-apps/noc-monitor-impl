@@ -51,6 +51,7 @@ def upstreamProjects = [
   // Test Direct
   // No Jenkins: <groupId>junit</groupId><artifactId>junit</artifactId>
 ]
+binding.setVariable('upstreamProjects', upstreamProjects)
 
 /******************************************************************************************
  *                                                                                        *
