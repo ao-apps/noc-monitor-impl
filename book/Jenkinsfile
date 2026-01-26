@@ -159,7 +159,9 @@ ao.defJdkVersions()
 if (!binding.hasVariable('upstreamProjects')) {
   binding.setVariable('upstreamProjects', [])
 }
-ao.defProjectDir()
+if (!binding.hasVariable('projectDir')) {
+  binding.setVariable('projectDir', ao.defProjectDir())
+}
 if (!binding.hasVariable('disableSubmodules')) {
   binding.setVariable('disableSubmodules', true)
 }
