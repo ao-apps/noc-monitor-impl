@@ -155,7 +155,7 @@ def upstreamProjects = [
 @Library('ao@master') _
 
 // Set default variables
-ao.defJdkVersions()
+ao.defJdkVersions(binding)
 if (!binding.hasVariable('upstreamProjects')) {
   binding.setVariable('upstreamProjects', [])
 }
