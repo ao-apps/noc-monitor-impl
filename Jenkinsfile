@@ -160,60 +160,9 @@ ao.defUpstreamProjects(binding)
 ao.defProjectDir(binding, currentBuild)
 ao.defDisableSubmodules(binding)
 ao.defSparseCheckoutPaths(binding)
-if (!binding.hasVariable('scmUrl')) {
-  // Automatically determine Git URL: https://stackoverflow.com/a/38255364
-  if (scm.userRemoteConfigs.size() == 1) {
-    binding.setVariable('scmUrl', scm.userRemoteConfigs[0].url)
-  } else {
-    throw new Exception("Precisely one SCM remote expected: '" + scm.userRemoteConfigs + "'")
-  }
-}
-if (!binding.hasVariable('scmBranch')) {
-  // Automatically determine branch
-  if (scm.branches.size() == 1) {
-    def scmBranchPrefix = 'refs/heads/'
-    def defaultScmBranch = scm.branches[0].name
-    if (defaultScmBranch.startsWith(scmBranchPrefix)) {
-      defaultScmBranch = defaultScmBranch.substring(scmBranchPrefix.length())
-      binding.setVariable('scmBranch', defaultScmBranch)
-    } else {
-      throw new Exception("SCM branch does not start with '$scmBranchPrefix': '$defaultScmBranch'")
-    }
-  } else {
-    throw new Exception("Precisely one SCM branch expected: '" + scm.branches + "'")
-  }
-}
-if (!binding.hasVariable('scmBrowser')) {
-  // Automatically determine SCM browser
-  def aoappsPrefix        = '/srv/git/ao-apps/'
-  def newmediaworksPrefix = '/srv/git/nmwoss/'
-  def defaultScmBrowser
-  if (scmUrl.startsWith(aoappsPrefix)) {
-    // Is also mirrored to GitHub user "ao-apps"
-    def repo = scmUrl.substring(aoappsPrefix.length())
-    if (repo.endsWith('.git')) {
-      repo = repo.substring(0, repo.length() - 4)
-    }
-    defaultScmBrowser = [$class: 'GithubWeb',
-      repoUrl: 'https://github.com/ao-apps/' + repo
-    ]
-  } else if (scmUrl.startsWith(newmediaworksPrefix)) {
-    // Is also mirrored to GitHub user "newmediaworks"
-    def repo = scmUrl.substring(newmediaworksPrefix.length())
-    if (repo.endsWith('.git')) {
-      repo = repo.substring(0, repo.length() - 4)
-    }
-    defaultScmBrowser = [$class: 'GithubWeb',
-      repoUrl: 'https://github.com/newmediaworks/' + repo
-    ]
-  } else if (scmUrl.startsWith('/srv/git/') || scmUrl.startsWith('ssh://')) {
-    // No default
-    defaultScmBrowser = null
-  } else {
-    throw new Exception("Unexpected SCM URL: '$scmUrl'")
-  }
-  binding.setVariable('scmBrowser', defaultScmBrowser)
-}
+ao.defScmUrl(binding, scm)
+ao.defScmBranch(binding, scm)
+ao.defScmBrowser(binding)
 
 // Variables temporarily used in project resolution
 def tempUpstreamProjectsCache = [:]
