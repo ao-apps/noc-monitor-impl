@@ -23,7 +23,7 @@
  */
 
 // Parent, Extensions, Plugins, Direct and BOM Dependencies
-def upstreamProjects = [
+binding.setVariable('upstreamProjects', [
   // Parent
   '../../oss/parent', // <groupId>com.aoapps</groupId><artifactId>ao-oss-parent</artifactId>
   // Parent Plugin Dependencies (Avoid cyclic dependency)
@@ -50,8 +50,7 @@ def upstreamProjects = [
 
   // Test Direct
   // No Jenkins: <groupId>junit</groupId><artifactId>junit</artifactId>
-]
-binding.setVariable('upstreamProjects', upstreamProjects)
+])
 
 /******************************************************************************************
  *                                                                                        *

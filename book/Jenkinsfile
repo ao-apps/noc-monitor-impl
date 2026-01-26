@@ -23,7 +23,7 @@
  */
 
 // Parent, Extensions, Plugins, Direct and BOM Dependencies
-def upstreamProjects = [
+binding.setVariable('upstreamProjects', [
   // Parent
   '../../oss/parent', // <groupId>com.aoapps</groupId><artifactId>ao-oss-parent</artifactId>
   // Parent Plugin Dependencies (Avoid cyclic dependency)
@@ -46,11 +46,11 @@ def upstreamProjects = [
 
   // BOM
   '../../oss/jakartaee-web-profile-bom', // <groupId>com.aoapps</groupId><artifactId>jakartaee-web-profile-bom</artifactId>
-]
+])
 
 // Java 17
-def buildJdks = ['17', '21'] // Changes must be copied to matrix axes!
-def testJdks = ['17', '21'] // Changes must be copied to matrix axes!
+binding.setVariable('buildJdks', ['17', '21']) // Changes must be copied to matrix axes!
+binding.setVariable('testJdks', ['17', '21']) // Changes must be copied to matrix axes!
 
 /******************************************************************************************
  *                                                                                        *
