@@ -275,7 +275,7 @@ Defaults to false and will typically only be true when debugging the build proce
   triggers {
     upstream(
       threshold: hudson.model.Result.SUCCESS,
-      upstreamProjects: "${prunedUpstreamProjects.join(', ')}"
+      upstreamProjects: "${binding.getVariable('prunedUpstreamProjects').join(', ')}"
     )
   }
   stages {
