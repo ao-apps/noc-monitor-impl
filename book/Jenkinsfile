@@ -502,14 +502,9 @@ Defaults to false and will typically only be true when debugging the build proce
         }
         stages {
           stage('Test') {
-            environment {
-              buildDir  = "target${(testJdk == jdk) ? (jdk == deployJdk ? '' : "-jdk-$jdk") : ("-jdk-$jdk-$testJdk")}"
-              coverage  = "${(jdk == deployJdk && testJdk == deployJdk && fileExists(projectDir + '/src/main/java') && fileExists(projectDir + '/src/test')) ? '-Pcoverage' : '-P!coverage'}"
-              testGoals = "${(coverage == '-Pcoverage') ? 'jacoco:prepare-agent surefire:test jacoco:report' : 'surefire:test'}"
-            }
             steps {
               script {
-                ao.testSteps(projectDir, niceCmd, maven, mavenOpts, mvnCommon, jdk, testJdk)
+                ao.testSteps(projectDir, niceCmd, deployJdk, maven, mavenOpts, mvnCommon, jdk, testJdk)
               }
             }
           }
