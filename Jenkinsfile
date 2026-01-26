@@ -81,27 +81,22 @@ pipeline {
     string(
       name: 'BuildPriority',
       defaultValue: "$buildPriority",
-      description: BUILD_PRIORITY_DESCRIPTION
+      description: BuildPriority_description
     )
     booleanParam(
       name: 'abortOnUnreadyDependency',
       defaultValue: true,
-      description: """Aborts the build when any dependency is queued, building, or unsuccessful.
-Defaults to true and will typically only be false to push a new version of a project out immediately.
-May also want to set BuildPriority to \"1\" to put at the top of the build queue."""
+      description: abortOnUnreadyDependency_description
     )
     booleanParam(
       name: 'requireLastBuild',
       defaultValue: true,
-      description: """Is the last build required for the zip-timestamp-merge Ant task?
-Defaults to true and will typically only be false for either the first build
-or any build that adds or removes build artifacts."""
+      description: requireLastBuild_description
     )
     booleanParam(
       name: 'mavenDebug',
       defaultValue: false,
-      description: """Enables Maven -X debug output.
-Defaults to false and will typically only be true when debugging the build process itself."""
+      description: mavenDebug_description
     )
   }
   triggers {
