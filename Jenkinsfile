@@ -80,7 +80,7 @@ pipeline {
   parameters {
     string(
       name: 'BuildPriority',
-      defaultValue: "$buildPriority",
+      defaultValue: buildPriority,
       description: BuildPriority_description
     )
     booleanParam(
