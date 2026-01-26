@@ -160,7 +160,7 @@ if (!binding.hasVariable('upstreamProjects')) {
   binding.setVariable('upstreamProjects', [])
 }
 if (!binding.hasVariable('projectDir')) {
-  binding.setVariable('projectDir', ao.defProjectDir())
+  binding.setVariable('projectDir', ao.defProjectDir(currentBuild))
 }
 if (!binding.hasVariable('disableSubmodules')) {
   binding.setVariable('disableSubmodules', true)
