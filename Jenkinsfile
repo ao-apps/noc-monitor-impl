@@ -72,7 +72,7 @@ pipeline {
     disableConcurrentBuilds(abortPrevious: true)
     quietPeriod(quietPeriod)
     skipDefaultCheckout()
-    timeout(time: pipelineTimeout, unit: pipelineTimeoutUnit)
+    timeout(time: PIPELINE_TIMEOUT, unit: PIPELINE_TIMEOUT_UNIT)
     // Only allowed to copy build artifacts from self
     // See https://plugins.jenkins.io/copyartifact/
     copyArtifactPermission("/${JOB_NAME}")
