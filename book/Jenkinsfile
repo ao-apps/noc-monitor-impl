@@ -562,9 +562,9 @@ Defaults to false and will typically only be true when debugging the build proce
   }
   post {
     failure {
-      emailext to: failureEmailTo,
-        subject: "[Jenkins] ${currentBuild.fullDisplayName} build failed",
-        body: "${env.BUILD_URL}console"
+      script {
+        ao.postFailure(failureEmailTo)
+      }
     }
   }
 }
