@@ -156,33 +156,10 @@ def upstreamProjects = [
 
 // Set default variables
 ao.defJdkVersions(binding)
-if (!binding.hasVariable('upstreamProjects')) {
-  binding.setVariable('upstreamProjects', [])
-}
+ao.defUpstreamProjects(binding)
 ao.defProjectDir(binding, currentBuild)
-if (!binding.hasVariable('disableSubmodules')) {
-  binding.setVariable('disableSubmodules', true)
-}
-if (!binding.hasVariable('sparseCheckoutPaths')) {
-  def defaultSparseCheckoutPaths
-  if (projectDir == '.') {
-    defaultSparseCheckoutPaths = [
-      [path:'/*'],
-      [path:'!/book/'],
-      [path:'/book/pom.xml'],
-      [path:'!/devel/']
-    ]
-  } else if (projectDir == 'book' || projectDir == 'devel') {
-    defaultSparseCheckoutPaths = [
-      [path:'/.gitignore'],
-      [path:'/.gitmodules'],
-      [path:"/$projectDir/"]
-    ]
-  } else {
-    throw new Exception("Unexpected value for 'projectDir': '$projectDir'")
-  }
-  binding.setVariable('sparseCheckoutPaths', defaultSparseCheckoutPaths)
-}
+ao.defDisableSubmodules(binding)
+ao.defSparseCheckoutPaths(binding)
 if (!binding.hasVariable('scmUrl')) {
   // Automatically determine Git URL: https://stackoverflow.com/a/38255364
   if (scm.userRemoteConfigs.size() == 1) {
