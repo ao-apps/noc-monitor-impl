@@ -81,9 +81,7 @@ pipeline {
     string(
       name: 'BuildPriority',
       defaultValue: "$buildPriority",
-      description: """Specify the priority of this build.
-Must be between 1 and 30, with lower values built first.
-Defaults to project's depth in the upstream project graph."""
+      description: BUILD_PRIORITY_DESCRIPTION
     )
     booleanParam(
       name: 'abortOnUnreadyDependency',
