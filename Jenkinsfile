@@ -157,27 +157,6 @@ def upstreamProjects = [
 // Set default variables
 ao.defaultVariables(binding, currentBuild, scm, params);
 
-// Common settings
-def mvnCommonArgs = [
-  '-Dstyle.color=always',
-  '-Dmaven.gitcommitid.nativegit=true',
-  "-DrequireLastBuild=${params.requireLastBuild ?: false}",
-  "-Djenkins.buildNumber=${currentBuild.number}",
-  '-N',
-  '-U',
-  "-Pjenkins,POST-SNAPSHOT${extraProfiles.isEmpty() ? '' : (',' + extraProfiles.join(','))}"
-]
-if (params.mavenDebug) {
-  mvnCommonArgs.add(0, '-X')
-}
-def mvnCommon = mvnCommonArgs.join(' ')
-
-// Phases for Build stage
-def buildPhases = 'clean process-test-classes'
-
-// Determine nice command prefix or empty string for none
-def niceCmd = (nice == 0) ? '' : "nice -n$nice "
-
 pipeline {
   agent any
   options {
