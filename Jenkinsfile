@@ -153,10 +153,7 @@ def upstreamProjects = [
 // TODO: Put @Library on import once we have our first library class
 // TODO: Replace master with a specific tag version number once working
 @Library('ao@master') _
-
-// Set default variables
-ao.defaultVariables(binding, currentBuild, scm, params);
-
+ao.setVariables(binding, currentBuild, scm, params);
 pipeline {
   agent any
   options {
