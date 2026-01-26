@@ -163,36 +163,7 @@ ao.defSparseCheckoutPaths(binding)
 ao.defScmUrl(binding, scm)
 ao.defScmBranch(binding, scm)
 ao.defScmBrowser(binding)
-
-// Variables temporarily used in project resolution
-def tempUpstreamProjectsCache = [:]
-def tempJenkins = Jenkins.get()
-// Find the current project
-def tempCurrentWorkflowJob = currentBuild.rawBuild.parent
-if (!(tempCurrentWorkflowJob instanceof org.jenkinsci.plugins.workflow.job.WorkflowJob)) {
-  throw new Exception("tempCurrentWorkflowJob is not a WorkflowJob: $tempCurrentWorkflowJob")
-}
-
-// Prune set of upstreamProjects
-def prunedUpstreamProjects = ao.pruneUpstreamProjects(tempJenkins, tempUpstreamProjectsCache, tempCurrentWorkflowJob, upstreamProjects)
-
-if (!binding.hasVariable('buildPriority')) {
-  // Find the longest path through all upstream projects, which will be used as both job priority and
-  // nice value.  This will ensure proper build order in all cases.  However, it may prevent some
-  // possible concurrency since reduction to simple job priority number loses information about which
-  // are critical paths on the upstream project graph.
-  def defaultBuildPriority = ao.getDepth(tempJenkins, tempUpstreamProjectsCache, [:], tempCurrentWorkflowJob, prunedUpstreamProjects)
-  if (defaultBuildPriority > 30) throw new Exception("defaultBuildPriority > 30, increase global configuration: $defaultBuildPriority")
-  binding.setVariable('buildPriority', defaultBuildPriority)
-}
-if (buildPriority < 1 || buildPriority > 30) {
-  throw new Exception("buildPriority out of range 1 - 30: $buildPriority")
-}
-
-// Remove temporary variables
-tempUpstreamProjectsCache = null
-tempJenkins = null
-tempCurrentWorkflowJob = null
+ao.defBuildPriorityAndPrunedUpstreamProjects(binding)
 
 if (!binding.hasVariable('quietPeriod')) {
   binding.setVariable('quietPeriod', 10 + buildPriority * 2)
