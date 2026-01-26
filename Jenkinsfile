@@ -154,45 +154,12 @@ def upstreamProjects = [
 // TODO: Replace master with a specific tag version number once working
 @Library('ao@master') _
 
-// If RejectedAccessException, grant per-controller:
-//   https://jenkins.aoindustries.com/scriptApproval/
-//   "Approve"
-//   Repeat until all permissions granted
-
-// JDK versions
-if (!binding.hasVariable('deployJdk')) {
-  // Matches build.yml:java-version
-  binding.setVariable('deployJdk', '21')
-}
-if (!binding.hasVariable('buildJdks')) {
-  binding.setVariable(
-    'buildJdks',
-    ['11', '17', '21'] // Changes must be copied to matrix axes!
-  )
-}
-if (!binding.hasVariable('testJdks')) {
-  binding.setVariable(
-    'testJdks',
-    ['11', '17', '21'] // Changes must be copied to matrix axes!
-  )
-}
+// Set default variables
+ao.defJdkVersions()
 if (!binding.hasVariable('upstreamProjects')) {
   binding.setVariable('upstreamProjects', [])
 }
-if (!binding.hasVariable('projectDir')) {
-  def scriptPath = currentBuild.rawBuild.parent.definition.scriptPath
-  def defaultProjectDir
-  if (scriptPath == 'Jenkinsfile') {
-    defaultProjectDir = '.'
-  } else if (scriptPath == 'book/Jenkinsfile') {
-    defaultProjectDir = 'book'
-  } else if (scriptPath == 'devel/Jenkinsfile') {
-    defaultProjectDir = 'devel'
-  } else {
-    throw new Exception("Unexpected value for 'scriptPath': '$scriptPath'")
-  }
-  binding.setVariable('projectDir', defaultProjectDir)
-}
+ao.defProjectDir()
 if (!binding.hasVariable('disableSubmodules')) {
   binding.setVariable('disableSubmodules', true)
 }
