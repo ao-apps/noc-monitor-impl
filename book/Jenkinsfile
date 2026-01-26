@@ -64,6 +64,7 @@ def testJdks = ['17', '21'] // Changes must be copied to matrix axes!
 // TODO: Replace master with a specific tag version number once working
 @Library('ao@master') _
 ao.setVariables(binding, currentBuild, scm, params);
+
 pipeline {
   agent any
   options {
@@ -71,20 +72,7 @@ pipeline {
     disableConcurrentBuilds(abortPrevious: true)
     quietPeriod(quietPeriod)
     skipDefaultCheckout()
-    //
-    // It is difficult to differentiate the cause of status ABORTED.  It can be a normal status when caused by a
-    // dependency build still in-progress.  Or it can be an unexpected status when caused by a timeout.  In the former
-    // cause, the build will be started again automatically by the upstream project.  In the latter case, the build
-    // must be manually restarted.  Without being able to distinguish, it is less clear when the build system is not
-    // making progress (all jobs can be in ABORTED state), and it is tedious to find which builds to start manually.
-    //
-    // This pipeline-level timeout does not convert status from ABORTED to FAILURE and should be a higher than the sum
-    // of all individual per-steps timeouts below, and thus is never expected to be reached, but remains as a fallback.
-    //
-    // Individual "steps" blocks below perform timeouts within catch blocks to convert status ABORTED to FAILURE.
-    // See https://devops.stackexchange.com/a/9692
-    //
-    timeout(time: 6, unit: 'HOURS')
+    timeout(time: PIPELINE_TIMEOUT, unit: TIMEOUT_UNIT)
     // Only allowed to copy build artifacts from self
     // See https://plugins.jenkins.io/copyartifact/
     copyArtifactPermission("/${JOB_NAME}")
@@ -93,29 +81,22 @@ pipeline {
     string(
       name: 'BuildPriority',
       defaultValue: "$buildPriority",
-      description: """Specify the priority of this build.
-Must be between 1 and 30, with lower values built first.
-Defaults to project's depth in the upstream project graph."""
+      description: BuildPriority_description
     )
     booleanParam(
       name: 'abortOnUnreadyDependency',
       defaultValue: true,
-      description: """Aborts the build when any dependency is queued, building, or unsuccessful.
-Defaults to true and will typically only be false to push a new version of a project out immediately.
-May also want to set BuildPriority to \"1\" to put at the top of the build queue."""
+      description: abortOnUnreadyDependency_description
     )
     booleanParam(
       name: 'requireLastBuild',
       defaultValue: true,
-      description: """Is the last build required for the zip-timestamp-merge Ant task?
-Defaults to true and will typically only be false for either the first build
-or any build that adds or removes build artifacts."""
+      description: requireLastBuild_description
     )
     booleanParam(
       name: 'mavenDebug',
       defaultValue: false,
-      description: """Enables Maven -X debug output.
-Defaults to false and will typically only be true when debugging the build process itself."""
+      description: mavenDebug_description
     )
   }
   triggers {
