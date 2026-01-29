@@ -359,8 +359,8 @@ public final class AoservClusterBuilder {
   /**
    * Loads an unmodifiable set of the current cluster configuration from the AOServ Platform.
    *
-   * @see  #getClusters
-   * @see  #getClusterConfiguration
+   * @see  AoservClusterBuilder#getClusters
+   * @see  AoservClusterBuilder#getClusterConfiguration
    */
   public static SortedSet<ClusterConfiguration> getClusterConfigurations(
       final Locale locale,

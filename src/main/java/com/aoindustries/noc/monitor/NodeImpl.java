@@ -213,7 +213,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
    * This alert level must be constrained by the maximum alert level of this
    * node and all of its parents.
    *
-   * @see #constrainAlertLevel(com.aoindustries.noc.monitor.common.AlertLevel)
+   * @see NodeImpl#constrainAlertLevel(com.aoindustries.noc.monitor.common.AlertLevel)
    */
   @Override
   public abstract AlertLevel getAlertLevel();
@@ -224,7 +224,7 @@ public abstract class NodeImpl extends UnicastRemoteObject implements Node {
   /**
    * Defaults to the alert category of the parent node.
    *
-   * @see  #getParent()
+   * @see  NodeImpl#getParent()
    *
    * @throws  NullPointerException when there is no parent
    */

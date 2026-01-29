@@ -566,7 +566,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
   /**
    * Uses the {@link AlertCategory} of the node for both {@code oldAlertCategory} and {@code newAlertCategory}.
    *
-   * @see  #nodeAlertLevelChanged(com.aoindustries.noc.monitor.NodeImpl, com.aoindustries.noc.monitor.common.AlertLevel, com.aoindustries.noc.monitor.common.AlertLevel, java.lang.String)
+   * @see  RootNodeImpl#nodeAlertLevelChanged(com.aoindustries.noc.monitor.NodeImpl, com.aoindustries.noc.monitor.common.AlertLevel, com.aoindustries.noc.monitor.common.AlertLevel, java.lang.String)
    */
   public void nodeAlertLevelChanged(NodeImpl node, AlertLevel oldAlertLevel, AlertLevel newAlertLevel, String alertMessage) throws RemoteException {
     assert !SwingUtilities.isEventDispatchThread() : "Running in Swing event dispatch thread";
