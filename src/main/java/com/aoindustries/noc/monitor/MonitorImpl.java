@@ -176,7 +176,9 @@ import java.util.Locale;
  * Monitor for certificates issued in domains that are not expected.
  *     Jonathon Moldenhaur described how there are lists of certificates issued.
  *
- * Monitor pg_stat_io in PostgreSQL 16 and above.</pre>
+ * Monitor pg_stat_io in PostgreSQL 16 and above.
+ *
+ * Monitor pg_stat_checkpointer in PostgreSQL 17 and above.</pre>
  *
  * @author  AO Industries, Inc.
  */
