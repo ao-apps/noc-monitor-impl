@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022, 2025  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2020, 2021, 2022, 2025, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -156,19 +156,8 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
               && !(engine == null && "VIEW".equals(lastTableStatus.getComment()))
       ) {
         TableName name = lastTableStatus.getName();
-        if (
-            // Skip the four expected non-checkable tables in information_schema
-            !database.getName().equals(Database.INFORMATION_SCHEMA)
-                || (
-                !name.toString().equals("COLUMNS")
-                    && !name.toString().equals("ROUTINES")
-                    && !name.toString().equals("TRIGGERS")
-                    && !name.toString().equals("VIEWS")
-              )
-        ) {
-          tableNames.add(name);
-          tables.put(name, engine);
-        }
+        tableNames.add(name);
+        tables.put(name, engine);
       }
     }
     List<Database.CheckTableResult> checkTableResults = database.checkTables(slave, tableNames);
@@ -213,7 +202,9 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
     for (int index = 0, len = tableData.size(); index < len; index += 5) {
       String msgText = (String) tableData.get(index + 4);
       alertLevels.add(
-          msgText != null && ("OK".equals(msgText) || "Table is already up to date".equals(msgText))
+          msgText != null && ("OK".equals(msgText)
+              || "Table is already up to date".equals(msgText)
+              || "The storage engine for the table doesn't support check".equals(msgText))
               ? AlertLevel.NONE
               : AlertLevel.CRITICAL
       );
