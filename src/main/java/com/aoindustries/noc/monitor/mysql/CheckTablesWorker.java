@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 /**
  * The workers for {@link CheckTablesNode}.
@@ -60,6 +61,15 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
    * One unique worker is made per persistence file (and should match the database exactly).
    */
   private static final Map<String, CheckTablesWorker> workerCache = new HashMap<>();
+
+  /**
+   * The set of messages that are considered okay.
+   */
+  private static final Set<String> OK_MESSAGES = Set.of(
+      "OK",
+      "Table is already up to date",
+      "The storage engine for the table doesn't support check"
+  );
 
   static CheckTablesWorker getWorker(DatabaseNode databaseNode, File persistenceFile) throws IOException {
     String path = persistenceFile.getCanonicalPath();
@@ -201,13 +211,7 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
     List<AlertLevel> alertLevels = new ArrayList<>(tableData.size() / 5);
     for (int index = 0, len = tableData.size(); index < len; index += 5) {
       String msgText = (String) tableData.get(index + 4);
-      alertLevels.add(
-          msgText != null && ("OK".equals(msgText)
-              || "Table is already up to date".equals(msgText)
-              || "The storage engine for the table doesn't support check".equals(msgText))
-              ? AlertLevel.NONE
-              : AlertLevel.CRITICAL
-      );
+      alertLevels.add(OK_MESSAGES.contains(msgText) ? AlertLevel.NONE : AlertLevel.CRITICAL);
     }
     return alertLevels;
   }
@@ -226,7 +230,7 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
       List<?> tableData = result.getTableData(Locale.getDefault());
       for (int index = 0, len = tableData.size(); index < len; index += 5) {
         String msgText = (String) tableData.get(index + 4);
-        if (msgText == null || (!"OK".equals(msgText) && !"Table is already up to date".equals(msgText))) {
+        if (!OK_MESSAGES.contains(msgText)) {
           Object name = tableData.get(index);
           return new AlertLevelAndMessage(
               AlertLevel.CRITICAL,
