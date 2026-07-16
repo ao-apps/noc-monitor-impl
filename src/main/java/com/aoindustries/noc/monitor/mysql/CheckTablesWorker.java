@@ -29,7 +29,6 @@ import com.aoapps.lang.i18n.Resources;
 import com.aoapps.sql.MilliInterval;
 import com.aoindustries.aoserv.client.backup.MysqlReplication;
 import com.aoindustries.aoserv.client.mysql.Database;
-import com.aoindustries.aoserv.client.mysql.Server;
 import com.aoindustries.aoserv.client.mysql.TableName;
 import com.aoindustries.noc.monitor.AlertLevelAndMessage;
 import com.aoindustries.noc.monitor.TableResultWorker;
@@ -67,8 +66,7 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
    */
   private static final Set<String> OK_MESSAGES = Set.of(
       "OK",
-      "Table is already up to date",
-      "The storage engine for the table doesn't support check"
+      "Table is already up to date"
   );
 
   static CheckTablesWorker getWorker(DatabaseNode databaseNode, File persistenceFile) throws IOException {
@@ -115,36 +113,11 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
     final Database database = databaseNode.getDatabase();
     final MysqlReplication slave = databaseNode.getSlave();
 
-    // Don't check any table on MySQL 5.6+ information_schema database
-    if (database.getName().equals(Database.INFORMATION_SCHEMA)) {
-      String version = database.getMysqlServer().getVersion().getVersion();
-      if (
-          version.startsWith(Server.VERSION_5_6_PREFIX)
-              || version.startsWith(Server.VERSION_5_7_PREFIX)
-      ) {
-        return Collections.emptyList();
-      }
-    }
-
-    // Don't check any table on MySQL 5.6+ performance_schema database
-    if (database.getName().equals(Database.PERFORMANCE_SCHEMA)) {
-      String version = database.getMysqlServer().getVersion().getVersion();
-      if (
-          version.startsWith(Server.VERSION_5_6_PREFIX)
-              || version.startsWith(Server.VERSION_5_7_PREFIX)
-      ) {
-        return Collections.emptyList();
-      }
-    }
-
-    // Don't check any table on MySQL 5.7+ sys database
-    if (database.getName().equals(Database.SYS)) {
-      String version = database.getMysqlServer().getVersion().getVersion();
-      if (
-          version.startsWith(Server.VERSION_5_7_PREFIX)
-      ) {
-        return Collections.emptyList();
-      }
+    // Don't check any views, instrumentation, and runtime statistics
+    if (database.getName().equals(Database.INFORMATION_SCHEMA)
+        || database.getName().equals(Database.PERFORMANCE_SCHEMA)
+        || database.getName().equals(Database.SYS)) {
+      return Collections.emptyList();
     }
 
     List<Database.TableStatus> lastTableStatuses = databaseNode.databaseWorker.getLastTableStatuses();
