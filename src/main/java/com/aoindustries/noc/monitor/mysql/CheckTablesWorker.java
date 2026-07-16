@@ -115,12 +115,11 @@ class CheckTablesWorker extends TableResultWorker<List<Object>, Object> {
     final Database database = databaseNode.getDatabase();
     final MysqlReplication slave = databaseNode.getSlave();
 
-    // Don't check any table on MySQL 5.1+ information_schema database
+    // Don't check any table on MySQL 5.6+ information_schema database
     if (database.getName().equals(Database.INFORMATION_SCHEMA)) {
       String version = database.getMysqlServer().getVersion().getVersion();
       if (
-          version.startsWith(Server.VERSION_5_1_PREFIX)
-              || version.startsWith(Server.VERSION_5_6_PREFIX)
+          version.startsWith(Server.VERSION_5_6_PREFIX)
               || version.startsWith(Server.VERSION_5_7_PREFIX)
       ) {
         return Collections.emptyList();
