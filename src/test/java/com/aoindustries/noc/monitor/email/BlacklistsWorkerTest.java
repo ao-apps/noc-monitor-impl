@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2018, 2020, 2022  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2018, 2020, 2022, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -42,17 +42,16 @@ public class BlacklistsWorkerTest extends TestCase {
   }
 
   public void testCheckForDuplicateBlacklists() throws Exception {
-    /*
-    // Make sure there are no duplicates
-    System.out.println("Total of " + BlacklistsWorker.rblBlacklists.length + " RBL blacklists");
-    Set<String> basenames = AoCollections.newHashSet(BlacklistsWorker.rblBlacklists.length);
-    for (BlacklistsWorker.RblBlacklist rblBlacklist : BlacklistsWorker.rblBlacklists) {
-      if (!basenames.add(rblBlacklist.basename)) {
-        System.err.println(rblBlacklist.basename);
-        throw new RuntimeException("Duplicate basename: " + rblBlacklist.basename);
-      } else {
-        System.out.println(rblBlacklist.basename);
-      }
-    }*/
+    // // Make sure there are no duplicates
+    // System.out.println("Total of " + BlacklistsWorker.rblBlacklists.length + " RBL blacklists");
+    // Set<String> basenames = AoCollections.newHashSet(BlacklistsWorker.rblBlacklists.length);
+    // for (BlacklistsWorker.RblBlacklist rblBlacklist : BlacklistsWorker.rblBlacklists) {
+    //   if (!basenames.add(rblBlacklist.basename)) {
+    //     System.err.println(rblBlacklist.basename);
+    //     throw new RuntimeException("Duplicate basename: " + rblBlacklist.basename);
+    //   } else {
+    //     System.out.println(rblBlacklist.basename);
+    //   }
+    // }
   }
 }

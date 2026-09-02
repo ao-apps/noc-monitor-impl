@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2013, 2016, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2008-2013, 2016, 2018, 2019, 2020, 2021, 2022, 2024, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -116,13 +116,13 @@ class TimeWorker extends TableMultiResultWorker<MilliInterval, TimeResult> {
     if (skew >= 60000 || skew <= -60000) {
       return AlertLevel.CRITICAL;
     }
-    if (skew >=  4000 || skew <=  -4000) {
+    if (skew >= 4000 || skew <= -4000) {
       return AlertLevel.HIGH;
     }
-    if (skew >=  2000 || skew <=  -2000) {
+    if (skew >= 2000 || skew <= -2000) {
       return AlertLevel.MEDIUM;
     }
-    if (skew >=  1000 || skew <=  -1000) {
+    if (skew >= 1000 || skew <= -1000) {
       return AlertLevel.MEDIUM;
     }
     return AlertLevel.NONE;

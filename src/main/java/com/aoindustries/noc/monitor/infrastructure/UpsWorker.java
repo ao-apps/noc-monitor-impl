@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2012, 2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2025  AO Industries, Inc.
+ * Copyright (C) 2012, 2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2025, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -53,26 +53,26 @@ class UpsWorker extends TableMultiResultWorker<UpsStatus, UpsResult> {
   private static final float OUTPUTV_TOLERANCE = 5;
 
   private static final float CRITICAL_LOAD_PERCENT = 96;
-  private static final float HIGH_LOAD_PERCENT     = 94;
-  private static final float MEDIUM_LOAD_PERCENT   = 92;
-  private static final float LOW_LOAD_PERCENT      = 90;
+  private static final float HIGH_LOAD_PERCENT = 94;
+  private static final float MEDIUM_LOAD_PERCENT = 92;
+  private static final float LOW_LOAD_PERCENT = 90;
 
   private static final float CRITICAL_BCHARGE = 80;
-  private static final float HIGH_BCHARGE     = 85;
-  private static final float MEDIUM_BCHARGE   = 90;
-  private static final float LOW_BCHARGE      = 95;
+  private static final float HIGH_BCHARGE = 85;
+  private static final float MEDIUM_BCHARGE = 90;
+  private static final float LOW_BCHARGE = 95;
 
   private static final float LOW_BATTV_TOLERANCE = 2;
 
   private static final MilliInterval CRITICAL_TONBATT = new MilliInterval(4L * 60L * 1000L);
-  private static final MilliInterval HIGH_TONBATT     = new MilliInterval(3L * 60L * 1000L);
-  private static final MilliInterval MEDIUM_TONBATT   = new MilliInterval(2L * 60L * 1000L);
-  private static final MilliInterval LOW_TONBATT      = new MilliInterval(1L * 60L * 1000L);
+  private static final MilliInterval HIGH_TONBATT = new MilliInterval(3L * 60L * 1000L);
+  private static final MilliInterval MEDIUM_TONBATT = new MilliInterval(2L * 60L * 1000L);
+  private static final MilliInterval LOW_TONBATT = new MilliInterval(1L * 60L * 1000L);
 
   private static final MilliInterval CRITICAL_TIMELEFT = new MilliInterval(10L * 60L * 1000L);
-  private static final MilliInterval HIGH_TIMELEFT     = new MilliInterval(12L * 60L * 1000L);
-  private static final MilliInterval MEDIUM_TIMELEFT   = new MilliInterval(14L * 60L * 1000L);
-  private static final MilliInterval LOW_TIMELEFT      = new MilliInterval(16L * 60L * 1000L);
+  private static final MilliInterval HIGH_TIMELEFT = new MilliInterval(12L * 60L * 1000L);
+  private static final MilliInterval MEDIUM_TIMELEFT = new MilliInterval(14L * 60L * 1000L);
+  private static final MilliInterval LOW_TIMELEFT = new MilliInterval(16L * 60L * 1000L);
 
   // http://nam-en.apc.com/app/answers/detail/a_id/8301/~/what-is-the-expected-life-of-my-apc-ups-battery%3F
   // now http://forums.apc.com/message/6778

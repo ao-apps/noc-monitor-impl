@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2012, 2013, 2016, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2012, 2013, 2016, 2018, 2020, 2021, 2022, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -182,62 +182,62 @@ class UpsStatus {
       String name = line.substring(0, colonPos).trim();
       String value = line.substring(colonPos + 1).trim();
       if ("UPSNAME".equals(name)) {
-        upsnameTmp   = value;
+        upsnameTmp = value;
       } else if ("STATUS".equals(name)) {
-        statusTmp    = value;
+        statusTmp = value;
       } else if ("LINEV".equals(name)) {
-        linevTmp     = parseVolts(value);
+        linevTmp = parseVolts(value);
       } else if ("LOTRANS".equals(name)) {
-        lotransTmp   = parseVolts(value);
+        lotransTmp = parseVolts(value);
       } else if ("HITRANS".equals(name)) {
-        hitransTmp   = parseVolts(value);
+        hitransTmp = parseVolts(value);
       } else if ("LINEFREQ".equals(name)) {
-        linefreqTmp  = parseFrequency(value);
+        linefreqTmp = parseFrequency(value);
       } else if ("OUTPUTV".equals(name)) {
-        outputvTmp   = parseVolts(value);
+        outputvTmp = parseVolts(value);
       } else if ("NOMOUTV".equals(name)) {
-        nomoutvTmp   = parseVolts(value);
+        nomoutvTmp = parseVolts(value);
       } else if ("LOADPCT".equals(name)) {
-        loadpctTmp   = parsePercent(value);
+        loadpctTmp = parsePercent(value);
       } else if ("BCHARGE".equals(name)) {
-        bchargeTmp   = parsePercent(value);
+        bchargeTmp = parsePercent(value);
       } else if ("BATTV".equals(name)) {
-        battvTmp     = parseVolts(value);
+        battvTmp = parseVolts(value);
       } else if ("NOMBATTV".equals(name)) {
-        nombattvTmp  = parseVolts(value);
+        nombattvTmp = parseVolts(value);
       } else if ("EXTBATTS".equals(name)) {
-        extbattsTmp  = parseInt(value);
+        extbattsTmp = parseInt(value);
       } else if ("BADBATTS".equals(name)) {
-        badbattsTmp  = parseInt(value);
+        badbattsTmp = parseInt(value);
       } else if ("TONBATT".equals(name)) {
-        tonbattTmp   = parseTimeSpan(value);
+        tonbattTmp = parseTimeSpan(value);
       } else if ("CUMONBATT".equals(name)) {
         cumonbattTmp = parseTimeSpan(value);
       } else if ("TIMELEFT".equals(name)) {
-        timeleftTmp  = parseTimeSpan(value);
+        timeleftTmp = parseTimeSpan(value);
       } else if ("ITEMP".equals(name)) {
-        itempTmp     = parseTemperature(value);
+        itempTmp = parseTemperature(value);
       }
     }
 
-    this.upsname   = upsnameTmp;
-    this.status    = statusTmp;
-    this.linev     = linevTmp;
-    this.lotrans   = lotransTmp;
-    this.hitrans   = hitransTmp;
-    this.linefreq  = linefreqTmp;
-    this.outputv   = outputvTmp;
-    this.nomoutv   = nomoutvTmp;
-    this.loadpct   = loadpctTmp;
-    this.bcharge   = bchargeTmp;
-    this.battv     = battvTmp;
-    this.nombattv  = nombattvTmp;
-    this.extbatts  = extbattsTmp;
-    this.badbatts  = badbattsTmp;
-    this.tonbatt   = tonbattTmp;
+    this.upsname = upsnameTmp;
+    this.status = statusTmp;
+    this.linev = linevTmp;
+    this.lotrans = lotransTmp;
+    this.hitrans = hitransTmp;
+    this.linefreq = linefreqTmp;
+    this.outputv = outputvTmp;
+    this.nomoutv = nomoutvTmp;
+    this.loadpct = loadpctTmp;
+    this.bcharge = bchargeTmp;
+    this.battv = battvTmp;
+    this.nombattv = nombattvTmp;
+    this.extbatts = extbattsTmp;
+    this.badbatts = badbattsTmp;
+    this.tonbatt = tonbattTmp;
     this.cumonbatt = cumonbattTmp;
-    this.timeleft  = timeleftTmp;
-    this.itemp     = itempTmp;
+    this.timeleft = timeleftTmp;
+    this.itemp = itempTmp;
   }
 
   /**

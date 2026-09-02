@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -1597,12 +1597,12 @@ class BlacklistsWorker extends TableResultWorker<List<BlacklistsWorker.Blacklist
     lookups.addAll(Arrays.asList(rblBlacklists));
     if (checkSmtpBlacklist) {
       // TODO: Update this list dynamically, since update to ip_addresses.check_blacklists_over_smtp can happen at any time
-      lookups.add(new SmtpBlacklist("att.net",       AlertLevel.MEDIUM));
+      lookups.add(new SmtpBlacklist("att.net", AlertLevel.MEDIUM));
       lookups.add(new SmtpBlacklist("bellsouth.net", AlertLevel.MEDIUM));
-      lookups.add(new SmtpBlacklist("comcast.net",   AlertLevel.MEDIUM));
-      lookups.add(new SmtpBlacklist("pacbell.net",   AlertLevel.MEDIUM));
+      lookups.add(new SmtpBlacklist("comcast.net", AlertLevel.MEDIUM));
+      lookups.add(new SmtpBlacklist("pacbell.net", AlertLevel.MEDIUM));
       lookups.add(new SmtpBlacklist("sbcglobal.net", AlertLevel.MEDIUM));
-      lookups.add(new SmtpBlacklist("appriver.com",  AlertLevel.MEDIUM)); // List from trustsource.org
+      lookups.add(new SmtpBlacklist("appriver.com", AlertLevel.MEDIUM)); // List from trustsource.org
       // Note: When adding a new blacklist, change the + 6 in list constructor call
     }
     Collections.sort(lookups);

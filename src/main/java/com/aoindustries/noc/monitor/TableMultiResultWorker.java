@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008-2012, 2014, 2016, 2018, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2008-2012, 2014, 2016, 2018, 2020, 2021, 2022, 2024, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -97,15 +97,13 @@ public abstract class TableMultiResultWorker<S, R extends TableMultiResult> impl
     this.results = new PersistentLinkedList<>(
         PersistentCollections.getPersistentBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.BARRIER, Long.MAX_VALUE),
         // new RandomAccessFileBuffer(new RandomAccessFile(persistenceFile, "rw"), ProtectionLevel.NONE),
-        /*
-        new TwoCopyBarrierBuffer(
-          persistenceFile,
-          ProtectionLevel.BARRIER,
-          4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash page size??? Can't find specs.
-          60L*1000L, // TODO: Flash: 60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
-          5L*60L*1000L // TODO: Flash: 24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
-        ),
-         */
+        // new TwoCopyBarrierBuffer(
+        //   persistenceFile,
+        //   ProtectionLevel.BARRIER,
+        //   4096, // Matches the block size of the underlying ext2 filesystem - hopefully matches the flash page size??? Can't find specs.
+        //   60L*1000L, // TODO: Flash: 60L*60L*1000L, // Only commit once per 60 minutes in the single asynchronous writer thread
+        //   5L*60L*1000L // TODO: Flash: 24L*60L*60L*1000L  // Only commit synchronously (concurrently) once per 24 hours to save flash writes
+        // ),
         serializer
     );
   }
