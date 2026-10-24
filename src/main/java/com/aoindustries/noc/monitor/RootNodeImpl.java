@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2020, 2021, 2022, 2024, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -159,7 +159,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
           } catch (ThreadDeath td) {
             throw td;
           } catch (Throwable t) {
-            logger.log(Level.SEVERE, null, t);
+            logger.log(Level.SEVERE, "TODO: message here", t);
           }
         });
         rootNodeCache.put(key, newRootNode);
@@ -307,7 +307,7 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
         }
       }
     }
-    logger.log(Level.WARNING, null, new AssertionError("Listener not found: " + treeListener));
+    logger.log(Level.WARNING, "TODO: message here", new AssertionError("Listener not found: " + treeListener));
   }
 
   private class NodeAddedSignaler implements Runnable {
@@ -349,14 +349,14 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
           try {
             Thread.sleep(250);
           } catch (InterruptedException err) {
-            logger.log(Level.WARNING, null, err);
+            logger.log(Level.WARNING, "TODO: message here", err);
             // Restore the interrupted status
             Thread.currentThread().interrupt();
           }
         }
       } catch (RemoteException err) {
         removeTreeListener(treeListener);
-        logger.log(Level.SEVERE, null, err);
+        logger.log(Level.SEVERE, "TODO: message here", err);
       } finally {
         synchronized (treeListeners) {
           if (!removed) {
@@ -406,14 +406,14 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
           try {
             Thread.sleep(250);
           } catch (InterruptedException err) {
-            logger.log(Level.WARNING, null, err);
+            logger.log(Level.WARNING, "TODO: message here", err);
             // Restore the interrupted status
             Thread.currentThread().interrupt();
           }
         }
       } catch (RemoteException err) {
         removeTreeListener(treeListener);
-        logger.log(Level.SEVERE, null, err);
+        logger.log(Level.SEVERE, "TODO: message here", err);
       } finally {
         synchronized (treeListeners) {
           if (!removed) {
@@ -463,14 +463,14 @@ public class RootNodeImpl extends NodeImpl implements RootNode {
           try {
             Thread.sleep(250);
           } catch (InterruptedException err) {
-            logger.log(Level.WARNING, null, err);
+            logger.log(Level.WARNING, "TODO: message here", err);
             // Restore the interrupted status
             Thread.currentThread().interrupt();
           }
         }
       } catch (RemoteException err) {
         removeTreeListener(treeListener);
-        logger.log(Level.SEVERE, null, err);
+        logger.log(Level.SEVERE, "TODO: message here", err);
       } finally {
         synchronized (treeListeners) {
           if (!removed) {

@@ -419,7 +419,7 @@ public class ClusterResourceManagerTODO extends TestCase {
       // TODO: Allocate and check disks matched by weight.
       clusterConfigurations = AoservClusterBuilder.getClusterConfigurations(Locale.getDefault(), conn, clusters, drbdReports, lvmReports);
     } catch (Exception err) {
-      logger.log(Level.SEVERE, null, err);
+      logger.log(Level.SEVERE, "TODO: message here", err);
       throw err;
     }
   }

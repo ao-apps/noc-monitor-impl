@@ -324,7 +324,7 @@ public abstract class TableMultiResultWorker<S, R extends TableMultiResult> impl
     } catch (ThreadDeath td) {
       throw td;
     } catch (Throwable t) {
-      logger.log(Level.SEVERE, null, t);
+      logger.log(Level.SEVERE, "TODO: message here", t);
       lastSuccessful = false;
     } finally {
       // Reschedule next timer task if still running

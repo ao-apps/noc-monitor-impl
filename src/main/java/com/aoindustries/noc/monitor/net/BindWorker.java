@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2009-2013, 2016, 2017, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2009-2013, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -79,7 +79,7 @@ class BindWorker extends TableMultiResultWorker<String, NetBindResult> {
     } catch (ThreadDeath td) {
       throw td;
     } catch (Throwable t) {
-      logger.log(Level.SEVERE, null, t);
+      logger.log(Level.SEVERE, "TODO: message here", t);
       throw Throwables.wrap(t, IOException.class, IOException::new);
     }
   }

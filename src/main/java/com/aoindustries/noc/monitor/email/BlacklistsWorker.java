@@ -1739,7 +1739,7 @@ class BlacklistsWorker extends TableResultWorker<List<BlacklistsWorker.Blacklist
           future.cancel(false);
           result = new BlacklistQueryResult(baseName, startTime, System.nanoTime() - startNano, lookup.getQuery(), t.getMessage(), lookup.getMaxAlertLevel());
           cacheResult = true;
-          logger.log(Level.FINE, null, t); // TODO: Log all others that are put into result without full stack trace
+          logger.log(Level.FINE, "TODO: message here", t); // TODO: Log all others that are put into result without full stack trace
         }
         if (cacheResult) {
           synchronized (queryResultCache) {

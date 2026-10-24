@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2019, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -179,7 +179,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
     try {
       verifyBackups();
     } catch (IOException | SQLException err) {
-      logger.log(Level.SEVERE, null, err);
+      logger.log(Level.SEVERE, "TODO: message here", err);
     }
   }
 
@@ -410,7 +410,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
         }
       }
     }
-    logger.log(Level.WARNING, null, new AssertionError("Listener not found: " + tableResultListener));
+    logger.log(Level.WARNING, "TODO: message here", new AssertionError("Listener not found: " + tableResultListener));
   }
 
   /**
@@ -427,7 +427,7 @@ public class BackupsNode extends NodeImpl implements TableResultNode, TableResul
           tableResultListener.tableResultUpdated(tableResult);
         } catch (RemoteException err) {
           iter.remove();
-          logger.log(Level.SEVERE, null, err);
+          logger.log(Level.SEVERE, "TODO: message here", err);
         }
       }
     }

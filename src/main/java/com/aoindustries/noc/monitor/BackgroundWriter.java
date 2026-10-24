@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2020, 2021, 2022, 2024, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -124,7 +124,7 @@ final class BackgroundWriter {
             } catch (ThreadDeath td) {
               throw td;
             } catch (Throwable t) {
-              logger.log(Level.SEVERE, null, t);
+              logger.log(Level.SEVERE, "TODO: message here", t);
             }
           }
         });

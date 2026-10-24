@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2014, 2018, 2020, 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2014, 2018, 2020, 2021, 2022, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -136,7 +136,7 @@ public abstract class SingleResultNodeImpl extends NodeImpl implements SingleRes
         }
       }
     }
-    logger.log(Level.WARNING, null, new AssertionError("Listener not found: " + singleResultListener));
+    logger.log(Level.WARNING, "TODO: message here", new AssertionError("Listener not found: " + singleResultListener));
   }
 
   /**
@@ -153,7 +153,7 @@ public abstract class SingleResultNodeImpl extends NodeImpl implements SingleRes
           singleResultListener.singleResultUpdated(singleResult);
         } catch (RemoteException err) {
           iter.remove();
-          logger.log(Level.SEVERE, null, err);
+          logger.log(Level.SEVERE, "TODO: message here", err);
         }
       }
     }

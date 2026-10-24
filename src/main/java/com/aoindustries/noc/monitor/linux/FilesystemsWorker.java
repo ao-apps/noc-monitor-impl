@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2008, 2009, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024, 2025  AO Industries, Inc.
+ * Copyright (C) 2008, 2009, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024, 2025, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -104,7 +104,7 @@ class FilesystemsWorker extends TableResultWorker<List<String>, String> {
         try {
           alam = getAlertLevelAndMessage(tableData, index);
         } catch (Exception err) {
-          logger.log(Level.SEVERE, null, err);
+          logger.log(Level.SEVERE, "TODO: message here", err);
           alam = new AlertLevelAndMessage(
               AlertLevel.CRITICAL,
               locale -> ThreadLocale.call(
@@ -199,7 +199,7 @@ class FilesystemsWorker extends TableResultWorker<List<String>, String> {
         AlertLevelAndMessage alam = getAlertLevelAndMessage(tableData, index);
         alertLevels.add(alam.getAlertLevel());
       } catch (Exception err) {
-        logger.log(Level.SEVERE, null, err);
+        logger.log(Level.SEVERE, "TODO: message here", err);
         alertLevels.add(AlertLevel.CRITICAL);
       }
     }
