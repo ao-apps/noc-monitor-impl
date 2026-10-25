@@ -1,6 +1,6 @@
 /*
  * noc-monitor-impl - Implementation of Network Operations Center Monitoring.
- * Copyright (C) 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2021, 2022, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -21,18 +21,6 @@
  * along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
  */
 module com.aoindustries.noc.monitor.impl {
-  exports com.aoindustries.noc.monitor;
-  exports com.aoindustries.noc.monitor.backup;
-  exports com.aoindustries.noc.monitor.cluster;
-  exports com.aoindustries.noc.monitor.dns;
-  exports com.aoindustries.noc.monitor.email;
-  exports com.aoindustries.noc.monitor.infrastructure;
-  exports com.aoindustries.noc.monitor.linux;
-  exports com.aoindustries.noc.monitor.mysql;
-  exports com.aoindustries.noc.monitor.net;
-  exports com.aoindustries.noc.monitor.pki;
-  exports com.aoindustries.noc.monitor.signup;
-  exports com.aoindustries.noc.monitor.web;
   // Direct
   requires com.aoapps.collections; // <groupId>com.aoapps</groupId><artifactId>ao-collections</artifactId>
   requires com.aoapps.concurrent; // <groupId>com.aoapps</groupId><artifactId>ao-concurrent</artifactId>
@@ -52,4 +40,17 @@ module com.aoindustries.noc.monitor.impl {
   requires java.logging;
   requires java.rmi;
   requires java.sql;
+
+  exports com.aoindustries.noc.monitor;
+  exports com.aoindustries.noc.monitor.backup;
+  exports com.aoindustries.noc.monitor.cluster;
+  exports com.aoindustries.noc.monitor.dns;
+  exports com.aoindustries.noc.monitor.email;
+  exports com.aoindustries.noc.monitor.infrastructure;
+  exports com.aoindustries.noc.monitor.linux;
+  exports com.aoindustries.noc.monitor.mysql;
+  exports com.aoindustries.noc.monitor.net;
+  exports com.aoindustries.noc.monitor.pki;
+  exports com.aoindustries.noc.monitor.signup;
+  exports com.aoindustries.noc.monitor.web;
 }
