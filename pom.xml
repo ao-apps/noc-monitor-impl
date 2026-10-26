@@ -260,7 +260,13 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
                   <location>${project.build.directory}/offlineLinks/com.aoindustries/aoserv-cluster</location>
                 </offlineLink>
                 <offlineLink>
+                  <!--
+                  TODO: dnsjava-3.7.0 did not publish javadoc artifact, check for it on newer releases.
+                  https://repo.maven.apache.org/maven2/dnsjava/dnsjava/
                   <url>https://javadoc.io/doc/dnsjava/dnsjava/${dnsjava:dnsjava:jar.version}/</url>
+                  Using most recent available.
+                  -->
+                  <url>https://javadoc.io/doc/dnsjava/dnsjava/3.6.5/</url>
                   <location>${project.build.directory}/offlineLinks/dnsjava/dnsjava</location>
                 </offlineLink>
                 <offlineLink>
