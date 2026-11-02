@@ -189,13 +189,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
                       <outputDirectory>${project.build.directory}/offlineLinks/com.aoindustries/aoserv-cluster</outputDirectory>
                     </artifactItem>
                     <artifactItem>
-                      <!--
-                      TODO: dnsjava-3.7.0 did not publish javadoc artifact, check for it on newer releases.
-                      https://repo.maven.apache.org/maven2/dnsjava/dnsjava/
                       <groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><classifier>javadoc</classifier>
-                      Using most recent available.
-                      -->
-                      <groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><classifier>javadoc</classifier><version>3.6.5</version>
                       <includes>element-list, package-list</includes>
                       <outputDirectory>${project.build.directory}/offlineLinks/dnsjava/dnsjava</outputDirectory>
                     </artifactItem>
@@ -266,13 +260,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
                   <location>${project.build.directory}/offlineLinks/com.aoindustries/aoserv-cluster</location>
                 </offlineLink>
                 <offlineLink>
-                  <!--
-                  TODO: dnsjava-3.7.0 did not publish javadoc artifact, check for it on newer releases.
-                  https://repo.maven.apache.org/maven2/dnsjava/dnsjava/
                   <url>https://javadoc.io/doc/dnsjava/dnsjava/${dnsjava:dnsjava:jar.version}/</url>
-                  Using most recent available.
-                  -->
-                  <url>https://javadoc.io/doc/dnsjava/dnsjava/3.6.5/</url>
                   <location>${project.build.directory}/offlineLinks/dnsjava/dnsjava</location>
                 </offlineLink>
                 <offlineLink>
@@ -330,7 +318,7 @@ along with noc-monitor-impl.  If not, see <https://www.gnu.org/licenses/>.
         <groupId>com.aoindustries</groupId><artifactId>aoserv-cluster</artifactId><version>1.85.0${POST-SNAPSHOT}</version>
       </dependency>
       <dependency>
-        <groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><version>3.7.0</version>
+        <groupId>dnsjava</groupId><artifactId>dnsjava</artifactId><version>3.7.1</version>
       </dependency>
       <dependency>
         <groupId>com.aoindustries</groupId><artifactId>noc-monitor-api</artifactId><version>1.4.0${POST-SNAPSHOT}</version>
